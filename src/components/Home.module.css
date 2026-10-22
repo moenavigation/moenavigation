@@ -1,0 +1,84 @@
+.hero { position: relative; min-height: 32rem; overflow: hidden; background: #f1d8ba; }
+.heroPhoto { position: absolute; inset: 0; }
+.heroPhoto img { width: 100%; height: 100%; object-fit: cover; object-position: center 58%; }
+.hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg,#f8e8d3e8 0%,#f8e8d3b0 25%,transparent 62%); }
+.heroInner { position: relative; z-index: 1; display: flex; align-items: center; min-height: inherit; padding-block: 3.5rem; }
+.heroCopy { width: 44%; max-width: 33rem; }
+.heroCopy h1 { max-width: 28rem; line-height: 1.13; font-weight: 800; }
+.heroCopy p { color: #294357; font-size: var(--font-lead); margin-top: 1.3rem; max-width: 32rem; line-height: 1.55; }
+.heroCopy :global(.eyebrow) { color: #264660; }
+.heroActions { display: flex; gap: .8rem; flex-wrap: wrap; margin-top: 1.8rem; }
+.heroCaption { display: block; margin-top: 2.8rem; font-size: var(--font-small); letter-spacing: .08em; color: #24435b; }
+.sectionHeading { display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; margin-bottom: 1.8rem; }
+.sectionHeading :global(.eyebrow) { margin-bottom: .5rem; }
+.sectionHeading>a { flex-shrink: 0; padding-bottom: .25rem; }
+.expertise { padding-block: 3rem; }
+.expertiseGrid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1rem; }
+.expertiseCard { background: var(--pale); border: 1px solid #eaf0f5; border-radius: var(--radius); padding: 1.5rem; display: flex; flex-direction: column; align-items: flex-start; position: relative; transition: border-color .2s; }
+.serviceNumber { position: absolute; right: 1.3rem; color: #899eb3; }
+.serviceIcon { width: 2.6rem; height: 2.6rem; stroke-width: 1.4; margin-bottom: 1.3rem; }
+.expertiseCard h3 { margin-bottom: .5rem; }
+.expertiseCard p { font-size: var(--font-small); }
+.cardArrow { width: 1.3rem; margin-top: 1.3rem; }
+.trust { position: relative; background: var(--navy); color: #fff; }
+.trust>img { object-fit: cover; opacity: .15; }
+.trustInner { position: relative; display: grid; grid-template-columns: 1.1fr 1fr; gap: 6rem; padding-block: 4rem; }
+.trust :global(.eyebrow) { color: #b8d2e8; }
+.trust h2 { white-space: pre-line; }
+.trust p { color: #c6d5e2; margin-top: 1.2rem; }
+.trust :global(.text-link) { margin-top: 1.6rem; }
+.trustValues { display: grid; gap: 1.5rem; }
+.trustValues>div { display: flex; align-items: center; gap: 1.2rem; border-bottom: 1px solid #ffffff24; padding-bottom: 1.5rem; }
+.trustValues>div:last-child { border: 0; padding-bottom: 0; }
+.trustValues svg { width: 2.5rem; height: 2.5rem; stroke-width: 1.4; }
+.trustValues p { margin-top: .35rem; }
+.mediaGrid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1.4rem; }
+.mediaCard { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.cardImage { position: relative; aspect-ratio: 1.85; overflow: hidden; }
+.cardImage img { object-fit: cover; transition: transform .5s; }
+.cardCopy { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.3rem; }
+.cardCopy :global(.eyebrow) { margin-bottom: .4rem; letter-spacing: .04em; font-weight: 400; }
+.cardCopy>svg { width: 1.25rem; }
+.disclaimer { font-size: var(--font-small); margin-top: 1.4rem; }
+.connection { background: var(--pale); padding-block: 4rem; }
+.connectionInner { display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 4rem; }
+.connectionPhoto { position: relative; aspect-ratio: 1.45; border-radius: var(--radius); overflow: hidden; }
+.connectionPhoto img { object-fit: cover; object-position: center 54%; }
+.connectionPhoto span { position: absolute; inset: auto 0 0; padding: 1.5rem; color: #fff; letter-spacing: .08em; background: linear-gradient(transparent,#082b50d9); }
+.connectionInner h2 { margin-bottom: 1.2rem; }
+.portList { display: flex; align-items: center; gap: 1rem; padding-block: 1.5rem; margin-block: .3rem 1.2rem; border-bottom: 1px solid var(--line); }
+.portList svg { width: 1.2rem; }
+.newsCard { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.newsCopy { padding: 1.5rem; }
+.newsCopy :global(.eyebrow) { letter-spacing: .03em; font-weight: 400; }
+.newsCopy h3 { min-height: 3rem; }
+.newsCopy :global(.text-link) { margin-top: 1.5rem; }
+.cta { padding-block: 3rem; background: #edf3f8; border-top: 1px solid var(--line); }
+.ctaInner { display: flex; justify-content: space-between; align-items: center; gap: 2rem; }
+.ctaInner p { margin-top: .9rem; }
+.ctaInner :global(.button) { flex-shrink: 0; }
+@media(hover:hover) and (pointer:fine) { .expertiseCard:hover { border-color: #9fbbd3; } .mediaCard:hover img,.newsCard:hover img { transform: scale(1.035); } }
+@media(max-width:1100px) { .heroCopy { width: 55%; } .heroActions { flex-direction: column; align-items: flex-start; } .expertiseGrid { grid-template-columns: repeat(2,minmax(0,1fr)); } .trustInner { gap: 3rem; } .connectionInner { gap: 2rem; } }
+@media(max-width:700px) {
+  .hero { min-height: 0; }
+  .heroPhoto img { object-position: center top; }
+  .hero::after { background: linear-gradient(180deg, #f9e5cbd9 0%, #f9e5cbb8 42%, #f9e5cb30 69%, transparent 82%); }
+  .heroInner { min-height: 0; align-items: flex-start; padding-block: 2.2rem 10rem; }
+  .heroCopy { width: 100%; max-width: none; }
+  .heroCopy h1 { max-width: 22rem; }
+  .heroCopy p { margin-top: 1rem; max-width: 25rem; }
+  .heroCopy :global(.eyebrow) { letter-spacing: .07em; }
+  .heroActions { gap: .65rem; margin-top: 1.5rem; }
+  .heroCaption { display: none; }
+  .sectionHeading { display: block; }
+  .sectionHeading>a { margin-top: 1rem; }
+  .expertiseCard { padding: 1.2rem; }
+  .expertiseCard h3 { overflow-wrap: anywhere; }
+  .trustInner { grid-template-columns: 1fr; padding-block: 3rem; }
+  .mediaGrid { grid-template-columns: 1fr; }
+  .connectionInner { grid-template-columns: 1fr; }
+  .connection { padding-block: 3rem; }
+  .ctaInner { flex-direction: column; align-items: flex-start; }
+  .newsCopy h3 { min-height: auto; }
+}
+@media(max-width:370px) { .expertiseGrid { grid-template-columns: 1fr; } }

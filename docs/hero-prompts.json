@@ -1,0 +1,16 @@
+{
+  "engine": "built-in image_gen",
+  "purpose": "Illustrative demo photography",
+  "assets": [
+    {
+      "destination": "public/images/hero.webp",
+      "prompt": "Use case: photorealistic-natural. Create one premium maritime corporate website hero photo, landscape 16:9. A large deep navy hull and weathered red waterline tanker traveling at sea at sunrise, seen from low bow three-quarter view. Place the entire ship on the right half of frame, bow pointing right and towards viewer, white superstructure and coherent real mast details. Left half is spacious warm pale peach and cream golden sunrise sky with distant calm sea horizon, suitable for dark navy headline overlay. Blue textured ocean at bottom, small natural bow wave, warm light reflected on hull, distant mountains barely visible. Refined editorial maritime photography, believable industrial details and photographic textures, realistic proportions and lighting. No typography, lettering, watermark, logo, borders or UI. Match supplied maritime references in mood, sharp realism and navy/blue palette.",
+      "source": "C:\\Users\\poomt\\.codex\\generated_images\\01a120c0-f8d9-7092-8c52-c6bdf4404c2f\\exec-58e357ff-532e-402b-beae-f5bfcd630237.png"
+    },
+    {
+      "destination": "public/images/hero-mobile.webp",
+      "prompt": "Use case photorealistic-natural. Generate a portrait 9:16 maritime website mobile hero photograph. A deep navy and red waterline tanker with white bridge traveling towards the right, entire vessel contained in the lower half of the frame, ocean below with subtle bow wave. Top sixty percent open warm pale cream peach sunrise sky and soft clouds, uncluttered and light, reserved for dark navy title and buttons overlay. The ship should be low enough to leave title area completely open. Beautiful golden morning light, real photographic metal weathering and industrial fittings, deep blue textured sea, distant coastline silhouette. Coherent believable vessel, premium commercial maritime photography. No text, watermark, logo, typography or UI.",
+      "source": "C:\\Users\\poomt\\.codex\\generated_images\\01a120c0-f8d9-7092-8c52-c6bdf4404c2f\\exec-0dc95a3b-a50e-4646-be70-e36ec889e91e.png"
+    }
+  ]
+}

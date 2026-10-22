@@ -1,0 +1,118 @@
+{
+  "generatedAt": "2026-10-09",
+  "engine": "built-in image_gen",
+  "purpose": "Illustrative fictional imagery for MOE NAVIGATION website demo; these are not documentary photos of actual company vessels or operations.",
+  "optimization": {
+    "format": "WebP",
+    "quality": 85,
+    "method": 6,
+    "width": 1672,
+    "height": 941
+  },
+  "assets": [
+    {
+      "name": "container-vessel.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: editorial maritime website demo photo. Primary request: A navy-hulled container cargo vessel with a muted red waterline and white superstructure, carrying orderly stacks of rust-red, blue and cream containers, cruising toward the right on blue open sea. Elevated three-quarter front view from another vessel; distant hazy mountains, blue sky and thin cloud. Entire ship comfortably in frame. Style: polished photorealistic editorial photography, natural texture, no artificial cinematic effects, consistent cool blue ocean and sky with gentle warm sunlight. Composition: landscape 16:9, crisp professional detail, useful for responsive website cards and banners. Constraints: absolutely no company branding, flags, logos, legible text, numbers, watermark or captions; realistic marine engineering; no posed advertising look; no people in unsafe positions. Illustrative fictional scene, not a documented actual company vessel.",
+      "source": "C:\\Users\\poomt\\.codex\\generated_images\\01a120c2-1c69-7d41-a8f4-e46e31a69c30\\exec-ca68ddda-d10b-467d-a912-d7237856f1dd.png",
+      "engine": "built-in image_gen",
+      "kind": "illustrative demo image",
+      "destination": "public/images/container-vessel.webp"
+    },
+    {
+      "name": "tanker.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: editorial maritime website demo photo. Primary request: A modern coastal product tanker with deep navy hull, muted red waterline, white superstructure, orderly steel piping on deck, sailing across vivid blue sea. Elevated three-quarter front view, entire tanker comfortably in frame, distant hazy coast. Style: polished photorealistic editorial photography, natural texture, no artificial cinematic effects, consistent cool blue ocean and sky with gentle warm sunlight. Composition: landscape 16:9, crisp professional detail, useful for responsive website cards and banners. Constraints: absolutely no company branding, flags, logos, legible text, numbers, watermark or captions; realistic marine engineering; no posed advertising look; no people in unsafe positions. Illustrative fictional scene, not a documented actual company vessel.",
+      "source": "C:\\Users\\poomt\\.codex\\generated_images\\01a120c2-1c69-7d41-a8f4-e46e31a69c30\\exec-83f037ec-b355-4a6a-9299-7d2cfb14fc36.png",
+      "engine": "built-in image_gen",
+      "kind": "illustrative demo image",
+      "destination": "public/images/tanker.webp"
+    },
+    {
+      "name": "port.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: editorial maritime website demo photo. Primary request: A deep navy and red container cargo ship docked at an orderly commercial port beneath immense blue gantry cranes, rows of muted red and blue containers, calm reflective blue harbor water in foreground. Wide balanced composition viewed from across the harbor, ship and cranes comfortably in frame. Style: polished photorealistic editorial photography, natural texture, no artificial cinematic effects, consistent cool blue ocean and sky with gentle warm sunlight. Composition: landscape 16:9, crisp professional detail, useful for responsive website cards and banners. Constraints: absolutely no company branding, flags, logos, legible text, numbers, watermark or captions; realistic marine engineering; no posed advertising look; no people in unsafe positions. Illustrative fictional scene, not a documented actual company vessel.",
+      "source": "C:\\Users\\poomt\\.codex\\generated_images\\01a120c2-1c69-7d41-a8f4-e46e31a69c30\\exec-f4a5d027-abc7-47a1-8a17-a8d4d0b8528c.png",
+      "engine": "built-in image_gen",
+      "kind": "illustrative demo image",
+      "destination": "public/images/port.webp"
+    },
+    {
+      "name": "bunkering.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: editorial maritime website demo photo. Primary request: A small purpose-built bunkering fuel vessel with black navy hull and white wheelhouse alongside a much larger navy and muted-red tanker in calm blue harbor water. Realistic large connected fuel hoses, rubber fenders and orderly deck piping; safe tidy operation. Side three-quarter view from the harbor water. Style: polished photorealistic editorial photography, natural texture, no artificial cinematic effects, consistent cool blue ocean and sky with gentle warm sunlight. Composition: landscape 16:9, crisp professional detail, useful for responsive website cards and banners. Constraints: absolutely no company branding, flags, logos, legible text, numbers, watermark or captions; realistic marine engineering; no posed advertising look; no people in unsafe positions. Illustrative fictional scene, not a documented actual company vessel.",
+      "source": "C:\\Users\\poomt\\.codex\\generated_images\\01a120c2-1c69-7d41-a8f4-e46e31a69c30\\exec-5be9937d-8053-4d00-b2ec-96fca27197d2.png",
+      "engine": "built-in image_gen",
+      "kind": "illustrative demo image",
+      "destination": "public/images/bunkering.webp"
+    },
+    {
+      "name": "logistics.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: editorial maritime website demo photo. Primary request: An orderly modern coastal container terminal, long parallel rows of red, navy, cream shipping containers and broad access lanes, blue gantry cranes and calm harbor behind. Elevated wide view, subtle distant green hills, small terminal vehicles parked safely. Clear uncluttered composition. Style: polished photorealistic editorial photography, natural texture, no artificial cinematic effects, consistent cool blue ocean and sky with gentle warm sunlight. Composition: landscape 16:9, crisp professional detail, useful for responsive website cards and banners. Constraints: absolutely no company branding, flags, logos, legible text, numbers, watermark or captions; realistic marine engineering; no posed advertising look; no people in unsafe positions. Illustrative fictional scene, not a documented actual company vessel.",
+      "source": "C:\\Users\\poomt\\.codex\\generated_images\\01a120c2-1c69-7d41-a8f4-e46e31a69c30\\exec-975f9c7b-942c-4a84-a93f-a64fe56c15c7.png",
+      "engine": "built-in image_gen",
+      "kind": "illustrative demo image",
+      "destination": "public/images/logistics.webp"
+    },
+    {
+      "name": "bridge.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: editorial maritime website demo photo. Primary request: An experienced merchant ship captain in a clean white short-sleeve uniform with shoulder epaulettes, seen from behind inside a realistic modern ship bridge. Captain at navigation console, blue sea and distant horizon through wide front windows, controls and subtle radar screens in foreground. Wide candid editorial photo, natural window light. Style: polished photorealistic editorial photography, natural texture, no artificial cinematic effects, consistent cool blue ocean and sky with gentle warm sunlight. Composition: landscape 16:9, crisp professional detail, useful for responsive website cards and banners. Constraints: absolutely no company branding, flags, logos, legible text, numbers, watermark or captions; realistic marine engineering; no posed advertising look; no people in unsafe positions. Illustrative fictional scene, not a documented actual company vessel.",
+      "source": "C:\\Users\\poomt\\.codex\\generated_images\\01a120c2-1c69-7d41-a8f4-e46e31a69c30\\exec-086c1c7a-4f02-4fa9-aa21-160307810ec1.png",
+      "engine": "built-in image_gen",
+      "kind": "illustrative demo image",
+      "destination": "public/images/bridge.webp"
+    },
+    {
+      "name": "consulting.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: editorial maritime website demo photo. Primary request: Two maritime project planners reviewing a large unlabeled technical plan on a desk in a bright modern harbor office. One wears a white shirt, the other a navy work jacket; hands gesture naturally over the plan, white safety helmet rests on desk, windows reveal a soft-focus blue port and container vessel. Medium wide candid editorial photography. Style: polished photorealistic editorial photography, natural texture, no artificial cinematic effects, consistent cool blue ocean and sky with gentle warm sunlight. Composition: landscape 16:9, crisp professional detail, useful for responsive website cards and banners. Constraints: absolutely no company branding, flags, logos, legible text, numbers, watermark or captions; realistic marine engineering; no posed advertising look; no people in unsafe positions. Illustrative fictional scene, not a documented actual company vessel.",
+      "source": "C:\\Users\\poomt\\.codex\\generated_images\\01a120c2-1c69-7d41-a8f4-e46e31a69c30\\exec-c2975877-47ab-4b03-b58c-b0ecc59f287a.png",
+      "engine": "built-in image_gen",
+      "kind": "illustrative demo image",
+      "destination": "public/images/consulting.webp"
+    },
+    {
+      "name": "tugboat.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: editorial maritime website demo photo. Primary request: A sturdy harbor tug with navy hull, white wheelhouse, red funnel and thick black rubber fenders traveling slowly through clear blue harbor water. A commercial port and larger navy cargo vessel at a safe distance in background. Full tug comfortably in frame, low three-quarter camera angle, soft bow wake. Style: polished photorealistic editorial photography, natural texture, no artificial cinematic effects, consistent cool blue ocean and sky with gentle warm sunlight. Composition: landscape 16:9, crisp professional detail, useful for responsive website cards and banners. Constraints: absolutely no company branding, flags, logos, legible text, numbers, watermark or captions; realistic marine engineering; no posed advertising look; no people in unsafe positions. Illustrative fictional scene, not a documented actual company vessel.",
+      "source": "C:\\Users\\poomt\\.codex\\generated_images\\01a120c2-1c69-7d41-a8f4-e46e31a69c30\\exec-048bcd80-4f6f-457a-a1af-0e6aff5ccd11.png",
+      "engine": "built-in image_gen",
+      "kind": "illustrative demo image",
+      "destination": "public/images/tugboat.webp"
+    },
+    {
+      "name": "crane.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: editorial maritime website demo photo. Primary request: A large yellow heavy-lift port crane safely moving a cylindrical steel industrial module on two sturdy sling straps above a clear quay beside a navy cargo vessel. Realistic geometry, tense cable and organized industrial port setting, blue sky and blue harbor sea. Wide editorial view, clear empty safety exclusion zone beneath lift. Style: polished photorealistic editorial photography, natural texture, no artificial cinematic effects, consistent cool blue ocean and sky with gentle warm sunlight. Composition: landscape 16:9, crisp professional detail, useful for responsive website cards and banners. Constraints: absolutely no company branding, flags, logos, legible text, numbers, watermark or captions; realistic marine engineering; no posed advertising look; no people in unsafe positions. Illustrative fictional scene, not a documented actual company vessel.",
+      "source": "C:\\Users\\poomt\\.codex\\generated_images\\01a120c2-1c69-7d41-a8f4-e46e31a69c30\\exec-5b4d64ef-6833-4b06-85f9-6a2cb11dbf57.png",
+      "engine": "built-in image_gen",
+      "kind": "illustrative demo image",
+      "destination": "public/images/crane.webp"
+    },
+    {
+      "name": "vessel-deck.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: editorial maritime website demo photo. Primary request: View forward from a container ship bridge over beautifully ordered stacked muted red, navy, blue and cream containers toward an expansive blue sea and pale coastal mountain horizon. Symmetric clean geometry and ship railings, realistic shipping vessel scale, natural sea texture. Wide editorial maritime photograph. Style: polished photorealistic editorial photography, natural texture, no artificial cinematic effects, consistent cool blue ocean and sky with gentle warm sunlight. Composition: landscape 16:9, crisp professional detail, useful for responsive website cards and banners. Constraints: absolutely no company branding, flags, logos, legible text, numbers, watermark or captions; realistic marine engineering; no posed advertising look; no people in unsafe positions. Illustrative fictional scene, not a documented actual company vessel.",
+      "source": "C:\\Users\\poomt\\.codex\\generated_images\\01a120c2-1c69-7d41-a8f4-e46e31a69c30\\exec-00b689de-d5e4-4829-80bb-6afc986fa5c5.png",
+      "engine": "built-in image_gen",
+      "kind": "illustrative demo image",
+      "destination": "public/images/vessel-deck.webp"
+    },
+    {
+      "name": "container-deck-detail.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: supporting image for fictional maritime website vessel gallery. Primary request: high-quality editorial photograph of a container vessel's orderly cargo deck at sea, seen from a believable elevated aft perspective looking forward over neat stacks of muted blue, cream and rust-red containers toward the bow. Calm deep blue sea and distant hazy coastline. Natural clear morning light, navy-and-blue maritime palette, restrained professional realism. Landscape 16:9, no people, no text, logos, ship names, numbers, flags or watermarks. This is an illustrative concept and must not imply a real MOE Navigation vessel.",
+      "source": "C:\\Users\\poomt\\.codex\\generated_images\\01a120c0-f8d9-7092-8c52-c6bdf4404c2f\\exec-ea0a4f13-6469-414e-9892-81b0f10b5aed.png",
+      "engine": "built-in image_gen",
+      "kind": "illustrative demo gallery image",
+      "destination": "public/images/container-deck-detail.webp"
+    },
+    {
+      "name": "tanker-deck-detail.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: supporting image for fictional maritime website vessel gallery. Primary request: detailed editorial photograph of a modern product tanker's clean, orderly deck piping and safe marine fuel transfer equipment in a harbor, seen from a three-quarter elevated view with a portion of navy hull, still blue water and a distant port backdrop. Natural daylight, accurate industrial fittings, professional restrained color. Landscape 16:9, no people, no text, logos, ship names, numbers, flags or watermarks. This is illustrative and must not imply a real company vessel.",
+      "source": "C:\\Users\\poomt\\.codex\\generated_images\\01a120c0-f8d9-7092-8c52-c6bdf4404c2f\\exec-1957a78a-4e0a-468e-a3ce-eee718e05478.png",
+      "engine": "built-in image_gen",
+      "kind": "illustrative demo gallery image",
+      "destination": "public/images/tanker-deck-detail.webp"
+    },
+    {
+      "name": "crane-lift-detail.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: supporting image for fictional maritime website vessel gallery. Primary request: realistic editorial photograph of a marine floating crane lifting an industrial cargo module over calm harbor water, full lifting apparatus visible with believable cables and rigging, navy support vessel and pale blue port cranes in background. Safe orderly operation, soft morning light, premium maritime corporate visual style. Landscape 16:9, no people, no text, logos, ship names, numbers, flags or watermarks. This is an illustrative concept, not a record of a real company project.",
+      "source": "C:\\Users\\poomt\\.codex\\generated_images\\01a120c0-f8d9-7092-8c52-c6bdf4404c2f\\exec-10d33610-559f-4d10-a3b9-a7b262ab445e.png",
+      "engine": "built-in image_gen",
+      "kind": "illustrative demo gallery image",
+      "destination": "public/images/crane-lift-detail.webp"
+    }
+  ]
+}

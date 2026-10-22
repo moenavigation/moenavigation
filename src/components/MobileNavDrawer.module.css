@@ -1,0 +1,57 @@
+.drawer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  touch-action: none;
+}
+
+.drawer:not([open]) { display: none; }
+.drawer::backdrop { background: #071f40ad; opacity: 0; transition: opacity 260ms ease-in; }
+.drawer[data-phase="open"]::backdrop { opacity: 1; transition-duration: 360ms; transition-timing-function: ease-out; }
+
+.panel {
+  width: min(26rem, calc(100vw - 2.5rem));
+  height: 100%;
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  scrollbar-color: #bfd1e1 transparent;
+  background: #fff;
+  box-shadow: -1rem 0 3rem #03182b2e;
+  transform: translateX(105%);
+  transition: transform 260ms cubic-bezier(.4, 0, 1, 1);
+  will-change: transform;
+}
+
+.drawer[data-phase="open"] .panel { transform: translateX(0); transition-duration: 360ms; transition-timing-function: cubic-bezier(.25, .65, .3, 1); }
+.heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: max(1.25rem, env(safe-area-inset-top)) max(1.4rem, env(safe-area-inset-right)) 1.1rem 1.4rem; }
+.wordmark { display: inline-flex; align-items: center; gap: .55rem; color: var(--navy); line-height: 1; }
+.wordmark svg { width: 2rem; height: 2rem; flex: 0 0 auto; }
+.wordmark strong { display: block; font-size: var(--font-h3); letter-spacing: -.05em; }
+.wordmark small { display: block; margin-top: .2rem; font-size: var(--font-small); font-weight: 700; letter-spacing: .13em; }
+.close { display: grid; place-items: center; flex: 0 0 auto; width: 2.75rem; height: 2.75rem; padding: 0; border: 1px solid var(--line); border-radius: .45rem; background: #fff; color: var(--navy); }
+.close svg { width: 1.25rem; height: 1.25rem; }
+.intro { padding: .75rem 1.4rem 1.4rem; border-bottom: 1px solid var(--line); background: linear-gradient(135deg, #fff 25%, #eff6fb 100%); }
+.eyebrow { display: block; margin-bottom: .4rem; color: var(--blue); font-size: var(--font-small); font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+.intro h2 { color: var(--navy); font-size: var(--font-h2); }
+
+@media (hover: hover) and (pointer: fine) {
+  .close:hover { background: var(--pale); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel, .drawer::backdrop { transition: none; }
+}
