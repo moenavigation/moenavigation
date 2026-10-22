@@ -1,0 +1,58 @@
+name: Application checks
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_SITE_URL: https://example.invalid
+      SITE_INDEXING_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - name: Unit and boundary checks (no provider credentials)
+        run: node --conditions=react-server --import tsx --test tests/*.test.ts
+      - name: Generate Next route types
+        run: npx next typegen
+      - run: npm run typecheck
+      - run: npm run build
+      - name: Install browser engines and Linux dependencies
+        run: npx playwright install --with-deps chromium firefox webkit
+      - name: Cache isolated MongoDB vendor binary
+        uses: actions/cache@v4
+        with:
+          path: .local/e2e/mongodb
+          key: mongodb-e2e-${{ runner.os }}-${{ runner.arch }}-8.2.6
+      - name: Browser regressions (isolated local database, no provider credentials)
+        run: npm run test:e2e
+      - name: Retain failed browser traces and screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-failure-${{ github.run_id }}
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
+      # Live provider migrations, uploads, enquiry delivery and recovery rehearsals
+      # are deliberately outside CI and run against explicitly isolated targets.

@@ -1,7 +1,13 @@
 node_modules/
 .next/
+.next-qa/
+.next-ci/
+.next-e2e/
+playwright-report/
+test-results/
 out/
 *.tsbuildinfo
 .env*
 !.env.example
 artifacts/
+.local/

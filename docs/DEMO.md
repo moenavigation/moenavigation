@@ -1,162 +1,173 @@
-# Demo handoff
+# Website experience and content boundaries
 
-## Pages and interactions
+The website has a working MongoDB and Cloudinary backend. Its company
+examples and generated imagery remain illustrative until the business
+provides and verifies the final content. See [BACKEND.md](BACKEND.md) for
+configuration, administration, uploads, enquiries, and verification commands.
 
-Thai is the default language at `/`; English uses the same page paths under
-`/en`. Public pages cover Home, About, Services, Fleet, Shipping routes,
-Projects, News, Contact and Privacy information. Services, vessels, projects
-and news have detail pages. The language switch preserves the equivalent
-page and query string.
+## Public pages
 
-Services uses a featured capability and supporting entries; Fleet uses
-image-led vessel cards; Projects and News have separate featured and secondary
-story layouts. Detail pages add context for enquiries while keeping unknown
-company facts explicitly unverified. The shared MOE mark is a provisional
-demo identity; replace it with the approved company logo and brand files when
-those are supplied.
+Thai is the default language at `/`; English uses equivalent paths under
+`/en`. The language switch preserves the equivalent page, query string and section anchor.
+Public sections include Home, About, Services, Fleet, Routes, Projects,
+News, Contact, and Privacy. Services, vessels, projects, news, and additional
+published Pages have detail routes.
 
-Fleet, project and news listings support search and category filters. Vessel
-details include thumbnails, previous/next controls and a gallery dialog.
-Seeded vessel galleries use different supporting scenes. New browser-created
-vessels can open their single image without redundant gallery controls.
-Seeded project and news details have distinct illustrative editorial copy;
-editing a seeded description in the CMS replaces its sample story.
-New or edited news records show no date unless a verified date is supplied
-through a future content workflow. CMS categories accept an optional Thai
-label, and custom vessel names and categories carry through Thai listings,
-details and enquiry links.
-The Routes page uses an interactive geographic map. Visitors can pan, zoom,
-select a seeded destination on the map or in the route list, and return to
-the regional view. The drawn connections and port coordinates are approximate
-demo illustrations, not navigational tracks or live schedules.
+Services uses a featured capability and supporting entries. Fleet uses
+image-led vessel cards; Projects and News have featured and secondary story
+layouts. Listings support search and category filters. Fleet, News and Projects
+keep these filters in the URL for reloads, sharing, language changes and return
+links from detail pages. Search matches English and Thai text together.
+The route map similarly keeps the selected route in its URL. Vessel galleries
+read their images and bilingual descriptions from MongoDB; a vessel with one image
+opens that image without redundant gallery controls.
 
-The contact form validates input and saves an enquiry draft in this browser
-only. It never sends an email or contacts an API. Enquiry links prefill the
-subject. **Clear draft** removes the stored enquiry.
+The CMS stores bilingual titles, descriptions, longer text, image
+descriptions, categories, and optional supplied dates. Published records are
+read on the server and used consistently by the page, metadata, and sitemap.
+The CMS uses one Save action that makes content public immediately. Historical
+unpublished records are preserved until explicitly saved. Missing, historical
+unpublished, and trashed detail records return HTTP 404.
 
-## CMS workflow
+All nine main Page records remain published and control their page headings,
+summaries, and longer copy. Section records control homepage and company
+sections, shared calls to action, footer copy, and privacy text. Custom
+published Pages have their own routes;
+adding a page does not automatically add it to the primary navigation.
 
-Open `/cms` on the same browser and origin as the public preview. This is an
-English-language demo with no login or production access control.
+Business copy, article bodies, gallery lists, route ports, coordinates, and
+media URLs are stored in MongoDB. Public components never fall back to local
+seed data or local photography. Missing Sections are omitted; a database
+failure reaches the retry screen rather than substituting sample content.
+Navigation, field labels, validation messages, and factual preview notices
+remain application UI text.
 
-1. Open the drawer to select Pages, Vessels, Services, Projects, News or Routes.
-2. Add or edit a record, including English and Thai titles and descriptions.
-3. Choose a generated image or prepare a JPEG, PNG or WebP from your device.
-4. Select **Draft** or **Published**, then **Save locally**.
-5. Open the website preview in the same browser. Published records appear;
-   drafts and trashed records are excluded.
+Lower display-order numbers appear first in listings, value groups, and
+additional Sections; an omitted order is treated as zero. Equal values retain
+the server's identifier order. The migrated records preserve their original
+sequence. Established Section identifiers occupy designed template positions.
+New Sections append to their selected Page in display order; `shared` Sections
+append once before the footer on all public pages. Moving a Section to another
+parent removes it from its former page. A draft or trashed Section is hidden.
 
-Image preparation happens in the browser before saving, tries WebP first,
-and preserves proportions. Prepared device images are saved locally, not
-uploaded to a media service. The demo accepts files up to 8 MB before
-preparation and up to 2 MB after preparation; browser storage capacity can
-still limit a save. Failed saves retain the editor input.
+## Contact and privacy
 
-Deleted records move to Trash and can be restored for 30 days. Expired
-records are excluded on read; the CMS reconciles saved storage on load and
-while open. Local media remains available for other records.
+The public contact form validates in the browser and on the server. After
+consent and successful submission, the enquiry is stored in MongoDB and
+appears in the authenticated CMS inbox. Retrying the same submission does
+not create duplicate enquiries. Failed requests keep the visitor's input
+available for another attempt.
 
-Storage is specific to the browser and origin, including the port. It does
-not synchronize across devices. Clearing site data removes local edits,
-media and drafts; the built-in seed content then returns. Content records
-use the `moe-content-v1` storage key; contact drafts use `moe-contact-draft`.
+A restored draft keeps its custom subject when a service link suggests a
+different one; **Use this subject** applies the suggestion explicitly. The
+browser retains the same submission identifier for an unchanged draft after
+an interrupted request, so retrying after reload or a language change remains
+safe. Consent must be checked again after restoring a draft.
 
-## Content and integration points
+Enquiries are delivered to the CMS inbox. No email notification provider is
+connected. Local drafts remain a browser convenience and are distinct from
+submitted enquiries; clearing a draft does not delete a submitted message.
 
-| File | Responsibility |
+Company phone, email, office details, the final privacy policy, and a business
+retention policy still require verification. Website details saved in the CMS
+populate bilingual company names, addresses, phone/email links, and the office
+map link. The site describes its current
+data handling without inventing contact destinations or claiming email
+delivery.
+
+## CMS
+
+The English-language CMS at `/cms` requires an administrator sign-in. Its
+menu opens as an edge drawer. It provides content search and filters,
+bilingual editors, image preparation, publication status, 30-day Trash and
+restore, a media library, enquiries, and account tools.
+
+**Account & tools → Website details** manages bilingual company names and
+addresses, a public phone number and email, and a map link. The public
+contact page uses these saved details; unverified optional fields stay blank.
+
+Image selection stays in the browser until Save. Saved images are uploaded
+to Cloudinary and committed with the record. Save errors retain editor input;
+retries reuse the submission and any successful upload. Records use versions
+to prevent an older editor from overwriting a newer change.
+
+Existing demo data is not silently discarded. **Review local content**
+checks the current browser's older `moe-content-v1` data and can import new
+type-and-ID combinations through the media upload workflow. Records already
+present on the server are compared before cleanup, and the original browser
+data can be exported before removal. Browser storage remains specific
+to the browser and origin, including its port.
+
+## Routes map
+
+The interactive geographic map supports pointer, touch, and keyboard use.
+Visitors can pan, zoom, select published destinations on the map or route list,
+and return to the regional overview. Port coordinates and drawn connections
+are approximate illustrations, not navigational tracks or live schedules.
+
+Every published Route with origin and destination details plus at least two
+coordinate pairs appears on the map. The first and last coordinates locate
+the two ports. The CMS manages bilingual port/country names and each
+latitude/longitude waypoint. Routes without map data appear as enquiry cards;
+geographic paths are not invented. Port tooltips treat saved names as plain text.
+
+Map tiles use OpenStreetMap by default and require internet access. Before
+public launch, select a provider appropriate to expected traffic and its
+terms. `NEXT_PUBLIC_MAP_TILE_URL` and `NEXT_PUBLIC_MAP_TILE_ATTRIBUTION` can
+configure a different provider; the OpenStreetMap contributor credit remains
+visible.
+
+## Source locations
+
+| File or directory | Responsibility |
 | --- | --- |
-| `src/lib/content.ts` | Bilingual seed content, navigation, localized link helpers |
-| `src/lib/demo-store.ts` | Demo record contract, local persistence, publication and Trash rules |
-| `src/lib/use-demo-content.ts` | Published browser content consumed by public components |
-| `src/lib/demo-stories.ts` | Distinct bilingual editorial examples for seeded detail pages |
-| `src/components/Home.tsx` | Home sections and seeded Home Page content |
-| `src/components/ContentPages.tsx` | Secondary pages, enquiry drafts, galleries and route selection |
-| `src/components/InteractiveRouteMap.tsx` | Interactive geographic routes map and seeded port overlays |
-| `src/components/CmsDemo.tsx` | Local content editor and media preparation |
-| `src/app/[[...path]]/page.tsx` | Localized routes and server metadata |
-| `src/app/globals.css` | Shared typography, colors, controls and responsive scaling |
+| `src/lib/content.ts` | Language types, navigation labels, and link helpers |
+| `src/lib/cms-legacy.ts` | Explicit older-browser content review and import, with no embedded seed |
+| `src/lib/cms-types.ts` | Shared content, media, and enquiry types |
+| `src/lib/public-content.ts` | Published record projection for public components |
+| `src/lib/public-content-provider.tsx` | Server-provided public content context |
+| `src/lib/use-public-content.ts` | Public context access without browser-local content fallback |
+| `src/server/` | Database, authentication, validation, content, media, and enquiries |
+| `src/app/api/` | Authorized CMS endpoints and contact submission |
+| `src/components/CmsDemo.tsx` | CMS interface and local-content import |
+| `src/components/Home.tsx` | Homepage sections |
+| `src/components/ContentPages.tsx` | Company, service, fleet/gallery, article, and custom Page layouts |
+| `src/components/EditorialContent.tsx` | Long-form paragraphs and additional database Sections |
+| `src/components/ContactPage.tsx`, `PrivacyPage.tsx` | Contact workflow and database-driven privacy information |
+| `src/components/RoutesPage.tsx` | Route selection and saved port details |
+| `src/components/InteractiveRouteMap.tsx` | Interactive geographic display of database coordinates |
+| `src/app/[[...path]]/page.tsx` | Localized server routes and metadata |
+| `src/app/globals.css` | Shared typography, color, controls, and responsive scaling |
 
-The seeded Page IDs `home`, `about` and `services` update their corresponding
-public sections. A new Page record needs a route and rendering integration
-before it appears. New vessel, service, project and news IDs use the existing
-detail-page route structure.
-Unavailable detail IDs show a localized in-page state. Since the demo CMS
-stores new records only in the browser, the server cannot distinguish every
-new record from an unknown ID to return an HTTP 404; revisit this when
-content moves to server persistence.
+## Imagery and factual review
 
-The seeded route IDs `laem-chabang-singapore`, `laem-chabang-port-klang` and
-`laem-chabang-tanjung-priok` connect to the map. Additional published Route
-records appear as enquiry cards; custom geographic paths are not invented.
+The existing 15 optimized WebP assets were migrated to Cloudinary and registered
+in the MongoDB media library. They illustrate fictional vessels and operations;
+they do not document the company's actual assets or work. Home keeps separate
+desktop and portrait hero URLs in its Page record, preserving the mobile crop.
+The Home hero and connection image have separate bilingual caption fields;
+categories stay separate from image captions. Vessel records store supporting
+gallery images. The supplied `Design/` files
+are design references.
 
-When API details are supplied, replace the local store behind the shared
-content contract with authorized server persistence. Connect contact
-submission and media upload through server-side validation, keeping
-credentials on the server. MongoDB and Cloudinary are the preferred project
-defaults, pending the actual requirements. Production authentication,
-retention, backup and media cleanup still need implementation.
+- `generated-images.json` records service, fleet, operations, and gallery
+  image prompts and preparation details.
+- `hero-prompts.json` records desktop and portrait hero prompts.
+- The original illustrative article bodies now live in the corresponding
+  Project and News records. Local seed datasets and editorial fallback modules
+  have been removed from the application.
 
-Server-rendered metadata and the sitemap currently use seed content;
-browser-only CMS changes do not rewrite them. Move content reads to the
-server when connecting the production CMS. `NEXT_PUBLIC_SITE_URL` controls
-the metadata base and defaults to `http://localhost:3005`. Set the real site
-URL and review indexing rules before launch.
+The MOE mark is a provisional identity. Replace it with approved brand files
+when supplied. Review company contacts, ownership and specifications,
+service scope, route availability, projects, and news before launch.
 
-## Imagery
+## Release checks
 
-The 15 optimized WebP assets live in `public/images/`. They illustrate
-fictional vessels and operations, rather than documenting this company.
-Keep this distinction when replacing them with verified company media.
-Home uses distinct images for its fleet, port connection and news feature;
-other page crops are tuned to their layout without altering the source files.
+Run the checks in the README and backend guide after changes. Verify actual
+browser workflows as well as HTTP tests: navigation from a scrolled page,
+both languages, narrow layouts, the CMS drawer and editor, image preparation,
+save failures, media selection, contact validation, and inbox updates.
 
-- `docs/generated-images.json`: prompts, source references and optimization
-  details for the thirteen service, fleet, operations and gallery images.
-- `docs/hero-prompts.json`: prompts and source references for the desktop
-  and portrait Home hero images.
-
-The map uses OpenStreetMap standard tiles and displays its required
-attribution. Tile delivery requires internet access and is a best-effort
-external service. Before production launch, choose a suitable tile provider
-for expected traffic and configure its URL and attribution under its terms.
-Set `NEXT_PUBLIC_MAP_TILE_URL` and `NEXT_PUBLIC_MAP_TILE_ATTRIBUTION` if a
-different tile service is chosen; the default is the OpenStreetMap standard
-tile endpoint. The OpenStreetMap contributor credit remains visible.
-The supplied `Design/` files remain design references rather than public
-website images.
-
-## Verification and remaining setup
-
-The latest production build and production smoke check passed. The smoke
-check covered **61 linked routes, 15 local images and 4 invalid routes**, plus
-document languages, headings, localized metadata, shared navigation,
-robots and sitemap. Re-run the commands in the README after changes;
-HTTP smoke checks do not replace browser interaction and responsive review.
-Browser review also covered the Routes map on desktop and at 390px and 320px,
-including loaded tiles, attribution, Thai and English labels, route selection,
-zoom, regional overview and keyboard marker activation. No horizontal
-overflow was observed at 320px. Responsive browser review covered public
-pages and the CMS at 320px, 390px, 768px and 1440px, with additional desktop
-checks at 1920px. A 720px constrained viewport checked the layout at the
-effective width of a 1440px window zoomed to 200%; native browser zoom was
-not exercised. Thai and English page headings, mobile drawer focus, gallery
-Escape behavior, filters, and the CMS create → publish → public preview →
-draft flow were checked. New news and vessel records were verified in Thai,
-including category filters and the absence of a fabricated news date. The
-temporary QA records were returned to draft. Contact validation announces
-errors and focuses the first invalid field. The mobile map leaves all seeded
-port markers clear of its notice and allows page scrolling over the map.
-Reduced-motion behavior follows the inspected CSS rules but was not emulated
-in the browser.
-
-The local image audit found 15 WebP assets between 117 and 265 KiB; the Home
-hero uses a separate 177 KiB portrait image on narrow screens. This checks
-asset weight and rendered behavior, not real-user Core Web Vitals. Measure
-those again on the eventual production host and network.
-
-Before launch, provide and verify company contact details, vessel ownership
-and specifications, service scope, route availability, projects and news.
-Connect authentication, database, media and contact delivery, and replace
-the demo privacy notice with a policy that reflects the actual services.
-All demo pages currently request **noindex, nofollow**, and `robots.txt`
-disallows crawling.
+The site continues to request **noindex, nofollow**, and `robots.txt`
+disallows crawling while sample content and launch details are pending.
+Enabling indexing and public deployment require a separate release decision.

@@ -17,7 +17,7 @@ type Props = {
 
 function focusMainAfterNavigation() {
   window.requestAnimationFrame(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
+    if (!window.location.hash) window.scrollTo({ top: 0, behavior: "instant" });
     document.getElementById("main")?.focus({ preventScroll: true });
   });
 }
@@ -27,6 +27,7 @@ export default function MobileNavDrawer({ open, onClose, title, eyebrow, closeLa
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const navigationCloseRef = useRef(false);
+  const backdropPointerRef = useRef(false);
   const titleId = useId();
 
   useEffect(() => {
@@ -122,10 +123,13 @@ export default function MobileNavDrawer({ open, onClose, title, eyebrow, closeLa
     aria-labelledby={titleId}
     onKeyDown={containFocus}
     onClickCapture={(event) => {
-      if (event.target instanceof Element && event.target.closest("a[href]")) navigationCloseRef.current = true;
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
+      if (link instanceof HTMLAnchorElement && link.origin === window.location.origin && (!link.target || link.target === "_self") && !link.hasAttribute("download")) navigationCloseRef.current = true;
     }}
+    onPointerDown={(event) => { backdropPointerRef.current = event.target === event.currentTarget; }}
     onCancel={(event) => { event.preventDefault(); onClose(); }}
-    onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
+    onClick={(event) => { if (event.target === event.currentTarget && backdropPointerRef.current) onClose(); backdropPointerRef.current = false; }}
   >
     <div ref={panelRef} className={styles.panel}>
       <div className={styles.heading}>

@@ -1,0 +1,122 @@
+[
+  {
+    "sourcePath": "/images/bridge.webp",
+    "sha256": "092e19511e5560da3685e345c8b7276780589bc11fa410adeb4254616123e088",
+    "bytes": 136676,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/bunkering.webp",
+    "sha256": "bf902627fc2e1ec40e3d02a7ae9f91ac3ed29cc923f01b27bfa89a8d8e5cb04b",
+    "bytes": 232938,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/consulting.webp",
+    "sha256": "32821066d8a46c7e5302c91e83b8a4b5d8ed33fb81361f2c7f8b2d8e89cdad42",
+    "bytes": 119366,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/container-deck-detail.webp",
+    "sha256": "b8bc1405d3f2c150de327f65f8c9055a53f41f8f94ba805fa0e026e4be943cb4",
+    "bytes": 193576,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/container-vessel.webp",
+    "sha256": "15c2222f580a9621f307a0bfa64cedc1a6eb64caf38b4928b156d88e02c1a4e3",
+    "bytes": 227298,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/crane-lift-detail.webp",
+    "sha256": "935ef2a3d23f465b722dd20131fe476a3bcb5bdf7791f0c85d5d7c8f338c66e4",
+    "bytes": 186738,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/crane.webp",
+    "sha256": "5c442a3dcbb68060cff9875e2a9fa1bda6895276d759db6a2c300a9c1f65708d",
+    "bytes": 216414,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/hero-mobile.webp",
+    "sha256": "d752b2ad7417bff419191820740bb22ffb6df083001230cb1598eb9c5b6401cb",
+    "bytes": 181086,
+    "width": 941,
+    "height": 1672,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/hero.webp",
+    "sha256": "6c2f556625f7536f8a3942c36687c39277453bb181bbe0b58faaee302553cd55",
+    "bytes": 258360,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/logistics.webp",
+    "sha256": "595769e9a3b33e0d63341b7471a56e296f0174c596ee4e66915c0eeecfe4aa1c",
+    "bytes": 262388,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/port.webp",
+    "sha256": "7db6750e9234effd2ac7e2fd27b5b2fedf007c25a1bb4da7deea894ed4cc5389",
+    "bytes": 223810,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/tanker-deck-detail.webp",
+    "sha256": "2d91c66a976ee43f48694bc78ad256a3af80917896a6e783a1a8d5f7a19d9cb7",
+    "bytes": 271098,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/tanker.webp",
+    "sha256": "41cd71a06de321aa5baa36fc34b34bc04ede5fd9e7192a5085387453fc9d74c9",
+    "bytes": 227968,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/tugboat.webp",
+    "sha256": "581a08e146ae5247b6db90c35bb9254ae3b16e9ccca90574b127c116a54b4b86",
+    "bytes": 216956,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/vessel-deck.webp",
+    "sha256": "8bf1eca094a80e9b67a4ad8a04ed528cda2ca89db1e7eb60dbb1003aeb578c6f",
+    "bytes": 223402,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  }
+]

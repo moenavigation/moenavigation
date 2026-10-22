@@ -1,0 +1,16 @@
+.screen { display: grid; min-height: 68vh; align-content: center; }
+.card { width: min(100%, 43rem); margin-inline: auto; padding: 2.25rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--white); box-shadow: var(--shadow-card); }
+.badge { display: grid; place-items: center; width: 4rem; height: 4rem; margin-bottom: 1.5rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--pale); color: var(--navy); }
+.badge svg { width: 2rem; height: 2rem; }
+.card :global(.eyebrow) { margin-bottom: .75rem; }
+.card h1 { margin-bottom: 1rem; }
+.description { max-width: 36rem; line-height: 1.75; }
+.actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.75rem; }
+.actions :global(.button) { gap: .7rem; }
+.globalBody { font-family: Arial, Tahoma, sans-serif; }
+.globalScreen { min-height: 100dvh; }
+.translation { margin-top: .7rem; }
+.languageLinks { display: flex; flex-wrap: wrap; gap: .8rem 1.5rem; margin-top: 1.5rem; }
+.languageLinks a { color: var(--navy); text-decoration: underline; text-underline-offset: .25rem; }
+@media (max-width: 600px) { .card { padding: 1.5rem; } }
+@media (max-width: 380px) { .card { padding: 1.15rem; } .actions { flex-direction: column; } .actions :global(.button) { width: 100%; } }

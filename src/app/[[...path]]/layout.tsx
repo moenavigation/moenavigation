@@ -4,5 +4,5 @@ import "../globals.css";
 const notoSansThai = Noto_Sans_Thai({ subsets: ["thai", "latin"], display: "swap", variable: "--font-noto-sans-thai" });
 export default async function RootLayout({children,params}:{children:ReactNode;params:Promise<{path?:string[]}>}) {
   const {path=[]}=await params;
-  return <html lang={path[0]==="en"||path[0]==="cms"?"en":"th"} className={notoSansThai.variable}><body>{children}</body></html>;
+  return <html lang={path[0]==="en"||path[0]==="cms"?"en":"th"} data-scroll-behavior="smooth" className={notoSansThai.variable}><body>{children}</body></html>;
 }

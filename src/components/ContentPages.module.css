@@ -1,6 +1,7 @@
 .heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem; margin-bottom: 2rem; }
 .heading h1 { margin: .55rem 0 .4rem; }
 .heading > div { min-width: 0; }
+.heading .lead { max-width: 54rem; }
 .heading > a { flex-shrink: 0; margin-bottom: .3rem; }
 .lead { color: var(--muted); font-size: var(--font-lead); line-height: 1.5; margin: .45rem 0 1.5rem; }
 .previewNote { max-width: 58rem; margin: 0 0 2rem; padding: .7rem 1rem; border-left: 3px solid #8aa9c8; background: #f5f9fc; color: #425b73; line-height: 1.55; font-size: var(--font-small); }
@@ -27,15 +28,16 @@
 .capabilityCopy h2 { font-size: var(--font-h3); margin-bottom: .35rem; }
 .capabilityCopy p { color: var(--muted); line-height: 1.5; font-size: var(--font-small); }
 .capabilityCopy .cardAction { margin-top: auto; padding-top: .75rem; }
-.capabilityIndex { color: #7692ad; font-size: var(--font-small); letter-spacing: .1em; font-weight: 700; }
+.capabilityIndex { color: var(--muted); font-size: var(--font-small); letter-spacing: .1em; font-weight: 700; }
 .fleetGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.15rem; }
-.fleetCard { position: relative; display: block; aspect-ratio: 1.35; border-radius: var(--radius); overflow: hidden; isolation: isolate; background: var(--navy); color: white; }
-.fleetCard > img { object-fit: cover; object-position: center 55%; z-index: -2; transition: transform .45s ease; }
-.fleetCard::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgb(0 26 53 / .2), transparent 35%, rgb(0 25 50 / .76)); }
-.fleetType { position: absolute; top: 1rem; left: 1rem; padding: .35rem .7rem; border: 1px solid rgb(255 255 255 / .45); border-radius: .25rem; background: rgb(0 30 62 / .66); font-size: var(--font-small); }
-.fleetCardInfo { position: absolute; inset: auto 1.25rem 1.2rem; display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+.fleetCard { min-width: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: white; color: var(--navy); transition: border-color .2s, box-shadow .2s; }
+.fleetImage { position: relative; aspect-ratio: 1.65; overflow: hidden; background: var(--pale); }
+.fleetImage img { object-fit: cover; object-position: center 55%; transition: transform .45s ease; }
+.fleetType { display: block; color: var(--muted); font-size: var(--font-small); overflow-wrap: anywhere; }
+.fleetCardInfo { flex: 1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .8rem 1rem; padding: 1.2rem; }
 .fleetCardInfo strong { font-size: var(--font-h3); line-height: 1.25; overflow-wrap: anywhere; }
-.fleetCardInfo > span { display: inline-flex; align-items: center; gap: .45rem; flex-shrink: 0; font-size: var(--font-small); }
+.fleetIdentity { min-width: 0; display: grid; gap: .35rem; }
+.fleetAction { display: inline-flex; align-items: center; gap: .45rem; min-height: 2.75rem; font-size: var(--font-small); }
 .projectFeature, .newsFeature { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); min-height: 25rem; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); color: var(--navy); background: #eef4f9; }
 .projectFeatureImage img { object-position: center 58%; }
 .projectFeatureCopy, .newsFeatureCopy { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 2.5rem; }
@@ -43,9 +45,10 @@
 .projectFeatureCopy > p:not(:global(.eyebrow)), .newsFeatureCopy > p:not(:global(.eyebrow)) { color: #4c6780; line-height: 1.6; }
 .projectFeatureCopy .cardAction, .newsFeatureCopy .cardAction { margin-top: 2rem; }
 .projectGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; margin-top: 1.2rem; }
-.projectCard { display: block; min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); background: white; color: var(--navy); }
+.projectCard { display: flex; flex-direction: column; min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); background: white; color: var(--navy); }
 .projectImage { aspect-ratio: 1.95; }
-.projectCardBody { padding: 1.25rem 1.5rem 1.5rem; }
+.projectCardBody { flex: 1; display: flex; flex-direction: column; align-items: flex-start; padding: 1.25rem 1.5rem 1.5rem; }
+.projectCardBody .cardAction { margin-top: auto; }
 .projectCardBody > span:first-child { color: var(--blue); font-size: var(--font-small); font-weight: 650; }
 .projectCardBody h2 { font-size: var(--font-h3); margin: .45rem 0; }
 .projectCardBody p { color: var(--muted); line-height: 1.55; font-size: var(--font-small); margin-bottom: 1.1rem; }
@@ -94,12 +97,17 @@
 .search input { width: 100%; border: 0; outline: 0; color: var(--navy); background: transparent; font: inherit; font-size: var(--font-small); min-width: 0; min-height: 1.5rem; padding: 0; }
 .search:focus-within { outline: 2px solid var(--blue); outline-offset: 3px; }
 .search input::placeholder { color: var(--muted); }
+.search input::-webkit-search-cancel-button { appearance: none; }
+.clearSearch { display: grid; place-items: center; width: var(--target-size); height: var(--target-size); flex-shrink: 0; padding: 0; margin: -.5rem -.65rem -.5rem 0; border: 0; border-radius: .3rem; background: transparent; color: var(--muted); }
+.resultsSummary { display: flex; justify-content: space-between; align-items: center; gap: .75rem; min-height: var(--target-size); margin: 0 0 .7rem; }
+.resultsSummary .resultCount { margin: 0; }
+.resetFilters { display: inline-flex; align-items: center; gap: .4rem; min-height: var(--target-size); border: 0; background: transparent; color: var(--blue); padding: .4rem 0 .4rem .4rem; font-size: var(--font-small); text-decoration: underline; text-underline-offset: .2rem; }
 .resultCount { color: var(--muted); font-size: var(--font-small); margin: 0 0 1rem; }
 .empty { padding: 5rem 1rem; text-align: center; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--pale); }
 .empty > svg { color: var(--blue); }
 .empty h2, .empty h1 { margin: 1rem 0 .6rem; }
 .empty p { color: var(--muted); margin-bottom: 1.5rem; }
-.back { display: inline-flex; gap: .7rem; align-items: center; text-decoration: none; color: var(--navy); margin-bottom: 1.75rem; font-weight: 550; }
+.back { display: inline-flex; gap: .7rem; align-items: center; min-height: var(--target-size); text-decoration: none; color: var(--navy); margin-bottom: 1.25rem; font-weight: 550; }
 .vesselDetail { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); grid-template-rows: auto 1fr; gap: 1rem 2.5rem; align-items: start; }
 .vesselTitle { grid-column: 2; }
 .vesselTitle h1 { margin: .6rem 0 .25rem; overflow-wrap: anywhere; }
@@ -124,7 +132,7 @@
 .specifications { padding: 1.5rem; background: var(--pale); border: 1px solid var(--line); border-radius: var(--radius); }
 .specifications h2 { font-size: var(--font-h3); margin: 0 0 1rem; }
 .specifications dl { background: white; padding: 0 1rem; border-radius: .45rem; margin: 0; }
-.specifications dl > div { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--line); font-size: var(--font-small); }
+.specifications dl > div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--line); font-size: var(--font-small); overflow-wrap: break-word; }
 .specifications dl > div:last-child { border: 0; }
 .specifications dt { color: var(--muted); }
 .specifications dd { margin: 0; font-weight: 550; }
@@ -147,7 +155,7 @@
 .serviceDetailCopy :global(.button) { margin-top: 1.6rem; }
 .enquiryList { list-style: none; padding: 0; margin: 1.5rem 0 0; border-top: 1px solid var(--line); }
 .enquiryList li { display: flex; align-items: center; gap: 1rem; padding: .75rem 0; border-bottom: 1px solid var(--line); color: var(--navy); }
-.enquiryList span { color: #6d8dab; font-size: var(--font-small); font-weight: 700; letter-spacing: .08em; }
+.enquiryList span { color: var(--muted); font-size: var(--font-small); font-weight: 700; letter-spacing: .08em; }
 .relatedSection { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--line); }
 .relatedHeading h2 { margin-bottom: 1.2rem; }
 .relatedLinks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
@@ -194,7 +202,7 @@
 .routeCheck { flex-shrink: 0; }
 .selectedDetails { border-block: 1px solid var(--line); margin: 1.3rem 0 .8rem; padding: 1rem 0; }
 .selectedDetails h3 { font-size: var(--font-h3); margin: 0 0 .8rem; }
-.selectedDetails dl { display: grid; grid-template-columns: 1fr 1fr; margin: 0; gap: 1rem; }
+.selectedDetails dl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); margin: 0; gap: 1rem; overflow-wrap: break-word; }
 .selectedDetails dl > div + div { border-left: 1px solid var(--line); padding-left: 1rem; }
 .selectedDetails dt { color: var(--muted); font-size: var(--font-small); margin-bottom: .3rem; }
 .selectedDetails dd { margin: 0; font-weight: 650; }
@@ -209,11 +217,33 @@
 .contactIntro h2 { font-size: var(--font-h3); margin: 0 0 .85rem; }
 .contactIntro > p { color: var(--muted); line-height: 1.7; }
 .contactInfo { display: grid; gap: 1rem; margin: 1.5rem 0; }
-.contactInfo > span { display: flex; gap: .85rem; color: var(--muted); align-items: flex-start; line-height: 1.6; }
+.contactInfo > span, .contactInfo > a { display: flex; gap: .85rem; color: var(--muted); align-items: flex-start; line-height: 1.6; overflow-wrap: anywhere; min-width: 0; }
+.contactInfo > a { color: var(--navy); text-decoration: underline; text-underline-offset: .2rem; }
+.contactInfo > a > span:not(:global(.sr-only)) { min-width: 0; }
+.officeAddress { white-space: pre-line; }
+.editorialSections { display: grid; gap: 3rem; margin-block: 3rem; max-width: 65rem; }
+.editorialSections p { max-width: 55rem; white-space: pre-line; overflow-wrap: anywhere; }
+.editorialPhoto { position: relative; aspect-ratio: 16 / 9; overflow: hidden; margin-bottom: 1.5rem; border-radius: var(--radius); }
+.editorialPhoto img { object-fit: cover; }
 .contactInfo svg { color: var(--navy); flex-shrink: 0; margin-top: .1rem; }
 .contactForm { padding: 2.2rem; border: 1px solid var(--line); border-radius: var(--radius); background: white; box-shadow: 0 .4rem 2.8rem rgb(12 44 76 / .035); }
 .contactForm > h2 { font-size: var(--font-h3); margin: 0 0 .45rem; }
+.draftConfirmCopy { max-width: 40rem; line-height: 1.75; }
+.draftConfirmActions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .75rem; margin-top: 1.5rem; }
+.contactFields { min-width: 0; border: 0; margin: 0; padding: 0; }
+.contactFields:disabled { opacity: .75; }
+.contactFields button:disabled { cursor: wait; }
+.contactTrap { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.receipt { overflow-wrap: anywhere; }
+.loadingIcon { animation: contact-spin 1s linear infinite; }
+@keyframes contact-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .loadingIcon { animation: none; } }
 .formNote { color: var(--muted); line-height: 1.55; margin: 0 0 1.5rem; }
+.enquiryContext { margin-bottom: 1.25rem; padding: .9rem 1rem; border-left: 3px solid #8aa9c8; border-radius: 0 .35rem .35rem 0; background: var(--pale); }
+.enquiryContext span { display: block; color: var(--muted); }
+.enquiryContext strong { display: block; overflow-wrap: break-word; }
+.messageGuide { display: flex; justify-content: space-between; gap: 1rem; color: var(--muted); font-size: var(--font-small); line-height: 1.55; }
+.messageGuide > span:last-child { flex-shrink: 0; font-variant-numeric: tabular-nums; }
 .formGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
 .fullField { grid-column: 1 / -1; }
 .contactForm :global(.field) label { display: block; margin-bottom: .5rem; font-weight: 550; }
@@ -231,15 +261,28 @@
 .success > svg { flex-shrink: 0; }
 .success p { font-size: var(--font-small); margin: .4rem 0 0; line-height: 1.5; }
 .privacy { max-width: 55rem; }
+.contentBody { max-width: 55rem; margin-block: 2rem; color: var(--muted); line-height: 1.85; overflow-wrap: anywhere; }
+.contentBody p { white-space: pre-line; margin-block: 0 1.1rem; }
+.articleCopy .contentBody { margin-block: 0; }
 .privacy section { margin: 2.2rem 0; }
 .privacy h2 { font-size: var(--font-h3); margin: 0 0 .8rem; }
 .privacy section > p { color: var(--muted); line-height: 1.85; }
+.privacyIndex { margin-top: 1.5rem; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; }
+.privacyIndex summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem; min-height: var(--target-size); cursor: pointer; color: var(--navy); font-weight: 700; list-style: none; }
+.privacyIndex summary::-webkit-details-marker { display: none; }
+.privacyIndex[open] summary svg { transform: rotate(180deg); }
+.privacyIndex nav { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,18rem),1fr)); gap: .25rem 1.5rem; padding: 0 1.25rem 1rem; }
+.privacyIndex a { display: flex; align-items: center; min-height: var(--target-size); color: var(--blue); text-decoration: underline; text-underline-offset: .2rem; }
+.card:focus-visible,.serviceFeature:focus-visible,.capabilityCard:focus-visible,.fleetCard:focus-visible,.projectFeature:focus-visible,.projectCard:focus-visible,.newsFeature:focus-visible,.newsListItem:focus-visible { outline-offset: 5px; }
+.card h2:lang(th),.fleetCardInfo strong:lang(th),.newsListItem h2:lang(th) { line-height: 1.45; }
 @media (hover: hover) and (pointer: fine) {
-  .card:hover { box-shadow: 0 .5rem 1.9rem rgb(18 48 77 / .09); transform: translateY(-3px); }
+  .card:hover { box-shadow: var(--shadow-card); transform: translateY(-3px); }
   .card:hover .cardImage img { transform: scale(1.035); }
-  .serviceFeature:hover img, .capabilityCard:hover img, .fleetCard:hover > img, .projectFeature:hover img, .projectCard:hover img, .newsFeature:hover img, .newsListItem:hover img { transform: scale(1.035); }
+  .serviceFeature:hover img, .capabilityCard:hover img, .fleetCard:hover img, .projectFeature:hover img, .projectCard:hover img, .newsFeature:hover img, .newsListItem:hover img { transform: scale(1.035); }
   .serviceFeature:hover .cardAction, .capabilityCard:hover .cardAction, .projectFeature:hover .cardAction, .projectCard:hover .cardAction, .newsFeature:hover .cardAction, .newsListItem:hover .cardAction, .relatedLinks a:hover { color: #176096; }
-  .fleetCard:hover .fleetCardInfo > span { text-decoration: underline; text-underline-offset: .25rem; }
+  .fleetCard:hover { border-color: #9fbbd3; box-shadow: var(--shadow-card); }
+  .fleetCard:hover .fleetAction { text-decoration: underline; text-underline-offset: .25rem; }
+  .clearSearch:hover { background: var(--pale); color: var(--navy); }
   .filterButtons button:not(.activeFilter):hover { background: #e2edf8; }
   .routeOptions button:hover { background: #e8f2fa; }
   .galleryControl:hover { background: rgb(0 23 47 / .82); }
@@ -307,7 +350,7 @@
 @media (max-width: 650px) {
   .grid, .fleetGrid, .projectGrid { grid-template-columns: 1fr; gap: 1.2rem; }
   .cardImage { aspect-ratio: 1.7; }
-  .fleetCard { aspect-ratio: 1.3; }
+  .fleetImage { aspect-ratio: 1.65; }
   .capabilityCard { grid-template-columns: 1fr; }
   .capabilityImage { aspect-ratio: 1.9; }
   .capabilityCopy { padding: 1.25rem; }
@@ -343,19 +386,26 @@
   .contactForm { padding: 1.5rem; }
   .contactPhoto { aspect-ratio: 1.7; }
   .formGrid { grid-template-columns: 1fr; }
+  .messageGuide { flex-direction: column; gap: .35rem; }
+  .messageGuide > span:last-child { align-self: flex-end; }
   .formActions { align-items: stretch; flex-direction: column; gap: .5rem; }
   .formActions :global(.button) { width: 100%; }
   .clearDraft { align-self: center; }
   .privacy section { margin: 1.75rem 0; }
 }
+@media (max-width: 540px) {
+  .newsListItem { grid-template-columns: 1fr; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .newsListImage { aspect-ratio: 1.9; }
+  .newsListItem > div:last-child { padding: 1.25rem; gap: .25rem; }
+}
 @media (max-width: 380px) {
   .fleetCardInfo { align-items: flex-start; flex-direction: column; gap: .4rem; }
-  .newsListItem { grid-template-columns: 1fr; }
-  .newsListImage { aspect-ratio: 1.9; }
   .filterButtons button { padding-inline: .65rem; }
   .values article { padding: 1.25rem; }
   .valueIcon { width: 3.7rem; height: 3.7rem; }
   .contactForm { padding: 1.15rem; }
   .routePanel { padding: 1rem; }
 }
-@media (prefers-reduced-motion: reduce) { .card, .cardImage img, .serviceFeaturePhoto img, .capabilityImage img, .fleetCard > img, .projectFeatureImage img, .projectImage img, .newsFeatureImage img, .newsListImage img, .galleryControl, .filterButtons button { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .card, .cardImage img, .serviceFeaturePhoto img, .capabilityImage img, .fleetImage img, .projectFeatureImage img, .projectImage img, .newsFeatureImage img, .newsListImage img, .galleryControl, .filterButtons button { transition: none; } }
+.serviceBody { max-width: 58rem; margin-block: var(--space-6, 2.5rem); }
+.serviceBody h2 { margin-bottom: 1rem; }

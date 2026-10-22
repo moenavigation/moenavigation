@@ -1,2 +1,7 @@
 import type { MetadataRoute } from "next";
-export default function robots():MetadataRoute.Robots {return {rules:{userAgent:"*",disallow:"/"}};}
+import { indexingEnabled, siteOrigin } from '@/lib/site-config';
+export const dynamic = 'force-dynamic';
+export default function robots(): MetadataRoute.Robots {
+  if (!indexingEnabled()) return { rules: { userAgent: '*', disallow: '/' } };
+  return { rules: { userAgent: '*', allow: '/', disallow: ['/cms', '/en/cms', '/api/'] }, sitemap: `${siteOrigin()}/sitemap.xml` };
+}

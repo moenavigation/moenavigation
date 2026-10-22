@@ -8,22 +8,48 @@
     "start": "next start --hostname 0.0.0.0 --port 3005",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test:smoke": "node scripts/smoke.mjs"
+    "test:smoke": "node scripts/smoke.mjs",
+    "test:performance": "node --import tsx scripts/check-performance.mts",
+    "test:backend": "node --conditions=react-server --import tsx --test tests/*.test.ts",
+    "test:e2e": "node --import tsx scripts/e2e-run.mts",
+    "test:e2e:install": "playwright install chromium firefox webkit",
+    "test:backend:smoke": "node scripts/backend-smoke.mjs",
+    "test:api:qa": "node --conditions=react-server --import tsx scripts/check-api-workflows.mts --qa",
+    "test:media:qa": "node --conditions=react-server --import tsx scripts/check-media-workflow.mts --qa",
+    "test:notifications:qa": "node --conditions=react-server --import tsx scripts/check-notifications.mts --qa",
+    "backend:check": "node --conditions=react-server --import tsx scripts/check-backend.mts",
+    "backend:setup": "node --conditions=react-server --import tsx scripts/setup-backend.mts",
+    "backend:migrate": "node --conditions=react-server --import tsx scripts/migrate-website.mts",
+    "dev:qa": "node scripts/start-qa.mjs",
+    "backup:create": "node --import tsx scripts/recovery.mts create",
+    "backup:inspect": "node --import tsx scripts/recovery.mts inspect",
+    "backup:restore": "node --import tsx scripts/recovery.mts restore",
+    "backup:verify": "node --import tsx scripts/recovery.mts verify",
+    "backup:cleanup": "node --import tsx scripts/recovery.mts cleanup",
+    "release:check": "node --import tsx scripts/check-release.mts"
   },
   "dependencies": {
+    "cloudinary": "^2.11.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.468.0",
-    "next": "16.4.0",
+    "mongodb": "^7.7.0",
+    "next": "16.4.2",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",
-    "eslint-config-next": "16.4.0",
+    "eslint-config-next": "16.4.2",
+    "mongodb-memory-server-core": "^11.3.0",
+    "selfsigned": "^5.5.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.0"
   }
 }

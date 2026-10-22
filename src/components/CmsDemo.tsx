@@ -2,324 +2,539 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { ArrowRight, ArrowUpRight, Check, ChevronDown, Container, FileText, ImagePlus, Menu, Newspaper, Plus, RotateCcw, Route, Search, Settings, Ship, Trash2, UploadCloud, X } from 'lucide-react';
-import { DEMO_CONTENT_EVENT, DEMO_STORAGE_KEY, demoRecordKey, demoSeed, getDemoRecords, reconcileDemoTrash, saveDemoRecords, type DemoRecord } from '../lib/demo-store';
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { ArrowRight, ArrowUpRight, Check, ChevronDown, Container, Download, FileText, ImagePlus, Inbox, LoaderCircle, LockKeyhole, LogOut, Menu, Newspaper, Plus, RefreshCw, RotateCcw, Route, Search, Settings, Ship, Trash2, UploadCloud, X } from 'lucide-react';
+import { legacyRecordKey as demoRecordKey, readLegacySnapshot, legacyRecordMatches, legacyMediaMatches, rememberLegacyRecord, rememberLegacyMedia, clearVerifiedLegacy, hasLegacyArchive, restoreLegacyArchive, getLegacySubmission, saveLegacySubmission, translateLegacyRecord, legacyImageUrl, type LegacyRecord as DemoRecord, type LegacySnapshot } from '@/lib/cms-legacy';
+import { corePageIds, type ContentRecord, type MediaItem, type Enquiry, type SiteSettings } from '@/lib/cms-types';
+import { recordSchema, siteSettingsSchema } from '@/lib/validation';
+import { cmsPageLabel, contentBelongsToPage, publishedContentUrl } from '@/lib/cms-navigation';
+import { containDialogFocus } from '@/lib/dialog-focus';
+import { CmsRequestError, cmsErrorText, cmsRequest, prepareCmsImage, resolveSubmission, mapRecordImages, recordImageUrls, parseRouteCoordinates, refreshWebsiteDetailsDraft, createEditorDraftExport, changeEditorContentType, type PreparedImage } from '@/lib/cms-client';
 import BrandMark from './BrandMark';
+import CmsContentFields, { type ImageTarget } from './CmsContentFields';
+import useCmsInbox from './useCmsInbox';
+import type { InboxStatus } from '@/lib/inbox-query';
 import styles from './CmsDemo.module.css';
 
-type MediaItem = { id: string; title: string; image: string };
-const mediaKey = 'moe-media-v1';
-const generatedMedia: MediaItem[] = [
-  { id: 'hero', title: 'Home hero', image: '/images/hero.webp' },
-  { id: 'fleet', title: 'Fleet', image: '/images/container-vessel.webp' },
-  { id: 'bunkering', title: 'Bunkering', image: '/images/bunkering.webp' },
-  { id: 'port', title: 'Port operations', image: '/images/port.webp' },
-  { id: 'tanker', title: 'Tanker', image: '/images/tanker.webp' },
-  { id: 'logistics', title: 'Logistics', image: '/images/logistics.webp' },
-  { id: 'bridge', title: 'Vessel bridge', image: '/images/bridge.webp' },
-  { id: 'consulting', title: 'Marine consulting', image: '/images/consulting.webp' },
-  { id: 'tugboat', title: 'Marine support', image: '/images/tugboat.webp' },
-  { id: 'crane', title: 'Crane operations', image: '/images/crane.webp' },
-  { id: 'deck', title: 'Vessel deck', image: '/images/vessel-deck.webp' },
+type User = { username: string };
+type Section = 'content' | 'trash' | 'inbox' | 'account';
+const typeOptions: { title: string; type: ContentRecord['type']; icon: typeof Ship }[] = [
+  { title: 'Pages', type: 'Page', icon: FileText }, { title: 'Sections', type: 'Section', icon: FileText }, { title: 'Fleet', type: 'Vessel', icon: Ship },
+  { title: 'Routes', type: 'Route', icon: Route }, { title: 'Projects', type: 'Project', icon: Container },
+  { title: 'Services', type: 'Service', icon: Settings }, { title: 'News', type: 'News', icon: Newspaper },
 ];
-const typeOptions: { title: string; type: DemoRecord['type']; icon: typeof Ship }[] = [
-  { title: 'Pages', type: 'Page', icon: FileText },
-  { title: 'Fleet', type: 'Vessel', icon: Ship },
-  { title: 'Routes', type: 'Route', icon: Route },
-  { title: 'Projects', type: 'Project', icon: Container },
-  { title: 'Services', type: 'Service', icon: Settings },
-  { title: 'News', type: 'News', icon: Newspaper },
-];
+const enquiryStatuses: Enquiry['status'][] = ['New', 'In progress', 'Resolved'];
+const blankRecord = (type: ContentRecord['type']): ContentRecord => ({ id: '', type, title: '', titleTh: '', description: '', descriptionTh: '', image: '', category: '', status: 'Published', revision: 0 });
+const formatDate = (value?: string) => value ? new Date(value).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+const slug = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 100);
+const corePage = (record: ContentRecord) => record.type === 'Page' && (corePageIds as readonly string[]).includes(record.id);
+const MAX_ATTEMPTS = 3;
+const fieldNames: Record<string, string> = { caption: 'English image caption', captionTh: 'Thai image caption', parentId: 'Parent page', order: 'Display order', eyebrow: 'English eyebrow', eyebrowTh: 'Thai eyebrow', icon: 'Icon', mobileImage: 'Mobile image', gallery: 'Gallery images', bodyHeading: 'English content heading', bodyHeadingTh: 'Thai content heading', origin: 'Origin port', destination: 'Destination port', waypoints: 'Route coordinates', id: 'URL identifier', type: 'Content type', title: 'English title', titleTh: 'Thai title', description: 'English summary', descriptionTh: 'Thai summary', image: 'Content image', category: 'English category', categoryTh: 'Thai category', status: 'Status', body: 'English content', bodyTh: 'Thai content', date: 'Publication date', imageAlt: 'English image description', imageAltTh: 'Thai image description', companyName: 'English company name', companyNameTh: 'Thai company name', officeAddress: 'English office address', officeAddressTh: 'Thai office address', phone: 'Public phone number', email: 'Public email address', mapUrl: 'Map link' };
+const specFieldNames: Record<string, string> = { imo: 'IMO number', yearBuilt: 'Year built', lengthM: 'Length overall', beamM: 'Beam', draftM: 'Draft', deadweightT: 'Deadweight', capacityTeu: 'Container capacity', flag: 'English flag state', flagTh: 'Thai flag state', availability: 'English availability', availabilityTh: 'Thai availability' };
+const validationMessages = (issues: { path: PropertyKey[]; message: string }[]) => issues.map(issue => `${issue.path[0] === 'vesselSpecs' ? specFieldNames[String(issue.path[1])] || 'Vessel specifications' : fieldNames[String(issue.path[0])] || 'Content'}: ${issue.message}`).join(' ');
+const notificationLabels = { not_configured: 'Email not configured', pending: 'Email pending', sending: 'Sending email', sent: 'Email accepted', failed: 'Email failed', review: 'Email needs review' };
 
-function readMedia(): MediaItem[] {
-  const raw = window.localStorage.getItem(mediaKey);
-  if (!raw) return [];
-  const result: unknown = JSON.parse(raw);
-  if (!Array.isArray(result) || !result.every(item => item && typeof item === 'object' && typeof item.id === 'string' && typeof item.title === 'string' && typeof item.image === 'string' && /^data:image\/(webp|png|jpeg);base64,/.test(item.image))) {
-    throw new Error('Saved local media could not be read. Existing media has been preserved.');
-  }
-  return result;
-}
-
-function Modal({ open, onClose, title, children, drawer = false }: { open: boolean; onClose: () => void; title: string; children: ReactNode; drawer?: boolean }) {
+function Modal({ open, onClose, title, children, drawer = false, busy = false, compact = false, actions }: { open: boolean; onClose: () => void; title: string; children: ReactNode; drawer?: boolean; busy?: boolean; compact?: boolean; actions?: ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const backdropPointerRef = useRef(false);
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog || !open) return;
     const previous = document.activeElement as HTMLElement | null;
     const overflow = document.body.style.overflow;
     if (!dialog.open) dialog.showModal();
-    document.body.style.overflow = 'hidden';
-    closeRef.current?.focus();
-    return () => {
-      if (dialog.open) dialog.close();
-      document.body.style.overflow = overflow;
-      if (previous?.isConnected) previous.focus();
-    };
+    document.body.style.overflow = 'hidden'; closeRef.current?.focus();
+    return () => { if (dialog.open) dialog.close(); document.body.style.overflow = overflow; if (previous?.isConnected) previous.focus(); };
   }, [open]);
-  return (
-    <dialog ref={ref} aria-label={title} className={`${styles.dialog} ${drawer ? styles.drawer : ''}`} onCancel={event => { event.preventDefault(); onClose(); }} onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
-      {open && <div className={styles.dialogBody}>
-        <div className={styles.dialogHeading}><h2>{title}</h2><button ref={closeRef} type="button" className={styles.iconButton} aria-label={`Close ${title}`} onClick={onClose}><X size={22} /></button></div>
-        {children}
-      </div>}
-    </dialog>
-  );
+  return <dialog ref={ref} aria-label={title} className={`${styles.dialog} ${drawer ? styles.drawer : ''} ${compact ? styles.confirmDialog : ''} ${actions ? styles.actionDialog : ''}`} onKeyDown={containDialogFocus} onCancel={event => { event.preventDefault(); if (!busy) onClose(); }} onPointerDown={event => { backdropPointerRef.current = event.target === event.currentTarget; }} onClick={event => { if (!busy && event.target === event.currentTarget && backdropPointerRef.current) onClose(); backdropPointerRef.current = false; }}>
+    {open && <div className={styles.dialogBody}><div className={styles.dialogHeading}><h2>{title}</h2><button ref={closeRef} type="button" className={styles.iconButton} aria-label={`Close ${title}`} disabled={busy} onClick={onClose}><X size={22} /></button></div>{actions ? <><div className={styles.dialogScroll} tabIndex={0} role="region" aria-label={`${title} fields`}>{children}</div><div className={styles.dialogActions}>{actions}</div></> : children}</div>}
+  </dialog>;
 }
-
-async function prepareImage(file: File): Promise<string> {
-  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error('Choose a JPEG, PNG, or WebP image.');
-  if (file.size > 8 * 1024 * 1024) throw new Error('Choose an image smaller than 8 MB.');
-  const url = URL.createObjectURL(file);
-  try {
-    const image = new window.Image();
-    image.src = url;
-    await image.decode();
-    if (!image.naturalWidth || !image.naturalHeight) throw new Error('This image could not be opened.');
-    const scale = Math.min(1, 1800 / Math.max(image.naturalWidth, image.naturalHeight));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
-    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
-    const context = canvas.getContext('2d');
-    if (!context) throw new Error('Your browser could not prepare this image.');
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    const webp = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/webp', 0.85));
-    // Preserve the source format when WebP offers no benefit. Oversized images
-    // still use the resized canvas, including transparent PNGs.
-    const fallback = scale < 1 ? await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, file.type, 0.9)) : file;
-    const retained = fallback || file;
-    const selected = webp?.type === 'image/webp' && webp.size < retained.size ? webp : retained;
-    if (selected.size > 2 * 1024 * 1024) throw new Error('This image is too large for the local demo. Choose a smaller image (under 2 MB after preparation).');
-    return await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => typeof reader.result === 'string' ? resolve(reader.result) : reject(new Error('The image could not be prepared.'));
-      reader.onerror = () => reject(new Error('The image could not be read.'));
-      reader.readAsDataURL(selected);
-    });
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+function Brand() { return <Link href="/" target="_blank" rel="noopener noreferrer" className={styles.logo} aria-label="MOE Navigation home in a new tab"><span className={styles.brandMark}><BrandMark /></span><span className={styles.logoText}><strong>MOE</strong><span>NAVIGATION</span></span></Link>; }
+async function stageImage(image: PreparedImage, submissionId: string): Promise<MediaItem> {
+  const data = new FormData(); data.append('file', image.blob, image.filename); data.append('submissionId', submissionId);
+  return (await cmsRequest<{ media: MediaItem }>('/api/cms/media', { method: 'POST', body: data })).media;
 }
-
-function errorText(error: unknown): string { return error instanceof Error ? error.message : 'This change could not be saved. Please try again.'; }
 
 export default function CmsDemo() {
-  const [records, setRecords] = useState<DemoRecord[]>(demoSeed);
-  const [localMedia, setLocalMedia] = useState<MediaItem[]>([]);
-  const [ready, setReady] = useState(false);
-  const [now, setNow] = useState(0);
-  const [storageOkay, setStorageOkay] = useState(false);
-  const [mediaOkay, setMediaOkay] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [sessionReady, setSessionReady] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const workspaceLoad = useRef<AbortController | null>(null);
+  const [busy, setBusy] = useState('');
+  const [records, setRecords] = useState<ContentRecord[]>([]);
+  const [uploadedMedia, setUploadedMedia] = useState<MediaItem[]>([]);
+  const [mediaCursor, setMediaCursor] = useState<string | null>(null);
+  const [websiteDetails, setWebsiteDetails] = useState<{ saved: SiteSettings; draft: SiteSettings } | null>(null);
+  const [settingsError, setSettingsError] = useState('');
+  const [settingsNotice, setSettingsNotice] = useState('');
+  const [section, setSection] = useState<Section>('content');
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [tab, setTab] = useState<'content' | 'trash'>('content');
   const [type, setType] = useState('All');
   const [status, setStatus] = useState('All');
   const [search, setSearch] = useState('');
-  const [showAll, setShowAll] = useState(false);
+  const workspaceSearchRef = useRef<HTMLInputElement>(null);
+  const [pageFilter, setPageFilter] = useState('All');
+  const [limit, setLimit] = useState(12);
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
-  const [editing, setEditing] = useState<DemoRecord | null>(null);
-  const [originalKey, setOriginalKey] = useState<string | null>(null);
-  const originalRecord = useRef<string | null>(null);
+  const [loginError, setLoginError] = useState('');
+  const [confirmation, setConfirmation] = useState<{ message: string; action: string } | null>(null);
+  const confirmationResolver = useRef<((accepted: boolean) => void) | null>(null);
+  const [editing, setEditing] = useState<ContentRecord | null>(null);
+  const [original, setOriginal] = useState<ContentRecord | null>(null);
   const [editorError, setEditorError] = useState('');
+  const editorErrorRef = useRef<HTMLDivElement>(null);
+  const [editorConflict, setEditorConflict] = useState(false);
+  const [editorAttempts, setEditorAttempts] = useState(0);
+  const [editorImages, setEditorImages] = useState<Record<string, PreparedImage>>({});
+  const imagesRef = useRef<Record<string, PreparedImage>>({});
+  const [routeText, setRouteText] = useState('');
   const [preparing, setPreparing] = useState(false);
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [deleteRecord, setDeleteRecord] = useState<DemoRecord | null>(null);
+  const [deleteRecord, setDeleteRecord] = useState<ContentRecord | null>(null);
   const [mediaOpen, setMediaOpen] = useState(false);
+  const [mediaSearch, setMediaSearch] = useState('');
+  const mediaSearchRef = useRef<HTMLInputElement>(null);
   const [mediaError, setMediaError] = useState('');
-  const [preparedMedia, setPreparedMedia] = useState<MediaItem | null>(null);
+  const [mediaNotice, setMediaNotice] = useState('');
+  const [preparedMedia, setPreparedMedia] = useState<PreparedImage | null>(null);
+  const [mediaTitle, setMediaTitle] = useState('');
   const [mediaPreparing, setMediaPreparing] = useState(false);
-  const media = useMemo(() => [...generatedMedia, ...localMedia], [localMedia]);
-  const uploadVersion = useRef(0);
-  const mediaUploadVersion = useRef(0);
-
+  const [mediaAttempts, setMediaAttempts] = useState(0);
+  const [selectedEnquiry, setSelectedEnquiry] = useState<Enquiry | null>(null);
+  const [enquiryError, setEnquiryError] = useState('');
+  const [enquiryNotice, setEnquiryNotice] = useState('');
+  const [importOpen, setImportOpen] = useState(false);
+  const [importSnapshot, setImportSnapshot] = useState<LegacySnapshot | null>(null);
+  const [importRecords, setImportRecords] = useState<DemoRecord[]>([]);
+  const [verifiedLocal, setVerifiedLocal] = useState<string[]>([]);
+  const [verifiedLocalMedia, setVerifiedLocalMedia] = useState(0);
+  const [localArchive, setLocalArchive] = useState(false);
+  const legacyPrepared = useRef(new Map<string, PreparedImage>());
+  const [importError, setImportError] = useState('');
+  const [importProgress, setImportProgress] = useState('');
+  const editorSubmission = useRef(''); const mediaSubmission = useRef('');
+  const attemptedEditor = useRef(''); const attemptedMedia = useRef(''); const reviewedLegacy = useRef<DemoRecord | null>(null);
+  const editorStaged = useRef(new Map<string, MediaItem>()); const libraryStaged = useRef<MediaItem | null>(null);
+  const uploadVersion = useRef(0); const mediaVersion = useRef(0);
+  const importSubmissions = useRef(new Map<string, { id: string; staged?: MediaItem; attempts: number }>());
+  const inboxStatus: InboxStatus = section === 'inbox' && enquiryStatuses.includes(status as Enquiry['status']) ? status as Enquiry['status'] : 'All';
+  const inbox = useCmsInbox(Boolean(user), section === 'inbox' ? search : '', inboxStatus);
+  const { refresh: refreshInbox } = inbox;
+  const media = uploadedMedia;
+  const filteredMedia = media.filter(item => item.title.toLocaleLowerCase().includes(mediaSearch.trim().toLocaleLowerCase()));
+  const editorDirty = Boolean(editing && (recordImageUrls(editing).some(url => Boolean(editorImages[url])) || routeText !== (original?.waypoints || []).map(point => point.join(', ')).join('\n') || JSON.stringify(editing) !== JSON.stringify(original || blankRecord(editing.type))));
+  const settingsDirty = Boolean(websiteDetails && JSON.stringify(websiteDetails.saved) !== JSON.stringify(websiteDetails.draft));
+  const publishedPreview = original ? publishedContentUrl(original, records, 'th') : null;
+  function confirmAction(message: string, action: string) {
+    confirmationResolver.current?.(false);
+    setConfirmation({ message, action });
+    return new Promise<boolean>(resolve => { confirmationResolver.current = resolve; });
+  }
+  function settleConfirmation(accepted: boolean) {
+    const resolve = confirmationResolver.current; confirmationResolver.current = null; setConfirmation(null); resolve?.(accepted);
+  }
+  useEffect(() => () => { confirmationResolver.current?.(false); }, []);
   useEffect(() => {
-    function loadRecords() {
-      try { reconcileDemoTrash(); setRecords(getDemoRecords()); setStorageOkay(true); setNow(Date.now()); }
-      catch (cause) { setError(errorText(cause)); setStorageOkay(false); }
-    }
-    function loadLocalMedia() {
-      try { setLocalMedia(readMedia()); setMediaOkay(true); }
-      catch (cause) { setError(errorText(cause)); setMediaOkay(false); }
-    }
-    function storageChanged(event: StorageEvent) {
-      if (event.key === DEMO_STORAGE_KEY || event.key === null) loadRecords();
-      if (event.key === mediaKey || event.key === null) loadLocalMedia();
-    }
-    let canceled = false;
-    queueMicrotask(() => { if (!canceled) { loadRecords(); loadLocalMedia(); setReady(true); } });
-    window.addEventListener(DEMO_CONTENT_EVENT, loadRecords);
-    window.addEventListener('storage', storageChanged);
-    const expiryTimer = window.setInterval(loadRecords, 60_000);
-    return () => { canceled = true; window.clearInterval(expiryTimer); window.removeEventListener(DEMO_CONTENT_EVENT, loadRecords); window.removeEventListener('storage', storageChanged); };
-  }, []);
+    if (!editorError) return;
+    editorErrorRef.current?.scrollIntoView({ block: 'nearest' });
+    editorErrorRef.current?.focus({ preventScroll: true });
+  }, [editorError]);
 
-  const filtered = records.filter(record => {
-    const visible = tab === 'trash' ? Boolean(record.deletedAt) : !record.deletedAt;
-    return visible && (type === 'All' || record.type === type) && (status === 'All' || record.status === status)
-      && `${record.title} ${record.titleTh} ${record.category} ${record.categoryTh || ''}`.toLowerCase().includes(search.toLowerCase());
-  });
-  const limited = showAll || tab === 'trash' || search || type !== 'All' || status !== 'All' ? filtered : filtered.slice(0, 4);
+  const load = useCallback(async () => {
+    refreshInbox();
+    workspaceLoad.current?.abort();
+    const controller = new AbortController(); workspaceLoad.current = controller;
+    const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(65_000)]);
+    setLoading(true);
+    const results = await Promise.allSettled([cmsRequest<{ records: ContentRecord[] }>('/api/cms/content', { signal }), cmsRequest<{ media: MediaItem[]; nextCursor: string | null }>('/api/cms/media', { signal }), cmsRequest<{ settings: SiteSettings }>('/api/cms/settings', { signal })]);
+    if (controller.signal.aborted) return;
+    if (results[0].status === 'fulfilled') setRecords(results[0].value.records);
+    if (results[1].status === 'fulfilled') { setUploadedMedia(results[1].value.media); setMediaCursor(results[1].value.nextCursor); }
+    if (results[2].status === 'fulfilled') { const settings = results[2].value.settings; setWebsiteDetails(current => refreshWebsiteDetailsDraft(current, settings)); }
+    const failed = results.find(result => result.status === 'rejected'); setError(failed?.status === 'rejected' ? cmsErrorText(failed.reason) : ''); setLoading(false); workspaceLoad.current = null;
+  }, [refreshInbox]);
+  function invalidateWorkspaceRefresh() { workspaceLoad.current?.abort(); workspaceLoad.current = null; setLoading(false); }
+  useEffect(() => {
+    let cancelled = false;
+    cmsRequest<{ user: User | null }>('/api/cms/session').then(result => { if (!cancelled) { setUser(result.user); if (result.user) void load(); } }).catch(cause => { if (!cancelled) setLoginError(cmsErrorText(cause)); }).finally(() => { if (!cancelled) setSessionReady(true); });
+    function expired() { invalidateWorkspaceRefresh(); refreshInbox(); setUser(null); setLoginError('Your session has expired. Sign in again to continue. Your open editor is preserved.'); }
+    window.addEventListener('moe-cms-session-expired', expired);
+    return () => { cancelled = true; workspaceLoad.current?.abort(); window.removeEventListener('moe-cms-session-expired', expired); };
+  }, [load, refreshInbox]);
+  useEffect(() => {
+    if (!editorDirty && !preparedMedia && !settingsDirty && !preparing && !mediaPreparing && !busy) return;
+    function beforeUnload(event: BeforeUnloadEvent) { event.preventDefault(); event.returnValue = ''; }
+    window.addEventListener('beforeunload', beforeUnload); return () => window.removeEventListener('beforeunload', beforeUnload);
+  }, [editorDirty, preparedMedia, settingsDirty, preparing, mediaPreparing, busy]);
+  useEffect(() => () => { Object.values(imagesRef.current).forEach(image => URL.revokeObjectURL(image.preview)); legacyPrepared.current.forEach(image => URL.revokeObjectURL(image.preview)); }, []);
+  function resetEditorImages() { Object.values(imagesRef.current).forEach(image => URL.revokeObjectURL(image.preview)); imagesRef.current = {}; setEditorImages({}); }
+  useEffect(() => () => { if (preparedMedia) URL.revokeObjectURL(preparedMedia.preview); }, [preparedMedia]);
+
+  async function login(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); if (busy) return;
+    const fields = new FormData(event.currentTarget); setBusy('login'); setLoginError('');
+    try { const result = await cmsRequest<{ user: User }>('/api/cms/login', { method: 'POST', body: JSON.stringify({ username: fields.get('username'), password: fields.get('password') }) }); setUser(result.user); await load(); window.scrollTo({ top: 0, behavior: 'instant' }); }
+    catch (cause) { setLoginError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  async function logout() {
+    if (busy || ((editorDirty || preparedMedia || settingsDirty || preparing || mediaPreparing) && !await confirmAction('Your unsaved editor changes, prepared images and website details will be discarded. Saved content stays available.', 'Sign out & discard'))) return;
+    setBusy('logout');
+    try {
+      if (attemptedEditor.current && await reconcileEditor() === 'pending') return;
+      if (attemptedMedia.current && await reconcileMedia() === 'pending') return;
+      await cmsRequest('/api/cms/logout', { method: 'POST', body: '{}' });
+      invalidateWorkspaceRefresh();
+      uploadVersion.current++; mediaVersion.current++;
+      setPreparing(false); setMediaPreparing(false); setUser(null); setDrawerOpen(false); setEditing(null); setOriginal(null);
+      resetEditorImages(); setPreparedMedia(null); setMediaOpen(false); setSelectedEnquiry(null); setImportOpen(false); setDeleteRecord(null);
+      setWebsiteDetails(null); setSettingsError(''); setSettingsNotice(''); setRecords([]); refreshInbox(); setUploadedMedia([]); setMediaCursor(null);
+      setNotice(''); setError(''); setLoginError(''); setSection('content'); setType('All'); setStatus('All'); setSearch(''); setPageFilter('All'); setLimit(12);
+    }
+    catch (cause) { setError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  function clearFilters() { setType('All'); setStatus('All'); setSearch(''); setPageFilter('All'); setLimit(12); workspaceSearchRef.current?.focus({ preventScroll: true }); }
+  function openMedia() { setMediaSearch(''); setMediaOpen(true); }
+  function navigate(next: Section, nextType = 'All') { setSection(next); setType(nextType); setStatus('All'); setSearch(''); setPageFilter('All'); setLimit(12); setDrawerOpen(false); window.scrollTo({ top: 0, behavior: 'instant' }); }
+  function openEditor(record?: ContentRecord) {
+    const draft = blankRecord(type === 'All' ? 'News' : type as ContentRecord['type']); if (draft.type === 'Section' && pageFilter !== 'All') draft.parentId = pageFilter; setOriginal(record || null); setEditing(record ? { ...record } : draft); resetEditorImages(); setRouteText((record?.waypoints || []).map(point => point.join(', ')).join('\n')); setEditorError(''); setEditorConflict(false); setEditorAttempts(0); editorSubmission.current = crypto.randomUUID(); editorStaged.current.clear(); attemptedEditor.current = ''; reviewedLegacy.current = null;
+  }
+  function updateEditor(patch: Partial<ContentRecord>) {
+    setEditing(current => current ? { ...current, ...patch, ...(patch.title !== undefined && !original && (!current.id || current.id === slug(current.title)) ? { id: slug(patch.title) } : {}) } : current);
+  }
+  async function changeEditorType(nextType: ContentRecord['type']) {
+    if (!editing || original || busy || preparing || editing.type === nextType) return;
+    const next = changeEditorContentType(editing, nextType, routeText);
+    if (next.discardedFields.length && !await confirmAction(`Changing to ${nextType} removes the ${next.discardedFields.join(' and ')} from this unsaved item. Your titles, summaries and images stay in place.`, 'Change content type')) return;
+    setEditing(next.record);
+    if (nextType !== 'Route') setRouteText('');
+    setEditorError('');
+  }
+  function acceptRecord(record: ContentRecord) { invalidateWorkspaceRefresh(); setRecords(current => [record, ...current.filter(item => demoRecordKey(item) !== demoRecordKey(record))]); }
+  async function finishEditor(record: ContentRecord) {
+    acceptRecord(record);
+    if (reviewedLegacy.current) { try { await rememberLegacyRecord(reviewedLegacy.current, record); } catch { setImportError('Content saved, but the local migration receipt could not be stored. Keep or export your local copy.'); } }
+    setNotice('“' + record.title + '” saved and published.'); setEditing(null); resetEditorImages(); attemptedEditor.current = ''; editorStaged.current.clear(); navigate('content', record.type); if (record.type === 'Section' && record.parentId) setPageFilter(record.parentId);
+    void cmsRequest<{ media: MediaItem[]; nextCursor: string | null }>('/api/cms/media').then(result => { setUploadedMedia(result.media); setMediaCursor(result.nextCursor); }).catch(() => {});
+  }
+  async function reconcileEditor(allowRetry = true): Promise<'committed' | 'aborted' | 'pending'> {
+    if (!attemptedEditor.current) { if (allowRetry) setEditorAttempts(0); return 'aborted'; }
+    setBusy('Checking saved content…');
+    const result = await resolveSubmission(editorSubmission.current);
+    if (result.status === 'committed' && result.record) {
+      let currentFingerprint = ''; try { currentFingerprint = JSON.stringify(editing ? { ...editing, status: 'Published', ...(editing.type === 'Route' ? { waypoints: parseRouteCoordinates(routeText) } : {}) } : null); } catch { /* Keep partially edited coordinate text. */ }
+      if (editing && currentFingerprint !== attemptedEditor.current) { acceptRecord(result.record); setOriginal(result.record); setEditing(current => current ? { ...current, revision: result.record!.revision } : current); editorSubmission.current = crypto.randomUUID(); editorStaged.current.clear(); attemptedEditor.current = ''; setEditorAttempts(0); setEditorConflict(false); setEditorError('Your earlier save succeeded. Your newer unsaved changes are still in this editor; review and save them when ready.'); return 'aborted'; }
+      await finishEditor(result.record); return 'committed';
+    }
+    if (result.status === 'pending' || result.pending) { setEditorAttempts(MAX_ATTEMPTS); setEditorError('The previous save is still being checked. Your fields and prepared images are preserved. Choose Check saved content again before retrying.'); return 'pending'; }
+    if (result.status !== 'aborted') throw new Error('The previous save could not yet be closed safely. Check saved content again.');
+    editorStaged.current.clear(); editorSubmission.current = crypto.randomUUID(); attemptedEditor.current = ''; if (allowRetry) setEditorAttempts(0);
+    setEditorError('The previous submission did not save. Its unreferenced uploads were removed. Your input is preserved; retry to upload the prepared images again.' + (result.failed ? ' Some unused uploads need manual Cleanup later.' : ''));
+    return 'aborted';
+  }
+  async function closeEditor() {
+    if (busy || ((editorDirty || preparing) && !await confirmAction('Your unsaved fields and prepared images will be discarded. Any interrupted save will be checked first.', 'Discard changes'))) return;
+    setBusy('Checking unfinished save…');
+    try { if (attemptedEditor.current && await reconcileEditor() === 'pending') return; uploadVersion.current++; setPreparing(false); setEditing(null); resetEditorImages(); }
+    catch (cause) { setEditorError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  async function saveEditor(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); if (!editing || preparing || busy || editorAttempts >= MAX_ATTEMPTS) return;
+    let candidate: ContentRecord;
+    try { candidate = { ...editing, status: 'Published', ...(editing.type === 'Route' ? { waypoints: parseRouteCoordinates(routeText) } : {}) }; } catch (cause) { setEditorError(cmsErrorText(cause)); return; }
+    const validated = recordSchema.safeParse(mapRecordImages(candidate, url => editorImages[url] ? 'prepared-image' : url));
+    if (!validated.success) { setEditorError(validationMessages(validated.error.issues)); return; }
+    setBusy('Saving content…'); setEditorError('');
+    try {
+      const fingerprint = JSON.stringify(candidate); let expectedRevision = original?.revision ?? null;
+      if (attemptedEditor.current && attemptedEditor.current !== fingerprint) {
+        const result = await resolveSubmission(editorSubmission.current);
+        if (result.status === 'pending' || result.pending) { setEditorAttempts(MAX_ATTEMPTS); throw new Error('Your earlier save is still pending. Check saved content before saving these changes.'); }
+        if (result.status === 'committed' && result.record) { acceptRecord(result.record); setOriginal(result.record); expectedRevision = result.record.revision; }
+        else if (result.status !== 'aborted') throw new Error('The earlier submission could not be closed. Check saved content before trying again.');
+        editorSubmission.current = crypto.randomUUID(); editorStaged.current.clear(); setEditorAttempts(0);
+      }
+      attemptedEditor.current = fingerprint;
+      const urls = recordImageUrls(candidate).filter(url => editorImages[url]);
+      for (let index = 0; index < urls.length; index++) { const url = urls[index]; setBusy('Uploading image ' + (index + 1) + ' of ' + urls.length + '…'); if (!editorStaged.current.has(url)) editorStaged.current.set(url, await stageImage(editorImages[url], editorSubmission.current)); }
+      const prepared = mapRecordImages({ ...validated.data, image: candidate.image, mobileImage: candidate.mobileImage, gallery: candidate.gallery }, url => editorStaged.current.get(url)?.url || url);
+      setBusy('Saving content…');
+      const result = await cmsRequest<{ record: ContentRecord }>('/api/cms/content', { method: 'POST', body: JSON.stringify({ record: prepared, expectedRevision, submissionId: editorSubmission.current }) });
+      await finishEditor(result.record);
+    } catch (cause) {
+      setEditorError(cmsErrorText(cause)); setEditorConflict(cause instanceof CmsRequestError && cause.status === 409);
+      if (!(cause instanceof CmsRequestError) || cause.status === 0 || cause.status >= 500) { const attempts = editorAttempts + 1; setEditorAttempts(attempts); if (attempts >= MAX_ATTEMPTS) { try { await reconcileEditor(false); } catch (recoveryError) { setEditorError(cmsErrorText(recoveryError) + ' The save outcome is uncertain. Keep this editor open and check saved content.'); } } }
+    } finally { setBusy(''); }
+  }
+  async function recoverEditor() {
+    if (!editing || busy) return;
+    if (editorConflict && !await confirmAction('Loading the latest saved version replaces your unsaved fields. Cancel and download your unsaved text first if you need a copy.', 'Load saved version')) return;
+    setBusy('Checking saved content…');
+    try {
+      const outcome = await reconcileEditor(); if (outcome !== 'aborted' || !editorConflict) return;
+      const result = await cmsRequest<{ records: ContentRecord[] }>('/api/cms/content'); setRecords(result.records); const saved = result.records.find(item => demoRecordKey(item) === demoRecordKey(editing));
+      if (!saved || saved.deletedAt) throw new Error('This record is no longer available. Your unsaved changes are still here.'); openEditor(saved);
+    } catch (cause) { setEditorError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  function downloadDraft() {
+    if (!editing) return;
+    const url = URL.createObjectURL(new Blob([JSON.stringify(createEditorDraftExport(editing, routeText), null, 2)], { type: 'application/json' })); const anchor = document.createElement('a'); anchor.href = url; anchor.download = `unsaved-${editing.id || 'content'}.json`; anchor.click(); URL.revokeObjectURL(url);
+  }
+  async function changeRecord(record: ContentRecord, action: 'trash' | 'restore') {
+    if (busy) return; setBusy(action); setError('');
+    try { const result = await cmsRequest<{ record: ContentRecord }>('/api/cms/content/action', { method: 'POST', body: JSON.stringify({ id: record.id, type: record.type, expectedRevision: record.revision, action }) }); acceptRecord(result.record); setDeleteRecord(null); setNotice(`“${record.title}” ${action === 'trash' ? 'moved to Trash. You can restore it within 30 days.' : 'restored.'}`); }
+    catch (cause) { setError(cmsErrorText(cause)); setDeleteRecord(null); } finally { setBusy(''); }
+  }
+  async function chooseEditorImage(file: File, target: ImageTarget = 'image') {
+    const version = ++uploadVersion.current; setPreparing(true); setEditorError('');
+    try { const image = await prepareCmsImage(file); if (version !== uploadVersion.current) { URL.revokeObjectURL(image.preview); return; } imagesRef.current = { ...imagesRef.current, [image.preview]: image }; setEditorImages(imagesRef.current); setEditing(current => !current ? current : typeof target === 'number' ? { ...current, gallery: current.gallery?.map((entry, index) => index === target ? { ...entry, url: image.preview } : entry) } : { ...current, [target]: image.preview }); }
+    catch (cause) { if (version === uploadVersion.current) setEditorError(cmsErrorText(cause)); } finally { if (version === uploadVersion.current) setPreparing(false); }
+  }
+  function finishMedia(items: MediaItem[]) { invalidateWorkspaceRefresh(); setUploadedMedia(current => [...items, ...current.filter(item => !items.some(saved => saved.id === item.id))]); setPreparedMedia(null); attemptedMedia.current = ''; libraryStaged.current = null; setMediaNotice('Image saved to the library. It is ready to use in your content.'); }
+  async function reconcileMedia(allowRetry = true): Promise<'committed' | 'aborted' | 'pending'> {
+    if (!attemptedMedia.current) { if (allowRetry) setMediaAttempts(0); return 'aborted'; }
+    setBusy('Checking saved media…'); const result = await resolveSubmission(mediaSubmission.current);
+    if (result.status === 'committed') { if (!result.media?.length) throw new Error('The saved image could not be identified. Refresh the library before retrying.'); finishMedia(result.media); return 'committed'; }
+    if (result.status === 'pending' || result.pending) { setMediaAttempts(MAX_ATTEMPTS); setMediaError('The previous upload is still being checked. Your prepared image is preserved. Check saved media again before retrying.'); return 'pending'; }
+    if (result.status !== 'aborted') throw new Error('The previous upload could not yet be closed safely. Check saved media again.');
+    libraryStaged.current = null; mediaSubmission.current = crypto.randomUUID(); attemptedMedia.current = ''; if (allowRetry) setMediaAttempts(0);
+    setMediaError('The image did not save. Its unreferenced upload was removed. Retry to upload the prepared image again.' + (result.failed ? ' Manual Cleanup may be needed for an unfinished deletion.' : '')); return 'aborted';
+  }
+  async function chooseLibraryImage(file?: File) {
+    if (!file || busy) return; const version = ++mediaVersion.current; setMediaPreparing(true); setMediaError(''); setMediaNotice('');
+    try {
+      if (attemptedMedia.current) { setBusy('Checking previous upload…'); if (await reconcileMedia() === 'pending') return; }
+      const image = await prepareCmsImage(file); if (version !== mediaVersion.current) { URL.revokeObjectURL(image.preview); return; } setPreparedMedia(image); setMediaTitle(file.name.replace(/\.[^.]+$/, '')); libraryStaged.current = null; mediaSubmission.current = crypto.randomUUID(); setMediaAttempts(0);
+    } catch (cause) { if (version === mediaVersion.current) setMediaError(cmsErrorText(cause)); } finally { if (version === mediaVersion.current) setMediaPreparing(false); setBusy(''); }
+  }
+  async function saveMedia(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); if (!preparedMedia || mediaPreparing || busy || mediaAttempts >= MAX_ATTEMPTS) return; setBusy('Uploading image…'); setMediaError('');
+    try {
+      const fingerprint = preparedMedia.preview + mediaTitle.trim();
+      if (attemptedMedia.current && attemptedMedia.current !== fingerprint && await reconcileMedia() !== 'aborted') return;
+      attemptedMedia.current = fingerprint;
+      if (!libraryStaged.current) libraryStaged.current = await stageImage(preparedMedia, mediaSubmission.current);
+      setBusy('Saving media…'); const result = await cmsRequest<{ media: MediaItem }>('/api/cms/media/commit', { method: 'POST', body: JSON.stringify({ mediaId: libraryStaged.current.id, submissionId: mediaSubmission.current, title: mediaTitle.trim() }) }); finishMedia([result.media]);
+    } catch (cause) { setMediaError(cmsErrorText(cause)); if (!(cause instanceof CmsRequestError) || cause.status === 0 || cause.status >= 500) { const attempts = mediaAttempts + 1; setMediaAttempts(attempts); if (attempts >= MAX_ATTEMPTS) { try { await reconcileMedia(false); } catch (recoveryError) { setMediaError(cmsErrorText(recoveryError) + ' The upload outcome is uncertain. Check saved media before retrying.'); } } } } finally { setBusy(''); }
+  }
+  async function recoverMedia() { if (busy) return; setBusy('Checking saved media…'); try { await reconcileMedia(); } catch (cause) { setMediaError(cmsErrorText(cause)); } finally { setBusy(''); } }
+  async function closeMedia() {
+    if (busy || ((preparedMedia || mediaPreparing) && !await confirmAction('This prepared image has not been saved. Any interrupted upload will be checked before closing.', 'Discard image'))) return; setBusy('Checking unfinished upload…');
+    try { if (attemptedMedia.current && await reconcileMedia() === 'pending') return; mediaVersion.current++; setMediaPreparing(false); setPreparedMedia(null); setMediaOpen(false); }
+    catch (cause) { setMediaError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  async function cleanupMedia() {
+    if (busy || !await confirmAction('Remove unfinished, unreferenced uploads? Images used by content or saved in the library will be preserved.', 'Clean unfinished uploads')) return;
+    setBusy('Cleaning unfinished uploads…'); setMediaError('');
+    try { const result = await cmsRequest<{ deleted: number; failed: number }>('/api/cms/media/cleanup', { method: 'POST', body: '{}' }); setMediaNotice(`${result.deleted} unfinished upload${result.deleted === 1 ? '' : 's'} removed.${result.failed ? ` ${result.failed} could not be removed; try cleanup again later.` : ''}`); }
+    catch (cause) { setMediaError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  async function loadMoreMedia() {
+    if (!mediaCursor || busy) return; setBusy('Loading more images…'); setMediaError('');
+    try { const result = await cmsRequest<{ media: MediaItem[]; nextCursor: string | null }>(`/api/cms/media?cursor=${encodeURIComponent(mediaCursor)}`); setUploadedMedia(current => [...current, ...result.media.filter(item => !current.some(existing => existing.id === item.id))]); setMediaCursor(result.nextCursor); }
+    catch (cause) { setMediaError(cmsErrorText(cause)); setEditorError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  async function removeMedia(item: { id: string; title: string }) {
+    if (busy || !await confirmAction(`Remove “${item.title}” from the library? Images used by content or Trash cannot be removed.`, 'Remove image')) return;
+    setBusy('Removing image…'); setMediaError('');
+    try { await cmsRequest('/api/cms/media/remove', { method: 'POST', body: JSON.stringify({ mediaId: item.id }) }); invalidateWorkspaceRefresh(); setUploadedMedia(current => current.filter(image => image.id !== item.id)); setMediaNotice('Image removed from the library.'); }
+    catch (cause) { setMediaError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  async function changeEnquiry(enquiry: Enquiry, nextStatus: Enquiry['status']) {
+    if (busy) return; setBusy('Updating enquiry…'); setEnquiryError(''); setEnquiryNotice('');
+    try { const result = await cmsRequest<{ enquiry: Enquiry }>('/api/cms/inbox', { method: 'PATCH', body: JSON.stringify({ id: enquiry.id, expectedRevision: enquiry.revision, status: nextStatus }) }); acceptEnquiry(result.enquiry); setNotice('Enquiry status updated.'); }
+    catch (cause) { setEnquiryError(cmsErrorText(cause) + (cause instanceof CmsRequestError && cause.status === 409 ? ' Refresh this enquiry to load its latest status before trying again.' : '')); } finally { setBusy(''); }
+  }
+  function acceptEnquiry(enquiry: Enquiry) {
+    refreshInbox();
+    setSelectedEnquiry(current => current?.id === enquiry.id ? enquiry : current);
+  }
+  async function refreshEnquiry(enquiry: Enquiry) {
+    if (busy) return; setBusy('Refreshing enquiry…'); setEnquiryError(''); setEnquiryNotice('');
+    try {
+      const result = await cmsRequest<{ enquiry: Enquiry }>(`/api/cms/inbox?id=${encodeURIComponent(enquiry.id)}`);
+      acceptEnquiry(result.enquiry);
+      setEnquiryNotice('Showing the latest saved status and email delivery details.');
+    } catch (cause) { setEnquiryError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  async function retryNotification(enquiry: Enquiry) {
+    if (busy) return; setBusy('Sending notification…'); setEnquiryError(''); setEnquiryNotice('');
+    try {
+      const result = await cmsRequest<{ enquiry: Enquiry }>('/api/cms/inbox/notify', { method: 'POST', body: JSON.stringify({ id: enquiry.id }) });
+      acceptEnquiry(result.enquiry);
+    } catch (cause) { setEnquiryError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  async function changePassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); if (busy) return;
+    const form = event.currentTarget; const fields = new FormData(form);
+    if (fields.get('newPassword') !== fields.get('confirmPassword')) { setError('The new passwords do not match.'); return; }
+    setBusy('Updating password…'); setError('');
+    try { await cmsRequest('/api/cms/password', { method: 'POST', body: JSON.stringify({ currentPassword: fields.get('currentPassword'), newPassword: fields.get('newPassword') }) }); form.reset(); setNotice('Your password has been updated.'); }
+    catch (cause) { setError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  async function saveWebsiteDetails(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); if (!websiteDetails || busy) return;
+    const validated = siteSettingsSchema.safeParse(websiteDetails.draft);
+    if (!validated.success) { setSettingsError(validationMessages(validated.error.issues)); return; }
+    setBusy('Saving website details…'); setSettingsError(''); setSettingsNotice('');
+    try { const result = await cmsRequest<{ settings: SiteSettings }>('/api/cms/settings', { method: 'PUT', body: JSON.stringify({ settings: validated.data, expectedRevision: websiteDetails.saved.revision }) }); invalidateWorkspaceRefresh(); setWebsiteDetails({ saved: result.settings, draft: result.settings }); setSettingsNotice('Website details saved. They are now available on the public contact page.'); }
+    catch (cause) { setSettingsError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  async function refreshWebsiteDetails() {
+    if (busy || (settingsDirty && !await confirmAction('Your unsaved website details will be replaced with the latest saved version.', 'Load saved details'))) return;
+    setBusy('Loading website details…'); setSettingsError('');
+    try { const result = await cmsRequest<{ settings: SiteSettings }>('/api/cms/settings'); invalidateWorkspaceRefresh(); setWebsiteDetails({ saved: result.settings, draft: result.settings }); }
+    catch (cause) { setSettingsError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  function updateWebsiteDetails(key: keyof SiteSettings, value: string) { setWebsiteDetails(current => current ? { ...current, draft: { ...current.draft, [key]: value } } : current); setSettingsNotice(''); }
+  async function allRemoteMedia() {
+    const result: MediaItem[] = []; let cursor: string | null = null;
+    do { const page: { media: MediaItem[]; nextCursor: string | null } = await cmsRequest('/api/cms/media' + (cursor ? '?cursor=' + encodeURIComponent(cursor) : '')); result.push(...page.media); cursor = page.nextCursor; } while (cursor);
+    invalidateWorkspaceRefresh(); setUploadedMedia(result); setMediaCursor(null); return result;
+  }
+  async function inspectLegacy(snapshot: LegacySnapshot, remote: ContentRecord[], library: MediaItem[]) {
+    const verified: string[] = [];
+    for (const local of snapshot.records) if (await legacyRecordMatches(local, remote.find(record => demoRecordKey(record) === demoRecordKey(local)), library, snapshot)) verified.push(demoRecordKey(local));
+    let verifiedMedia = 0; for (const local of snapshot.media) if (await legacyMediaMatches(local, library, snapshot)) verifiedMedia++;
+    setLocalArchive(hasLegacyArchive()); setImportSnapshot(snapshot); setImportRecords(snapshot.records); setVerifiedLocal(verified); setVerifiedLocalMedia(verifiedMedia);
+  }
+  async function previewImport() {
+    if (busy) return; setImportError(''); setImportProgress(''); setImportOpen(true); setDrawerOpen(false); setBusy('Checking local data…');
+    try {
+      const snapshot = readLegacySnapshot(); const remote = await cmsRequest<{ records: ContentRecord[] }>('/api/cms/content'); const library = await allRemoteMedia(); setRecords(remote.records); await inspectLegacy(snapshot, remote.records, library);
+      const localImages = [...new Set([...snapshot.records.flatMap(record => recordImageUrls(record)), ...snapshot.media.map(item => item.image)])];
+      for (const url of localImages) if (url.startsWith('data:') && !legacyPrepared.current.has(url)) {
+        if ((await legacyImageUrl(url, library, snapshot)).startsWith('data:')) { setImportProgress('Preparing local images on this device…'); const blob = await (await fetch(url)).blob(); legacyPrepared.current.set(url, await prepareCmsImage(new File([blob], 'legacy-image.webp', { type: blob.type }))); }
+      }
+      setImportProgress('Local review is ready. No data has been uploaded or removed.');
+    } catch (cause) { setImportError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  const newImports = importRecords.filter(record => !record.deletedAt && !records.some(remote => demoRecordKey(remote) === demoRecordKey(record)));
+  const changedImports = importRecords.filter(record => !verifiedLocal.includes(demoRecordKey(record)) && (Boolean(record.deletedAt) || records.some(remote => demoRecordKey(remote) === demoRecordKey(record))));
+  async function reviewLocal(record: DemoRecord) {
+    if (busy || !importSnapshot) return; const saved = records.find(remote => demoRecordKey(remote) === demoRecordKey(record));
+    if (saved?.deletedAt) { setImportError('This record is in server Trash. Restore it there before reviewing the local version.'); return; }
+    if (record.deletedAt && !await confirmAction('Review this local Trash item? It stays unchanged until you explicitly Save, which publishes the reviewed content.', 'Review content')) return;
+    setBusy('Preparing local content…'); setImportError('');
+    try {
+      const currentSnapshot = readLegacySnapshot(); for (const localImage of currentSnapshot.media) { if (recordImageUrls(record).includes(localImage.image) && !await legacyMediaMatches(localImage, media, currentSnapshot)) throw new Error('Import the local library images first, then review this version. The same saved image will be reused.'); }
+      const translated = await translateLegacyRecord(record, media, currentSnapshot);
+      openEditor(saved); const prepared: Record<string, PreparedImage> = {};
+      const candidate = mapRecordImages({ ...saved, ...translated, revision: saved?.revision || 0, deletedAt: undefined, status: saved && corePage(saved) ? 'Published' : record.deletedAt ? 'Draft' : record.status } as ContentRecord, url => { const image = legacyPrepared.current.get(url); if (image) { prepared[image.preview] = image; legacyPrepared.current.delete(url); return image.preview; } return url; });
+      imagesRef.current = prepared; setEditorImages(prepared); setEditing(candidate); setRouteText((candidate.waypoints || []).map(point => point.join(', ')).join('\n')); reviewedLegacy.current = record; setImportOpen(false);
+    } catch (cause) { setImportError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  async function importAttempt<T>(key: string, execute: (submission: { id: string; staged?: MediaItem; attempts: number }) => Promise<T>, committed: (result: Awaited<ReturnType<typeof resolveSubmission>>) => T | undefined): Promise<T> {
+    const submission: { id: string; staged?: MediaItem; attempts: number } = importSubmissions.current.get(key) || await getLegacySubmission(key); importSubmissions.current.set(key, submission);
+    if (submission.attempts >= MAX_ATTEMPTS) throw new Error('Three attempts failed for this item. Choose Check interrupted import before retrying.');
+    try { const existing = await resolveSubmission(submission.id, 'resolve'); if (existing.status === 'committed') { const saved = committed(existing); if (saved !== undefined) { importSubmissions.current.delete(key); return saved; } } if (existing.status === 'pending' || existing.pending) throw new Error('An earlier import is still pending. Check interrupted import before retrying.'); if (existing.status === 'aborted') { submission.id = crypto.randomUUID(); submission.staged = undefined; await saveLegacySubmission(key, submission); } const result = await execute(submission); importSubmissions.current.delete(key); return result; }
+    catch (cause) {
+      submission.attempts++; await saveLegacySubmission(key, submission);
+      if (submission.attempts >= MAX_ATTEMPTS) { const outcome = await resolveSubmission(submission.id); if (outcome.status === 'committed') { const saved = committed(outcome); if (saved !== undefined) { importSubmissions.current.delete(key); return saved; } } if (outcome.status === 'aborted') { submission.staged = undefined; submission.id = crypto.randomUUID(); await saveLegacySubmission(key, submission); } }
+      throw cause;
+    }
+  }
+  async function recoverImport() {
+    if (busy) return; setBusy('Checking interrupted import…'); setImportError('');
+    try { for (const [key, submission] of importSubmissions.current) { const result = await resolveSubmission(submission.id); if (result.status === 'pending' || result.pending) throw new Error('An import submission is still pending. Check again shortly.'); if (result.status === 'committed') { if (result.record) { acceptRecord(result.record); const local = importRecords.find(record => demoRecordKey(record) === demoRecordKey(result.record!)); if (local) await rememberLegacyRecord(local, result.record); } if (key.startsWith('image:') && result.media?.[0]) await rememberLegacyMedia(key.slice(6), result.media[0].url); } else if (result.status !== 'aborted') throw new Error('The unfinished import could not be closed safely.'); importSubmissions.current.delete(key); await saveLegacySubmission(key, null); } setImportProgress('Interrupted submissions checked. Retry import to verify and continue the remaining items.'); }
+    catch (cause) { setImportError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  async function importLocal() {
+    if (busy || !importSnapshot) return; setBusy('Importing local data…'); setImportError(''); let imported = 0;
+    try {
+      let snapshot = readLegacySnapshot(); let library = await allRemoteMedia();
+      // Validate ordinary content fields before uploading any images.
+      for (const record of newImports) { const validated = recordSchema.safeParse(mapRecordImages(record, url => url.startsWith('data:') ? 'prepared-image' : url)); if (!validated.success) throw new Error(validationMessages(validated.error.issues)); }
+      const assets = new Map<string, string>(); newImports.forEach(record => recordImageUrls(record).forEach(url => { if (url.startsWith('data:')) assets.set(url, record.title); })); snapshot.media.forEach(item => assets.set(item.image, item.title));
+      for (const [url, title] of assets) {
+                const mapped = await legacyImageUrl(url, library, snapshot); if (library.some(item => item.url === mapped)) continue;
+        const prepared = legacyPrepared.current.get(url); if (!prepared) throw new Error('Review local data again to finish preparing all images before importing.');
+        setImportProgress('Saving local image: ' + title);
+        const item = await importAttempt('image:' + url, async submission => { if (!submission.staged) submission.staged = await stageImage(prepared, submission.id); return (await cmsRequest<{ media: MediaItem }>('/api/cms/media/commit', { method: 'POST', body: JSON.stringify({ mediaId: submission.staged.id, submissionId: submission.id, title: title.slice(0, 100) }) })).media; }, result => result.media?.[0]);
+        await rememberLegacyMedia(url, item.url); await saveLegacySubmission('image:' + url, null); library = [item, ...library]; snapshot = readLegacySnapshot();
+      }
+      const current = await cmsRequest<{ records: ContentRecord[] }>('/api/cms/content'); let remote = [...current.records]; setRecords([...remote]);
+      for (const record of newImports) {
+        const existing = remote.find(item => demoRecordKey(item) === demoRecordKey(record)); if (existing) continue;
+        setImportProgress('Importing new record: ' + record.title); const translated = await translateLegacyRecord(record, library, snapshot); const validated = recordSchema.safeParse(translated); if (!validated.success) throw new Error(validationMessages(validated.error.issues));
+        const saved = await importAttempt('record:' + demoRecordKey(record), async submission => (await cmsRequest<{ record: ContentRecord }>('/api/cms/content', { method: 'POST', body: JSON.stringify({ record: validated.data, expectedRevision: null, submissionId: submission.id }) })).record, result => result.record);
+        await rememberLegacyRecord(record, saved); await saveLegacySubmission('record:' + demoRecordKey(record), null); acceptRecord(saved); remote = [...remote, saved]; imported++;
+      }
+      setUploadedMedia(library); await inspectLegacy(readLegacySnapshot(), remote, library); setImportProgress(imported + ' new records imported. Local images are saved in the media library. Changed versions and local Trash still need individual review. Your browser copy is preserved.');
+    } catch (cause) { setImportError(cmsErrorText(cause) + ' Your browser copy is preserved. Retry continues with remaining items.'); } finally { setBusy(''); }
+  }
+  function exportLocalData() {
+    const raw = { content: localStorage.getItem('moe-content-v1'), media: localStorage.getItem('moe-media-v1'), receipts: localStorage.getItem('moe-migration-v1'), archive: localStorage.getItem('moe-migration-archive-v1') }; const url = URL.createObjectURL(new Blob([JSON.stringify(raw, null, 2)], { type: 'application/json' })); const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'moe-local-data-' + new Date().toISOString().slice(0, 10) + '.json'; anchor.click(); URL.revokeObjectURL(url);
+  }
+  async function restoreLocalData() { if (busy || !await confirmAction('Restore the archived legacy browser data for review? This does not change server content.', 'Restore browser archive')) return; try { restoreLegacyArchive(); await previewImport(); } catch (cause) { setImportError(cmsErrorText(cause)); } }
+  async function clearLocalData() {
+    if (busy || !importSnapshot || !await confirmAction('All retained local records and images will be verified against the server, archived, then cleared from active browser storage. Cancel and export local data first if you also want to keep expired Trash.', 'Archive & clear local data')) return;
+    setBusy('Verifying before clearing…'); setImportError('');
+    try { const snapshot = readLegacySnapshot(); const remote = await cmsRequest<{ records: ContentRecord[] }>('/api/cms/content'); const library = await allRemoteMedia(); await clearVerifiedLegacy(snapshot, remote.records, library); setRecords(remote.records); await inspectLegacy(readLegacySnapshot(), remote.records, library); legacyPrepared.current.forEach(image => URL.revokeObjectURL(image.preview)); legacyPrepared.current.clear(); setImportProgress('Verified legacy content and media have been archived and cleared from active browser storage. You can restore the local archive below.'); }
+    catch (cause) { setImportError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  async function exportContent() {
+    if (busy) return; setBusy('Preparing export…'); setError('');
+    try { const backup = await cmsRequest<unknown>('/api/cms/export'); const url = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })); const anchor = document.createElement('a'); anchor.href = url; anchor.download = `moe-export-${new Date().toISOString().slice(0, 10)}.json`; anchor.click(); URL.revokeObjectURL(url); }
+    catch (cause) { setError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+
+  const filtered = records.filter(record => (section === 'trash' ? Boolean(record.deletedAt) : !record.deletedAt) && (type === 'All' || record.type === type) && (status === 'All' || record.status === status) && contentBelongsToPage(record, pageFilter) && `${record.title} ${record.titleTh} ${record.id} ${record.category} ${record.categoryTh || ''} ${record.parentId || ''}`.toLowerCase().includes(search.trim().toLowerCase())).sort((a, b) => pageFilter === 'All' ? 0 : (a.type === 'Page' ? -1 : b.type === 'Page' ? 1 : (a.order ?? 0) - (b.order ?? 0)));
+  const hasContentFilters = Boolean(search.trim() || type !== 'All' || status !== 'All' || pageFilter !== 'All');
+  const hasInboxFilters = Boolean(search.trim() || status !== 'All');
+  const pages = records.filter(record => record.type === 'Page' && !record.deletedAt);
+  const pageLabel = (id?: string) => id === 'shared' ? 'Shared across pages' : pages.find(page => page.id === id) ? cmsPageLabel(pages.find(page => page.id === id)!) : id || 'No parent page';
   const trashCount = records.filter(record => record.deletedAt).length;
+  const newEnquiries = inbox.newCount;
+  const inboxItems = inbox.enquiries;
+  const title = section === 'trash' ? 'Trash' : section === 'inbox' ? 'Enquiries' : section === 'account' ? 'Account & tools' : type === 'All' ? 'Content overview' : typeOptions.find(option => option.type === type)?.title || 'Content';
 
-  function filterType(nextType: string) { setType(nextType); setTab('content'); setStatus('All'); setShowAll(true); setSearch(''); }
-  function openEditor(record?: DemoRecord) {
-    setOriginalKey(record ? demoRecordKey(record) : null);
-    originalRecord.current = record ? JSON.stringify(record) : null;
-    setEditing(record ? { ...record } : { id: crypto.randomUUID(), type: type === 'All' ? 'Page' : type as DemoRecord['type'], title: '', titleTh: '', description: '', descriptionTh: '', image: '/images/hero.webp', category: '', status: 'Draft' });
-    setEditorError(''); setPickerOpen(false);
-  }
-  function closeEditor() { uploadVersion.current++; setPreparing(false); setEditing(null); }
-  function updateEditor(key: keyof DemoRecord, value: string) { setEditing(current => current ? { ...current, [key]: value } : current); }
-  function commit(next: DemoRecord[], message: string) {
-    saveDemoRecords(next); setRecords(next); setError(''); setNotice(message);
-  }
-  function saveEditor(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!editing || preparing) return;
-    try {
-      const latest = getDemoRecords();
-      const currentRecord = originalKey ? latest.find(record => demoRecordKey(record) === originalKey && !record.deletedAt) : null;
-      if (originalKey && !currentRecord) throw new Error('This item was removed in another tab. Close the editor and review your content.');
-      if (currentRecord && JSON.stringify(currentRecord) !== originalRecord.current) throw new Error('This item changed in another tab. Close the editor and review the latest content before saving. Your unsaved changes are still here.');
-      const clean = { ...editing, title: editing.title.trim(), titleTh: editing.titleTh.trim(), description: editing.description.trim(), descriptionTh: editing.descriptionTh.trim(), category: editing.category.trim(), categoryTh: editing.categoryTh?.trim() || undefined };
-      if (!clean.title || !clean.titleTh) throw new Error('Add a title in both English and Thai.');
-      const next = originalKey ? latest.map(record => demoRecordKey(record) === originalKey ? clean : record) : [clean, ...latest];
-      commit(next, `“${clean.title}” saved in this browser as ${clean.status.toLowerCase()}.`);
-      closeEditor(); setTab('content'); setType('All'); setStatus('All'); setSearch(''); setShowAll(true);
-    } catch (cause) { setEditorError(errorText(cause)); }
-  }
-  function moveToTrash() {
-    if (!deleteRecord) return;
-    try {
-      const key = demoRecordKey(deleteRecord);
-      const latest = getDemoRecords();
-      const currentRecord = latest.find(record => demoRecordKey(record) === key && !record.deletedAt);
-      if (!currentRecord) throw new Error('This item is already in Trash or was removed in another tab. Review the current content list.');
-      if (JSON.stringify(currentRecord) !== JSON.stringify(deleteRecord)) throw new Error('This item changed in another tab. Review the latest version before moving it to Trash.');
-      commit(latest.map(record => demoRecordKey(record) === key ? { ...record, deletedAt: new Date().toISOString() } : record), `“${deleteRecord.title}” moved to Trash. You can restore it within 30 days.`);
-      setDeleteRecord(null);
-    } catch (cause) { setError(errorText(cause)); setDeleteRecord(null); }
-  }
-  function restore(record: DemoRecord) {
-    try {
-      const latest = getDemoRecords();
-      const currentRecord = latest.find(item => demoRecordKey(item) === demoRecordKey(record));
-      if (!currentRecord?.deletedAt) throw new Error('This item has already been restored or has expired from Trash.');
-      if (JSON.stringify(currentRecord) !== JSON.stringify(record)) throw new Error('This item changed in another tab. Review the latest version before restoring it.');
-      commit(latest.map(item => {
-        if (demoRecordKey(item) !== demoRecordKey(record)) return item;
-        const restored = { ...item }; delete restored.deletedAt; return restored;
-      }), `“${record.title}” restored in this browser.`);
-    } catch (cause) { setError(errorText(cause)); }
-  }
-  async function editorUpload(file?: File) {
-    if (!file) return;
-    const version = ++uploadVersion.current;
-    setPreparing(true); setEditorError('');
-    try {
-      const image = await prepareImage(file);
-      if (uploadVersion.current === version) updateEditor('image', image);
-    } catch (cause) { if (uploadVersion.current === version) setEditorError(errorText(cause)); }
-    finally { if (uploadVersion.current === version) setPreparing(false); }
-  }
-  async function libraryUpload(file?: File) {
-    if (!file) return;
-    const version = ++mediaUploadVersion.current;
-    setMediaPreparing(true); setMediaError('');
-    try {
-      const image = await prepareImage(file);
-      if (mediaUploadVersion.current === version) setPreparedMedia({ id: crypto.randomUUID(), title: file.name.replace(/\.[^.]+$/, ''), image });
-    } catch (cause) { if (mediaUploadVersion.current === version) setMediaError(errorText(cause)); }
-    finally { if (mediaUploadVersion.current === version) setMediaPreparing(false); }
-  }
-  function saveMedia() {
-    if (!preparedMedia || mediaPreparing) return;
-    try {
-      const next = [...readMedia(), preparedMedia];
-      window.localStorage.setItem(mediaKey, JSON.stringify(next));
-      setLocalMedia(next); setPreparedMedia(null); setMediaError(''); setNotice('Image saved to the media library in this browser.');
-    } catch { setMediaError('The image could not be saved. Browser storage may be full or disabled. Your prepared image is still here; choose a smaller image or try again.'); }
-  }
-  function closeMedia() { mediaUploadVersion.current++; setMediaPreparing(false); setMediaOpen(false); }
+  if (!sessionReady || !user) return <div className={styles.cms}><header className={styles.header}><Brand /><span className={styles.cmsLabel}>CMS</span><Link href="/" target="_blank" rel="noopener noreferrer" className={`button secondary ${styles.viewSite}`} aria-label="View website in a new tab">View website <ArrowUpRight size={19} /></Link></header><main className={styles.loginMain}><section className={styles.loginCard}><div className={styles.loginIcon}><LockKeyhole size={30} /></div><span className="eyebrow">MOE Navigation CMS</span><h1>Welcome back</h1><p>Sign in to manage your website content and enquiries.</p>{!sessionReady ? <p className={styles.loading} role="status"><LoaderCircle className={styles.spinner} size={21} />Checking your session…</p> : <form className={styles.editor} onSubmit={login}><label>Username<input name="username" required autoComplete="username" autoCapitalize="none" spellCheck={false} maxLength={80} /></label><label>Password<input type="password" name="password" required autoComplete="current-password" maxLength={200} /></label>{loginError && <div className={styles.error} role="alert">{loginError}</div>}<button type="submit" className="button" disabled={Boolean(busy)}>{busy === 'login' ? <><LoaderCircle className={styles.spinner} size={20} />Signing in…</> : <>Sign in<ArrowRight size={20} /></>}</button><p className={styles.loginHelp}>Use the administrator credentials created for this website.</p></form>}</section></main></div>;
 
   return <div className={styles.cms}>
-    <header className={styles.header}>
-      <button className={styles.menuButton} type="button" onClick={() => setDrawerOpen(true)} aria-label="Open CMS navigation" aria-haspopup="dialog"><Menu /><span>Menu</span></button>
-      <Link href="/" className={styles.logo} aria-label="MOE Navigation home"><span className={styles.brandMark}><BrandMark /></span><span className={styles.logoText}><strong>MOE</strong><span>NAVIGATION</span></span></Link>
-      <span className={styles.cmsLabel}>CMS</span>
-      <Link href="/" className={`button secondary ${styles.viewSite}`} aria-label="View website"><span className={styles.viewSiteLong}>View website</span><span className={styles.viewSiteShort}>Site</span><ArrowUpRight size={19} /></Link>
-      <span className={styles.avatar} title="Demo workspace">D</span>
-    </header>
-    <main className={styles.main}>
-      <div className={styles.intro}>
-        <div><span className="eyebrow">CMS demo sandbox</span><h1>{tab === 'trash' ? 'Trash' : 'Content overview'}</h1><p>{tab === 'trash' ? 'Restore deleted content within 30 days.' : 'Manage your website pages and content.'}</p></div>
-        <button type="button" className="button" onClick={() => openEditor()} disabled={!ready || !storageOkay}><Plus size={21} /> Create content</button>
-      </div>
-      <div className={styles.demoNotice}><span className={styles.demoDot} /> Local browser demo. Content is saved on this device. APIs and production access will be connected later.</div>
-      {error && <div className={styles.error} role="alert">{error}</div>}
-      {notice && <div className={styles.success} role="status"><Check size={19} /><span>{notice}</span><button type="button" className={styles.iconButton} onClick={() => setNotice('')} aria-label="Dismiss saved notice"><X size={18} /></button></div>}
-      <div className={styles.categoryHeading}><div><h2>Content areas</h2><p>Choose a type to focus the list.</p></div><button type="button" className={styles.textButton} onClick={() => filterType('All')} aria-pressed={tab === 'content' && type === 'All'}>All content <ArrowRight size={18} /></button></div>
-      <nav className={styles.categories} aria-label="Content categories">{typeOptions.map(option => <button key={option.type} type="button" aria-pressed={type === option.type && tab === 'content'} className={type === option.type && tab === 'content' ? styles.categorySelected : ''} onClick={() => filterType(option.type)}><option.icon size={34} strokeWidth={1.7} /><span>{option.title}</span><ArrowRight className={styles.categoryArrow} size={19} /></button>)}</nav>
-      <div className={styles.workspace}>
-        <section className={styles.panel} aria-labelledby="content-heading">
-          <div className={styles.panelHeading}><h2 id="content-heading">{tab === 'trash' ? 'Deleted content' : 'Website content'}</h2><button className={styles.textButton} type="button" onClick={() => { setShowAll(true); setSearch(''); setType('All'); setStatus('All'); }}>View all <ArrowRight size={20} /></button></div>
-          <div className={styles.tabs}><button type="button" aria-pressed={tab === 'content'} className={tab === 'content' ? styles.tabActive : ''} onClick={() => { setTab('content'); setSearch(''); }}>Content <span>{records.length - trashCount}</span></button><button type="button" aria-pressed={tab === 'trash'} className={tab === 'trash' ? styles.tabActive : ''} onClick={() => { setTab('trash'); setType('All'); setStatus('All'); setSearch(''); }}>Trash <span>{trashCount}</span></button></div>
-          <div className={styles.filters}>
-            <label className={styles.search}><Search size={21} /><input type="search" placeholder="Search content..." aria-label="Search content" value={search} onChange={event => setSearch(event.target.value)} /></label>
-            <label className={styles.select}><span className={styles.srOnly}>Content type</span><select value={type} onChange={event => setType(event.target.value)}><option value="All">All types</option>{typeOptions.map(option => <option key={option.type}>{option.type}</option>)}</select><ChevronDown size={17} /></label>
-            <label className={styles.select}><span className={styles.srOnly}>Publication status</span><select value={status} onChange={event => setStatus(event.target.value)}><option value="All">All statuses</option><option>Published</option><option>Draft</option></select><ChevronDown size={17} /></label>
-          </div>
-          {!ready ? <p className={styles.empty}>Loading local content...</p> : limited.length === 0 ? <div className={styles.empty}><FileText size={34} /><h3>{tab === 'trash' ? 'No deleted content' : 'No matching content'}</h3><p>{tab === 'trash' ? 'Items you delete will appear here for 30 days.' : 'Try another search or create a new item.'}</p></div> : <table className={styles.contentTable}>
-            <thead><tr><th>Title</th><th>Type</th><th>Status</th><th>Action</th></tr></thead>
-            <tbody>{limited.map(record => <tr key={demoRecordKey(record)}>
-              <td className={styles.titleCell}><img src={record.image} alt="" width={140} height={83} /><div><strong>{record.title}</strong><span className={styles.mobileType}>{record.type}</span>{record.deletedAt && <span className={styles.expiry}>{Math.max(0, Math.ceil((Date.parse(record.deletedAt) + 30 * 86400000 - now) / 86400000))} days to restore</span>}</div></td>
-              <td className={styles.typeCell}>{record.type}</td>
-              <td className={styles.statusCell}><span className={`${styles.badge} ${record.status === 'Published' ? styles.published : styles.draft}`}>{record.status}</span></td>
-              <td className={styles.actionCell}>{tab === 'trash' ? <button type="button" className={styles.textButton} aria-label={`Restore ${record.title}`} disabled={!storageOkay} onClick={() => restore(record)}><RotateCcw size={18} /> Restore</button> : <><button type="button" className={styles.textButton} aria-label={`Edit ${record.title}`} disabled={!storageOkay} onClick={() => openEditor(record)}>Edit <ArrowRight size={18} /></button><button type="button" className={styles.deleteButton} aria-label={`Move ${record.title} to Trash`} disabled={!storageOkay} onClick={() => setDeleteRecord(record)}><Trash2 size={18} /></button></>}</td>
-            </tr>)}</tbody>
-          </table>}
-          {filtered.length > limited.length && <button type="button" className={styles.showMore} onClick={() => setShowAll(true)}>Show all {filtered.length} items <ArrowRight size={18} /></button>}
-          {tab === 'trash' && <p className={styles.retentionNote}>Expired items are removed from this browser automatically after 30 days. Media remains available for other content.</p>}
-        </section>
-        <aside className={`${styles.panel} ${styles.mediaPanel}`} aria-labelledby="media-heading">
-          <div className={styles.panelHeading}><h2 id="media-heading">Media library</h2><button type="button" className={styles.textButton} onClick={() => { setMediaOpen(true); setMediaError(''); }}>View all <ArrowRight size={20} /></button></div>
-          <p>Images for your website</p>
-          <div className={styles.mediaGrid}>{media.slice(0, 4).map(item => <button type="button" key={item.id} onClick={() => setMediaOpen(true)}><img src={item.image} alt={item.title} width={300} height={180} /><strong>{item.title}</strong></button>)}</div>
-          <button type="button" className={`button secondary ${styles.uploadButton}`} onClick={() => { setMediaOpen(true); setMediaError(''); }} disabled={!ready || !mediaOkay}><UploadCloud size={23} /> Upload media</button>
-          <span className={styles.localLabel}>Generated demo imagery · local storage only</span>
-        </aside>
-      </div>
+    <a className="skip-link" href="#cms-content">Skip to content</a>
+    <header className={styles.header}><button className={styles.menuButton} type="button" onClick={() => setDrawerOpen(true)} aria-label="Open CMS navigation" aria-haspopup="dialog"><Menu /><span>Menu</span></button><Brand /><span className={styles.cmsLabel}>CMS</span><Link href="/" target="_blank" rel="noopener noreferrer" className={`button secondary ${styles.viewSite}`} aria-label="View website in a new tab"><span className={styles.viewSiteLong}>View website</span><span className={styles.viewSiteShort}>Site</span><ArrowUpRight size={19} /></Link><button type="button" className={styles.avatar} title={`Account: ${user.username}`} aria-label="Open account settings" onClick={() => navigate('account')}>{user.username.slice(0, 1).toUpperCase()}</button></header>
+    <main className={styles.main} id="cms-content">
+      <div className={styles.intro}><div><span className="eyebrow">Website workspace</span><h1>{title}</h1><p>{section === 'trash' ? 'Restore deleted content within 30 days.' : section === 'inbox' ? 'Keep track of messages from your website visitors.' : section === 'account' ? 'Manage your sign-in and keep a copy of your content.' : 'Keep your website current, in English and Thai.'}</p></div><div className={styles.introActions}><button type="button" className={`button secondary ${styles.refreshButton}`} aria-label="Refresh workspace" disabled={loading || Boolean(busy)} onClick={() => void load()}><RefreshCw className={loading ? styles.spinner : ''} size={20} /><span className={styles.refreshLabel}>Refresh</span></button>{section === 'content' && <button type="button" className="button" onClick={() => openEditor()} disabled={loading || Boolean(busy)}><Plus size={21} />Create content</button>}</div></div>
+      {error && <div className={styles.error} role="alert">{error}</div>}{notice && <div className={styles.success} role="status"><Check size={19} /><span>{notice}</span><button type="button" className={styles.iconButton} onClick={() => setNotice('')} aria-label="Dismiss notification"><X size={18} /></button></div>}
+      {section === 'content' && <><div className={styles.overviewStats}><div><span>Published</span><strong>{records.filter(item => item.status === 'Published' && !item.deletedAt).length}</strong></div><div><span>Not public</span><strong>{records.filter(item => item.status === 'Draft' && !item.deletedAt).length}</strong></div><button type="button" onClick={() => navigate('inbox')}><span>New enquiries</span><strong>{newEnquiries ?? '—'}<ArrowRight size={19} /></strong></button></div><nav className={styles.categories} aria-label="Content categories">{typeOptions.map(option => <button key={option.type} type="button" aria-pressed={type === option.type} className={type === option.type ? styles.categorySelected : ''} onClick={() => navigate('content', option.type)}><option.icon size={28} strokeWidth={1.7} /><span>{option.title}</span><ArrowRight className={styles.categoryArrow} size={19} /></button>)}</nav></>}
+      {(section === 'content' || section === 'trash') && <div className={styles.workspace}><section className={styles.panel} aria-labelledby="content-heading"><div className={styles.panelHeading}><h2 id="content-heading">{section === 'trash' ? 'Deleted content' : 'Website content'}</h2><button className={styles.textButton} type="button" onClick={clearFilters}>All content<ArrowRight size={19} /></button></div><div className={styles.tabs}><button type="button" aria-pressed={section === 'content'} className={section === 'content' ? styles.tabActive : ''} onClick={() => navigate('content')}>Content<span>{records.length - trashCount}</span></button><button type="button" aria-pressed={section === 'trash'} className={section === 'trash' ? styles.tabActive : ''} onClick={() => navigate('trash')}>Trash<span>{trashCount}</span></button></div><div className={styles.filters}><label className={styles.search}><Search size={20} /><input ref={workspaceSearchRef} type="search" placeholder="Search content…" aria-label="Search content" value={search} onChange={event => { setSearch(event.target.value); setLimit(12); }} /></label><label className={styles.select}><span className={styles.srOnly}>Content type</span><select value={type} onChange={event => { setType(event.target.value); setPageFilter('All'); setLimit(12); }}><option value="All">All types</option>{typeOptions.map(option => <option key={option.type} value={option.type}>{option.title}</option>)}</select><ChevronDown size={17} /></label><label className={styles.select}><span className={styles.srOnly}>Publication status</span><select value={status} onChange={event => { setStatus(event.target.value); setLimit(12); }}><option value="All">All statuses</option><option value="Published">Published</option><option value="Draft">Not public</option></select><ChevronDown size={17} /></label></div>
+        {(type === 'All' || type === 'Page' || type === 'Section') && <div className={styles.pageFilter}><label>Find a page and its sections<select value={pageFilter} onChange={event => { setPageFilter(event.target.value); setLimit(12); }}><option value="All">All pages</option>{pages.map(page => <option key={page.id} value={page.id}>{cmsPageLabel(page)}</option>)}<option value="shared">Shared across pages</option></select></label><span className={styles.fieldHint}>{pageFilter === 'All' ? 'Select a page to find its main content and related sections.' : `${filtered.length} matching item${filtered.length === 1 ? '' : 's'} for ${pageLabel(pageFilter)}.`}</span></div>}
+        <div className={styles.resultBar}><span role="status">{loading ? 'Refreshing content…' : `Showing ${Math.min(filtered.length, limit)} of ${filtered.length} item${filtered.length === 1 ? '' : 's'}${hasContentFilters ? ' matching your filters' : ''}`}</span>{hasContentFilters && <button className={styles.textButton} type="button" onClick={clearFilters}><X size={16} />Clear filters</button>}</div>
+        {loading && !records.length ? <p className={styles.loading} role="status"><LoaderCircle className={styles.spinner} size={21} />Loading your content…</p> : !filtered.length ? <div className={styles.empty}><FileText size={34} /><h3>{hasContentFilters ? 'No matching content' : section === 'trash' ? 'Trash is empty' : 'No content yet'}</h3><p>{hasContentFilters ? 'Try another search or clear your filters.' : section === 'trash' ? 'Deleted items will appear here for 30 days.' : 'Create your first item to get started.'}</p></div> : <table className={styles.contentTable}><thead><tr><th>Title</th><th>Type</th><th>Status</th><th>Action</th></tr></thead><tbody>{filtered.slice(0, limit).map(record => <tr key={demoRecordKey(record)}><td className={styles.titleCell}><>{record.image ? <img src={record.image} alt="" width={140} height={83} /> : <span className={styles.contentThumbEmpty}><FileText size={24} aria-hidden="true" /></span>}</><div><strong>{record.title}</strong><span className={styles.mobileType}>{record.type}</span>{record.type === 'Section' && <span className={styles.recordContext}>{pageLabel(record.parentId)} · Order {record.order ?? 0}</span>}{record.type === 'Page' && <button type="button" className={styles.sectionLink} onClick={() => { setType('Section'); setPageFilter(record.id); setSearch(''); setStatus('All'); setLimit(12); }}>Manage sections ({records.filter(item => item.type === 'Section' && item.parentId === record.id && !item.deletedAt).length})<ArrowRight size={14} /></button>}{record.deletedAt && <span className={styles.expiry}>Deleted {new Date(record.deletedAt).toLocaleDateString('en-GB')}</span>}</div></td><td className={styles.typeCell}>{record.type}</td><td className={styles.statusCell}><span className={`${styles.badge} ${record.status === 'Published' ? styles.published : styles.draft}`}>{record.status === 'Draft' ? 'Not public' : record.status}</span></td><td className={styles.actionCell}>{section === 'trash' ? <button type="button" className={styles.textButton} aria-label={`Restore ${record.title}`} disabled={Boolean(busy)} onClick={() => void changeRecord(record, 'restore')}><RotateCcw size={18} />Restore</button> : <><button type="button" className={styles.textButton} aria-label={`Edit ${record.title}`} onClick={() => openEditor(record)} disabled={Boolean(busy)}>Edit<ArrowRight size={18} /></button><button type="button" className={styles.deleteButton} aria-label={`Move ${record.title} to Trash`} title={corePage(record) ? 'This core page must remain available.' : undefined} disabled={Boolean(busy) || (corePage(record))} onClick={() => setDeleteRecord(record)}><Trash2 size={18} /></button></>}</td></tr>)}</tbody></table>}
+        {filtered.length > limit && <button className={styles.showMore} type="button" onClick={() => setLimit(current => current + 12)}>Show more ({filtered.length - limit} remaining)<ArrowRight size={18} /></button>}{section === 'trash' && <p className={styles.retentionNote}>Items are permanently removed after 30 days. Images referenced by other content remain protected.</p>}</section><aside className={`${styles.panel} ${styles.mediaPanel}`} aria-labelledby="media-heading"><div className={styles.panelHeading}><h2 id="media-heading">Media library</h2><button type="button" className={styles.textButton} onClick={openMedia}>View all<ArrowRight size={20} /></button></div><p>Ready for your next update</p><div className={styles.mediaGrid}>{media.slice(0, 4).map(item => <button type="button" key={item.id} onClick={openMedia}><img src={item.url} alt="" width={300} height={180} /><strong>{item.title}</strong></button>)}</div><button type="button" className={`button secondary ${styles.uploadButton}`} onClick={openMedia}><UploadCloud size={23} />Add an image</button><span className={styles.localLabel}>Choose an image, review it, then upload.</span></aside></div>}
+      {section === 'inbox' && <section className={styles.panel} aria-label="Enquiry inbox">
+        <div className={styles.inboxFilters}>
+          <label className={styles.search}><Search size={20} /><input ref={workspaceSearchRef} type="search" aria-label="Search all enquiries" placeholder="Search all enquiries…" maxLength={200} value={search} onChange={event => setSearch(event.target.value)} /></label>
+          <label className={styles.select}><span className={styles.srOnly}>Enquiry status</span><select value={status} onChange={event => setStatus(event.target.value)}><option value="All">All statuses</option>{enquiryStatuses.map(value => <option key={value}>{value}</option>)}</select><ChevronDown size={17} /></label>
+        </div>
+        <div className={styles.resultBar}><span role="status">{inbox.searching ? 'Searching all enquiries…' : inbox.total !== null ? `Showing ${inboxItems.length} of ${inbox.total} enquiries` : 'Enquiries could not be loaded'}</span>{hasInboxFilters && <button type="button" className={styles.textButton} onClick={clearFilters}><X size={16} />Clear filters</button>}</div>
+        {inbox.totalAll !== null && !inbox.searching && <p className={styles.fieldHint}>{inbox.totalAll} enquiries in your inbox · {inbox.newCount} new. Search covers all saved enquiries.</p>}
+        {inbox.error && <div className={styles.error} role="alert"><p>{inbox.error}</p><button type="button" className="button secondary" disabled={inbox.loadingMore || Boolean(busy)} onClick={() => inboxItems.length ? void inbox.loadMore() : refreshInbox()}><RefreshCw size={18} />{inboxItems.length ? 'Retry loading more' : 'Retry enquiry search'}</button></div>}
+        <div id="enquiry-results" aria-busy={inbox.searching || inbox.loadingMore}>
+          {inbox.searching ? <p className={styles.loading}><LoaderCircle className={styles.spinner} size={21} />Searching enquiries…</p> : !inbox.error && !inboxItems.length ? <div className={styles.empty}><Inbox size={36} /><h3>{hasInboxFilters ? 'No matching enquiries' : 'Your inbox is clear'}</h3><p>{hasInboxFilters ? 'Try another search or clear your filters.' : 'Messages submitted through the contact form appear here.'}</p></div> : <div className={styles.inboxList}>{inboxItems.map(item => <button type="button" key={item.id} className={styles.enquiryRow} onClick={() => { setSelectedEnquiry(item); setEnquiryError(''); setEnquiryNotice(''); }}><div><strong>{item.subject}</strong><span>{item.name}{item.company ? ` · ${item.company}` : ''}</span><p>{item.message}</p></div><div className={styles.enquiryMeta}><span className={`${styles.badge} ${item.status === 'Resolved' ? styles.published : styles.draft}`}>{item.status}</span><time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time><ArrowRight size={20} /></div></button>)}</div>}
+          {inbox.nextCursor && !inbox.error && <button type="button" className={styles.showMore} disabled={inbox.loadingMore || Boolean(busy)} onClick={() => void inbox.loadMore()}>{inbox.loadingMore ? <><LoaderCircle className={styles.spinner} size={18} />Loading more enquiries…</> : <>Load more enquiries<ArrowRight size={18} /></>}</button>}
+        </div>
+      </section>}
+      {section === 'account' && <div className={styles.accountGrid}><section className={`${styles.panel} ${styles.websiteSettings}`}><div className={styles.panelHeading}><h2>Website details</h2><button type="button" className={styles.textButton} disabled={Boolean(busy)} onClick={() => void refreshWebsiteDetails()}><RefreshCw size={17} />Refresh details</button></div><p className={styles.accountDescription}>Use verified company information. Leave contact fields blank until the details are ready.</p>{websiteDetails ? <form className={styles.editor} onSubmit={saveWebsiteDetails}><fieldset className={styles.formFields} disabled={Boolean(busy)}><div className={styles.twoColumns}><label>Company name · English<input required maxLength={150} value={websiteDetails.draft.companyName} onChange={event => updateWebsiteDetails('companyName', event.target.value)} /></label><label>Company name · Thai<input required lang="th" maxLength={150} value={websiteDetails.draft.companyNameTh} onChange={event => updateWebsiteDetails('companyNameTh', event.target.value)} /></label></div><div className={styles.twoColumns}><label>Office address · English<textarea rows={3} maxLength={1000} value={websiteDetails.draft.officeAddress} onChange={event => updateWebsiteDetails('officeAddress', event.target.value)} /></label><label>Office address · Thai<textarea lang="th" rows={3} maxLength={1000} value={websiteDetails.draft.officeAddressTh} onChange={event => updateWebsiteDetails('officeAddressTh', event.target.value)} /></label></div><div className={styles.twoColumns}><label>Public phone number<input type="tel" maxLength={40} value={websiteDetails.draft.phone} onChange={event => updateWebsiteDetails('phone', event.target.value)} autoComplete="tel" /></label><label>Public email address<input type="email" maxLength={254} value={websiteDetails.draft.email} onChange={event => updateWebsiteDetails('email', event.target.value)} autoComplete="email" /></label></div><label>Map link<input type="url" maxLength={1500} placeholder="https://" value={websiteDetails.draft.mapUrl} onChange={event => updateWebsiteDetails('mapUrl', event.target.value)} /><span className={styles.fieldHint}>Paste the HTTPS link to your office location.</span></label></fieldset>{settingsError && <div className={styles.error} role="alert">{settingsError}<p>Your input is preserved. Refresh details only when you want to discard the unsaved version.</p></div>}{settingsNotice && <div className={styles.success} role="status"><Check size={18} />{settingsNotice}</div>}<div className={styles.editorFooter}><button type="submit" className="button" disabled={Boolean(busy) || !settingsDirty}><Check size={18} />{busy === 'Saving website details…' ? busy : 'Save website details'}</button></div></form> : <p className={styles.editorNotice}>Website details could not be loaded. Use Refresh details to try again.</p>}</section><section className={styles.panel}><div className={styles.panelHeading}><h2>Change password</h2><LockKeyhole size={22} /></div><p className={styles.accountDescription}>Signed in as <strong>{user.username}</strong>. Use at least 14 characters for your new password.</p><form className={styles.editor} onSubmit={changePassword}><label>Current password<input name="currentPassword" disabled={Boolean(busy)} type="password" autoComplete="current-password" required maxLength={200} /></label><label>New password<input name="newPassword" disabled={Boolean(busy)} type="password" autoComplete="new-password" required minLength={14} maxLength={200} /></label><label>Confirm new password<input name="confirmPassword" disabled={Boolean(busy)} type="password" autoComplete="new-password" required minLength={14} maxLength={200} /></label><button className="button" disabled={Boolean(busy)} type="submit">{busy === 'Updating password…' ? busy : 'Update password'}</button></form></section><section className={styles.panel}><h2>Content tools</h2><div className={styles.toolCard}><Download size={24} /><div><h3>Export website data</h3><p>Download content, media references and enquiries as JSON. Image files and administrator accounts are stored separately.</p><button type="button" className="button secondary" onClick={() => void exportContent()} disabled={loading || Boolean(busy)}><Download size={18} />{busy === 'Preparing export…' ? 'Preparing export…' : 'Export data'}</button></div></div><div className={styles.toolCard}><UploadCloud size={24} /><div><h3>Bring over local content</h3><p>Review content saved by the earlier browser demo. Import new records while preserving current website content.</p><button type="button" className="button secondary" onClick={previewImport}>Review local content</button></div></div><button type="button" className={styles.textButton} onClick={() => void logout()} disabled={Boolean(busy)}><LogOut size={19} />Sign out</button></section></div>}
     </main>
-    <Modal open={drawerOpen} onClose={() => setDrawerOpen(false)} title="CMS navigation" drawer>
-      <p className={styles.drawerDescription}>MOE Navigation · Demo workspace</p>
-      <nav className={styles.drawerLinks}><button type="button" onClick={() => { filterType('All'); setDrawerOpen(false); }}><FileText size={20} /> Content overview <ArrowRight size={18} /></button>{typeOptions.map(option => <button key={option.type} type="button" onClick={() => { filterType(option.type); setDrawerOpen(false); }}><option.icon size={20} />{option.title}<ArrowRight size={18} /></button>)}<button type="button" onClick={() => { setTab('trash'); setType('All'); setStatus('All'); setSearch(''); setDrawerOpen(false); }}><Trash2 size={20} /> Trash ({trashCount}) <ArrowRight size={18} /></button></nav>
-      <div className={styles.drawerFoot}><p>Changes are saved on this device. Production login and connected APIs are not configured.</p><Link href="/" className="button secondary">View website <ArrowUpRight size={18} /></Link></div>
+    <Modal open={drawerOpen} onClose={() => setDrawerOpen(false)} title="CMS navigation" drawer><p className={styles.drawerDescription}>MOE Navigation · {user.username}</p><nav className={styles.drawerLinks}><button type="button" onClick={() => navigate('content')}><FileText size={20} />Content overview<ArrowRight size={18} /></button>{typeOptions.map(option => <button key={option.type} type="button" onClick={() => navigate('content', option.type)}><option.icon size={20} />{option.title}<ArrowRight size={18} /></button>)}<button type="button" onClick={() => navigate('inbox')}><Inbox size={20} />Enquiries {newEnquiries !== null && newEnquiries > 0 && <span className={styles.navCount}>{newEnquiries}</span>}<ArrowRight size={18} /></button><button type="button" onClick={() => { setDrawerOpen(false); openMedia(); }}><ImagePlus size={20} />Media library<ArrowRight size={18} /></button><button type="button" onClick={() => navigate('trash')}><Trash2 size={20} />Trash ({trashCount})<ArrowRight size={18} /></button><button type="button" onClick={() => navigate('account')}><Settings size={20} />Account & tools<ArrowRight size={18} /></button></nav><div className={styles.drawerFoot}><button type="button" className="button secondary" onClick={() => void logout()} disabled={Boolean(busy)}><LogOut size={19} />Sign out</button></div></Modal>
+    <Modal open={editing !== null} onClose={closeEditor} title={original ? 'Edit content' : 'Create content'} busy={Boolean(busy)} actions={<div className={styles.editorActionRow}><span className={styles.saveState} role="status">{editorDirty ? 'Unsaved changes' : original ? 'Showing the saved version' : 'New content'}</span>{editorDirty && <button type="button" className={styles.textButton} onClick={downloadDraft} disabled={Boolean(busy)}><Download size={18} />Download unsaved text</button>}<button type="button" className="button secondary" onClick={closeEditor} disabled={Boolean(busy)}>Cancel</button><button type="submit" form="cms-content-editor" className="button" disabled={preparing || Boolean(busy) || editorAttempts >= MAX_ATTEMPTS || editorConflict}>{busy ? <LoaderCircle className={styles.spinner} size={19} /> : <Check size={19} />}{busy || (preparing ? 'Preparing image…' : 'Save')}</button></div>}>{editing && <form id="cms-content-editor" className={styles.editor} aria-busy={Boolean(busy)} onSubmit={saveEditor} onInvalidCapture={event => { const field = event.target as HTMLElement; field.closest('details')?.setAttribute('open', ''); }}><p className={styles.editorNotice}>Save makes your changes available on the website immediately.{publishedPreview && original && <span className={styles.previewLinks}><a className={styles.previewLink} href={publishedPreview} target="_blank" rel="noopener noreferrer">View website · Thai<ArrowUpRight size={16} /></a><a className={styles.previewLink} href={publishedContentUrl(original, records, 'en')!} target="_blank" rel="noopener noreferrer">View website · English<ArrowUpRight size={16} /></a></span>}</p><CmsContentFields record={editing} existing={Boolean(original)} pages={records.filter(record => record.type === 'Page')} media={media} images={editorImages} disabled={Boolean(busy)} preparing={preparing} hasMore={Boolean(mediaCursor)} onChange={updateEditor} onTypeChange={nextType => void changeEditorType(nextType)} onImage={(file, target) => void chooseEditorImage(file, target)} onMore={() => void loadMoreMedia()} routeText={routeText} onRouteText={setRouteText} />{editorError && <div ref={editorErrorRef} className={styles.error} role="alert" tabIndex={-1}>{editorError}<p>Your input is preserved.{editorAttempts >= MAX_ATTEMPTS ? ' Three attempts failed. Check the saved content before retrying.' : editorConflict ? ' Load the latest version before editing again.' : ' Retry after checking the issue.'}</p>{(editorConflict || editorAttempts >= MAX_ATTEMPTS) && <div className={styles.recoveryActions}><button type="button" className="button secondary" onClick={() => void recoverEditor()} disabled={Boolean(busy)}>{editorConflict ? 'Load latest saved version' : 'Check saved content'}</button><button type="button" className={styles.textButton} onClick={downloadDraft}><Download size={18} />Download unsaved text</button></div>}</div>}</form>}</Modal>
+    <Modal open={deleteRecord !== null} onClose={() => setDeleteRecord(null)} title="Move to Trash?" busy={Boolean(busy)}><p className={styles.confirmText}>“{deleteRecord?.title}” will be hidden from the website. You can restore it for 30 days.</p><div className={styles.editorFooter}><button type="button" className="button secondary" onClick={() => setDeleteRecord(null)} disabled={Boolean(busy)}>Cancel</button><button type="button" className="button" disabled={Boolean(busy)} onClick={() => { if (deleteRecord) void changeRecord(deleteRecord, 'trash'); }}><Trash2 size={18} />{busy === 'trash' ? 'Moving…' : 'Move to Trash'}</button></div></Modal>
+    <Modal open={mediaOpen} onClose={closeMedia} title="Media library" busy={Boolean(busy)}><p className={styles.editorNotice}>Prepare an image first. Upload starts only when you choose Save image.</p>{mediaNotice && <div className={styles.success} role="status"><Check size={19} />{mediaNotice}</div>}<div className={styles.mediaUpload}><label className={`button secondary ${styles.fileButton}`}><UploadCloud size={20} />{mediaPreparing ? 'Preparing image…' : 'Choose device image'}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={mediaPreparing || Boolean(busy)} aria-label="Choose media library image" onChange={event => { void chooseLibraryImage(event.target.files?.[0]); event.target.value = ''; }} /></label><p>JPEG, PNG or WebP · up to 8 MB before preparation</p></div>{preparedMedia && <form className={styles.preparedImage} onSubmit={saveMedia}><img src={preparedMedia.preview} alt="Prepared media preview" width={240} height={150} /><label>Image name<input required maxLength={100} value={mediaTitle} disabled={Boolean(busy)} onChange={event => setMediaTitle(event.target.value)} /><span className={styles.fieldHint}>{preparedMedia.width} × {preparedMedia.height} · {(preparedMedia.blob.size / 1024).toFixed(0)} KB</span></label><button type="submit" className="button" disabled={mediaPreparing || !mediaTitle.trim() || Boolean(busy) || mediaAttempts >= MAX_ATTEMPTS}>{busy ? <LoaderCircle className={styles.spinner} size={18} /> : <Check size={18} />}{busy || 'Save image'}</button></form>}{mediaError && <div className={styles.error} role="alert">{mediaError}{mediaAttempts >= MAX_ATTEMPTS && <div className={styles.recoveryActions}><p>Three attempts failed. Your prepared image is preserved.</p><button type="button" className="button secondary" disabled={Boolean(busy)} onClick={() => void recoverMedia()}>Check saved media</button></div>}</div>}<div className={styles.librarySearch}><label className={styles.search}><Search size={20} /><input ref={mediaSearchRef} type="search" aria-label="Search media library" placeholder="Search image names…" value={mediaSearch} onChange={event => setMediaSearch(event.target.value)} /></label>{mediaSearch && <button type="button" className={styles.textButton} onClick={() => { setMediaSearch(''); mediaSearchRef.current?.focus({ preventScroll: true }); }}><X size={16} />Clear search</button>}</div><div className={styles.resultBar}><span role="status">{filteredMedia.length} of {media.length}{mediaCursor ? ' loaded' : ''} images</span></div>{!filteredMedia.length && <div className={styles.empty}><ImagePlus size={32} /><h3>{mediaSearch.trim() ? 'No matching images' : 'Your library is empty'}</h3><p>{mediaSearch.trim() ? 'Try another image name or clear your search.' : 'Choose a device image above to get started.'}</p></div>}<div className={styles.libraryGrid}>{filteredMedia.map(item => <div key={item.id}><img src={item.url} alt="" width={260} height={160} loading="lazy" /><strong>{item.title}</strong><span className={styles.fieldHint}>Cloudinary</span>{<button type="button" className={styles.textButton} disabled={Boolean(busy)} onClick={() => void removeMedia(item)} aria-label={`Remove ${item.title} from library`}><Trash2 size={16} />Remove</button>}</div>)}</div>{mediaCursor && <button type="button" className={styles.showMore} disabled={Boolean(busy)} onClick={() => void loadMoreMedia()}>Load more images<ArrowRight size={18} /></button>}{mediaCursor && <p className={styles.fieldHint}>Search covers loaded images. Load more to include older images.</p>}<div className={styles.cleanup}><p>Remove unused uploads after a one-hour grace period. Images in content or Trash remain protected.</p><button type="button" className={styles.textButton} onClick={() => void cleanupMedia()} disabled={Boolean(busy) || Boolean(preparedMedia) || Object.keys(editorImages).length > 0}><Trash2 size={18} />Clean unfinished uploads</button></div></Modal>
+    <Modal open={selectedEnquiry !== null} onClose={() => setSelectedEnquiry(null)} title="Enquiry details" busy={Boolean(busy)}>{selectedEnquiry && <div className={styles.enquiryDetails}><div className={styles.enquiryToolbar}><span className={styles.fieldHint}>Received {formatDate(selectedEnquiry.createdAt)}</span><button type="button" className="button secondary" disabled={Boolean(busy)} onClick={() => void refreshEnquiry(selectedEnquiry)}><RefreshCw size={18} />{busy === 'Refreshing enquiry…' ? 'Refreshing…' : 'Refresh enquiry'}</button></div>{enquiryNotice && <p className={styles.fieldHint} role="status">{enquiryNotice}</p>}<h3>{selectedEnquiry.subject}</h3><dl><div><dt>Name</dt><dd>{selectedEnquiry.name}</dd></div><div><dt>Email</dt><dd><a href={`mailto:${selectedEnquiry.email}`}>{selectedEnquiry.email}</a></dd></div>{selectedEnquiry.company && <div><dt>Company</dt><dd>{selectedEnquiry.company}</dd></div>}</dl><p className={styles.messageBody}>{selectedEnquiry.message}</p><section className={styles.notification} aria-label="Email notification"><strong>{selectedEnquiry.notification ? notificationLabels[selectedEnquiry.notification.status] : 'Email status unavailable'}</strong><p className={styles.fieldHint}>{selectedEnquiry.notification?.message || (selectedEnquiry.notification?.status === 'sent' ? 'The email provider accepted the notification. Inbox delivery is not guaranteed.' : selectedEnquiry.notification?.status === 'sending' ? 'A notification is being processed. Refresh the enquiry to check the outcome.' : selectedEnquiry.notification?.status === 'review' ? 'Check the email provider before sending again to avoid a duplicate notification.' : 'The enquiry remains saved here regardless of email status.')}</p>{selectedEnquiry.notification?.sentAt && <span className={styles.fieldHint}>Accepted {formatDate(selectedEnquiry.notification.sentAt)}</span>}{selectedEnquiry.notification && selectedEnquiry.notification.attempts < 3 && ['not_configured', 'failed', 'pending'].includes(selectedEnquiry.notification.status) && <button type="button" className="button secondary" disabled={Boolean(busy)} onClick={() => void retryNotification(selectedEnquiry)}><RefreshCw size={18} />{busy === 'Sending notification…' ? busy : 'Retry notification'}</button>}{selectedEnquiry.notification && selectedEnquiry.notification.attempts >= 3 && selectedEnquiry.notification.status !== 'sent' && <p className={styles.fieldHint}>The automatic retry limit has been reached. Review the provider before taking further action.</p>}</section>{enquiryError && <div className={styles.error} role="alert">{enquiryError}</div>}<label className="field">Status<select value={selectedEnquiry.status} disabled={Boolean(busy)} onChange={event => void changeEnquiry(selectedEnquiry, event.target.value as Enquiry['status'])}>{enquiryStatuses.map(value => <option key={value}>{value}</option>)}</select></label><a className="button secondary" href={`mailto:${selectedEnquiry.email}?subject=${encodeURIComponent(`Re: ${selectedEnquiry.subject}`)}`}>Reply by email<ArrowUpRight size={18} /></a></div>}</Modal>
+    <Modal open={importOpen} onClose={() => setImportOpen(false)} title="Review local content" busy={Boolean(busy)}>
+      <p className={styles.editorNotice}>Import new records and local images. Review changed versions individually before saving. Local Trash is never published automatically.</p>
+      <div className={styles.importStats}><strong>{newImports.length} new records · {importSnapshot?.media.length || 0} local library images</strong><span>{verifiedLocal.length} of {importRecords.length} retained records verified · {verifiedLocalMedia} local library images verified</span></div>
+      {newImports.length > 0 && <ul className={styles.importList}>{newImports.map(record => <li key={demoRecordKey(record)}><span>{record.title}</span><span>{record.type} · {record.status}</span><button type="button" className={styles.textButton} disabled={Boolean(busy)} onClick={() => void reviewLocal(record)}>Review before import<ArrowRight size={16} /></button></li>)}</ul>}
+      {changedImports.length > 0 && <><h3>Versions needing review</h3><p className={styles.fieldHint}>Existing website content is preserved until you review and save each local version.</p><ul className={styles.importList}>{changedImports.map(record => <li key={demoRecordKey(record)}><span>{record.title}{record.deletedAt ? ' · Local Trash' : ''}</span><button type="button" className={styles.textButton} disabled={Boolean(busy)} onClick={() => void reviewLocal(record)}>Review local version<ArrowRight size={16} /></button></li>)}</ul></>}
+      {!importRecords.length && !importSnapshot?.media.length && !importError && <p className={styles.empty}>No retained local content or media was found.</p>}
+      {Boolean(importSnapshot?.expired) && <p className={styles.fieldHint}>{importSnapshot?.expired} expired Trash item(s) are excluded from import. Export local data to keep an archive before clearing.</p>}
+      {importError && <div className={styles.error} role="alert">{importError}</div>}{importProgress && <p className={styles.editorNotice} role="status">{importProgress}</p>}
+      <div className={styles.recoveryActions}><button type="button" className={styles.textButton} disabled={Boolean(busy)} onClick={exportLocalData}><Download size={18} />Export local data</button>{localArchive && <button type="button" className={styles.textButton} disabled={Boolean(busy)} onClick={() => void restoreLocalData()}><RotateCcw size={18} />Restore archived browser data</button>}{<button type="button" className={styles.textButton} disabled={Boolean(busy)} onClick={() => void recoverImport()}>Check interrupted import</button>}<button type="button" className={styles.textButton} disabled={Boolean(busy) || !importSnapshot || verifiedLocal.length !== importRecords.length || verifiedLocalMedia !== importSnapshot.media.length || !Object.values(importSnapshot.raw).some(Boolean)} onClick={() => void clearLocalData()}><Trash2 size={18} />Clear verified local data</button></div>
+      <div className={styles.editorFooter}><button type="button" className="button secondary" onClick={() => setImportOpen(false)} disabled={Boolean(busy)}>Close</button><button type="button" className="button" disabled={Boolean(busy) || !importSnapshot || (!newImports.length && verifiedLocal.length === importRecords.length && verifiedLocalMedia === importSnapshot.media.length)} onClick={() => void importLocal()}><UploadCloud size={19} />{busy || 'Import new records & images'}</button></div>
     </Modal>
-    <Modal open={editing !== null} onClose={closeEditor} title={originalKey ? 'Edit content' : 'Create content'}>
-      {editing && <form className={styles.editor} onSubmit={saveEditor}>
-        <p className={styles.editorNotice}>{editing.type === 'Page' ? 'Saved in this browser. Existing page records update their matching website sections. New pages need a route before they appear in the preview.' : 'This sandbox saves to your browser. Published content is visible in your local website preview.'}</p>
-        <div className={styles.twoColumns}><label>Content type<select value={editing.type} onChange={event => updateEditor('type', event.target.value)}>{typeOptions.map(option => <option key={option.type}>{option.type}</option>)}</select></label><label>Status<select value={editing.status} onChange={event => updateEditor('status', event.target.value)}><option>Draft</option><option>Published</option></select></label></div>
-        <div className={styles.twoColumns}><label>Title · English<input required maxLength={160} value={editing.title} onChange={event => updateEditor('title', event.target.value)} /></label><label>Title · Thai<input required lang="th" maxLength={160} value={editing.titleTh} onChange={event => updateEditor('titleTh', event.target.value)} /></label></div>
-        <div className={styles.twoColumns}><label>Description · English<textarea rows={4} maxLength={2000} value={editing.description} onChange={event => updateEditor('description', event.target.value)} /></label><label>Description · Thai<textarea lang="th" rows={4} maxLength={2000} value={editing.descriptionTh} onChange={event => updateEditor('descriptionTh', event.target.value)} /></label></div>
-        <div className={styles.twoColumns}><label>Category · English<input maxLength={80} value={editing.category} placeholder="e.g. Container, Marine support" onChange={event => updateEditor('category', event.target.value)} /></label><label>Category · Thai (optional)<input lang="th" maxLength={80} value={editing.categoryTh || ''} placeholder="e.g. เรือคอนเทนเนอร์" onChange={event => updateEditor('categoryTh', event.target.value)} /></label></div>
-        <div className={styles.editorImage}><img src={editing.image} alt="Selected content image" width={480} height={260} /><div><strong>Content image</strong><p>{preparing ? 'Preparing image in your browser...' : 'Choose a generated image or prepare one from your device.'}</p><button type="button" className="button secondary" onClick={() => setPickerOpen(!pickerOpen)} disabled={preparing}><ImagePlus size={19} /> Choose image</button><label className={styles.fileButton}>Upload from device<input type="file" accept="image/jpeg,image/png,image/webp" aria-label="Upload content image from device" disabled={preparing} onChange={event => { void editorUpload(event.target.files?.[0]); event.target.value = ''; }} /></label></div></div>
-        {pickerOpen && <div className={styles.imagePicker}>{media.map(item => <button type="button" key={item.id} aria-pressed={editing.image === item.image} onClick={() => { updateEditor('image', item.image); setPickerOpen(false); }}><img src={item.image} alt="" width={180} height={110} /><span>{item.title}</span>{editing.image === item.image && <Check size={18} />}</button>)}</div>}
-        {editorError && <div className={styles.error} role="alert">{editorError}</div>}
-        <div className={styles.editorFooter}><button type="button" className="button secondary" onClick={closeEditor}>Cancel</button><button type="submit" className="button" disabled={preparing || !storageOkay}><Check size={19} />{preparing ? 'Preparing image...' : 'Save locally'}</button></div>
-      </form>}
-    </Modal>
-    <Modal open={deleteRecord !== null} onClose={() => setDeleteRecord(null)} title="Move to Trash?">
-      <p className={styles.confirmText}>“{deleteRecord?.title}” will be hidden from the website preview. You can restore it for 30 days.</p><div className={styles.editorFooter}><button type="button" className="button secondary" onClick={() => setDeleteRecord(null)}>Cancel</button><button type="button" className="button" onClick={moveToTrash}><Trash2 size={18} /> Move to Trash</button></div>
-    </Modal>
-    <Modal open={mediaOpen} onClose={closeMedia} title="Media library">
-      <p className={styles.editorNotice}>Generated imagery and your device images. New images are prepared in your browser before you save them locally.</p>
-      <div className={styles.libraryGrid}>{media.map(item => <div key={item.id}><img src={item.image} alt={item.title} width={260} height={160} /><strong>{item.title}</strong></div>)}</div>
-      <div className={styles.mediaUpload}><label className={`button secondary ${styles.fileButton}`}><UploadCloud size={20} />{mediaPreparing ? 'Preparing image...' : 'Choose device image'}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={mediaPreparing || !mediaOkay} aria-label="Choose media library image" onChange={event => { void libraryUpload(event.target.files?.[0]); event.target.value = ''; }} /></label><p>JPEG, PNG or WebP · up to 8 MB before preparation</p></div>
-      {preparedMedia && <div className={styles.preparedImage}><img src={preparedMedia.image} alt="Prepared media preview" width={240} height={150} /><label>Image name<input maxLength={100} value={preparedMedia.title} onChange={event => setPreparedMedia({ ...preparedMedia, title: event.target.value })} /></label><button type="button" className="button" onClick={saveMedia} disabled={mediaPreparing || !preparedMedia.title.trim() || !mediaOkay}><Check size={18} /> Save locally</button></div>}
-      {mediaError && <div className={styles.error} role="alert">{mediaError}</div>}
-    </Modal>
+    <Modal open={confirmation !== null} onClose={() => settleConfirmation(false)} title={confirmation?.action || 'Confirm action'} compact><p className={styles.confirmText}>{confirmation?.message}</p><div className={styles.editorFooter}><button type="button" className="button secondary" onClick={() => settleConfirmation(false)}>Cancel</button><button type="button" className="button" onClick={() => settleConfirmation(true)}>{confirmation?.action}</button></div></Modal>
   </div>;
 }
