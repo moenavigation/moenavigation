@@ -11,6 +11,7 @@ import { PublicContentProvider } from "@/lib/public-content-provider";
 import { getPublishedRecords } from "@/server/content";
 import { getSiteSettings } from "@/server/settings";
 import { indexingEnabled, siteOrigin } from '@/lib/site-config';
+import { idSchema } from '@/lib/validation';
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,8 @@ function findRecord(records: ContentRecord[], page: string, slug?: string) {
 }
 
 function validatePath(pieces: string[], page: string, slug?: string) {
-  if (pieces.length > 2 || (slug && !detailTypes[page])) notFound();
+  // Asset filenames and invalid CMS slugs cannot match content; reject them before querying MongoDB.
+  if (pieces.length > 2 || (slug && !detailTypes[page]) || pieces.some(piece => !idSchema.safeParse(piece).success)) notFound();
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ path?: string[] }> }): Promise<Metadata> {

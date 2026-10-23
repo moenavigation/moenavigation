@@ -27,6 +27,17 @@ The live option reads configuration, MongoDB content and Cloudinary connection s
 6. Confirm MongoDB network rules, database user permissions and Cloudinary configuration from the deployed environment. Check upload limits and timeouts against the hosting plan.
 7. Run the existing public smoke check against the deployed preview; run mutation tests only against its explicitly isolated QA database.
 
+## Troubleshooting a production render failure
+
+If Vercel logs report `MongoDB database name is missing or invalid.`, check **Settings → Environment Variables → Production**:
+
+- Set `MONGODB_DB_NAME` to the database containing this site's content. The existing project database is `moenavigation`; enter the value without quotes or surrounding whitespace.
+- Set `MONGODB_URI` privately from the working configuration. `.env.local` is local-only and is not uploaded to Vercel.
+- Redeploy after saving environment changes; an existing deployment keeps its previous environment.
+- Verify `/`, `/en`, and a content detail page on the new deployment. React error #441 is a production server-render error; the corresponding server log identifies its cause.
+
+The static `/favicon.ico` and `/icon.svg` assets should respond without MongoDB. Missing asset filenames should return 404 instead of attempting a content query. Do not point the app at a new empty database or use fallback content to conceal a configuration failure.
+
 ## Content and indexing
 
 Complete [CONTENT_APPROVAL.md](CONTENT_APPROVAL.md), then set both server flags deliberately:
