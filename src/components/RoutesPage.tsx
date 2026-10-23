@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import Link from "./NavigationLink";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useId } from "react";
 import { ArrowRight, CheckCircle2, Compass } from "lucide-react";

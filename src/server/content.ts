@@ -20,6 +20,12 @@ export const getPublishedRecords = cache(async (): Promise<ContentRecord[]> => {
   const c = collections(await getDb());
   return (await c.content.find({ status: 'Published', deletedAt: { $exists: false } }).sort({ _id: 1 }).toArray()).map(clean);
 });
+// Reused by route validation and metadata within one render. Checking one indexed
+// record before streaming preserves real 404 responses for missing or trashed URLs.
+export const getPublishedRecord = cache(async (type: ContentRecord['type'], id: string): Promise<ContentRecord | null> => {
+  const record = await collections(await getDb()).content.findOne({ _id: contentKey({ type, id }), status: 'Published', deletedAt: { $exists: false } });
+  return record ? clean(record) : null;
+});
 export async function getContentRecords() {
   await ensureIndexes();
   return (await collections(await getDb()).content.find({ $or: [{ purgeAt: { $exists: false } }, { purgeAt: { $gt: new Date() } }] }).sort({ updatedAt: -1, _id: 1 }).toArray()).map(clean);

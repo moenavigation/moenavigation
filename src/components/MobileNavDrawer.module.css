@@ -1,7 +1,7 @@
 .drawer {
   position: fixed;
-  inset: 0;
-  width: 100vw;
+  inset: 0 0 0 auto;
+  width: min(26rem, calc(100vw - 2.5rem));
   height: 100vh;
   height: 100dvh;
   max-width: none;
@@ -9,20 +9,23 @@
   margin: 0;
   padding: 0;
   border: 0;
-  background: transparent;
-  overflow: hidden;
+  background: #fff;
+  overflow: clip;
   overscroll-behavior: contain;
   touch-action: none;
+  box-shadow: -1rem 0 3rem #03182b2e;
+  transform: translateX(105%);
+  transition: transform 260ms cubic-bezier(.4, 0, 1, 1);
+  will-change: transform;
 }
 
 .drawer:not([open]) { display: none; }
 .drawer::backdrop { background: #071f40ad; opacity: 0; transition: opacity 260ms ease-in; }
-.drawer[data-phase="open"]::backdrop { opacity: 1; transition-duration: 360ms; transition-timing-function: ease-out; }
+.drawer[data-phase="open"]::backdrop { opacity: 1; transition-duration: 440ms; transition-timing-function: ease-in-out; }
 
 .panel {
-  width: min(26rem, calc(100vw - 2.5rem));
+  width: 100%;
   height: 100%;
-  margin-left: auto;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -30,13 +33,9 @@
   touch-action: pan-y;
   scrollbar-color: #bfd1e1 transparent;
   background: #fff;
-  box-shadow: -1rem 0 3rem #03182b2e;
-  transform: translateX(105%);
-  transition: transform 260ms cubic-bezier(.4, 0, 1, 1);
-  will-change: transform;
 }
 
-.drawer[data-phase="open"] .panel { transform: translateX(0); transition-duration: 360ms; transition-timing-function: cubic-bezier(.25, .65, .3, 1); }
+.drawer[data-phase="open"] { transform: translateX(0); transition-duration: 440ms; transition-timing-function: cubic-bezier(.42, 0, .58, 1); }
 .heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: max(1.25rem, env(safe-area-inset-top)) max(1.4rem, env(safe-area-inset-right)) 1.1rem 1.4rem; }
 .wordmark { display: inline-flex; align-items: center; gap: .55rem; color: var(--navy); line-height: 1; }
 .wordmark svg { width: 2rem; height: 2rem; flex: 0 0 auto; }
@@ -53,5 +52,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .panel, .drawer::backdrop { transition: none; }
+  .drawer, .drawer::backdrop { transition: none; }
 }

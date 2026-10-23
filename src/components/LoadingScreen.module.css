@@ -1,0 +1,91 @@
+.screen {
+  --loading-ink: #fff;
+  --loading-muted: #bfd1e0;
+  --loading-line: rgb(193 218 239 / .18);
+  --loading-accent: #92c6e9;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100svh;
+  overflow: hidden;
+  padding: 2rem var(--gutter);
+  color: var(--loading-ink);
+  background: radial-gradient(ellipse at 50% 40%, #164469 0, #082b50 52%, #061e39 100%);
+}
+.screen::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  opacity: .35;
+  background-image: linear-gradient(var(--loading-line) 1px, transparent 1px), linear-gradient(90deg, var(--loading-line) 1px, transparent 1px);
+  background-size: 6rem 6rem;
+  mask-image: radial-gradient(ellipse at center, #000, transparent 72%);
+}
+.cms {
+  --loading-ink: var(--navy);
+  --loading-muted: var(--muted);
+  --loading-line: rgb(52 95 139 / .16);
+  --loading-accent: var(--blue);
+  background: radial-gradient(ellipse at 50% 38%, #fff 0, #f1f6fa 72%, #e8f0f7 100%);
+}
+.header { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; width: min(100%, var(--content-width)); margin-inline: auto; }
+.brand { display: flex; align-items: center; gap: .7rem; }
+.brand > span { width: 2.8rem; height: 2.8rem; }
+.brand svg { width: 100%; height: 100%; }
+.brand strong { font-size: var(--font-h3); letter-spacing: .04em; line-height: 1.25; }
+.brand strong span { display: block; font-size: var(--font-small); letter-spacing: .14em; font-weight: 400; color: var(--loading-muted); }
+.context { color: var(--loading-muted); font-size: var(--font-small); text-align: right; }
+.center { display: grid; justify-items: center; align-content: center; padding-block: 3rem; text-align: center; }
+.emblem { position: relative; width: min(13rem, 54vw); aspect-ratio: 1; margin-bottom: 2.4rem; }
+.chart, .orbit { position: absolute; inset: 0; width: 100%; height: 100%; }
+.chart { stroke: var(--loading-line); stroke-width: 1; }
+.orbit { stroke: var(--loading-accent); stroke-width: 1.5; animation: orbit 7s linear infinite; }
+.orbit circle { fill: var(--loading-accent); stroke: none; }
+.mark { position: absolute; inset: 27%; display: grid; place-items: center; color: var(--loading-ink); }
+.mark svg { width: 100%; height: 100%; }
+.copy { display: grid; justify-items: center; gap: .85rem; max-width: 30rem; }
+.copy p { max-width: 27rem; color: var(--loading-muted); font-size: var(--font-body); line-height: 1.7; }
+.copy .title { max-width: 100%; font-size: var(--font-h2); font-weight: 700; line-height: 1.25; letter-spacing: -.035em; text-wrap: balance; color: var(--loading-ink); }
+.copy .title:lang(th) { line-height: 1.45; letter-spacing: 0; }
+.status { display: inline-flex; justify-content: center; align-items: center; gap: .6rem; color: var(--loading-muted); font-size: var(--font-small); margin-bottom: .25rem; }
+.status > span { width: .4rem; height: .4rem; border-radius: 50%; background: var(--loading-accent); }
+.track { position: relative; width: min(13rem, 70%); height: 2px; margin-top: 2rem; overflow: hidden; background: var(--loading-line); border-radius: 1rem; }
+.track span { position: absolute; inset: 0 auto 0 0; width: 45%; border-radius: inherit; background: var(--loading-accent); animation: passage 2.4s ease-in-out infinite; }
+.horizon { display: flex; align-items: center; justify-content: center; gap: .65rem; min-height: 2rem; }
+.horizon span { width: 2.5rem; height: 1px; background: var(--loading-line); }
+.horizon span:nth-child(2) { width: .35rem; height: .35rem; border: 1px solid var(--loading-accent); background: none; transform: rotate(45deg); }
+.panel { padding: 1.5rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--white); }
+.panelHeading { display: flex; align-items: center; gap: .9rem; margin-bottom: 1.4rem; }
+.panelHeading h2 { font-size: var(--font-h3); line-height: 1.4; }
+.panelHeading p { margin-top: .25rem; font-size: var(--font-small); }
+.panelMark { display: grid; place-items: center; flex: 0 0 auto; width: 2.8rem; height: 2.8rem; padding: .35rem; border: 1px solid var(--line); border-radius: .7rem; background: var(--pale); color: var(--navy); }
+.panelMark svg { width: 100%; height: 100%; }
+.skeleton { display: grid; gap: .85rem; }
+.placeholder { display: flex; gap: 1rem; align-items: center; padding: .8rem; border: 1px solid #eaf0f5; border-radius: .4rem; }
+.placeholder > div { flex: 1; display: grid; gap: .7rem; min-width: 0; }
+.placeholder > div > span, .thumbnail { display: block; border-radius: .25rem; background: #e7eef4; animation: breathe 2.2s ease-in-out infinite; }
+.placeholder > div > span { width: 64%; height: .65rem; }
+.placeholder > div > span + span { width: 87%; height: .5rem; opacity: .65; }
+.thumbnail { width: 3.5rem; height: 2.8rem; flex: 0 0 auto; }
+.mediaGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.mediaGrid .placeholder { display: grid; gap: 1rem; padding: 0 0 1rem; overflow: hidden; }
+.mediaGrid .thumbnail { width: 100%; height: auto; aspect-ratio: 1.5; border-radius: 0; }
+.mediaGrid .placeholder > div { margin-inline: .8rem; }
+@keyframes orbit { to { transform: rotate(360deg); } }
+@keyframes passage { 0% { transform: translateX(-120%); } 100% { transform: translateX(340%); } }
+@keyframes breathe { 50% { opacity: .45; } }
+@media (max-width: 600px) {
+  .screen { padding-block: 1.4rem; }
+  .context { max-width: 8.5rem; }
+  .center { padding-block: 2.4rem; }
+  .emblem { width: 10.5rem; margin-bottom: 1.8rem; }
+  .panel { padding: 1rem; }
+  .mediaGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mediaGrid .placeholder:last-child { display: none; }
+}
+@media (max-width: 360px) { .header { align-items: flex-start; gap: .75rem; } .context { max-width: 6.5rem; } .brand { gap: .4rem; } .brand > span { width: 2.2rem; height: 2.2rem; } }
+@media (max-height: 560px) and (min-width: 601px) { .center { padding-block: 1rem; } .emblem { width: 7rem; margin-bottom: 1rem; } .track { margin-top: 1.25rem; } }
+@media (prefers-reduced-motion: reduce) { .orbit, .track span, .placeholder > div > span, .thumbnail { animation: none; } .track span { left: 28%; } }

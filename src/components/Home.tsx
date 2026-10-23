@@ -1,6 +1,6 @@
 "use client";
 import Image, { getImageProps } from "next/image";
-import Link from "next/link";
+import Link from "./NavigationLink";
 import { ArrowRight, Ship, Fuel, Container, Anchor, ShieldCheck, Compass, MessagesSquare, LifeBuoy, MapPin } from "lucide-react";
 import { href, local, type Locale } from "@/lib/content";
 import type { ContentRecord } from "@/lib/cms-types";

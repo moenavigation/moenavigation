@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "./NavigationLink";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ArrowRight, ArrowUpRight, Menu, Globe2 } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type MouseEvent, type ReactNode } from "react";

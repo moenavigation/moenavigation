@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import type { EnquiryPage } from '../../src/lib/inbox-query';
 import type { EnquiryDocument } from '../../src/server/db';
-import { test, expect, login, E2E_ADMIN, E2E_BASE_URL, E2E_INBOX } from './fixtures';
+import { test, expect, login, E2E_INBOX } from './fixtures';
 
 async function openInbox(page: Page) {
   await login(page);
@@ -123,14 +123,10 @@ test('enquiry status conflicts require refresh and successful edits refresh filt
   expect(await result.json()).toMatchObject({ total: 1, totalAll: 130, newCount: 43, enquiries: [{ id: E2E_INBOX.oldThai.id, status: 'Resolved', revision: 4 }] });
 });
 
-test('updating an enquiry during initial content loading preserves the independent workspace response', async ({ page, db }) => {
+test('updating an enquiry during workspace refresh preserves the independent content response', async ({ page, db }) => {
   const contentCount = await db.collection('moe_content').countDocuments({ deletedAt: { $exists: false } });
   expect(contentCount).toBeGreaterThan(12);
-  const authenticated = await page.request.post('/api/cms/login', {
-    headers: { Origin: E2E_BASE_URL },
-    data: { username: E2E_ADMIN.username, password: E2E_ADMIN.password },
-  });
-  expect(authenticated.status()).toBe(200);
+  await login(page);
   let contentRequests = 0;
   let releaseContent!: () => void;
   let contentStarted!: () => void;
@@ -147,9 +143,9 @@ test('updating an enquiry during initial content loading preserves the independe
     await route.fulfill({ response });
   });
   try {
-    // An existing session loads the workspace in the background. The sign-in
-    // form waits for workspace loading and would keep mutations disabled here.
-    await page.goto('/cms');
+    // Refresh retains the loaded workspace and allows independent enquiry work.
+    // The first authenticated load instead has its own full-screen loading state.
+    await page.getByRole('button', { name: 'Refresh workspace', exact: true }).click();
     await started;
     await expect(page.getByRole('heading', { name: 'Content overview', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Refresh workspace', exact: true })).toBeDisabled();

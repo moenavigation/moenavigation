@@ -1,0 +1,18 @@
+.overlay {
+  position: fixed;
+  inset: var(--header-height) 0 0;
+  z-index: 25;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--white);
+  animation: reveal .16s ease-out both;
+}
+
+.overlay > * { min-height: 100%; grid-template-rows: 1fr auto; }
+.overlay [data-loading-header] { display: none; }
+
+@keyframes reveal { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay { animation: none; }
+}

@@ -1,21 +1,20 @@
 import type { Metadata } from "next";
-import { cache } from "react";
+import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import SiteShell from "@/components/SiteShell";
 import Home from "@/components/Home";
 import { ContentPage } from "@/components/ContentPages";
 import CmsDemo from "@/components/CmsDemo";
+import LoadingScreen from "@/components/LoadingScreen";
 import { href, local, type Locale } from "@/lib/content";
 import type { ContentRecord } from "@/lib/cms-types";
 import { PublicContentProvider } from "@/lib/public-content-provider";
-import { getPublishedRecords } from "@/server/content";
+import { getPublishedRecord, getPublishedRecords } from "@/server/content";
 import { getSiteSettings } from "@/server/settings";
 import { indexingEnabled, siteOrigin } from '@/lib/site-config';
 import { idSchema } from '@/lib/validation';
 
 export const dynamic = "force-dynamic";
-
-const getRecords = cache(getPublishedRecords);
 
 const detailTypes: Record<string, ContentRecord["type"]> = { services: "Service", fleet: "Vessel", projects: "Project", news: "News" };
 function resolve(path: string[] = []) {
@@ -24,10 +23,8 @@ function resolve(path: string[] = []) {
   return { locale, pieces, page: pieces[0] || "", slug: pieces[1] };
 }
 
-function findRecord(records: ContentRecord[], page: string, slug?: string) {
-  return slug
-    ? records.find((record) => record.type === detailTypes[page] && record.id === slug)
-    : records.find((record) => record.type === "Page" && record.id === (page || "home"));
+function getRouteRecord(page: string, slug?: string) {
+  return getPublishedRecord(slug ? detailTypes[page] : 'Page', slug || page || 'home');
 }
 
 function validatePath(pieces: string[], page: string, slug?: string) {
@@ -40,9 +37,9 @@ export async function generateMetadata({ params }: { params: Promise<{ path?: st
   const { locale, page, slug, pieces } = resolve(path);
   if (page === "cms" && pieces.length === 1) return { title: "MOE Navigation · Content management", robots: { index: false, follow: false } };
   validatePath(pieces, page, slug);
-  const [records, settings] = await Promise.all([getRecords(), getSiteSettings()]);
-  const item = findRecord(records, page, slug);
+  const item = await getRouteRecord(page, slug);
   if (!item) notFound();
+  const settings = await getSiteSettings();
   const title = local(locale, item.title, item.titleTh);
   const description = local(locale, item.description, item.descriptionTh);
   const pathPart = pieces.join("/");
@@ -69,9 +66,18 @@ export default async function Page({ params }: { params: Promise<{ path?: string
   }
   validatePath(pieces, page, slug);
   if (page === "home") redirect(href(locale));
-  const [records, settings] = await Promise.all([getRecords(), getSiteSettings()]);
-  const item = findRecord(records, page, slug);
+  const item = await getRouteRecord(page, slug);
   if (!item) notFound();
+  // Validate the URL before the fallback can send response headers. The rest
+  // of the page can then stream without turning deleted content into soft 404s.
+  return <Suspense key={`${locale}/${pieces.join('/')}`} fallback={<LoadingScreen locale={locale} />}><PublicPage locale={locale} page={page} slug={slug} pieces={pieces} /></Suspense>;
+}
+
+async function PublicPage({ locale, page, slug, pieces }: { locale: Locale; page: string; slug?: string; pieces: string[] }) {
+  const [records, settings] = await Promise.all([getPublishedRecords(), getSiteSettings()]);
+  // A record can be trashed while the remaining data is loading. Still use the
+  // framework's noindex recovery page if it disappeared after the route check.
+  if (!records.some(record => record.type === (slug ? detailTypes[page] : 'Page') && record.id === (slug || page || 'home'))) notFound();
   const organization = !page && indexingEnabled() ? {
     '@context': 'https://schema.org', '@type': 'Organization',
     name: local(locale, settings.companyName, settings.companyNameTh), url: siteOrigin(),

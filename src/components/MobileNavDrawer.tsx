@@ -22,6 +22,11 @@ function focusMainAfterNavigation() {
   });
 }
 
+function isOutsideDrawer(dialog: HTMLDialogElement, x: number, y: number) {
+  const bounds = dialog.getBoundingClientRect();
+  return x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom;
+}
+
 export default function MobileNavDrawer({ open, onClose, title, eyebrow, closeLabel, triggerRef, children }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -39,20 +44,28 @@ export default function MobileNavDrawer({ open, onClose, title, eyebrow, closeLa
       navigationCloseRef.current = false;
       if (!dialog.open) {
         dialog.dataset.phase = "closed";
+        // Move the dialog itself so native autofocus cannot scroll an offscreen
+        // child into view and cancel out the opening transform.
         dialog.showModal();
-        // Establish the offscreen position before starting the enter transition.
-        void panelRef.current?.offsetWidth;
+        panelRef.current?.scrollTo({ top: 0, behavior: "instant" });
       }
       if (reduceMotion) {
         dialog.dataset.phase = "open";
         closeRef.current?.focus({ preventScroll: true });
         return;
       }
-      const frame = window.requestAnimationFrame(() => {
-        dialog.dataset.phase = "open";
+      // Let the closed position paint before transitioning, without forcing layout.
+      let enterFrame = 0;
+      const paintFrame = window.requestAnimationFrame(() => {
+        enterFrame = window.requestAnimationFrame(() => {
+          dialog.dataset.phase = "open";
+        });
       });
       closeRef.current?.focus({ preventScroll: true });
-      return () => window.cancelAnimationFrame(frame);
+      return () => {
+        window.cancelAnimationFrame(paintFrame);
+        window.cancelAnimationFrame(enterFrame);
+      };
     }
 
     if (!dialog.open) return;
@@ -81,14 +94,13 @@ export default function MobileNavDrawer({ open, onClose, title, eyebrow, closeLa
       return;
     }
 
-    const panel = panelRef.current;
     const onTransitionEnd = (event: TransitionEvent) => {
-      if (event.target === panel && event.propertyName === "transform") finish();
+      if (event.target === dialog && event.propertyName === "transform") finish();
     };
-    panel?.addEventListener("transitionend", onTransitionEnd);
+    dialog.addEventListener("transitionend", onTransitionEnd);
     const fallback = window.setTimeout(finish, 360);
     return () => {
-      panel?.removeEventListener("transitionend", onTransitionEnd);
+      dialog.removeEventListener("transitionend", onTransitionEnd);
       window.clearTimeout(fallback);
     };
   }, [open, triggerRef]);
@@ -127,9 +139,16 @@ export default function MobileNavDrawer({ open, onClose, title, eyebrow, closeLa
       const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
       if (link instanceof HTMLAnchorElement && link.origin === window.location.origin && (!link.target || link.target === "_self") && !link.hasAttribute("download")) navigationCloseRef.current = true;
     }}
-    onPointerDown={(event) => { backdropPointerRef.current = event.target === event.currentTarget; }}
+    onPointerDown={(event) => {
+      backdropPointerRef.current = event.target === event.currentTarget
+        && isOutsideDrawer(event.currentTarget, event.clientX, event.clientY);
+    }}
     onCancel={(event) => { event.preventDefault(); onClose(); }}
-    onClick={(event) => { if (event.target === event.currentTarget && backdropPointerRef.current) onClose(); backdropPointerRef.current = false; }}
+    onClick={(event) => {
+      if (event.target === event.currentTarget && backdropPointerRef.current
+        && isOutsideDrawer(event.currentTarget, event.clientX, event.clientY)) onClose();
+      backdropPointerRef.current = false;
+    }}
   >
     <div ref={panelRef} className={styles.panel}>
       <div className={styles.heading}>

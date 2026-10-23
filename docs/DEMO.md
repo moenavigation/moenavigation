@@ -163,6 +163,23 @@ service scope, route availability, projects, and news before launch.
 
 ## Release checks
 
+### Loading states
+
+Public pages validate their published record before streaming a branded loading
+screen while the remaining content loads. This preserves HTTP 404 responses for
+missing and trashed records. `NavigationLink` uses Next's actual pending state
+for navigation feedback; the header stays usable while the covered content is
+temporarily inert. The destination determines the loading language.
+
+The CMS has separate session and first-workspace loading screens. Later refreshes
+keep existing content and unsaved fields visible; inbox queries and empty media
+loads use skeleton panels. Request failures leave loading and show the existing
+recovery controls. Indicators have no artificial delay or percentage, announce
+their status, and disable animation for reduced-motion preferences.
+
+The loading browser tests hold real requests to inspect these intermediate
+states, release them to check recovery, and save desktop/mobile screenshots.
+
 Run the checks in the README and backend guide after changes. Verify actual
 browser workflows as well as HTTP tests: navigation from a scrolled page,
 both languages, narrow layouts, the CMS drawer and editor, image preparation,

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "./NavigationLink";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { href, local, type Locale } from "@/lib/content";
 import { contentText } from "@/lib/public-content";

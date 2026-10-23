@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import Link from "./NavigationLink";
 import { useSearchParams } from "next/navigation";
 import { useLayoutEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { ArrowRight, ArrowUpRight, CheckCircle2, LoaderCircle, Mail, MapPin, Phone, ShieldCheck } from "lucide-react";

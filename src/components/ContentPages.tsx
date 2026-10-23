@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import Link from "./NavigationLink";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Anchor, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Compass, Container, Fuel, LifeBuoy, MapPin, Maximize2, RotateCcw, Search, ShieldCheck, Ship, X } from "lucide-react";
