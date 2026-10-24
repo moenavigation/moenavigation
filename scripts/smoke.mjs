@@ -14,7 +14,7 @@ while(queue.length) {
     const response=await fetch(new URL(path,base));
     assert.equal(response.status,200,`${path} HTTP status`);
     const html=await response.text();
-    const lang=path.startsWith('/en')||path==='/cms'?'en':'th';
+    const lang=path.startsWith('/en')?'en':'th';
     assert.match(html,new RegExp(`<html[^>]*lang="${lang}"`),`${path} document language`);
     assert.equal((html.match(/<h1(?:\s|>)/g)||[]).length,1,`${path} one primary heading`);
     assert.match(html,indexed && path!=='/cms' ? /<meta name="robots" content="index, follow"\s*\/>/ : /<meta name="robots" content="noindex, nofollow"\s*\/>/,`${path} indexing policy`);

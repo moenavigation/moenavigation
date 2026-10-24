@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "./NavigationLink";
-import { useSearchParams } from "next/navigation";
+import { usePublicSearchParams } from "@/lib/use-public-search-params";
 import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Anchor, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Compass, Container, Fuel, LifeBuoy, MapPin, Maximize2, RotateCcw, Search, ShieldCheck, Ship, X } from "lucide-react";
 import { href, local, type Locale } from "@/lib/content";
@@ -55,7 +55,7 @@ function About({ locale }: { locale: Locale }) {
   if (!page) return null;
   return <><section className={styles.aboutHero}><Image src={page.image} alt={contentText(page,"imageAlt",locale) || contentText(page,"title",locale)} fill loading="eager" fetchPriority="high" sizes="100vw" /><div className={`container ${styles.heroCopy}`}><p className="eyebrow">{contentText(page,"eyebrow",locale)}</p><h1>{contentText(page,"title",locale)}</h1><p>{contentText(page,"description",locale)}</p></div></section><div className="container section">
     {intro && <section className={styles.aboutIntro}><div className={styles.aboutPhoto}>{intro.image && <Image src={intro.image} alt={contentText(intro,"imageAlt",locale) || contentText(intro,"title",locale)} fill loading="eager" sizes="(max-width: 760px) 100vw, 50vw" />}</div><div className={styles.aboutCopy}><p className="eyebrow">{contentText(intro,"eyebrow",locale)}</p><h2>{contentText(intro,"title",locale)}</h2><p>{contentText(intro,"description",locale)}</p><ContentBody text={contentText(intro,"body",locale)} /><Link className={styles.textLink} href={href(locale,"services")}>{local(locale,"Explore our services","ดูบริการของเรา")}<ArrowRight size={20} aria-hidden="true" /></Link></div></section>}
-    {values.length>0 && <section className={styles.values} aria-label={local(locale,"Vision, mission and values","วิสัยทัศน์ พันธกิจ และคุณค่า")}>{values.map((value) => { const Icon=serviceIcons[value.icon as keyof typeof serviceIcons] || Compass; return <article key={value.id}><span className={styles.valueIcon}><Icon aria-hidden="true" /></span><div><h3>{contentText(value,"title",locale)}</h3><p>{contentText(value,"description",locale)}</p><ContentBody text={contentText(value,"body",locale)} /></div></article>; })}</section>}
+    {values.length>0 && <section className={styles.values} aria-label={local(locale,"Vision, mission and values","วิสัยทัศน์ พันธกิจ และค่านิยม")}>{values.map((value) => { const Icon=serviceIcons[value.icon as keyof typeof serviceIcons] || Compass; return <article key={value.id}><span className={styles.valueIcon}><Icon aria-hidden="true" /></span><div><h3>{contentText(value,"title",locale)}</h3><p>{contentText(value,"description",locale)}</p><ContentBody text={contentText(value,"body",locale)} /></div></article>; })}</section>}
     <ContentBody text={contentText(page,"body",locale)} /><AdditionalSections pageId="about" locale={locale} exclude={["about-intro",...valueIds]} /><Callout locale={locale} /></div></>;
 }
 
@@ -74,7 +74,7 @@ function Services({ locale, slug }: { locale: Locale; slug?: string }) {
         <p className="eyebrow">{local(locale, "SERVICE OVERVIEW", "ภาพรวมบริการ")}</p>
         <h1>{service.title[locale]}</h1>
         <p className={styles.lead}>{service.description[locale]}</p>
-        <PreviewNote>{local(locale, "Illustrative service overview. Scope and availability need confirmation.", "ภาพรวมบริการตัวอย่าง ต้องยืนยันขอบเขตงานและความพร้อมให้บริการ")}</PreviewNote>
+        <PreviewNote>{local(locale, "Illustrative service overview. Scope and availability need confirmation.", "ข้อมูลบริการนี้เป็นตัวอย่าง กรุณาสอบถามเพื่อยืนยันขอบเขตงานและความพร้อมให้บริการ")}</PreviewNote>
       </header>
       <section className={styles.serviceDetail} aria-label={local(locale, "Discuss this service", "พูดคุยเกี่ยวกับบริการนี้")}>
         <div className={styles.detailPhoto}><Image src={service.image} alt={service.imageAlt[locale] || service.title[locale]} fill priority sizes="(max-width: 760px) 100vw, 55vw" /></div>
@@ -82,7 +82,7 @@ function Services({ locale, slug }: { locale: Locale; slug?: string }) {
           <span className={styles.detailIcon}><Icon size={34} aria-hidden="true" /></span>
           {planning && <><p className="eyebrow">{contentText(planning,"eyebrow",locale)}</p><h2>{contentText(planning,"title",locale)}</h2><p>{contentText(planning,"description",locale)}</p><ContentBody text={contentText(planning,"body",locale)} /></>}
           <ul className={styles.enquiryList}>
-            <li><span>01</span>{local(locale, "Operational requirements", "ความต้องการของงาน")}</li>
+            <li><span>01</span>{local(locale, "Operational requirements", "รายละเอียดงานที่ต้องการ")}</li>
             <li><span>02</span>{local(locale, "Port or operating area", "ท่าเรือหรือพื้นที่ดำเนินงาน")}</li>
             <li><span>03</span>{local(locale, "Preferred timing", "ช่วงเวลาที่ต้องการ")}</li>
           </ul>
@@ -94,7 +94,7 @@ function Services({ locale, slug }: { locale: Locale; slug?: string }) {
         <ContentBody text={service.body[locale]} />
       </section>}
       {related.length > 0 && <section className={styles.relatedSection} aria-label={local(locale, "Other services", "บริการอื่น ๆ")}>
-        <div className={styles.relatedHeading}><p className="eyebrow">{local(locale, "EXPLORE MORE", "สำรวจเพิ่มเติม")}</p><h2>{local(locale, "Other services", "บริการอื่น ๆ")}</h2></div>
+        <div className={styles.relatedHeading}><p className="eyebrow">{local(locale, "EXPLORE MORE", "ดูเพิ่มเติม")}</p><h2>{local(locale, "Other services", "บริการอื่น ๆ")}</h2></div>
         <div className={styles.relatedLinks}>{related.map((item) => <Link key={item.id} href={href(locale, `services/${item.id}`)}><span>{item.title[locale]}</span><ArrowRight aria-hidden="true" size={19} /></Link>)}</div>
       </section>}
     </div>;
@@ -102,14 +102,14 @@ function Services({ locale, slug }: { locale: Locale; slug?: string }) {
   const [featured, ...more] = services;
   return <div className="container section">
     <Heading eyebrow={contentText(page,"eyebrow",locale)} title={contentText(page,"title",locale)} description={contentText(page,"description",locale)} action={<Action locale={locale} to={`contact?subject=${encodeURIComponent(local(locale,"Maritime service enquiry","สอบถามบริการทางทะเล"))}`} secondary>{local(locale,"Discuss your requirements","แจ้งความต้องการของคุณ")}</Action>} />
-    <PreviewNote>{local(locale, "Preview of possible services. Confirmed capabilities and availability will be added later.", "ตัวอย่างบริการที่อาจนำเสนอ ข้อมูลความสามารถและความพร้อมที่ยืนยันแล้วจะเพิ่มเติมภายหลัง")}</PreviewNote>
+    <PreviewNote>{local(locale, "Preview of possible services. Confirmed capabilities and availability will be added later.", "ข้อมูลบริการนี้เป็นตัวอย่าง เราจะเพิ่มรายละเอียดขอบเขตบริการและความพร้อมให้บริการเมื่อได้รับการยืนยันแล้ว")}</PreviewNote>
     {featured ? <>
       <Link className={styles.serviceFeature} href={href(locale, `services/${featured.id}`)}>
         <div className={styles.serviceFeaturePhoto}><Image src={featured.image} alt={featured.imageAlt[locale] || featured.title[locale]} fill priority sizes="(max-width: 760px) 100vw, 55vw" /></div>
         <div className={styles.serviceFeatureCopy}><p className="eyebrow">{local(locale, "SERVICE 01", "บริการ 01")}</p><h2>{featured.title[locale]}</h2><p>{featured.description[locale]}</p><span className={styles.cardAction}>{local(locale, "Explore service", "ดูรายละเอียดบริการ")}<ArrowRight aria-hidden="true" size={19} /></span></div>
       </Link>
       {more.length > 0 && <div className={styles.capabilityGrid}>{more.map((item, index) => { const Icon = serviceIcons[item.icon as keyof typeof serviceIcons] || Ship; return <Link className={styles.capabilityCard} key={item.id} href={href(locale, `services/${item.id}`)}><div className={styles.capabilityImage}><Image src={item.image} alt={item.imageAlt[locale] || item.title[locale]} fill sizes="(max-width: 650px) 100vw, (max-width: 850px) 25vw, 15vw" /></div><div className={styles.capabilityCopy}><span className={styles.capabilityIndex}>{String(index + 2).padStart(2, "0")}</span><Icon size={24} aria-hidden="true" /><h2>{item.title[locale]}</h2><p>{item.description[locale]}</p><span className={styles.cardAction}>{local(locale, "View service", "ดูบริการ")}<ArrowRight aria-hidden="true" size={18} /></span></div></Link>; })}</div>}
-    </> : <div className={styles.empty}><Ship size={35} aria-hidden="true" /><h2>{local(locale, "No demo services published yet", "ยังไม่มีบริการตัวอย่างที่เผยแพร่")}</h2><p>{local(locale, "Published services will appear here.", "บริการที่เผยแพร่จะแสดงที่นี่")}</p></div>}
+    </> : <div className={styles.empty}><Ship size={35} aria-hidden="true" /><h2>{local(locale, "No demo services published yet", "ยังไม่มีข้อมูลบริการตัวอย่างที่เผยแพร่")}</h2><p>{local(locale, "Published services will appear here.", "บริการที่เผยแพร่จะแสดงที่นี่")}</p></div>}
     <ContentBody text={contentText(page,"body",locale)} /><AdditionalSections pageId="services" locale={locale} exclude={["service-planning"]} /><Callout locale={locale} />
   </div>;
 }
@@ -123,7 +123,7 @@ function Filters({ locale, categories, categoryTranslations, selected, onSelect,
 }
 
 function ResultsSummary({ locale, children, active, reset }: { locale: Locale; children: ReactNode; active: boolean; reset: () => void }) {
-  return <div className={styles.resultsSummary}><p className={styles.resultCount} role="status">{children}</p>{active && <button type="button" className={styles.resetFilters} onClick={reset}><RotateCcw size={16} aria-hidden="true" />{local(locale,"Reset filters","รีเซ็ตตัวกรอง")}</button>}</div>;
+  return <div className={styles.resultsSummary}><p className={styles.resultCount} role="status">{children}</p>{active && <button type="button" className={styles.resetFilters} onClick={reset}><RotateCcw size={16} aria-hidden="true" />{local(locale,"Reset filters","ล้างตัวกรอง")}</button>}</div>;
 }
 
 function Empty({ locale, reset }: { locale: Locale; reset: () => void }) {
@@ -145,7 +145,7 @@ function Fleet({ locale, slug }: { locale: Locale; slug?: string }) {
   const filtered = vessels.filter((item) => (category === "All" || category === item.type) && matchesListingSearch(query, [item.name, item.nameTh, item.type, categoryName("th", item.type, item.typeTh), item.description.en, item.description.th]));
   return <div className="container section">
     <Heading eyebrow={contentText(page,"eyebrow",locale)} title={contentText(page,"title",locale)} description={contentText(page,"description",locale)} action={<Action locale={locale} to={`contact?subject=${encodeURIComponent(local(locale,"Vessel enquiry","สอบถามข้อมูลเรือ"))}`} secondary>{local(locale,"Discuss vessel needs","แจ้งความต้องการใช้เรือ")}</Action>} />
-    <PreviewNote>{local(locale, "Demo vessel collection. Ownership, specifications and availability have not been verified.", "คอลเลกชันเรือตัวอย่าง ยังไม่ได้ยืนยันเจ้าของเรือ ข้อมูลทางเทคนิค และความพร้อมใช้งาน")}</PreviewNote>
+    <PreviewNote>{local(locale, "Demo vessel collection. Ownership, specifications and availability have not been verified.", "ข้อมูลกองเรือนี้เป็นตัวอย่าง เจ้าของเรือ ข้อมูลทางเทคนิค และความพร้อมให้บริการยังไม่ได้รับการยืนยัน")}</PreviewNote>
     <Filters locale={locale} categories={categories} categoryTranslations={categoryTranslations} selected={category} onSelect={setCategory} query={query} onQuery={setQuery} searchRef={searchRef} placeholder={local(locale, "Search vessels", "ค้นหาเรือ")} />
     <ResultsSummary locale={locale} active={category !== "All" || Boolean(query)} reset={resetFilters}>{local(locale, `${filtered.length} ${filtered.length === 1 ? "vessel" : "vessels"}`, `${filtered.length} ลำ`)}</ResultsSummary>
     {filtered.length ? <div className={styles.fleetGrid}>{filtered.map((item, index) => <Link href={listingHref(href(locale, `fleet/${item.id}`), { query, category })} key={item.id} className={styles.fleetCard}>
@@ -157,7 +157,7 @@ function Fleet({ locale, slug }: { locale: Locale; slug?: string }) {
 }
 
 function BackLink({ locale, page }: { locale: Locale; page: string }) {
-  const filters = readListingFilters(useSearchParams());
+  const filters = readListingFilters(usePublicSearchParams());
   const names: Record<string, [string, string]> = { fleet: ["Back to fleet", "กลับไปยังกองเรือ"], services: ["Back to services", "กลับไปยังบริการ"], projects: ["Back to projects", "กลับไปยังโครงการ"], news: ["Back to news", "กลับไปยังข่าวสาร"] };
   return <Link className={styles.back} href={listingHref(href(locale, page), filters)}><ArrowLeft size={20} aria-hidden="true" />{local(locale, ...(names[page] || ["Back", "กลับ"] as [string, string]))}</Link>;
 }
@@ -194,14 +194,14 @@ function VesselDetail({ locale, slug }: { locale: Locale; slug: string }) {
   if (specs?.lengthM) specificationRows.push([local(locale, "Length", "ความยาว"), `${number(specs.lengthM)} ${local(locale, "m", "ม.")}`]);
   if (specs?.beamM) specificationRows.push([local(locale, "Beam", "ความกว้าง"), `${number(specs.beamM)} ${local(locale, "m", "ม.")}`]);
   if (specs?.draftM) specificationRows.push([local(locale, "Draft", "ระยะกินน้ำลึก"), `${number(specs.draftM)} ${local(locale, "m", "ม.")}`]);
-  if (specs?.deadweightT) specificationRows.push([local(locale, "Deadweight", "น้ำหนักบรรทุกสูงสุด"), `${number(specs.deadweightT)} ${local(locale, "tonnes", "ตัน")}`]);
+  if (specs?.deadweightT) specificationRows.push([local(locale, "Deadweight", "ระวางบรรทุก"), `${number(specs.deadweightT)} ${local(locale, "tonnes", "ตัน")}`]);
   if (specs?.capacityTeu !== undefined) specificationRows.push([local(locale, "Container capacity", "ความจุตู้คอนเทนเนอร์"), `${number(specs.capacityTeu)} TEU`]);
-  if (specs?.flag || specs?.flagTh) specificationRows.push([local(locale, "Flag", "ธงเรือ"), local(locale, specs.flag || specs.flagTh || "", specs.flagTh || specs.flag || "")]);
+  if (specs?.flag || specs?.flagTh) specificationRows.push([local(locale, "Flag", "ประเทศที่จดทะเบียนเรือ"), local(locale, specs.flag || specs.flagTh || "", specs.flagTh || specs.flag || "")]);
   const availability = specs && local(locale, specs.availability || specs.availabilityTh || "", specs.availabilityTh || specs.availability || "");
   return <div className="container section">
     <BackLink locale={locale} page="fleet" />
     <section className={styles.vesselDetail}>
-      <header className={styles.vesselTitle}><p className="eyebrow">{local(locale, "VESSEL PROFILE", "ข้อมูลเรือ")}</p><h1>{vesselName}</h1><p className={styles.lead}><CategoryName locale={locale} category={vessel.type} categoryTh={vessel.typeTh} /></p><PreviewNote>{local(locale, "Demo listing with illustrative imagery. Vessel details require verification.", "รายการเรือตัวอย่างพร้อมภาพประกอบ รายละเอียดเรือต้องได้รับการยืนยัน")}</PreviewNote></header>
+      <header className={styles.vesselTitle}><p className="eyebrow">{local(locale, "VESSEL PROFILE", "ข้อมูลเรือ")}</p><h1>{vesselName}</h1><p className={styles.lead}><CategoryName locale={locale} category={vessel.type} categoryTh={vessel.typeTh} /></p><PreviewNote>{local(locale, "Demo listing with illustrative imagery. Vessel details require verification.", "ข้อมูลและภาพเรือลำนี้เป็นตัวอย่าง รายละเอียดเรือยังต้องได้รับการยืนยัน")}</PreviewNote></header>
       <Gallery key={vessel.id} locale={locale} images={images} title={vesselName} />
       <div className={styles.vesselInfo}>
         <div className={styles.specifications}><h2>{local(locale, "Vessel details", "รายละเอียดเรือ")}</h2><dl>
@@ -209,14 +209,14 @@ function VesselDetail({ locale, slug }: { locale: Locale; slug: string }) {
           <div><dt>{local(locale, "Vessel type", "ประเภทเรือ")}</dt><dd><CategoryName locale={locale} category={vessel.type} categoryTh={vessel.typeTh} /></dd></div>
           {specificationRows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
           {!specificationRows.length && <div><dt>{local(locale, "Specifications", "ข้อมูลทางเทคนิค")}</dt><dd>{local(locale, "Pending verification", "รอการยืนยัน")}</dd></div>}
-          <div><dt>{local(locale, "Availability", "ความพร้อมใช้งาน")}</dt><dd>{availability || local(locale, "Pending confirmation", "รอการยืนยัน")}</dd></div>
+          <div><dt>{local(locale, "Availability", "ความพร้อมให้บริการ")}</dt><dd>{availability || local(locale, "Pending confirmation", "รอการยืนยัน")}</dd></div>
         </dl></div>
         <p className={styles.vesselDescription}>{vessel.description[locale]}</p>
         <ContentBody text={vessel.body[locale]} />
         <Action locale={locale} to={`contact?subject=${encodeURIComponent(vesselName)}`}>{local(locale, "Enquire about this vessel", "สอบถามเกี่ยวกับเรือลำนี้")}</Action>
       </div>
     </section>
-    {planning && <section className={styles.vesselPlanning} aria-label={local(locale, "Planning a vessel enquiry", "เตรียมข้อมูลสอบถามเรือ")}><div><p className="eyebrow">{contentText(planning,"eyebrow",locale)}</p><h2>{contentText(planning,"title",locale)}</h2></div><div><p>{contentText(planning,"description",locale)}</p><ContentBody text={contentText(planning,"body",locale)} /></div></section>}
+    {planning && <section className={styles.vesselPlanning} aria-label={local(locale, "Planning a vessel enquiry", "ข้อมูลสำหรับสอบถามเรื่องเรือ")}><div><p className="eyebrow">{contentText(planning,"eyebrow",locale)}</p><h2>{contentText(planning,"title",locale)}</h2></div><div><p>{contentText(planning,"description",locale)}</p><ContentBody text={contentText(planning,"body",locale)} /></div></section>}
   </div>;
 }
 
@@ -245,7 +245,7 @@ function Articles({ locale, page, slug }: { locale: Locale; page: "projects" | "
           <h1>{article.title[locale]}</h1>
           <p className={styles.lead}>{article.description[locale]}</p>
           {article.date && <time className={styles.date} dateTime={article.date}>{formatDate(locale, article.date)}</time>}
-          <PreviewNote>{local(locale, isNews ? "Sample editorial content and illustrative imagery; not a published company announcement." : "Illustrative project scenario; not a record of completed company work.", isNews ? "เนื้อหาบทความและภาพประกอบตัวอย่าง ไม่ใช่ประกาศที่เผยแพร่โดยบริษัท" : "ตัวอย่างสถานการณ์โครงการ ไม่ใช่บันทึกผลงานที่บริษัทดำเนินการแล้ว")}</PreviewNote>
+          <PreviewNote>{local(locale, isNews ? "Sample editorial content and illustrative imagery; not a published company announcement." : "Illustrative project scenario; not a record of completed company work.", isNews ? "เนื้อหาบทความและภาพประกอบตัวอย่าง ไม่ใช่ประกาศที่เผยแพร่โดยบริษัท" : "ข้อมูลโครงการนี้เป็นตัวอย่าง ไม่ใช่ผลงานที่บริษัทดำเนินการจริง")}</PreviewNote>
         </div>
         <div className={styles.articleImage}><Image src={article.image} alt={article.imageAlt[locale] || article.title[locale]} fill priority sizes="100vw" /></div>
         <div className={styles.articleEditorial}>
@@ -257,11 +257,11 @@ function Articles({ locale, page, slug }: { locale: Locale; page: "projects" | "
           <aside className={styles.articleAside}>
             <p className="eyebrow">{local(locale, isNews ? "READ NEXT" : "PLAN A CONVERSATION", isNews ? "อ่านต่อ" : "เตรียมข้อมูลก่อนพูดคุย")}</p>
             {isNews ? <>
-              <h2>{local(locale, "More maritime perspectives", "มุมมองทางทะเลเพิ่มเติม")}</h2>
+              <h2>{local(locale, "More maritime perspectives", "บทความเกี่ยวกับการเดินเรือเพิ่มเติม")}</h2>
               {nextArticle ? <Link className={styles.asideLink} href={listingHref(href(locale, `news/${nextArticle.id}`), { query, category })}><span>{nextArticle.title[locale]}</span><ArrowRight aria-hidden="true" size={20} /></Link> : <Link className={styles.asideLink} href={href(locale, "news")}><span>{local(locale, "Browse all articles", "ดูบทความทั้งหมด")}</span><ArrowRight aria-hidden="true" size={20} /></Link>}
             </> : <>
               {planning && <><h2>{contentText(planning,"title",locale)}</h2><p>{contentText(planning,"description",locale)}</p><ContentBody text={contentText(planning,"body",locale)} /></>}
-              <Action locale={locale} to={`contact?subject=${encodeURIComponent(article.title[locale])}`}>{local(locale, "Prepare an enquiry", "เตรียมข้อความสอบถาม")}</Action>
+              <Action locale={locale} to={`contact?subject=${encodeURIComponent(article.title[locale])}`}>{local(locale, "Prepare an enquiry", "ติดต่อสอบถาม")}</Action>
             </>}
           </aside>
         </div>
@@ -273,7 +273,7 @@ function Articles({ locale, page, slug }: { locale: Locale; page: "projects" | "
   const [featured, ...remaining] = filtered;
   return <div className="container section">
     <Heading eyebrow={contentText(pageRecord,"eyebrow",locale)} title={contentText(pageRecord,"title",locale)} description={contentText(pageRecord,"description",locale)} />
-    <PreviewNote>{local(locale, isNews ? "Sample articles and dates for this website preview; company updates are pending." : "Illustrative project scenarios, not completed company work.", isNews ? "บทความและวันที่ตัวอย่างสำหรับเว็บไซต์นี้ ยังไม่มีข่าวบริษัทที่ยืนยันแล้ว" : "สถานการณ์โครงการตัวอย่าง ไม่ใช่ผลงานที่บริษัทดำเนินการแล้ว")}</PreviewNote>
+    <PreviewNote>{local(locale, isNews ? "Sample articles and dates for this website preview; company updates are pending." : "Illustrative project scenarios, not completed company work.", isNews ? "บทความและวันที่บนหน้านี้เป็นตัวอย่าง ยังไม่มีข่าวสารที่ได้รับการยืนยันจากบริษัท" : "โครงการบนหน้านี้เป็นตัวอย่าง ไม่ใช่ผลงานที่บริษัทดำเนินการจริง")}</PreviewNote>
     <Filters locale={locale} categories={categories} categoryTranslations={categoryTranslations} selected={category} onSelect={setCategory} query={query} onQuery={setQuery} searchRef={searchRef} placeholder={local(locale, isNews ? "Search news" : "Search projects", isNews ? "ค้นหาข่าวสาร" : "ค้นหาโครงการ")} />
     <ResultsSummary locale={locale} active={category !== "All" || Boolean(query)} reset={resetFilters}>{local(locale, `${filtered.length} ${isNews ? (filtered.length === 1 ? "article" : "articles") : (filtered.length === 1 ? "project" : "projects")}`, `${filtered.length} ${isNews ? "บทความ" : "โครงการ"}`)}</ResultsSummary>
     {featured ? isNews ? <>
@@ -299,7 +299,7 @@ function formatDate(locale: Locale, value: string) {
 }
 
 function MissingEntry({ locale, page }: { locale: Locale; page: string }) {
-  return <div className="container section"><div className={styles.empty}><Anchor size={38} aria-hidden="true" /><h1>{local(locale, "This item is not available", "ไม่พบรายการนี้")}</h1><p>{local(locale, "It may have been removed from the demo collection.", "รายการนี้อาจถูกนำออกจากคอลเลกชันตัวอย่างแล้ว")}</p><Action locale={locale} to={page}>{local(locale, "Return to the collection", "กลับไปยังคอลเลกชัน")}</Action></div></div>;
+  return <div className="container section"><div className={styles.empty}><Anchor size={38} aria-hidden="true" /><h1>{local(locale, "This item is not available", "ไม่พบรายการนี้")}</h1><p>{local(locale, "It may have been removed from the demo collection.", "รายการนี้อาจถูกนำออกแล้ว")}</p><Action locale={locale} to={page}>{local(locale, "Return to the collection", "กลับไปยังรายการทั้งหมด")}</Action></div></div>;
 }
 
 function CustomPage({ locale, page }: { locale: Locale; page: string }) {

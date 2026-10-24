@@ -25,6 +25,26 @@ opens that image without redundant gallery controls.
 The CMS stores bilingual titles, descriptions, longer text, image
 descriptions, categories, and optional supplied dates. Published records are
 read on the server and used consistently by the page, metadata, and sitemap.
+Public pages are generated on their first visit and cached. Public database
+reads share a cached published snapshot, with a daily refresh as a fallback.
+Successful CMS saves, Trash/restore, website-detail updates and recovered saves
+expire this cache immediately; the next request rebuilds the affected output.
+Both languages, metadata, sitemap and previously missing URLs refresh together.
+The CMS route, authentication and enquiry APIs remain dynamic and private.
+
+Each public page receives only its required records. Listing cards omit long
+bodies, galleries and vessel specifications; detail views retain them. Browser
+filters and language links keep their query state after hydration, while the
+cached HTML already contains the main content for readers and search engines.
+Public links load destinations when selected, avoiding automatic downloads of
+every visible menu or card destination in the background.
+
+After a direct database import/restore outside the CMS API, refresh published
+content with a same-origin, administrator-authenticated POST to `/api/cms/cache`
+or clear the deployment's data and route caches. A normal CMS save also refreshes
+them. Use Next's persistent cache support in production (Vercel provides it);
+multiple self-hosted instances need a shared cache/invalidation configuration.
+
 The CMS uses one Save action that makes content public immediately. Historical
 unpublished records are preserved until explicitly saved. Missing, historical
 unpublished, and trashed detail records return HTTP 404.
@@ -37,8 +57,9 @@ adding a page does not automatically add it to the primary navigation.
 
 Business copy, article bodies, gallery lists, route ports, coordinates, and
 media URLs are stored in MongoDB. Public components never fall back to local
-seed data or local photography. Missing Sections are omitted; a database
-failure reaches the retry screen rather than substituting sample content.
+seed data or local photography. Missing Sections are omitted. Cached published
+content can continue to serve during a database outage; an uncached read failure
+reaches the retry screen rather than substituting sample content.
 Navigation, field labels, validation messages, and factual preview notices
 remain application UI text.
 
@@ -77,7 +98,10 @@ delivery.
 
 ## CMS
 
-The English-language CMS at `/cms` requires an administrator sign-in. Its
+The Thai/English CMS at `/cms` requires an administrator sign-in. Thai is
+the default; the language selector remembers the choice in this browser.
+Switching the interface language preserves open editors and unsaved input.
+English and Thai website content remain separate editable fields. Its
 menu opens as an edge drawer. It provides content search and filters,
 bilingual editors, image preparation, publication status, 30-day Trash and
 restore, a media library, enquiries, and account tools.

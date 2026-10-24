@@ -31,6 +31,8 @@
   --loading-accent: var(--blue);
   background: radial-gradient(ellipse at 50% 38%, #fff 0, #f1f6fa 72%, #e8f0f7 100%);
 }
+.public { min-height: calc(100svh - var(--header-height)); grid-template-rows: 1fr auto; }
+.public .header { display: none; }
 .header { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; width: min(100%, var(--content-width)); margin-inline: auto; }
 .brand { display: flex; align-items: center; gap: .7rem; }
 .brand > span { width: 2.8rem; height: 2.8rem; }

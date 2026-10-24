@@ -17,6 +17,7 @@ The suite covers Chromium, Firefox and WebKit. Linux machines also need Playwrig
 - A separate production build uses `.next-e2e`. Next listens on `127.0.0.1:3011`, behind the test HTTPS proxy at `https://127.0.0.1:3010`. Both ports must be free. The temporary certificate exists only in the runner's memory; OS trust is not changed. HTTPS exercises the real Secure authentication cookie in every browser.
 - Environment-file variable names and provider variables are explicitly blanked before the test configuration is applied, preventing Next from loading live MongoDB, Cloudinary or email credentials from `.env.local`.
 - Every test receives a fresh database fixture, and one worker serializes mutations. The deterministic administrator and 130 enquiries are synthetic. The Thai and literal-regex search fixtures are older than the first two default inbox pages.
+- Fixture resets also use the authenticated `/api/cms/cache` maintenance operation to invalidate public data and pages. The data cache includes the run identity so prior runs cannot reuse old database snapshots. Direct database changes inside a test must explicitly refresh the cache when fresh public output is expected.
 - Real application login, validation, MongoDB transactions, save, revision conflicts, publication, Trash/restore and submission resolution run unchanged. There is no production authentication bypass or test endpoint.
 
 ## Media scope

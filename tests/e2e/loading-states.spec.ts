@@ -158,7 +158,10 @@ test('public navigation shows the destination language while its page response i
   // Register before the initial visit so a prefetch cannot populate this route.
   const destination = await holdRequests(page, url => url.pathname === '/fleet', { rscOnly: true });
   try {
-    await page.goto('/en/fleet');
+    await page.goto('/en/fleet?q=MOE');
+    // Cached HTML is usable before hydration; wait for query state before
+    // specifically exercising a React navigation rather than a document link.
+    await expect(page.getByRole('searchbox', { name: 'Search vessels' })).toHaveValue('MOE');
     if (layout.name === 'mobile') {
       await page.getByRole('button', { name: 'Open menu', exact: true }).click();
       await page.getByRole('dialog', { name: 'Explore MOE Navigation' }).getByRole('link', { name: 'ไทย', exact: true }).click();
@@ -179,7 +182,7 @@ test('public navigation shows the destination language while its page response i
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: testInfo.outputPath(`public-loading-thai-${layout.name}.png`), animations: 'disabled' });
   } finally { await destination.dispose(); }
-  await expect(page).toHaveURL(/\/fleet$/);
+  await expect(page).toHaveURL(/\/fleet\?q=MOE$/);
   await expect(page.locator('[data-navigation-loading]')).toHaveCount(0);
   await expect(page.getByRole('searchbox', { name: 'ค้นหาเรือ' })).toBeVisible();
   await expect(page.locator('main')).not.toHaveJSProperty('inert', true);
@@ -190,7 +193,8 @@ test('public navigation shows the destination language while its page response i
 test('a newer header navigation cancels the pending view and restores page interaction', async ({ page }) => {
   const projects = await holdRequests(page, url => url.pathname === '/en/projects', { rscOnly: true });
   try {
-    await page.goto('/en/fleet');
+    await page.goto('/en/fleet?q=MOE');
+    await expect(page.getByRole('searchbox', { name: 'Search vessels' })).toHaveValue('MOE');
     const header = page.locator('[data-site-header]');
     await header.getByRole('link', { name: 'Projects', exact: true }).click();
     await projects.started();

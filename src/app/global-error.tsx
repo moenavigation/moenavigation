@@ -10,10 +10,10 @@ export default function GlobalError({ retry }: { retry: () => void }) {
     <div className={styles.badge}><LifeBuoy aria-hidden="true" /></div>
     <span className="eyebrow">MOE Navigation</span>
     <h1>ไม่สามารถโหลดเว็บไซต์ได้</h1>
-    <p className={styles.description}>โปรดลองอีกครั้ง หรือกลับไปยังหน้าหลัก</p>
+    <p className={styles.description}>โปรดลองอีกครั้ง หรือกลับไปยังหน้าแรก</p>
     <p className={`${styles.description} ${styles.translation}`} lang="en">We couldn’t load the website. Please try again or return home.</p>
     <div className={styles.actions}><button className="button" type="button" onClick={retry}><RotateCcw size={20} aria-hidden="true" />ลองอีกครั้ง · Try again</button></div>
-    <nav className={styles.languageLinks} aria-label="กลับหน้าหลัก · Return home"><a href="/">หน้าหลักภาษาไทย</a><a href="/en" lang="en">English home</a></nav>
+    <nav className={styles.languageLinks} aria-label="กลับหน้าแรก · Return home"><a href="/">หน้าแรกภาษาไทย</a><a href="/en" lang="en">English home</a></nav>
   </div>
   </main></body></html>;
 }

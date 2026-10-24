@@ -38,10 +38,11 @@ test('Save immediately shows content, discard preserves it, and Trash/restore re
   await page.getByRole('button', { name: 'Edit ' + title, exact: true }).click();
   const edit = page.getByRole('dialog', { name: 'Edit content', exact: true });
   await edit.getByLabel('Title · English', { exact: true }).fill('Unsaved replacement');
-  await edit.getByRole('button', { name: 'Close Edit content' }).press('Shift+Tab');
+  const firstControl = edit.getByRole('button', { name: 'ไทย', exact: true });
+  await firstControl.press('Shift+Tab');
   await expect(edit.getByRole('button', { name: 'Save', exact: true })).toBeFocused();
   await edit.getByRole('button', { name: 'Save', exact: true }).press('Tab');
-  await expect(edit.getByRole('button', { name: 'Close Edit content' })).toBeFocused();
+  await expect(firstControl).toBeFocused();
   await edit.getByRole('button', { name: 'Cancel', exact: true }).click();
   const confirmation = page.getByRole('dialog', { name: 'Discard changes', exact: true });
   await confirmation.getByRole('button', { name: 'Cancel', exact: true }).click();

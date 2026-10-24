@@ -1,10 +1,10 @@
 "use client";
 
-import { useSearchParams } from 'next/navigation';
+import { usePublicSearchParams } from './use-public-search-params';
 import { readListingFilters, writeListingFilters, type ListingFilters } from './listing-filters';
 
 export function useListingFilters(categories: readonly string[]) {
-  const params = useSearchParams();
+  const params = usePublicSearchParams();
   const filters = readListingFilters(params, categories);
 
   function update(patch: Partial<ListingFilters>, addHistory: boolean) {

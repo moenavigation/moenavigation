@@ -41,5 +41,7 @@ function NavigationPending({ href }: { href: LinkProps["href"] }) {
 }
 
 export default function NavigationLink({ children, ...props }: LinkProps) {
-  return <NextLink {...props}>{children}<NavigationPending href={props.as || props.href} /></NextLink>;
+  // Public pages are cached on the server. Fetch them when selected instead of
+  // downloading every visible navigation/card destination in the background.
+  return <NextLink prefetch={false} {...props}>{children}<NavigationPending href={props.as || props.href} /></NextLink>;
 }

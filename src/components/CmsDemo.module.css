@@ -1,4 +1,14 @@
 .cms { min-height: 100vh; color: var(--navy); background: linear-gradient(145deg, #f2f6fb, #f7faff 60%, #eef5fd); }
+.cms:lang(th) h1, .cms:lang(th) h2, .cms:lang(th) h3 { letter-spacing: 0; line-height: 1.45; }
+.cms:lang(th) :global(.eyebrow) { letter-spacing: .025em; }
+.header { flex-wrap: wrap; }
+.dialogHeading { flex-wrap: wrap; }
+.dialogHeading h2 { flex: 1 1 10rem; }
+.dialogHeadingControls { display: flex; align-items: center; gap: .75rem; margin-left: auto; }
+@media (max-width: 600px) {
+  .header > [data-cms-language-switch] { order: 5; margin-left: auto; }
+  .header > .cmsLabel { display: none; }
+}
 .loginMain { min-height: calc(100dvh - 6rem); display: grid; place-items: center; padding: 3rem 1.25rem; background: radial-gradient(ellipse at 25% 25%, #dfeaf5, transparent 60%); }
 .loginCard { width: min(100%, 29rem); padding: 2.3rem; border: 1px solid var(--line); border-radius: .9rem; background: #fff; box-shadow: 0 1rem 4rem #082b5009; }
 .loginCard h1 { margin-bottom: .7rem; }
@@ -262,10 +272,11 @@
 }
 @media (max-width: 800px) {
   .accountGrid { grid-template-columns: minmax(0, 1fr); }
-  .introActions { align-self: stretch; flex-wrap: wrap; }
+  .introActions { align-self: stretch; align-items: stretch; flex-wrap: wrap; }
   .refreshLabel { display: inline; }
-  .introActions > .refreshButton { flex: 1 1 auto; }
+  .introActions > .refreshButton { flex: 1; }
   .introActions > button:last-child { flex: 1; }
+  .introActions > button { gap: .65rem; padding-inline: .8rem; }
   .enquiryRow { grid-template-columns: minmax(0, 1fr); gap: .8rem; }
   .enquiryMeta { flex-direction: row; flex-wrap: wrap; align-items: center; }
   .enquiryMeta > svg { margin-left: auto; }

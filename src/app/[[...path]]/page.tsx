@@ -1,20 +1,23 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
-import SiteShell from "@/components/SiteShell";
+import SiteShell, { SiteHeader } from "@/components/SiteShell";
 import Home from "@/components/Home";
 import { ContentPage } from "@/components/ContentPages";
-import CmsDemo from "@/components/CmsDemo";
 import LoadingScreen from "@/components/LoadingScreen";
 import { href, local, type Locale } from "@/lib/content";
 import type { ContentRecord } from "@/lib/cms-types";
 import { PublicContentProvider } from "@/lib/public-content-provider";
-import { getPublishedRecord, getPublishedRecords } from "@/server/content";
-import { getSiteSettings } from "@/server/settings";
+import { getPublicRecord, getPublicRecords, getPublicSettings } from "@/server/public-data";
+import { selectPublicPageRecords } from '@/lib/public-page-content';
+import { PublicSearchParamsProvider } from '@/lib/use-public-search-params';
 import { indexingEnabled, siteOrigin } from '@/lib/site-config';
 import { idSchema } from '@/lib/validation';
 
-export const dynamic = "force-dynamic";
+export const revalidate = 86400;
+// Generate public URLs on first visit, then reuse their rendered output. New
+// CMS pages work without a rebuild, including URLs previously cached as 404s.
+export function generateStaticParams() { return []; }
 
 const detailTypes: Record<string, ContentRecord["type"]> = { services: "Service", fleet: "Vessel", projects: "Project", news: "News" };
 function resolve(path: string[] = []) {
@@ -24,7 +27,7 @@ function resolve(path: string[] = []) {
 }
 
 function getRouteRecord(page: string, slug?: string) {
-  return getPublishedRecord(slug ? detailTypes[page] : 'Page', slug || page || 'home');
+  return getPublicRecord(slug ? detailTypes[page] : 'Page', slug || page || 'home');
 }
 
 function validatePath(pieces: string[], page: string, slug?: string) {
@@ -35,11 +38,11 @@ function validatePath(pieces: string[], page: string, slug?: string) {
 export async function generateMetadata({ params }: { params: Promise<{ path?: string[] }> }): Promise<Metadata> {
   const { path = [] } = await params;
   const { locale, page, slug, pieces } = resolve(path);
-  if (page === "cms" && pieces.length === 1) return { title: "MOE Navigation · Content management", robots: { index: false, follow: false } };
+  if (page === "cms" && pieces.length === 1) return { title: "MOE Navigation · จัดการเนื้อหา", robots: { index: false, follow: false } };
   validatePath(pieces, page, slug);
   const item = await getRouteRecord(page, slug);
   if (!item) notFound();
-  const settings = await getSiteSettings();
+  const settings = await getPublicSettings();
   const title = local(locale, item.title, item.titleTh);
   const description = local(locale, item.description, item.descriptionTh);
   const pathPart = pieces.join("/");
@@ -61,8 +64,7 @@ export default async function Page({ params }: { params: Promise<{ path?: string
   const { path = [] } = await params;
   const { locale, page, slug, pieces } = resolve(path);
   if (page === "cms" && pieces.length === 1) {
-    if (locale === "en") redirect("/cms");
-    return <CmsDemo />;
+    redirect("/cms");
   }
   validatePath(pieces, page, slug);
   if (page === "home") redirect(href(locale));
@@ -70,11 +72,12 @@ export default async function Page({ params }: { params: Promise<{ path?: string
   if (!item) notFound();
   // Validate the URL before the fallback can send response headers. The rest
   // of the page can then stream without turning deleted content into soft 404s.
-  return <Suspense key={`${locale}/${pieces.join('/')}`} fallback={<LoadingScreen locale={locale} />}><PublicPage locale={locale} page={page} slug={slug} pieces={pieces} /></Suspense>;
+  return <PublicSearchParamsProvider><Suspense key={`${locale}/${pieces.join('/')}`} fallback={<><SiteHeader locale={locale} /><main id="main" tabIndex={-1}><LoadingScreen locale={locale} /></main></>}><PublicPage locale={locale} page={page} slug={slug} pieces={pieces} /></Suspense></PublicSearchParamsProvider>;
 }
 
 async function PublicPage({ locale, page, slug, pieces }: { locale: Locale; page: string; slug?: string; pieces: string[] }) {
-  const [records, settings] = await Promise.all([getPublishedRecords(), getSiteSettings()]);
+  const [published, settings] = await Promise.all([getPublicRecords(), getPublicSettings()]);
+  const records = selectPublicPageRecords(published, page, slug);
   // A record can be trashed while the remaining data is loading. Still use the
   // framework's noindex recovery page if it disappeared after the route check.
   if (!records.some(record => record.type === (slug ? detailTypes[page] : 'Page') && record.id === (slug || page || 'home'))) notFound();

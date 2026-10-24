@@ -216,15 +216,15 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
     <div className={styles.notice} aria-hidden="true">
       <span className={styles.noticeEyebrow}>{local(locale, "Selected route", "เส้นทางที่เลือก")}</span>
       <strong>{originName} → {selectedName}</strong>
-      <span className={styles.noticeCaveat}>{local(locale, "Illustrative · Not for navigation", "ตัวอย่าง · ไม่ใช้เพื่อการนำทาง")}</span>
+      <span className={styles.noticeCaveat}>{local(locale, "Illustrative · Not for navigation", "แผนที่ตัวอย่าง · ห้ามใช้ในการเดินเรือ")}</span>
     </div>
     <div className={styles.controls} role="group" aria-label={local(locale, "Map controls", "ตัวควบคุมแผนที่")}>
       <button type="button" disabled={controlsDisabled || zoom >= 12} onClick={() => mapRef.current?.zoomIn()} aria-label={local(locale, "Zoom in", "ขยายแผนที่")}><Plus size={20} aria-hidden="true" /></button>
       <button type="button" disabled={controlsDisabled || zoom <= 3} onClick={() => mapRef.current?.zoomOut()} aria-label={local(locale, "Zoom out", "ย่อแผนที่")}><Minus size={20} aria-hidden="true" /></button>
-      <button type="button" disabled={controlsDisabled} onClick={() => fitRoute(selectedId, true)} aria-label={local(locale, "Fit selected route", "แสดงเส้นทางที่เลือกทั้งหมด")}><RotateCcw size={18} aria-hidden="true" /></button>
+      <button type="button" disabled={controlsDisabled} onClick={() => fitRoute(selectedId, true)} aria-label={local(locale, "Fit selected route", "แสดงเส้นทางที่เลือกให้ครบ")}><RotateCcw size={18} aria-hidden="true" /></button>
       <button type="button" disabled={controlsDisabled} onClick={fitAllPorts} aria-label={local(locale, "Show all ports", "แสดงท่าเรือทั้งหมด")}><Globe2 size={19} aria-hidden="true" /></button>
     </div>
     {(tileError || mapFailed) && <p className={styles.tileError} role="status">{mapFailed ? local(locale, "The map is unavailable. You can still choose a route from the list.", "ไม่สามารถโหลดแผนที่ได้ คุณยังเลือกเส้นทางจากรายการได้") : local(locale, "The map background is unavailable. Route markers and controls still work.", "ไม่สามารถโหลดพื้นหลังแผนที่ได้ จุดท่าเรือและปุ่มควบคุมยังใช้งานได้")}</p>}
-    <span id={descriptionId} className={styles.srOnly}>{local(locale, "Use the arrow keys to move the map and plus or minus to zoom. Choose a destination marker or a route in the list. This is an illustrative overview, not a navigational chart or confirmed sailing route.", "ใช้แป้นลูกศรเพื่อเลื่อนแผนที่ และปุ่มบวกหรือลบเพื่อปรับขนาด เลือกจุดท่าเรือปลายทางหรือเส้นทางในรายการ แผนที่นี้ใช้ประกอบการนำเสนอ ไม่ใช่แผนที่เดินเรือหรือเส้นทางเดินเรือที่ยืนยันแล้ว")}</span>
+    <span id={descriptionId} className={styles.srOnly}>{local(locale, "Use the arrow keys to move the map and plus or minus to zoom. Choose a destination marker or a route in the list. This is an illustrative overview, not a navigational chart or confirmed sailing route.", "ใช้แป้นลูกศรเพื่อเลื่อนแผนที่ และปุ่มบวกหรือลบเพื่อขยายหรือย่อ เลือกท่าเรือปลายทางบนแผนที่หรือเลือกเส้นทางจากรายการ แผนที่นี้ใช้ประกอบการนำเสนอเท่านั้น ไม่ใช่แผนที่สำหรับเดินเรือหรือเส้นทางที่ยืนยันแล้ว")}</span>
   </div>;
 }

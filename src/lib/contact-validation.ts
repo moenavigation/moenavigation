@@ -18,7 +18,7 @@ function fieldMessages(locale: Locale): Record<keyof ContactValues, string> {
     company: local(locale, 'Please use no more than 160 characters for the company name.', 'กรุณากรอกชื่อบริษัทไม่เกิน 160 ตัวอักษร'),
     subject: local(locale, 'Please enter a subject using 2–200 characters.', 'กรุณากรอกหัวข้อ 2–200 ตัวอักษร'),
     message: local(locale, 'Please describe your requirements using 10–5,000 characters.', 'กรุณาระบุความต้องการ 10–5,000 ตัวอักษร'),
-    consent: local(locale, 'Please agree to the processing of your enquiry.', 'กรุณายินยอมให้ใช้ข้อมูลเพื่อดำเนินการตามข้อความสอบถาม'),
+    consent: local(locale, 'Please agree to the processing of your enquiry.', 'กรุณายินยอมให้ใช้ข้อมูลเพื่อพิจารณาและตอบกลับข้อความสอบถาม'),
   };
 }
 

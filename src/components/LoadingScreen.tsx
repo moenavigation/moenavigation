@@ -26,19 +26,19 @@ function NavigationEmblem() {
 export default function LoadingScreen({ variant = 'public', locale = 'en', stage = 'page' }: LoadingScreenProps) {
   const thai = locale === 'th';
   const title = variant === 'cms'
-    ? stage === 'session' ? 'Opening your workspace' : 'Getting your workspace ready'
+    ? stage === 'session' ? thai ? 'กำลังเปิดหน้าจัดการเว็บไซต์' : 'Opening your workspace' : thai ? 'กำลังเตรียมหน้าจัดการเว็บไซต์' : 'Getting your workspace ready'
     : thai ? 'รอสักครู่' : 'A moment, please';
   const description = variant === 'cms'
-    ? stage === 'session' ? 'Checking your sign-in securely.' : 'Loading your content, images and website details.'
+    ? stage === 'session' ? thai ? 'กำลังตรวจสอบข้อมูลการเข้าสู่ระบบ' : 'Checking your sign-in securely.' : thai ? 'กำลังโหลดเนื้อหา รูปภาพ และรายละเอียดเว็บไซต์' : 'Loading your content, images and website details.'
     : thai ? 'กำลังเตรียมเนื้อหาสำหรับคุณ' : 'We’re getting your page ready.';
   const status = variant === 'cms'
-    ? stage === 'session' ? 'Checking your session' : 'Loading workspace'
+    ? stage === 'session' ? thai ? 'กำลังตรวจสอบการเข้าสู่ระบบ' : 'Checking your session' : thai ? 'กำลังโหลดข้อมูล' : 'Loading workspace'
     : thai ? 'กำลังโหลดหน้าเว็บไซต์' : 'Loading page';
 
-  return <section className={`${styles.screen} ${variant === 'cms' ? styles.cms : styles.public}`} data-loading-screen={variant} lang={variant === 'cms' ? 'en' : locale}>
+  return <section className={`${styles.screen} ${variant === 'cms' ? styles.cms : styles.public}`} data-loading-screen={variant} lang={locale}>
     <div className={styles.header} data-loading-header>
       <div className={styles.brand}><span><BrandMark /></span><strong>MOE <span>NAVIGATION</span></strong></div>
-      <span className={styles.context}>{variant === 'cms' ? 'Content management' : thai ? 'บริการทางทะเล' : 'Maritime services'}</span>
+      <span className={styles.context}>{variant === 'cms' ? thai ? 'จัดการเนื้อหาเว็บไซต์' : 'Content management' : thai ? 'บริการทางทะเล' : 'Maritime services'}</span>
     </div>
     <div className={styles.center}>
       <NavigationEmblem />

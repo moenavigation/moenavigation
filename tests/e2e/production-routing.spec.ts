@@ -1,5 +1,5 @@
 import type { ContentRecord } from '../../src/lib/cms-types';
-import { test, expect, E2E_IMAGE_URL } from './fixtures';
+import { test, expect, E2E_IMAGE_URL, refreshPublicCache } from './fixtures';
 
 const customPage: ContentRecord = {
   id: 'e2e-company-information', type: 'Page', status: 'Published',
@@ -62,6 +62,7 @@ test('valid custom CMS page identifiers still render and switch between both lan
   await db.collection<ContentRecord & { _id: string }>('moe_content').insertOne({
     _id: 'Page:' + customPage.id, ...customPage,
   });
+  await refreshPublicCache();
   expect((await page.goto('/en/' + customPage.id))?.status()).toBe(200);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(customPage.title);
   await expect(page.getByText(customPage.body!, { exact: true })).toBeVisible();

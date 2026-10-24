@@ -1,5 +1,29 @@
 import { test, expect } from './fixtures';
 
+test('query preferences hydrate from cached pages and follow browser Back and Forward', async ({ page }) => {
+  await page.goto('/en/fleet?q=MOE&category=Tanker');
+  const search = page.getByRole('searchbox', { name: 'Search vessels' });
+  await expect(search).toHaveValue('MOE');
+  await expect(page.getByRole('button', { name: 'Tanker', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('status')).toHaveText('2 vessels');
+
+  // Category selection adds a history entry; typing replaces that same entry.
+  await page.getByRole('button', { name: 'Container', exact: true }).click();
+  await search.fill('unmatched-e2e-history');
+  await expect(page.getByRole('heading', { name: 'No matching results' })).toBeVisible();
+  await expect(page).toHaveURL(/category=Container/);
+  await expect(page).toHaveURL(/q=unmatched-e2e-history/);
+
+  await page.goBack();
+  await expect(search).toHaveValue('MOE');
+  await expect(page.getByRole('button', { name: 'Tanker', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('status')).toHaveText('2 vessels');
+  await page.goForward();
+  await expect(search).toHaveValue('unmatched-e2e-history');
+  await expect(page.getByRole('button', { name: 'Container', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('heading', { name: 'No matching results' })).toBeVisible();
+});
+
 test('fleet filters survive reload, language changes and detail/back navigation', async ({ page }) => {
   await page.goto('/en/fleet');
   await page.getByRole('button', { name: 'Tanker', exact: true }).click();
@@ -17,7 +41,7 @@ test('fleet filters survive reload, language changes and detail/back navigation'
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('MOE LINE 3');
   await page.getByRole('link', { name: 'กลับไปยังกองเรือ', exact: true }).click();
   await expect(page.getByRole('searchbox')).toHaveValue('MOE');
-  await page.getByRole('button', { name: 'รีเซ็ตตัวกรอง', exact: true }).click();
+  await page.getByRole('button', { name: 'ล้างตัวกรอง', exact: true }).click();
   await expect(page).toHaveURL(/\/fleet$/);
   await expect(page.getByRole('searchbox')).toBeFocused();
 });
@@ -97,6 +121,7 @@ test('route keyboard selection survives reload and language change', async ({ pa
 
 test('contact draft survives a lost success response and retries without a duplicate', async ({ page, db }) => {
   await page.goto('/en/contact?subject=Vessel%20enquiry');
+  await expect(page.getByRole('textbox', { name: 'Subject', exact: true })).toHaveValue('Vessel enquiry');
   await page.getByRole('button', { name: 'Send enquiry' }).click();
   await expect(page.getByRole('textbox', { name: 'Name', exact: true })).toBeFocused();
   await page.getByRole('textbox', { name: 'Name', exact: true }).fill('Browser enquiry');
