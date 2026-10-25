@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1670.76 517.4">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #ea4335;
+      }
+
+      .cls-2 {
+        fill: #fbbc04;
+      }
+
+      .cls-3 {
+        fill: #4285f4;
+      }
+
+      .cls-4 {
+        fill: #34a853;
+      }
+
+      .cls-5 {
+        fill: #777;
+        font-family: ArialMT, Arial;
+        font-size: 430px;
+        isolation: isolate;
+      }
+
+      .cls-6 {
+        fill: #c5221f;
+      }
+    </style>
+  </defs>
+  <text class="cls-5" transform="translate(547.89 377.78)"><tspan x="0" y="0">Gmail</tspan></text>
+  <g>
+    <path class="cls-3" d="M34.8,382.94h81.21v-197.22L0,98.71v249.42c0,19.26,15.6,34.8,34.8,34.8"/>
+    <path class="cls-4" d="M394.44,382.94h81.21c19.26,0,34.8-15.6,34.8-34.8V98.71l-116.01,87.01"/>
+    <path class="cls-2" d="M394.44,34.9v150.81l116.01-87.01v-46.4c0-43.04-49.13-67.58-83.53-41.76"/>
+    <path class="cls-1" d="M116.01,185.72V34.9l139.21,104.41,139.21-104.41v150.81l-139.21,104.41"/>
+    <path class="cls-6" d="M0,52.3v46.4l116.01,87.01V34.9l-32.48-24.36C49.07-15.27,0,9.26,0,52.3"/>
+  </g>
+</svg>

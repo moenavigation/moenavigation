@@ -27,13 +27,13 @@ test('unpublished and trashed records never enter page payloads', () => {
   assert.deepEqual(selectPublicPageRecords(records, 'home').map(item => item.id), ['home', 'home-fleet']);
 });
 
-test('home selects the displayed ordered cards and route endpoints without detail payloads', () => {
+test('home selects the displayed ordered cards and route geometry without long detail payloads', () => {
   const records = [record('Page', 'home'), ...shared,
     ...['home-expertise', 'home-fleet', 'home-news', 'home-connections'].map(id => record('Section', id, { parentId: 'home' })),
     ...Array.from({ length: 6 }, (_, index) => record('Service', `service-${index}`, { order: 5 - index })),
     ...Array.from({ length: 5 }, (_, index) => record('Vessel', `vessel-${index}`, { gallery: [{ url: '/huge-gallery.webp', alt: '', altTh: '' }] })),
     ...Array.from({ length: 5 }, (_, index) => record('News', `news-${index}`)),
-    record('Project', 'project'), record('Route', 'route', { origin: { name: 'A', nameTh: 'ก', country: 'Thailand', countryTh: 'ไทย' }, destination: { name: 'B', nameTh: 'ข', country: 'Vietnam', countryTh: 'เวียดนาม' }, waypoints: [[100, 13], [107, 10]] }),
+    record('Project', 'project'), record('Route', 'route', { origin: { name: 'A', nameTh: 'ก', country: 'Thailand', countryTh: 'ไทย' }, destination: { name: 'B', nameTh: 'ข', country: 'Vietnam', countryTh: 'เวียดนาม' }, waypoints: [[13, 100], [10, 107]], gallery: [{ url: '/route-gallery.webp', alt: '', altTh: '' }] }),
   ];
   const selected = selectPublicPageRecords(records, '');
   const content = projectPublicContent(selected);
@@ -43,8 +43,10 @@ test('home selects the displayed ordered cards and route endpoints without detai
   assert.equal(content.projects.length, 0);
   assert.equal(content.routes[0].origin?.countryTh, 'ไทย');
   assert.equal(content.routes[0].destination?.country, 'Vietnam');
-  assert.equal(content.routes[0].waypoints, undefined);
+  assert.deepEqual(content.routes[0].waypoints, [[13, 100], [10, 107]]);
   assert.equal(content.routes[0].body, undefined);
+  assert.equal(content.routes[0].bodyTh, undefined);
+  assert.equal(content.routes[0].gallery, undefined);
   assert.deepEqual(content.vessels[0].gallery, []);
   assert.deepEqual(content.news[0].body, { en: '', th: '' });
   assert.ok(selected.indexOf(selected.find(item => item.id === 'service-2')!) < selected.indexOf(selected.find(item => item.id === 'service-5')!));
@@ -103,6 +105,6 @@ test('article detail retains sibling categories for filter context and the next 
 });
 
 test('routes retain all coordinates and descriptions for interactive selection', () => {
-  const routes = [record('Route', 'mapped', { waypoints: [[100, 13], [107, 10]] }), record('Route', 'unmapped')];
+  const routes = [record('Route', 'mapped', { waypoints: [[13, 100], [10, 107]] }), record('Route', 'unmapped')];
   assert.deepEqual(selectPublicPageRecords([...routes, record('Vessel', 'unrelated')], 'routes'), routes);
 });

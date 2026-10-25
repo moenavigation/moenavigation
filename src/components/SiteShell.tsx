@@ -2,7 +2,7 @@
 import Link from "./NavigationLink";
 import { usePathname } from "next/navigation";
 import { usePublicSearchParams } from "@/lib/use-public-search-params";
-import { ArrowRight, ArrowUpRight, Menu, Globe2 } from "lucide-react";
+import { ArrowUpRight, Menu } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type MouseEvent, type ReactNode } from "react";
 import { href, local, navigation, type Locale } from "@/lib/content";
 import { usePublicContent } from "@/lib/use-public-content";
@@ -10,6 +10,7 @@ import { contentText } from "@/lib/public-content";
 import { AdditionalSections } from "./EditorialContent";
 import MobileNavDrawer from "./MobileNavDrawer";
 import BrandMark from "./BrandMark";
+import FloatingContact from "./FloatingContact";
 import styles from "./SiteShell.module.css";
 
 export function Brand() { return <span className={styles.brand}><span className={styles.brandMark}><BrandMark/><strong>MOE</strong></span><span className={styles.brandName}>NAVIGATION</span></span>; }
@@ -51,7 +52,7 @@ export function SiteHeader({locale}:{locale:Locale}) {
       <nav className={styles.desktopNav} aria-label={local(locale,"Main navigation","เมนูหลัก")}>
         {navigation.map(item=><Link key={item.id} href={href(locale,item.id)} aria-current={(item.id?current===item.id||current.startsWith(item.id+"/"):!current)?"page":undefined}>{item.title[locale]}</Link>)}
       </nav>
-      <div className={styles.actions}><Link className={styles.language} href={languagePath} lang={locale==="en"?"th":"en"} aria-label={local(locale,"Switch to Thai","เปลี่ยนเป็นภาษาอังกฤษ")}><Globe2 aria-hidden="true"/>{locale==="en"?"TH":"EN"}</Link><Link className={`button ${styles.contact}`} href={href(locale,"contact")}><span className={styles.contactLong}>{local(locale,"Contact us","ติดต่อเรา")}</span><span className={styles.contactShort}>{local(locale,"Contact","ติดต่อ")}</span><ArrowRight aria-hidden="true"/></Link><button ref={menuButtonRef} className={styles.menu} type="button" onClick={()=>setOpen(true)} aria-expanded={open} aria-label={local(locale,"Open menu","เปิดเมนู")}><Menu/></button></div>
+      <div className={styles.actions}><Link className={`button ${styles.contact}`} href={href(locale,"contact")}><span className={styles.contactLong}>{local(locale,"Contact us","ติดต่อเรา")}</span><span className={styles.contactShort}>{local(locale,"Contact","ติดต่อ")}</span></Link><Link className={styles.language} href={languagePath} lang={locale} aria-label={local(locale,"Switch to Thai","เปลี่ยนเป็นภาษาอังกฤษ")} title={local(locale,"Switch to Thai","เปลี่ยนเป็นภาษาอังกฤษ")}>{locale==="th"?"TH":"EN"}</Link><button ref={menuButtonRef} className={styles.menu} type="button" onClick={()=>setOpen(true)} aria-expanded={open} aria-label={local(locale,"Open menu","เปิดเมนู")}><Menu/></button></div>
     </div></header>
     <MobileNavDrawer
       open={open}
@@ -78,9 +79,9 @@ export function SiteHeader({locale}:{locale:Locale}) {
   </>;
 }
 export default function SiteShell({locale,children}:{locale:Locale;children:ReactNode}) {
+  const footerRef=useRef<HTMLElement>(null);
   const { sections, settings }=usePublicContent();
   const footer=sections.find(section=>section.id==="footer" && section.parentId==="shared");
-  const footerContact=sections.find(section=>section.id==="footer-contact" && section.parentId==="shared");
   const path=usePathname();
   useEffect(()=>{
     // Browser Back/Forward owns restoration of the previous scroll position.
@@ -101,7 +102,7 @@ export default function SiteShell({locale,children}:{locale:Locale;children:Reac
   },[path]);
   return <>
     <SiteHeader locale={locale}/>
-    <main id="main" tabIndex={-1}>{children}<div className="container"><AdditionalSections pageId="shared" locale={locale} exclude={["shared-callout","footer","footer-contact"]} /></div></main>
-    <footer className={styles.footer} onClickCapture={scrollCurrentPageToTop}><div className={`container ${styles.footerTop}`}><div><Link href={href(locale)}><Brand/></Link><p>{contentText(footer,"title",locale)}</p></div><div><h3>{local(locale,"Explore","เมนูเว็บไซต์")}</h3><div className={styles.footerLinks}>{navigation.slice(1).map(item=><Link href={href(locale,item.id)} key={item.id}>{item.title[locale]}</Link>)}</div></div><div className={styles.footerContact}><h3>{contentText(footerContact,"title",locale)}</h3><p>{contentText(footerContact,"description",locale)}</p><Link href={href(locale,"contact")} className="text-link">{local(locale,"Start a conversation","พูดคุยกับเรา")}<ArrowRight/></Link></div></div><div className={`container ${styles.footerBottom}`}><span>© {new Date().getFullYear()} {local(locale,settings.companyName,settings.companyNameTh)}</span><div><Link href={href(locale,"privacy")}>{local(locale,"Privacy policy","นโยบายความเป็นส่วนตัว")}</Link><Link href="/cms">{local(locale,"Content management","จัดการเนื้อหา")}<ArrowUpRight size={16}/></Link></div></div></footer>
+    <main id="main" tabIndex={-1}>{children}<div className="container"><AdditionalSections pageId="shared" locale={locale} exclude={["shared-callout","footer","footer-contact"]} /></div>{path!==href(locale,"contact") && <FloatingContact key={path} locale={locale} footerRef={footerRef}/>}</main>
+    <footer ref={footerRef} className={styles.footer} onClickCapture={scrollCurrentPageToTop}><div className={`container ${styles.footerTop}`}><div><Link href={href(locale)}><Brand/></Link><p>{contentText(footer,"title",locale)}</p></div><div><h3>{local(locale,"Explore","เมนูเว็บไซต์")}</h3><div className={styles.footerLinks}>{navigation.slice(1).map(item=><Link href={href(locale,item.id)} key={item.id}>{item.title[locale]}</Link>)}</div></div></div><div className={`container ${styles.footerBottom}`}><span>© {new Date().getFullYear()} {local(locale,settings.companyName,settings.companyNameTh)}</span><div><Link href={href(locale,"privacy")}>{local(locale,"Privacy policy","นโยบายความเป็นส่วนตัว")}</Link><Link href="/cms">{local(locale,"Content management","จัดการเนื้อหา")}<ArrowUpRight size={16}/></Link></div></div></footer>
   </>;
 }

@@ -865,7 +865,7 @@ export const websiteContentRecords = [
     "type": "Section",
     "parentId": "home",
     "title": "A closer look at our world.",
-    "titleTh": "รู้จักโลกของเราให้มากขึ้น",
+    "titleTh": "รู้จักงานของเราให้มากขึ้น",
     "description": "",
     "descriptionTh": "",
     "eyebrow": "News & perspectives",

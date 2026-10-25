@@ -1,4 +1,5 @@
 .layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(19rem, 1fr); align-items: start; gap: 1.5rem; }
+.empty { display: grid; justify-items: center; gap: .8rem; padding: 3rem 1.5rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--white); text-align: center; }
 .map { min-width: 0; overflow: hidden; border: 1px solid #cce3ee; border-radius: var(--radius); background: #e1f1f5; }
 .panel { min-width: 0; padding: 1.5rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--pale); }
 .panel h2 { margin-bottom: .45rem; font-size: var(--font-h3); }

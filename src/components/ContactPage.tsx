@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "./NavigationLink";
 import { usePublicSearchParams } from "@/lib/use-public-search-params";
-import { useLayoutEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { ArrowRight, ArrowUpRight, CheckCircle2, LoaderCircle, Mail, MapPin, Phone, ShieldCheck } from "lucide-react";
 import { href, local, type Locale } from "@/lib/content";
 import { usePublicContent } from "@/lib/use-public-content";
@@ -62,6 +62,11 @@ export default function ContactPage({ locale }: { locale: Locale }) {
   const successRef = useRef<HTMLDivElement>(null);
   const clearFocusRef = useRef(false);
   const clearTriggerRef = useRef<HTMLButtonElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (window.location.hash === "#contact-form") formRef.current?.focus({ preventScroll: true });
+  }, []);
 
   useLayoutEffect(() => {
     if (invalidFocusRef.current) document.getElementById(`contact-${invalidFocusRef.current}`)?.focus();
@@ -165,8 +170,8 @@ export default function ContactPage({ locale }: { locale: Locale }) {
         </div>
         <p className="notice">{local(locale, "Sending an enquiry does not confirm a booking, service availability or response time.", "การส่งข้อความสอบถามไม่ใช่การยืนยันการจอง ความพร้อมให้บริการ หรือระยะเวลาตอบกลับ")}</p>
       </div>
-      <form className={styles.contactForm} onSubmit={submit} noValidate aria-busy={pending}>
-        <h2>{local(locale, "Send an enquiry", "ส่งข้อความสอบถาม")}</h2>
+      <form ref={formRef} id="contact-form" tabIndex={-1} aria-labelledby="contact-form-title" className={styles.contactForm} onSubmit={submit} noValidate aria-busy={pending}>
+        <h2 id="contact-form-title">{local(locale, "Send an enquiry", "ส่งข้อความสอบถาม")}</h2>
         <p className={styles.formNote}>{local(locale, "Fields marked * are required. Your unsent draft is kept in this browser when storage is available.", "กรุณากรอกช่องที่มีเครื่องหมาย * หากเบราว์เซอร์อนุญาตให้เก็บข้อมูล ระบบจะเก็บข้อความที่ยังไม่ได้ส่งไว้ให้")}</p>
         {requestedSubject && !receipt && <div className={styles.enquiryContext}><span>{local(locale, "Regarding", "เรื่องที่ต้องการสอบถาม")}</span><strong>{requestedSubject}</strong>{values.subject !== requestedSubject && <><span>{local(locale,"Your saved subject has been kept.","ระบบเก็บหัวข้อเดิมที่คุณกรอกไว้ให้แล้ว")}</span><button type="button" className={styles.clearDraft} disabled={pending} onClick={() => { update("subject", requestedSubject); document.getElementById("contact-subject")?.focus(); }}>{local(locale,"Use this subject","ใช้หัวข้อนี้")}</button></>}</div>}
         {Object.keys(errors).some((key) => key !== "submit" && errors[key as keyof ContactErrors]) && <p className={styles.error} role="alert">{local(locale, "Please correct the highlighted fields before sending.", "กรุณาตรวจสอบช่องที่แจ้งข้อผิดพลาดก่อนส่งข้อความ")}</p>}

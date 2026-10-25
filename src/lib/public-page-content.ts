@@ -1,7 +1,7 @@
 import type { ContentRecord, ContentType } from './cms-types';
 
-// Cards and browser-side filters use these fields. Large article bodies,
-// vessel galleries/specifications and route geometry belong to detail views.
+// Cards and browser-side filters use these fields. Large article bodies and
+// vessel galleries/specifications belong to detail views; maps add route geometry.
 function summary(record: ContentRecord): ContentRecord {
   return {
     id: record.id, type: record.type, status: record.status, revision: record.revision,
@@ -65,7 +65,7 @@ export function selectPublicPageRecords(records: ContentRecord[], page: string, 
   // Preserve input order, including ties in editorial ordering, without mutating the cached snapshot.
   return visible.filter(record => selected.has(record)).map(record => {
     if (full.has(record)) return record;
-    if (record.type === 'Route' && pageId === 'home') return { ...summary(record), origin: record.origin, destination: record.destination };
+    if (record.type === 'Route' && pageId === 'home') return { ...summary(record), origin: record.origin, destination: record.destination, waypoints: record.waypoints };
     return summary(record);
   });
 }

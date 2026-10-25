@@ -101,16 +101,16 @@ function Services({ locale, slug }: { locale: Locale; slug?: string }) {
   }
   const [featured, ...more] = services;
   return <div className="container section">
-    <Heading eyebrow={contentText(page,"eyebrow",locale)} title={contentText(page,"title",locale)} description={contentText(page,"description",locale)} action={<Action locale={locale} to={`contact?subject=${encodeURIComponent(local(locale,"Maritime service enquiry","สอบถามบริการทางทะเล"))}`} secondary>{local(locale,"Discuss your requirements","แจ้งความต้องการของคุณ")}</Action>} />
+    <Heading eyebrow={contentText(page,"eyebrow",locale)} title={contentText(page,"title",locale)} description={contentText(page,"description",locale)} />
     <PreviewNote>{local(locale, "Preview of possible services. Confirmed capabilities and availability will be added later.", "ข้อมูลบริการนี้เป็นตัวอย่าง เราจะเพิ่มรายละเอียดขอบเขตบริการและความพร้อมให้บริการเมื่อได้รับการยืนยันแล้ว")}</PreviewNote>
     {featured ? <>
       <Link className={styles.serviceFeature} href={href(locale, `services/${featured.id}`)}>
         <div className={styles.serviceFeaturePhoto}><Image src={featured.image} alt={featured.imageAlt[locale] || featured.title[locale]} fill priority sizes="(max-width: 760px) 100vw, 55vw" /></div>
-        <div className={styles.serviceFeatureCopy}><p className="eyebrow">{local(locale, "SERVICE 01", "บริการ 01")}</p><h2>{featured.title[locale]}</h2><p>{featured.description[locale]}</p><span className={styles.cardAction}>{local(locale, "Explore service", "ดูรายละเอียดบริการ")}<ArrowRight aria-hidden="true" size={19} /></span></div>
+        <div className={styles.serviceFeatureCopy}><h2>{featured.title[locale]}</h2><p>{featured.description[locale]}</p><span className={styles.cardAction}>{local(locale, "Explore service", "ดูรายละเอียดบริการ")}<ChevronRight aria-hidden="true" size={19} /></span></div>
       </Link>
-      {more.length > 0 && <div className={styles.capabilityGrid}>{more.map((item, index) => { const Icon = serviceIcons[item.icon as keyof typeof serviceIcons] || Ship; return <Link className={styles.capabilityCard} key={item.id} href={href(locale, `services/${item.id}`)}><div className={styles.capabilityImage}><Image src={item.image} alt={item.imageAlt[locale] || item.title[locale]} fill sizes="(max-width: 650px) 100vw, (max-width: 850px) 25vw, 15vw" /></div><div className={styles.capabilityCopy}><span className={styles.capabilityIndex}>{String(index + 2).padStart(2, "0")}</span><Icon size={24} aria-hidden="true" /><h2>{item.title[locale]}</h2><p>{item.description[locale]}</p><span className={styles.cardAction}>{local(locale, "View service", "ดูบริการ")}<ArrowRight aria-hidden="true" size={18} /></span></div></Link>; })}</div>}
+      {more.length > 0 && <div className={styles.capabilityGrid}>{more.map((item) => { const Icon = serviceIcons[item.icon as keyof typeof serviceIcons] || Ship; return <Link className={styles.capabilityCard} key={item.id} href={href(locale, `services/${item.id}`)}><div className={styles.capabilityImage}><Image src={item.image} alt={item.imageAlt[locale] || item.title[locale]} fill sizes="(max-width: 650px) 100vw, (max-width: 850px) 25vw, 15vw" /></div><div className={styles.capabilityCopy}><Icon size={24} aria-hidden="true" /><h2>{item.title[locale]}</h2><p>{item.description[locale]}</p><span className={styles.cardAction}>{local(locale, "View service", "ดูบริการ")}<ChevronRight aria-hidden="true" size={18} /></span></div></Link>; })}</div>}
     </> : <div className={styles.empty}><Ship size={35} aria-hidden="true" /><h2>{local(locale, "No demo services published yet", "ยังไม่มีข้อมูลบริการตัวอย่างที่เผยแพร่")}</h2><p>{local(locale, "Published services will appear here.", "บริการที่เผยแพร่จะแสดงที่นี่")}</p></div>}
-    <ContentBody text={contentText(page,"body",locale)} /><AdditionalSections pageId="services" locale={locale} exclude={["service-planning"]} /><Callout locale={locale} />
+    <ContentBody text={contentText(page,"body",locale)} /><AdditionalSections pageId="services" locale={locale} exclude={["service-planning"]} />
   </div>;
 }
 

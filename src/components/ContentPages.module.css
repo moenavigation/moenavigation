@@ -28,7 +28,6 @@
 .capabilityCopy h2 { font-size: var(--font-h3); margin-bottom: .35rem; }
 .capabilityCopy p { color: var(--muted); line-height: 1.5; font-size: var(--font-small); }
 .capabilityCopy .cardAction { margin-top: auto; padding-top: .75rem; }
-.capabilityIndex { color: var(--muted); font-size: var(--font-small); letter-spacing: .1em; font-weight: 700; }
 .fleetGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.15rem; }
 .fleetCard { min-width: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: white; color: var(--navy); transition: border-color .2s, box-shadow .2s; }
 .fleetImage { position: relative; aspect-ratio: 1.65; overflow: hidden; background: var(--pale); }

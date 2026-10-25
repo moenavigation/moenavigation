@@ -1,0 +1,63 @@
+.button {
+  position: fixed;
+  z-index: 20;
+  right: max(1.5rem, env(safe-area-inset-right));
+  bottom: max(1.5rem, env(safe-area-inset-bottom));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .7rem;
+  min-width: 3.5rem;
+  min-height: 3.5rem;
+  padding: .85rem 1.25rem;
+  border: 1px solid rgb(255 255 255 / .3);
+  border-radius: 2rem;
+  background: var(--navy);
+  color: var(--white);
+  box-shadow: 0 .3rem 1.2rem rgb(7 31 64 / .22);
+  font-size: var(--font-body);
+  font-weight: 600;
+  line-height: 1.3;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(.35rem);
+  transition: opacity .2s ease, visibility .2s, transform .2s ease, background-color .2s ease;
+}
+
+.visible, .button:focus-within {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.icon { width: 1.5rem; height: 1.5rem; object-fit: contain; filter: invert(1); flex: 0 0 auto; }
+.button:active { background: #16446d; }
+.button:focus-visible { outline: 3px solid #588ac3; outline-offset: 4px; }
+
+:global(body:has(dialog[open])) .button,
+:global(body:has([data-navigation-loading])) .button {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .button:hover { background: #16446d; }
+}
+
+@media (max-width: 700px) {
+  .button {
+    right: max(1rem, env(safe-area-inset-right));
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    width: 3.5rem;
+    height: 3.5rem;
+    padding: .9rem;
+  }
+  .label { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button { transition: none; transform: none; }
+}

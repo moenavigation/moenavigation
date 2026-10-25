@@ -2,7 +2,7 @@
 
 import "leaflet/dist/leaflet.css";
 
-import { Globe2, Minus, Plus, RotateCcw } from "lucide-react";
+import { Minus, Plus, RotateCcw } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { local, type Locale } from "@/lib/content";
 import styles from "./InteractiveRouteMap.module.css";
@@ -21,9 +21,10 @@ type Props = {
   selectedId: string;
   routes: MappedRoute[];
   onSelect: (id: string) => void;
+  deferUntilVisible?: boolean;
 };
 
-export default function InteractiveRouteMap({ locale, selectedId, routes, onSelect }: Props) {
+export default function InteractiveRouteMap({ locale, selectedId, routes, onSelect, deferUntilVisible = false }: Props) {
   const descriptionId = useId();
   const availableKey = JSON.stringify(routes);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -56,25 +57,11 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
     });
   };
 
-  const fitAllPorts = () => {
-    const map = mapRef.current;
-    const leaflet = leafletRef.current;
-    if (!map || !leaflet) return;
-    const points = routesRef.current.flatMap((route) => route.waypoints);
-    if (!points.length) return;
-    const compact = window.matchMedia("(max-width: 520px)").matches;
-    map.fitBounds(leaflet.latLngBounds(points), {
-      paddingTopLeft: compact ? [24, 24] : [36, 36],
-      paddingBottomRight: compact ? [24, 180] : [36, 36],
-      maxZoom: 6,
-      animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    });
-  };
-
   useEffect(() => {
     let disposed = false;
     let resizeObserver: ResizeObserver | null = null;
     let resizeFrame: number | null = null;
+    let visibilityObserver: IntersectionObserver | null = null;
     let map: Leaflet.Map | null = null;
 
     async function initialize() {
@@ -94,8 +81,8 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
         minZoom: 3,
         maxZoom: 12,
       }).setView(routesRef.current[0].waypoints[0], 5);
-      map.attributionControl.setPrefix(false);
-
+      const currentMap = map;
+      currentMap.attributionControl.setPrefix(false);
       const tiles = leaflet.tileLayer(tileUrl, { attribution, maxZoom: 19 });
       let loadedTiles = 0;
       let failedTiles = 0;
@@ -103,9 +90,7 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
       tiles.on("tileload", () => { loadedTiles += 1; });
       tiles.on("tileerror", () => { failedTiles += 1; });
       tiles.on("load", () => { if (!disposed) setTileError(failedTiles > 0 && loadedTiles === 0); });
-      tiles.addTo(map);
-
-      const currentMap = map;
+      tiles.addTo(currentMap);
       currentMap.on("zoomend", () => { if (!disposed) setZoom(currentMap.getZoom()); });
       mapRef.current = currentMap;
       leafletRef.current = leaflet;
@@ -120,9 +105,21 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
       setMapVersion((version) => version + 1);
     }
 
-    void initialize().catch(() => { if (!disposed) setMapFailed(true); });
+    const start = () => { void initialize().catch(() => { if (!disposed) setMapFailed(true); }); };
+    if (deferUntilVisible && typeof IntersectionObserver !== "undefined" && containerRef.current) {
+      visibilityObserver = new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          visibilityObserver?.disconnect();
+          start();
+        }
+      }, { rootMargin: "240px" });
+      visibilityObserver.observe(containerRef.current);
+    } else {
+      start();
+    }
     return () => {
       disposed = true;
+      visibilityObserver?.disconnect();
       resizeObserver?.disconnect();
       if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
       overlaysRef.current = null;
@@ -130,7 +127,7 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
       mapRef.current = null;
       leafletRef.current = null;
     };
-  }, []);
+  }, [deferUntilVisible]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -211,20 +208,19 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
   const controlsDisabled = mapVersion === 0 || mapFailed;
 
   return <div className={styles.shell}>
-    <div ref={containerRef} className={styles.viewport} role="region" aria-label={mapLabel} aria-describedby={descriptionId} />
-    {!mapVersion && !mapFailed && <p className={styles.loading} role="status">{local(locale, "Loading map…", "กำลังโหลดแผนที่…")}</p>}
-    <div className={styles.notice} aria-hidden="true">
-      <span className={styles.noticeEyebrow}>{local(locale, "Selected route", "เส้นทางที่เลือก")}</span>
-      <strong>{originName} → {selectedName}</strong>
-      <span className={styles.noticeCaveat}>{local(locale, "Illustrative · Not for navigation", "แผนที่ตัวอย่าง · ห้ามใช้ในการเดินเรือ")}</span>
+    <div className={styles.canvas}>
+      <div ref={containerRef} className={styles.viewport} role="region" aria-label={mapLabel} aria-describedby={descriptionId} />
+      {!mapVersion && !mapFailed && <p className={styles.loading} role="status">{local(locale, "Loading map…", "กำลังโหลดแผนที่…")}</p>}
+      <div className={styles.notice} aria-hidden="true">
+        <strong>{originName} → {selectedName}</strong>
+      </div>
+      <div className={styles.controls} role="group" aria-label={local(locale, "Map controls", "ตัวควบคุมแผนที่")}>
+        <button type="button" disabled={controlsDisabled || zoom >= 12} onClick={() => mapRef.current?.zoomIn()} aria-label={local(locale, "Zoom in", "ขยายแผนที่")}><Plus size={20} aria-hidden="true" /></button>
+        <button type="button" disabled={controlsDisabled || zoom <= 3} onClick={() => mapRef.current?.zoomOut()} aria-label={local(locale, "Zoom out", "ย่อแผนที่")}><Minus size={20} aria-hidden="true" /></button>
+        <button type="button" disabled={controlsDisabled} onClick={() => fitRoute(selectedId, true)} aria-label={local(locale, "Fit selected route", "แสดงเส้นทางที่เลือกให้ครบ")}><RotateCcw size={18} aria-hidden="true" /></button>
+      </div>
+      {(tileError || mapFailed) && <p className={styles.tileError} role="status">{mapFailed ? local(locale, "The map is unavailable. You can still choose a route from the list.", "ไม่สามารถโหลดแผนที่ได้ คุณยังเลือกเส้นทางจากรายการได้") : local(locale, "The map background is unavailable. Route markers and controls still work.", "ไม่สามารถโหลดพื้นหลังแผนที่ได้ จุดท่าเรือและปุ่มควบคุมยังใช้งานได้")}</p>}
+      <span id={descriptionId} className={styles.srOnly}>{local(locale, "Use the arrow keys to move the map and plus or minus to zoom. Choose a destination marker or a route in the list. This is an illustrative overview, not a navigational chart or confirmed sailing route.", "ใช้แป้นลูกศรเพื่อเลื่อนแผนที่ และปุ่มบวกหรือลบเพื่อขยายหรือย่อ เลือกท่าเรือปลายทางบนแผนที่หรือเลือกเส้นทางจากรายการ แผนที่นี้ใช้ประกอบการนำเสนอเท่านั้น ไม่ใช่แผนที่สำหรับเดินเรือหรือเส้นทางที่ยืนยันแล้ว")}</span>
     </div>
-    <div className={styles.controls} role="group" aria-label={local(locale, "Map controls", "ตัวควบคุมแผนที่")}>
-      <button type="button" disabled={controlsDisabled || zoom >= 12} onClick={() => mapRef.current?.zoomIn()} aria-label={local(locale, "Zoom in", "ขยายแผนที่")}><Plus size={20} aria-hidden="true" /></button>
-      <button type="button" disabled={controlsDisabled || zoom <= 3} onClick={() => mapRef.current?.zoomOut()} aria-label={local(locale, "Zoom out", "ย่อแผนที่")}><Minus size={20} aria-hidden="true" /></button>
-      <button type="button" disabled={controlsDisabled} onClick={() => fitRoute(selectedId, true)} aria-label={local(locale, "Fit selected route", "แสดงเส้นทางที่เลือกให้ครบ")}><RotateCcw size={18} aria-hidden="true" /></button>
-      <button type="button" disabled={controlsDisabled} onClick={fitAllPorts} aria-label={local(locale, "Show all ports", "แสดงท่าเรือทั้งหมด")}><Globe2 size={19} aria-hidden="true" /></button>
-    </div>
-    {(tileError || mapFailed) && <p className={styles.tileError} role="status">{mapFailed ? local(locale, "The map is unavailable. You can still choose a route from the list.", "ไม่สามารถโหลดแผนที่ได้ คุณยังเลือกเส้นทางจากรายการได้") : local(locale, "The map background is unavailable. Route markers and controls still work.", "ไม่สามารถโหลดพื้นหลังแผนที่ได้ จุดท่าเรือและปุ่มควบคุมยังใช้งานได้")}</p>}
-    <span id={descriptionId} className={styles.srOnly}>{local(locale, "Use the arrow keys to move the map and plus or minus to zoom. Choose a destination marker or a route in the list. This is an illustrative overview, not a navigational chart or confirmed sailing route.", "ใช้แป้นลูกศรเพื่อเลื่อนแผนที่ และปุ่มบวกหรือลบเพื่อขยายหรือย่อ เลือกท่าเรือปลายทางบนแผนที่หรือเลือกเส้นทางจากรายการ แผนที่นี้ใช้ประกอบการนำเสนอเท่านั้น ไม่ใช่แผนที่สำหรับเดินเรือหรือเส้นทางที่ยืนยันแล้ว")}</span>
   </div>;
 }

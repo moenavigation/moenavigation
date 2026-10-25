@@ -18,9 +18,12 @@ image-led vessel cards; Projects and News have featured and secondary story
 layouts. Listings support search and category filters. Fleet, News and Projects
 keep these filters in the URL for reloads, sharing, language changes and return
 links from detail pages. Search matches English and Thai text together.
-The route map similarly keeps the selected route in its URL. Vessel galleries
-read their images and bilingual descriptions from MongoDB; a vessel with one image
-opens that image without redundant gallery controls.
+Home and Routes share an interactive map and route list using the same published
+CMS route data. Home keeps its selection within the page; `/routes` keeps the
+selected route in its URL for reloads and language changes. The homepage waits
+until the map approaches the viewport before loading the map library and tiles.
+Vessel galleries read their images and bilingual descriptions from MongoDB; a
+vessel with one image opens that image without redundant gallery controls.
 
 The CMS stores bilingual titles, descriptions, longer text, image
 descriptions, categories, and optional supplied dates. Published records are
@@ -126,7 +129,7 @@ to the browser and origin, including its port.
 
 The interactive geographic map supports pointer, touch, and keyboard use.
 Visitors can pan, zoom, select published destinations on the map or route list,
-and return to the regional overview. Port coordinates and drawn connections
+and refit the selected route. Port coordinates and drawn connections
 are approximate illustrations, not navigational tracks or live schedules.
 
 Every published Route with origin and destination details plus at least two

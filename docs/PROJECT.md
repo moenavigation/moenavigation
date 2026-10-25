@@ -4,6 +4,9 @@ Business and audience: [Maritime Services Company serving shipping companies, ve
 Goal: [Build a modern, professional, and trustworthy corporate website that clearly presents the company, services, fleet, shipping routes, projects, and capabilities while helping potential clients understand the business and contact the company easily].
 Scope: [Develop a modern, responsive bilingual corporate website with pages for company information, services, fleet and vessel details, shipping routes, projects, news, contact, and privacy policy. The website will include a CMS for managing vessels, services, projects, news, images, and general content, along with contact forms, Google Maps, SEO setup, performance optimization, SSL support, and a scalable structure for future expansion].
 
+The homepage connections section and Routes page share an interactive route
+explorer driven by published CMS routes, with bilingual port details and map data.
+
 Use the project brief, existing code, and supplied assets to establish the
 context. Treat unfilled placeholders as missing information, not facts.
 Choose appropriate pages and navigation within the agreed scope.
