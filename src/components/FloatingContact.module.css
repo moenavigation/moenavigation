@@ -18,6 +18,7 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
+  overflow: hidden;
   background: var(--white);
   box-shadow: 0 .35rem 1.25rem rgb(7 31 64 / .2), 0 0 0 1px rgb(8 43 80 / .08);
   pointer-events: auto;
@@ -28,8 +29,8 @@
   object-fit: contain;
   transition: opacity .22s ease, transform .22s ease;
 }
-.callIcon { width: 100%; height: 100%; border-radius: 50%; }
-.closeIcon { width: 1.75rem; height: 1.75rem; opacity: 0; transform: scale(.85); }
+.callIcon { width: 100%; height: 100%; border-radius: inherit; }
+.closeIcon { width: 100%; height: 100%; border-radius: inherit; opacity: 0; transform: scale(.85); }
 .root[data-open="true"] .callIcon { opacity: 0; transform: scale(.85); }
 .root[data-open="true"] .closeIcon { opacity: 1; transform: scale(1); }
 
@@ -92,15 +93,14 @@
   width: 4rem;
   height: 4rem;
   flex: 0 0 auto;
-  padding: .35rem;
+  padding: 0;
   border: 1px solid var(--line);
   border-radius: 50%;
+  overflow: hidden;
   background: var(--white);
   box-shadow: 0 .15rem .5rem rgb(7 31 64 / .12);
 }
-.itemIcon img { width: 100%; height: 100%; object-fit: contain; }
-.monochrome { background: var(--navy); border-color: var(--navy); padding: .85rem; }
-.monochrome img { filter: invert(1); }
+.itemIcon img { width: 100%; height: 100%; object-fit: contain; border-radius: inherit; }
 .trigger:focus-visible, .item:focus-visible { outline: 3px solid #588ac3; outline-offset: 3px; }
 .trigger:active { background: var(--pale); }
 .item:active .itemText { background: var(--pale); }

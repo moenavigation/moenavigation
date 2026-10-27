@@ -43,9 +43,6 @@
 .wordmark small { display: block; margin-top: .2rem; font-size: var(--font-small); font-weight: 700; letter-spacing: .13em; }
 .close { display: grid; place-items: center; flex: 0 0 auto; width: 2.75rem; height: 2.75rem; padding: 0; border: 1px solid var(--line); border-radius: .45rem; background: #fff; color: var(--navy); }
 .close svg { width: 1.25rem; height: 1.25rem; }
-.intro { padding: .75rem 1.4rem 1.4rem; border-bottom: 1px solid var(--line); background: linear-gradient(135deg, #fff 25%, #eff6fb 100%); }
-.eyebrow { display: block; margin-bottom: .4rem; color: var(--blue); font-size: var(--font-small); font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
-.intro h2 { color: var(--navy); font-size: var(--font-h2); }
 
 @media (hover: hover) and (pointer: fine) {
   .close:hover { background: var(--pale); }

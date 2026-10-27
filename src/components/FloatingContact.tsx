@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import { href, local, type Locale } from "@/lib/content";
 import { usePublicContent } from "@/lib/use-public-content";
 import Link from "./NavigationLink";
@@ -13,7 +13,6 @@ type ContactAction = {
   detail?: string;
   href: string;
   icon: string;
-  monochrome?: boolean;
   internal?: boolean;
   external?: boolean;
 };
@@ -43,20 +42,24 @@ export default function FloatingContact({ locale }: { locale: Locale }) {
     id: "enquiry",
     label: local(locale, "Send an enquiry", "ส่งข้อความสอบถาม"),
     href: `${href(locale, "contact")}#contact-form`,
-    icon: "/icons/Email.png", monochrome: true, internal: true,
+    icon: "/icons/Email.svg", internal: true,
   }];
   const phone = settings.phone.replace(/[^+\d]/g, "");
   if (phone.replace(/\D/g, "").length >= 5) actions.push({
     id: "phone", label: local(locale, "Call us", "โทรหาเรา"), detail: settings.phone,
-    href: `tel:${phone}`, icon: "/icons/Phone-2.png",
+    href: `tel:${phone}`, icon: "/icons/Phone.svg",
   });
+  actions.unshift(
+    { id: "line", label: "LINE", href: "", icon: "/icons/LINE.svg" },
+    { id: "whatsapp", label: "WhatsApp", href: "", icon: "/icons/Whatsapp.svg" },
+  );
   if (settings.email) actions.push({
     id: "email", label: local(locale, "Email us", "ส่งอีเมล"), detail: settings.email,
-    href: `mailto:${settings.email}`, icon: "/icons/Email.png", monochrome: true,
+    href: `mailto:${settings.email}`, icon: "/icons/Email.svg",
   });
   if (settings.mapUrl) actions.push({
     id: "map", label: local(locale, "Office map", "แผนที่สำนักงาน"),
-    href: settings.mapUrl, icon: "/icons/Location.png", external: true,
+    href: settings.mapUrl, icon: "/icons/Location.svg", external: true,
   });
 
   return <aside
@@ -85,19 +88,24 @@ export default function FloatingContact({ locale }: { locale: Locale }) {
       aria-controls={itemsId}
       onClick={() => { triggerRef.current?.focus({ preventScroll: true }); setOpen(current => !current); }}
     >
-      <Image className={styles.callIcon} src="/icons/Call-start.png" width={64} height={64} alt="" unoptimized />
-      <Image className={styles.closeIcon} src="/icons/Utils/close-x.svg" width={28} height={28} alt="" unoptimized />
+      <Image className={styles.callIcon} src="/icons/Call-start.svg" width={64} height={64} alt="" unoptimized />
+      <Image className={styles.closeIcon} src="/icons/Call-end.svg" width={64} height={64} alt="" unoptimized />
     </button>
     <nav id={itemsId} className={styles.items} aria-label={local(locale, "Contact options", "เลือกช่องทางติดต่อ")} aria-hidden={!open} inert={!open}>
       {actions.map((action, index) => {
         const content = <>
           <span className={styles.itemText}>{action.label}{action.detail && <span className={styles.itemDetail}>{action.detail}</span>}</span>
-          <span className={`${styles.itemIcon} ${action.monochrome ? styles.monochrome : ""}`}>
+          <span className={styles.itemIcon}>
             <Image src={action.icon} width={48} height={48} alt="" unoptimized />
           </span>
           {action.external && <span className="sr-only">{local(locale, "(opens in a new tab)", "(เปิดในแท็บใหม่)")}</span>}
         </>;
-        const props = { className: styles.item, style: { "--item-index": actions.length - index - 1 } as CSSProperties, tabIndex: open ? 0 : -1, onClick: closeAndFocusTrigger };
+        const style = { "--item-index": actions.length - index - 1 } as CSSProperties;
+        const onClick = (event: MouseEvent<HTMLAnchorElement>) => {
+          if (action.href === "") { event.preventDefault(); return; }
+          closeAndFocusTrigger();
+        };
+        const props = { className: styles.item, style, tabIndex: open ? 0 : -1, onClick };
         return action.internal
           ? <Link key={action.id} {...props} href={action.href}>{content}</Link>
           : <a key={action.id} {...props} href={action.href} target={action.external ? "_blank" : undefined} rel={action.external ? "noopener noreferrer" : undefined}>{content}</a>;

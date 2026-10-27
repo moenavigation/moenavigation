@@ -11,6 +11,7 @@ import { AdditionalSections } from "./EditorialContent";
 import MobileNavDrawer from "./MobileNavDrawer";
 import BrandMark from "./BrandMark";
 import FloatingContact from "./FloatingContact";
+import ContactsBox from "./ContactsBox";
 import styles from "./SiteShell.module.css";
 
 export function Brand() { return <span className={styles.brand}><span className={styles.brandMark}><BrandMark/><strong>MOE</strong></span><span className={styles.brandName}>NAVIGATION</span></span>; }
@@ -23,7 +24,7 @@ function scrollToTop() { window.scrollTo({top:0,behavior:"instant"}); }
 function scrollCurrentPageToTop(event:MouseEvent<HTMLElement>) {
   if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
   const link=event.target instanceof Element?event.target.closest("a[href]"):null;
-  if(link instanceof HTMLAnchorElement&&link.origin===window.location.origin&&link.pathname===window.location.pathname&&link.search===window.location.search&&!link.hash)scrollToTop();
+  if(link instanceof HTMLAnchorElement&&link.getAttribute("href")!==""&&link.origin===window.location.origin&&link.pathname===window.location.pathname&&link.search===window.location.search&&!link.hash)scrollToTop();
 }
 let lastClientPath: string | null = null;
 let historyNavigationPath: string | null = null;
@@ -58,8 +59,7 @@ export function SiteHeader({locale}:{locale:Locale}) {
       open={open}
       onClose={closeMenu}
       triggerRef={menuButtonRef}
-      eyebrow={local(locale,"Menu","เมนู")}
-      title={local(locale,"Explore MOE Navigation","เมนู MOE Navigation")}
+      title={local(locale,"Menu","เมนู")}
       closeLabel={local(locale,"Close menu","ปิดเมนู")}
     >
       <nav className={styles.drawerNav} aria-label={local(locale,"Mobile navigation","เมนูสำหรับมือถือ")}>
@@ -103,7 +103,7 @@ export default function SiteShell({locale,children}:{locale:Locale;children:Reac
     <SiteHeader locale={locale}/>
     <main id="main" tabIndex={-1}>{children}<div className="container"><AdditionalSections pageId="shared" locale={locale} exclude={["shared-callout","footer","footer-contact"]} /></div></main>
     <footer className={styles.footer} onClickCapture={scrollCurrentPageToTop}>
-      <div className={`container ${styles.footerTop}`}><div><Link href={href(locale)}><Brand/></Link><p>{contentText(footer,"title",locale)}</p></div></div>
+      <div className={`container ${styles.footerTop}`}><div><Link href={href(locale)}><Brand/></Link><p>{contentText(footer,"title",locale)}</p></div><ContactsBox locale={locale} settings={settings}/></div>
       <div className={`container ${styles.footerBottom}`}><span>© {new Date().getFullYear()} {local(locale,settings.companyName,settings.companyNameTh)}</span><Link href={href(locale,"privacy")}>{local(locale,"Privacy policy","นโยบายความเป็นส่วนตัว")}</Link></div>
       <FloatingContact key={path} locale={locale}/>
     </footer>

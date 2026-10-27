@@ -27,8 +27,8 @@ function Action({ locale, to = "contact", children, secondary = false }: { local
   return <Link className={`button ${secondary ? "secondary" : ""}`} href={href(locale, to)}>{children}<ArrowRight aria-hidden="true" size={20} /></Link>;
 }
 
-function Heading({ eyebrow, title, description, action }: { eyebrow: string; title: string; description: string; action?: ReactNode }) {
-  return <div className={styles.heading}><div><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p className={styles.lead}>{description}</p></div>{action}</div>;
+function Heading({ eyebrow, title, description, action, hideTitle = false }: { eyebrow: string; title: string; description: string; action?: ReactNode; hideTitle?: boolean }) {
+  return <div className={styles.heading}><div><p className="eyebrow">{eyebrow}</p><h1 className={hideTitle ? "sr-only" : undefined}>{title}</h1><p className={styles.lead}>{description}</p></div>{action}</div>;
 }
 
 function PreviewNote({ children }: { children: ReactNode }) {
@@ -102,7 +102,6 @@ function Services({ locale, slug }: { locale: Locale; slug?: string }) {
   const [featured, ...more] = services;
   return <div className="container section">
     <Heading eyebrow={contentText(page,"eyebrow",locale)} title={contentText(page,"title",locale)} description={contentText(page,"description",locale)} />
-    <PreviewNote>{local(locale, "Preview of possible services. Confirmed capabilities and availability will be added later.", "ข้อมูลบริการนี้เป็นตัวอย่าง เราจะเพิ่มรายละเอียดขอบเขตบริการและความพร้อมให้บริการเมื่อได้รับการยืนยันแล้ว")}</PreviewNote>
     {featured ? <>
       <Link className={styles.serviceFeature} href={href(locale, `services/${featured.id}`)}>
         <div className={styles.serviceFeaturePhoto}><Image src={featured.image} alt={featured.imageAlt[locale] || featured.title[locale]} fill priority sizes="(max-width: 760px) 100vw, 55vw" /></div>
@@ -271,8 +270,7 @@ function Articles({ locale, page, slug }: { locale: Locale; page: "projects" | "
   const filtered = items.filter((item) => (category === "All" || category === item.category) && matchesListingSearch(query, [item.title.en, item.title.th, item.description.en, item.description.th, item.category, categoryName("th", item.category, item.categoryTh)]));
   const [featured, ...remaining] = filtered;
   return <div className="container section">
-    <Heading eyebrow={contentText(pageRecord,"eyebrow",locale)} title={contentText(pageRecord,"title",locale)} description={contentText(pageRecord,"description",locale)} />
-    <PreviewNote>{local(locale, isNews ? "Sample articles and dates for this website preview; company updates are pending." : "Illustrative project scenarios, not completed company work.", isNews ? "บทความและวันที่บนหน้านี้เป็นตัวอย่าง ยังไม่มีข่าวสารที่ได้รับการยืนยันจากบริษัท" : "โครงการบนหน้านี้เป็นตัวอย่าง ไม่ใช่ผลงานที่บริษัทดำเนินการจริง")}</PreviewNote>
+    <Heading eyebrow={contentText(pageRecord,"eyebrow",locale)} title={isNews ? local(locale,"News","ข่าวสาร") : contentText(pageRecord,"title",locale)} description={contentText(pageRecord,"description",locale)} hideTitle={isNews} />
     <Filters locale={locale} categories={categories} categoryTranslations={categoryTranslations} selected={category} onSelect={setCategory} query={query} onQuery={setQuery} searchRef={searchRef} placeholder={local(locale, isNews ? "Search news" : "Search projects", isNews ? "ค้นหาข่าวสาร" : "ค้นหาโครงการ")} />
     <ResultsSummary locale={locale} active={category !== "All" || Boolean(query)} reset={resetFilters}>{local(locale, `${filtered.length} ${isNews ? (filtered.length === 1 ? "article" : "articles") : (filtered.length === 1 ? "project" : "projects")}`, `${filtered.length} ${isNews ? "บทความ" : "โครงการ"}`)}</ResultsSummary>
     {featured ? isNews ? <>

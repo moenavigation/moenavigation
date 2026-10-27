@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode, type RefObject } from "react";
+import { useEffect, useRef, type KeyboardEvent, type ReactNode, type RefObject } from "react";
 import { X } from "lucide-react";
 import BrandMark from "./BrandMark";
 import styles from "./MobileNavDrawer.module.css";
@@ -9,7 +9,6 @@ type Props = {
   open: boolean;
   onClose: () => void;
   title: string;
-  eyebrow: string;
   closeLabel: string;
   triggerRef: RefObject<HTMLButtonElement | null>;
   children: ReactNode;
@@ -27,13 +26,12 @@ function isOutsideDrawer(dialog: HTMLDialogElement, x: number, y: number) {
   return x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom;
 }
 
-export default function MobileNavDrawer({ open, onClose, title, eyebrow, closeLabel, triggerRef, children }: Props) {
+export default function MobileNavDrawer({ open, onClose, title, closeLabel, triggerRef, children }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const navigationCloseRef = useRef(false);
   const backdropPointerRef = useRef(false);
-  const titleId = useId();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -132,7 +130,7 @@ export default function MobileNavDrawer({ open, onClose, title, eyebrow, closeLa
     ref={dialogRef}
     className={styles.drawer}
     data-phase="closed"
-    aria-labelledby={titleId}
+    aria-label={title}
     onKeyDown={containFocus}
     onClickCapture={(event) => {
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -154,10 +152,6 @@ export default function MobileNavDrawer({ open, onClose, title, eyebrow, closeLa
       <div className={styles.heading}>
         <span className={styles.wordmark} aria-hidden="true"><BrandMark /><span><strong>MOE</strong><small>NAVIGATION</small></span></span>
         <button ref={closeRef} type="button" className={styles.close} onClick={onClose} aria-label={closeLabel}><X aria-hidden="true" /></button>
-      </div>
-      <div className={styles.intro}>
-        <span className={styles.eyebrow}>{eyebrow}</span>
-        <h2 id={titleId}>{title}</h2>
       </div>
       {children}
     </div>

@@ -1,0 +1,41 @@
+.contactBar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: .65rem;
+  width: min(100%, 23rem);
+  margin: 1.35rem auto 0;
+  padding: 1rem .5rem 0;
+  border-top: 1px solid rgb(255 255 255 / .15);
+}
+
+.contactIcon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 1px solid #d5e5f0;
+  border-radius: 18.75%;
+  background: linear-gradient(180deg, #fff, #eaf3f9);
+  color: var(--navy);
+  box-shadow: 0 .2rem .7rem rgb(0 12 29 / .12);
+  transition: transform .18s ease, background-color .18s ease, border-color .18s ease;
+}
+
+.image { width: 100%; height: 100%; object-fit: contain; border-radius: inherit; }
+.contactIcon:focus-visible { outline: 3px solid #a4daff; outline-offset: 4px; }
+.contactIcon:active { transform: scale(.96); }
+
+@media (hover: hover) and (pointer: fine) {
+  .contactIcon:hover { transform: translateY(-2px); border-color: #a1c5df; background: #fff; }
+}
+@media (max-width: 520px) {
+  .contactBar { gap: .6rem; }
+  .contactIcon { width: 3.25rem; height: 3.25rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .contactIcon { transition: none; }
+  .contactIcon:hover, .contactIcon:active { transform: none; }
+}
