@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useId, useRef, useState, type CSSProperties, type RefObject } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { href, local, type Locale } from "@/lib/content";
 import { usePublicContent } from "@/lib/use-public-content";
 import Link from "./NavigationLink";
@@ -18,22 +18,12 @@ type ContactAction = {
   external?: boolean;
 };
 
-export default function FloatingContact({ locale, footerRef }: { locale: Locale; footerRef: RefObject<HTMLElement | null> }) {
+export default function FloatingContact({ locale }: { locale: Locale }) {
   const { settings } = usePublicContent();
-  const [visible, setVisible] = useState(false);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const itemsId = useId();
-
-  useEffect(() => {
-    const footer = footerRef.current;
-    if (!footer) return;
-    // Leave footer links clear without attaching a listener to every scroll.
-    const observer = new IntersectionObserver(([entry]) => setVisible(!entry.isIntersecting));
-    observer.observe(footer);
-    return () => observer.disconnect();
-  }, [footerRef]);
 
   useEffect(() => {
     if (!open) return;
@@ -71,7 +61,7 @@ export default function FloatingContact({ locale, footerRef }: { locale: Locale;
 
   return <aside
     ref={rootRef}
-    className={`${styles.root} ${visible ? styles.visible : ""}`}
+    className={styles.root}
     aria-label={local(locale, "Quick contact", "ช่องทางติดต่อ")}
     data-open={open}
     data-contact-fab="true"

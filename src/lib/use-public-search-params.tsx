@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { createContext, Suspense, useContext, useLayoutEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { createContext, Suspense, useCallback, useContext, useLayoutEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 function createSearchStore() {
   let search = '';
@@ -45,4 +45,16 @@ export function usePublicSearchParams() {
   if (!store) throw new Error('PublicSearchParamsProvider is required for public query preferences.');
   const search = useSyncExternalStore(store.subscribe, store.snapshot, serverSnapshot);
   return useMemo(() => new URLSearchParams(search), [search]);
+}
+
+/** Update controlled route controls immediately while Next synchronizes native history. */
+export function useReplacePublicSearchParams() {
+  const store = useContext(SearchContext);
+  if (!store) throw new Error('PublicSearchParamsProvider is required for public query preferences.');
+  return useCallback((params: URLSearchParams) => {
+    const search = params.toString();
+    const url = `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`;
+    window.history.replaceState(null, '', url);
+    store.publish(search);
+  }, [store]);
 }

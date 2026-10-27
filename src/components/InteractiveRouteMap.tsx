@@ -7,9 +7,8 @@ import { useEffect, useId, useRef, useState } from "react";
 import { local, type Locale } from "@/lib/content";
 import styles from "./InteractiveRouteMap.module.css";
 import type * as Leaflet from "leaflet";
-import type { ContentRecord, RoutePort } from "@/lib/cms-types";
-
-export type MappedRoute = ContentRecord & { origin: RoutePort; destination: RoutePort; waypoints: [number, number][] };
+import type { MappedRoute } from "@/lib/route-explorer";
+import { contentText } from "@/lib/public-content";
 
 const tileUrl = process.env.NEXT_PUBLIC_MAP_TILE_URL || "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const osmAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>';
@@ -26,18 +25,41 @@ type Props = {
 
 export default function InteractiveRouteMap({ locale, selectedId, routes, onSelect, deferUntilVisible = false }: Props) {
   const descriptionId = useId();
-  const availableKey = JSON.stringify(routes);
+  const availableKey = JSON.stringify(routes.map(({ id, title, titleTh, origin, destination, waypoints }) => ({ id, title, titleTh, origin, destination, waypoints })));
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Leaflet.Map | null>(null);
   const leafletRef = useRef<typeof Leaflet | null>(null);
   const overlaysRef = useRef<Leaflet.LayerGroup | null>(null);
-  const lastFittedRef = useRef<{ mapVersion: number; id: string; availableKey: string } | null>(null);
+  const lastFittedRef = useRef<{ mapVersion: number; id: string; geometry: string } | null>(null);
   const selectedIdRef = useRef(selectedId);
   const routesRef = useRef(routes);
   const [mapVersion, setMapVersion] = useState(0);
   const [zoom, setZoom] = useState(5);
   const [tileError, setTileError] = useState(false);
   const [mapFailed, setMapFailed] = useState(false);
+  const [portChoices, setPortChoices] = useState<{ portKey: string; routeIds: string[]; title: string; availableKey: string } | null>(null);
+  const choicesRef = useRef<HTMLDivElement>(null);
+
+  const restorePortFocus = (portKey: string) => {
+    const marker = Array.from(containerRef.current?.querySelectorAll<HTMLElement>("[data-port-key]") || []).find(element => element.dataset.portKey === portKey);
+    marker?.focus({ preventScroll: true });
+  };
+  const closePortChoices = () => {
+    if (portChoices) restorePortFocus(portChoices.portKey);
+    setPortChoices(null);
+  };
+
+  useEffect(() => {
+    if (!portChoices) return;
+    choicesRef.current?.querySelector("button")?.focus({ preventScroll: true });
+    const dismissOutside = (event: Event) => {
+      if (event.target instanceof Node && !choicesRef.current?.contains(event.target)) setPortChoices(null);
+    };
+    document.addEventListener("pointerdown", dismissOutside, true);
+    return () => {
+      document.removeEventListener("pointerdown", dismissOutside, true);
+    };
+  }, [portChoices]);
 
   useEffect(() => { selectedIdRef.current = selectedId; }, [selectedId]);
   useEffect(() => { routesRef.current = routes; }, [routes]);
@@ -51,7 +73,7 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
     const compact = window.matchMedia("(max-width: 520px)").matches;
     map.fitBounds(leaflet.latLngBounds(route.waypoints), {
       paddingTopLeft: compact ? [24, 24] : [36, 36],
-      paddingBottomRight: compact ? [24, 180] : [36, 36],
+      paddingBottomRight: compact ? [24, 80] : [36, 60],
       maxZoom: 7,
       animate: animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     });
@@ -134,7 +156,7 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
     const leaflet = leafletRef.current;
     if (!map || !leaflet) return;
 
-    const focusedRouteId = (document.activeElement as HTMLElement | null)?.dataset.routeId;
+    const focusedPortKey = (document.activeElement as HTMLElement | null)?.dataset.portKey;
     overlaysRef.current?.remove();
     const overlays = leaflet.layerGroup().addTo(map);
     overlaysRef.current = overlays;
@@ -147,56 +169,70 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
 
     const visibleRoutes: MappedRoute[] = JSON.parse(availableKey);
     const tooltip = (text: string) => { const label = document.createElement("span"); label.textContent = text; return label; };
-    const shownOrigins = new Set<string>();
+    // One marker per destination avoids stacked controls when connections share a port.
+    const ports = new Map<string, MappedRoute[]>();
     for (const route of visibleRoutes) {
-      const origin = route.waypoints[0];
-      const originKey = origin.join(",");
-      if (!shownOrigins.has(originKey)) {
-        shownOrigins.add(originKey);
-        const originName = local(locale,route.origin.name,route.origin.nameTh);
-        const originMarker = leaflet.marker(origin, { icon: createIcon("origin"), interactive: false, keyboard: false, title: originName }).addTo(overlays);
-        originMarker.bindTooltip(tooltip(originName), { permanent: true, direction: "right", offset: [8, 0], className: styles.portTooltip });
-      }
-      const id = route.id;
+      const key = route.waypoints.at(-1)!.join(",");
+      const group = ports.get(key) || [];
+      group.push(route);
+      ports.set(key, group);
+    }
+    const centerLongitude = visibleRoutes.reduce((sum, route) => sum + route.waypoints.at(-1)![1], 0) / visibleRoutes.length;
+    for (const [portKey, connections] of ports) {
+      const active = connections.find(route => route.id === selectedId);
+      const route = active || connections[0];
       const label = local(locale, route.destination.name, route.destination.nameTh);
-      const action = local(locale, `Select route to ${label}`, `เลือกเส้นทางไป${label}`);
-      const destination = route.waypoints[route.waypoints.length - 1];
-      const labelOnLeft = destination[1] < visibleRoutes.reduce((sum,item) => sum + item.waypoints[item.waypoints.length-1][1],0) / visibleRoutes.length;
+      const action = connections.length === 1
+        ? local(locale, `Select route to ${label}`, `เลือกเส้นทางไป${label}`)
+        : local(locale, `${connections.length} routes to ${label}`, `${connections.length} เส้นทางไป${label}`);
+      const destination = route.waypoints.at(-1)!;
+      const labelOnLeft = destination[1] < centerLongitude;
       const marker = leaflet.marker(destination, {
-        icon: createIcon(id === selectedId ? "active" : "destination"),
+        icon: createIcon(active ? "active" : "destination"),
         title: action,
         keyboard: true,
         riseOnHover: true,
       }).addTo(overlays);
-      marker.bindTooltip(tooltip(label), id === selectedId
+      marker.bindTooltip(tooltip(label), active
         ? { permanent: true, direction: labelOnLeft ? "left" : "right", offset: [labelOnLeft ? -8 : 8, 0], className: styles.portTooltip }
         : { direction: "top", offset: [0, -8], className: styles.hoverTooltip });
-      marker.on("click", () => { if (id === selectedId) fitRoute(id, true); else onSelect(id); });
+      const choose = (id: string) => {
+        marker.getElement()?.focus({ preventScroll: true });
+        if (id === selectedId) fitRoute(id, true); else onSelect(id);
+      };
+      const openChoices = connections.length > 1 ? () => setPortChoices({ portKey, routeIds: connections.map(connection => connection.id), title: action, availableKey }) : undefined;
+      marker.on("click", () => { if (openChoices) openChoices(); else choose(route.id); });
       const element = marker.getElement();
       if (element) {
-        element.dataset.routeId = id;
+        element.dataset.portKey = portKey;
         element.setAttribute("role", "button");
         element.setAttribute("aria-label", action);
-        element.setAttribute("aria-pressed", String(id === selectedId));
+        element.setAttribute("aria-pressed", String(Boolean(active)));
+        if (connections.length > 1) element.setAttribute("aria-haspopup", "dialog");
         element.addEventListener("keydown", (event) => {
           if (event.key === " " || event.key === "Enter") {
             event.preventDefault();
-            if (id === selectedId) fitRoute(id, true); else onSelect(id);
+            event.stopPropagation();
+            if (openChoices) openChoices(); else choose(route.id);
           }
         });
-        if (focusedRouteId === id) element.focus({ preventScroll: true });
+        if (focusedPortKey === portKey) element.focus({ preventScroll: true });
       }
     }
 
     const selected = visibleRoutes.find((route) => route.id === selectedId);
     if (selected) {
+      const originName = local(locale, selected.origin.name, selected.origin.nameTh);
+      const originMarker = leaflet.marker(selected.waypoints[0], { icon: createIcon("origin"), interactive: false, keyboard: false, title: originName, zIndexOffset: 100 }).addTo(overlays);
+      originMarker.bindTooltip(tooltip(originName), { permanent: true, direction: "right", offset: [8, 0], className: styles.portTooltip });
       const points = selected.waypoints;
       leaflet.polyline(points, { color: "#fff", weight: 10, opacity: 0.92, interactive: false, lineCap: "round", lineJoin: "round" }).addTo(overlays);
       leaflet.polyline(points, { color: "#0b527f", weight: 4, opacity: 0.96, interactive: false, lineCap: "round", lineJoin: "round" }).addTo(overlays);
       const lastFitted = lastFittedRef.current;
-      if (!lastFitted || lastFitted.id !== selectedId || lastFitted.mapVersion !== mapVersion || lastFitted.availableKey !== availableKey) {
+      const geometry = JSON.stringify(points);
+      if (!lastFitted || lastFitted.id !== selectedId || lastFitted.mapVersion !== mapVersion || lastFitted.geometry !== geometry) {
         fitRoute(selectedId, lastFitted !== null);
-        lastFittedRef.current = { id: selectedId, mapVersion, availableKey };
+        lastFittedRef.current = { id: selectedId, mapVersion, geometry };
       }
     }
   }, [availableKey, locale, mapVersion, onSelect, selectedId]);
@@ -219,6 +255,20 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
         <button type="button" disabled={controlsDisabled || zoom <= 3} onClick={() => mapRef.current?.zoomOut()} aria-label={local(locale, "Zoom out", "ย่อแผนที่")}><Minus size={20} aria-hidden="true" /></button>
         <button type="button" disabled={controlsDisabled} onClick={() => fitRoute(selectedId, true)} aria-label={local(locale, "Fit selected route", "แสดงเส้นทางที่เลือกให้ครบ")}><RotateCcw size={18} aria-hidden="true" /></button>
       </div>
+      {portChoices?.availableKey === availableKey && <div ref={choicesRef} className={styles.portChoices} role="dialog" aria-label={portChoices.title} onBlurCapture={event => {
+        // Safari may focus the containing main element when clicking a button.
+        const next = event.relatedTarget;
+        if (next instanceof Node && !event.currentTarget.contains(next) && !next.contains(event.currentTarget)) setPortChoices(null);
+      }} onKeyDown={event => {
+        if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); closePortChoices(); }
+      }}>
+        <strong>{portChoices.title}</strong>
+        {portChoices.routeIds.map(id => routes.find(route => route.id === id)).filter((route): route is MappedRoute => Boolean(route)).map(route => <button key={route.id} type="button" aria-pressed={route.id === selectedId} onClick={() => {
+          closePortChoices();
+          if (route.id === selectedId) fitRoute(route.id, true); else onSelect(route.id);
+        }}>{contentText(route, "title", locale)}</button>)}
+        <button className={styles.popupClose} type="button" onClick={closePortChoices} aria-label={local(locale, "Close route choices", "ปิดตัวเลือกเส้นทาง")}>{local(locale, "Close", "ปิด")}</button>
+      </div>}
       {(tileError || mapFailed) && <p className={styles.tileError} role="status">{mapFailed ? local(locale, "The map is unavailable. You can still choose a route from the list.", "ไม่สามารถโหลดแผนที่ได้ คุณยังเลือกเส้นทางจากรายการได้") : local(locale, "The map background is unavailable. Route markers and controls still work.", "ไม่สามารถโหลดพื้นหลังแผนที่ได้ จุดท่าเรือและปุ่มควบคุมยังใช้งานได้")}</p>}
       <span id={descriptionId} className={styles.srOnly}>{local(locale, "Use the arrow keys to move the map and plus or minus to zoom. Choose a destination marker or a route in the list. This is an illustrative overview, not a navigational chart or confirmed sailing route.", "ใช้แป้นลูกศรเพื่อเลื่อนแผนที่ และปุ่มบวกหรือลบเพื่อขยายหรือย่อ เลือกท่าเรือปลายทางบนแผนที่หรือเลือกเส้นทางจากรายการ แผนที่นี้ใช้ประกอบการนำเสนอเท่านั้น ไม่ใช่แผนที่สำหรับเดินเรือหรือเส้นทางที่ยืนยันแล้ว")}</span>
     </div>

@@ -6,17 +6,7 @@
   bottom: max(1.25rem, env(safe-area-inset-bottom));
   width: var(--fab-size);
   height: var(--fab-size);
-  opacity: 0;
-  visibility: hidden;
   pointer-events: none;
-  transform: translateY(.35rem);
-  transition: opacity .2s ease, visibility .2s, transform .2s ease;
-}
-
-.visible, .root:focus-within {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
 }
 
 .trigger {
@@ -99,8 +89,8 @@
 .itemIcon {
   display: grid;
   place-items: center;
-  width: 3.25rem;
-  height: 3.25rem;
+  width: 4rem;
+  height: 4rem;
   flex: 0 0 auto;
   padding: .35rem;
   border: 1px solid var(--line);
@@ -132,9 +122,10 @@
 }
 @media (max-width: 700px) {
   .root { --fab-size: 3.75rem; right: max(1rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom)); }
+  .itemIcon { width: 3.75rem; height: 3.75rem; }
   .itemText { max-width: 12rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .root, .trigger, .items, .item, .callIcon, .closeIcon { transition: none; }
-  .root, .items, .item, .callIcon, .closeIcon { transform: none; }
+  .trigger, .items, .item, .callIcon, .closeIcon { transition: none; }
+  .items, .item, .callIcon, .closeIcon { transform: none; }
 }

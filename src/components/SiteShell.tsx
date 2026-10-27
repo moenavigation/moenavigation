@@ -2,7 +2,7 @@
 import Link from "./NavigationLink";
 import { usePathname } from "next/navigation";
 import { usePublicSearchParams } from "@/lib/use-public-search-params";
-import { ArrowUpRight, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type MouseEvent, type ReactNode } from "react";
 import { href, local, navigation, type Locale } from "@/lib/content";
 import { usePublicContent } from "@/lib/use-public-content";
@@ -79,7 +79,6 @@ export function SiteHeader({locale}:{locale:Locale}) {
   </>;
 }
 export default function SiteShell({locale,children}:{locale:Locale;children:ReactNode}) {
-  const footerRef=useRef<HTMLElement>(null);
   const { sections, settings }=usePublicContent();
   const footer=sections.find(section=>section.id==="footer" && section.parentId==="shared");
   const path=usePathname();
@@ -102,7 +101,11 @@ export default function SiteShell({locale,children}:{locale:Locale;children:Reac
   },[path]);
   return <>
     <SiteHeader locale={locale}/>
-    <main id="main" tabIndex={-1}>{children}<div className="container"><AdditionalSections pageId="shared" locale={locale} exclude={["shared-callout","footer","footer-contact"]} /></div>{path!==href(locale,"contact") && <FloatingContact key={path} locale={locale} footerRef={footerRef}/>}</main>
-    <footer ref={footerRef} className={styles.footer} onClickCapture={scrollCurrentPageToTop}><div className={`container ${styles.footerTop}`}><div><Link href={href(locale)}><Brand/></Link><p>{contentText(footer,"title",locale)}</p></div><div><h3>{local(locale,"Explore","เมนูเว็บไซต์")}</h3><div className={styles.footerLinks}>{navigation.slice(1).map(item=><Link href={href(locale,item.id)} key={item.id}>{item.title[locale]}</Link>)}</div></div></div><div className={`container ${styles.footerBottom}`}><span>© {new Date().getFullYear()} {local(locale,settings.companyName,settings.companyNameTh)}</span><div><Link href={href(locale,"privacy")}>{local(locale,"Privacy policy","นโยบายความเป็นส่วนตัว")}</Link><Link href="/cms">{local(locale,"Content management","จัดการเนื้อหา")}<ArrowUpRight size={16}/></Link></div></div></footer>
+    <main id="main" tabIndex={-1}>{children}<div className="container"><AdditionalSections pageId="shared" locale={locale} exclude={["shared-callout","footer","footer-contact"]} /></div></main>
+    <footer className={styles.footer} onClickCapture={scrollCurrentPageToTop}>
+      <div className={`container ${styles.footerTop}`}><div><Link href={href(locale)}><Brand/></Link><p>{contentText(footer,"title",locale)}</p></div></div>
+      <div className={`container ${styles.footerBottom}`}><span>© {new Date().getFullYear()} {local(locale,settings.companyName,settings.companyNameTh)}</span><Link href={href(locale,"privacy")}>{local(locale,"Privacy policy","นโยบายความเป็นส่วนตัว")}</Link></div>
+      <FloatingContact key={path} locale={locale}/>
+    </footer>
   </>;
 }

@@ -92,12 +92,13 @@ Enquiries are delivered to the CMS inbox. No email notification provider is
 connected. Local drafts remain a browser convenience and are distinct from
 submitted enquiries; clearing a draft does not delete a submitted message.
 
-Company phone, email, office details, the final privacy policy, and a business
-retention policy still require verification. Website details saved in the CMS
-populate bilingual company names, addresses, phone/email links, and the office
-map link. The site describes its current
-data handling without inventing contact destinations or claiming email
-delivery.
+The company name, office address, and phone number supplied by the owner are
+saved in Website details. The public email and office map link remain
+unconfigured; the final privacy policy and a business retention policy still
+require verification. Website details saved in the CMS populate bilingual
+company names, addresses, phone/email links, and the office map link. The site
+describes its current data handling without inventing contact destinations or
+claiming email delivery.
 
 ## CMS
 
@@ -133,10 +134,21 @@ and refit the selected route. Port coordinates and drawn connections
 are approximate illustrations, not navigational tracks or live schedules.
 
 Every published Route with origin and destination details plus at least two
-coordinate pairs appears on the map. The first and last coordinates locate
-the two ports. The CMS manages bilingual port/country names and each
-latitude/longitude waypoint. Routes without map data appear as enquiry cards;
-geographic paths are not invented. Port tooltips treat saved names as plain text.
+coordinate pairs appears in the route finder. Search matches both languages,
+port names, and countries; visitors can filter by origin and destination.
+Results show six connections per page. The map shows those destinations and
+the selected connection, keeping markers bounded as the collection grows.
+Connections sharing destination coordinates use one marker with a route
+chooser. The selected route's details remain separate from the results, and
+the mobile finder includes a shortcut to its map. On `/routes`, the selected
+route, search, filters, and result page survive reloads and language changes.
+
+The first and last coordinates locate the two ports. The CMS manages bilingual
+port/country names and each latitude/longitude waypoint. Routes without map
+data appear as enquiry cards; geographic paths are not invented. Port tooltips
+treat saved names as plain text. Published route data is still sent in the page
+snapshot; collections with thousands of routes or large coordinate payloads
+should be profiled before adding server search and on-demand route details.
 
 Map tiles use OpenStreetMap by default and require internet access. Before
 public launch, select a provider appropriate to expected traffic and its
