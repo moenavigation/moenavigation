@@ -1,0 +1,25 @@
+.placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .65rem;
+  padding: 1rem;
+  color: var(--muted);
+  background: linear-gradient(150deg, var(--pale), #e4edf4);
+  font-size: var(--font-small);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.icon {
+  width: 4.5rem;
+  height: 4.5rem;
+  min-height: 1.5rem;
+  flex-shrink: 1;
+  color: var(--blue);
+}
+
+.placeholder span { flex-shrink: 0; }

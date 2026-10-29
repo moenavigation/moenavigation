@@ -2,11 +2,12 @@ import 'server-only';
 import { cache } from 'react';
 import type { z } from 'zod';
 import type { SiteSettings } from '@/lib/cms-types';
+import { companyNameEn, companyNameTh } from '@/lib/company';
 import { collections, getDb, transaction } from './db';
 import { HttpError } from './http';
 import { saveSettingsSchema } from './validation';
 
-const defaults: SiteSettings = { companyName: 'MOE Navigation', companyNameTh: 'MOE Navigation', officeAddress: '', officeAddressTh: '', phone: '', email: '', mapUrl: '', revision: 0 };
+const defaults: SiteSettings = { companyName: companyNameEn, companyNameTh, officeAddress: '', officeAddressTh: '', phone: '', email: '', mapUrl: '', revision: 0 };
 export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
   const saved = await collections(await getDb()).settings.findOne({ _id: 'website' });
   if (!saved) return defaults;

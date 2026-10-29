@@ -1,11 +1,11 @@
-import { test, expect } from './fixtures';
+import { test, expect, E2E_IMAGE_URL, refreshPublicCache } from './fixtures';
 
 test('query preferences hydrate from cached pages and follow browser Back and Forward', async ({ page }) => {
   await page.goto('/fleet?q=MOE&category=Tanker');
   const search = page.getByRole('searchbox', { name: 'Search vessels' });
   await expect(search).toHaveValue('MOE');
   await expect(page.getByRole('button', { name: 'Tanker', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('status')).toHaveText('2 vessels');
+  await expect(page.getByRole('status')).toHaveText('1 vessel');
 
   // Category selection adds a history entry; typing replaces that same entry.
   await page.getByRole('button', { name: 'Container', exact: true }).click();
@@ -17,7 +17,7 @@ test('query preferences hydrate from cached pages and follow browser Back and Fo
   await page.goBack();
   await expect(search).toHaveValue('MOE');
   await expect(page.getByRole('button', { name: 'Tanker', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('status')).toHaveText('2 vessels');
+  await expect(page.getByRole('status')).toHaveText('1 vessel');
   await page.goForward();
   await expect(search).toHaveValue('unmatched-e2e-history');
   await expect(page.getByRole('button', { name: 'Container', exact: true })).toHaveAttribute('aria-pressed', 'true');
@@ -30,15 +30,15 @@ test('fleet filters survive reload, language changes and detail/back navigation'
   await page.getByRole('searchbox', { name: 'Search vessels' }).fill('MOE');
   await expect(page).toHaveURL(/category=Tanker/);
   await expect(page).toHaveURL(/q=MOE/);
-  await expect(page.getByRole('status')).toHaveText('2 vessels');
+  await expect(page.getByRole('status')).toHaveText('1 vessel');
   await page.reload();
   await expect(page.getByRole('searchbox')).toHaveValue('MOE');
   await page.getByRole('link', { name: 'Switch to Thai' }).click();
   await expect(page).toHaveURL(/\/th\/fleet\?/);
-  await expect(page.getByRole('button', { name: 'เรือบรรทุกน้ำมัน', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'เรือแทงเกอร์', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('searchbox')).toHaveValue('MOE');
-  await page.getByRole('main').getByRole('link', { name: /MOE LINE 3/ }).click();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('MOE LINE 3');
+  await page.getByRole('main').getByRole('link', { name: /Dumai Moe/ }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Dumai Moe');
   await page.getByRole('link', { name: 'กลับไปยังกองเรือ', exact: true }).click();
   await expect(page.getByRole('searchbox')).toHaveValue('MOE');
   await page.getByRole('button', { name: 'ล้างตัวกรอง', exact: true }).click();
@@ -70,7 +70,13 @@ for (const listing of [
 
 test.describe('mobile browser layout', () => {
 test.use({ viewport: { width: 390, height: 844 } });
-test('mobile navigation returns to top and gallery keyboard focus stays contained', async ({ page }) => {
+test('mobile navigation returns to top and gallery keyboard focus stays contained', async ({ page, db }) => {
+  // Gallery behavior uses explicit test photos; confirmed fleet records have no client photos yet.
+  await db.collection<{ _id: string }>('moe_content').updateOne({ _id: 'Vessel:moe-line-3' }, { $set: {
+    image: E2E_IMAGE_URL,
+    gallery: [{ url: `${E2E_IMAGE_URL}?gallery=2`, alt: 'Test vessel detail', altTh: 'ภาพเรือสำหรับทดสอบ' }],
+  } });
+  await refreshPublicCache();
   await page.goto('/fleet/moe-line-3');
   const trigger = page.getByRole('button', { name: 'Open image gallery' });
   await trigger.click();

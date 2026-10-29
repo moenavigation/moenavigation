@@ -138,7 +138,7 @@ test('sections and expanded images preserve bilingual fields and enforce useful 
   assert.equal(recordSchema.safeParse({ ...section, parentId: '' }).success, false);
   assert.equal(recordSchema.safeParse({ ...section, gallery: Array(13).fill(section.gallery[0]) }).success, false);
   assert.equal(recordSchema.safeParse({ ...section, gallery: [{ ...section.gallery[0], url: '' }] }).success, false);
-  assert.equal(recordSchema.safeParse({ ...validRecord, image: '' }).success, false);
+  assert.equal(recordSchema.safeParse({ ...validRecord, type: 'Service', image: '' }).success, false);
 });
 
 test('new public articles retain supplied dates and never invent a missing date', () => {
@@ -151,7 +151,7 @@ test('new public articles retain supplied dates and never invent a missing date'
 });
 
 test('website settings require bilingual company names and reject unsafe contact links', () => {
-  const settings = { companyName: 'MOE Navigation', companyNameTh: 'MOE Navigation', officeAddress: '', officeAddressTh: '', phone: '', email: '', mapUrl: '' };
+  const settings = { companyName: 'Moe Navigation Co.,Ltd.', companyNameTh: 'บริษัท โม เนวิเกชั่น จำกัด', officeAddress: '', officeAddressTh: '', phone: '', email: '', mapUrl: '' };
   assert.equal(saveSettingsSchema.safeParse({ settings, expectedRevision: 0 }).success, true);
   for (const change of [
     { companyNameTh: '' }, { email: 'not-an-email' }, { phone: '<script>' },

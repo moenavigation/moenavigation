@@ -1,5 +1,8 @@
-// Migration snapshot of existing website content. Never import this module into the application.
+// Initial migration and isolated browser-test content. Never import this module into the application.
+import { clientFleetRecords, clientFleetPageCopy } from './client-fleet';
+
 export const websiteContentRecords = [
+  ...clientFleetRecords,
   {
     "id": "bunkering-operation",
     "type": "Project",
@@ -17,37 +20,6 @@ export const websiteContentRecords = [
     "bodyHeadingTh": "วางแผนการส่งมอบเชื้อเพลิง",
     "body": "In this example, a fuel request begins with the vessel's requirements, berth or anchorage, and preferred delivery window. Those details help the teams discuss a workable sequence before any transfer is arranged.\n\nSupplier availability, procedures and final timing would need confirmation for a real operation.",
     "bodyTh": "ในตัวอย่างนี้ การขอรับเชื้อเพลิงเริ่มจากความต้องการของเรือ ตำแหน่งเทียบท่าหรือทอดสมอ และช่วงเวลาที่ต้องการส่งมอบ ข้อมูลเหล่านี้ช่วยให้ทุกฝ่ายหารือลำดับงานก่อนจัดการส่งมอบจริง\n\nสำหรับงานจริง ยังต้องยืนยันผู้จัดหา ขั้นตอนปฏิบัติ และช่วงเวลาดำเนินงานอีกครั้ง"
-  },
-  {
-    "id": "ranong-moe",
-    "type": "Vessel",
-    "title": "RANONG MOE",
-    "titleTh": "RANONG MOE",
-    "description": "A container vessel concept for regional cargo operations.",
-    "descriptionTh": "ตัวอย่างเรือบรรทุกตู้คอนเทนเนอร์สำหรับการขนส่งในภูมิภาค",
-    "image": "/images/container-vessel.webp",
-    "category": "Container",
-    "status": "Published",
-    "categoryTh": "เรือคอนเทนเนอร์",
-    "order": 1,
-    "revision": 1,
-    "gallery": [
-      {
-        "url": "/images/container-deck-detail.webp",
-        "alt": "RANONG MOE — illustrative image 2",
-        "altTh": "RANONG MOE — ภาพประกอบ 2"
-      },
-      {
-        "url": "/images/port.webp",
-        "alt": "RANONG MOE — illustrative image 3",
-        "altTh": "RANONG MOE — ภาพประกอบ 3"
-      },
-      {
-        "url": "/images/bridge.webp",
-        "alt": "RANONG MOE — illustrative image 4",
-        "altTh": "RANONG MOE — ภาพประกอบ 4"
-      }
-    ]
   },
   {
     "id": "home",
@@ -83,161 +55,6 @@ export const websiteContentRecords = [
     "revision": 1,
     "eyebrow": "OUR EXPERTISE",
     "eyebrowTh": "ความเชี่ยวชาญของเรา"
-  },
-  {
-    "id": "moe-line-2",
-    "type": "Vessel",
-    "title": "MOE LINE 2",
-    "titleTh": "MOE LINE 2",
-    "description": "A regional container transport concept.",
-    "descriptionTh": "ตัวอย่างเรือขนส่งตู้คอนเทนเนอร์ในภูมิภาค",
-    "image": "/images/port.webp",
-    "category": "Container",
-    "status": "Published",
-    "categoryTh": "เรือคอนเทนเนอร์",
-    "order": 4,
-    "revision": 1,
-    "gallery": [
-      {
-        "url": "/images/logistics.webp",
-        "alt": "MOE LINE 2 — illustrative image 2",
-        "altTh": "MOE LINE 2 — ภาพประกอบ 2"
-      },
-      {
-        "url": "/images/container-deck-detail.webp",
-        "alt": "MOE LINE 2 — illustrative image 3",
-        "altTh": "MOE LINE 2 — ภาพประกอบ 3"
-      },
-      {
-        "url": "/images/crane.webp",
-        "alt": "MOE LINE 2 — illustrative image 4",
-        "altTh": "MOE LINE 2 — ภาพประกอบ 4"
-      }
-    ]
-  },
-  {
-    "id": "moe-line-3",
-    "type": "Vessel",
-    "title": "MOE LINE 3",
-    "titleTh": "MOE LINE 3",
-    "description": "A marine tanker concept for liquid cargo.",
-    "descriptionTh": "ตัวอย่างเรือบรรทุกสินค้าของเหลว",
-    "image": "/images/tanker.webp",
-    "category": "Tanker",
-    "status": "Published",
-    "categoryTh": "เรือบรรทุกน้ำมัน",
-    "order": 5,
-    "revision": 1,
-    "gallery": [
-      {
-        "url": "/images/tanker-deck-detail.webp",
-        "alt": "MOE LINE 3 — illustrative image 2",
-        "altTh": "MOE LINE 3 — ภาพประกอบ 2"
-      },
-      {
-        "url": "/images/hero.webp",
-        "alt": "MOE LINE 3 — illustrative image 3",
-        "altTh": "MOE LINE 3 — ภาพประกอบ 3"
-      },
-      {
-        "url": "/images/bunkering.webp",
-        "alt": "MOE LINE 3 — illustrative image 4",
-        "altTh": "MOE LINE 3 — ภาพประกอบ 4"
-      }
-    ]
-  },
-  {
-    "id": "moe-line-5",
-    "type": "Vessel",
-    "title": "MOE LINE 5",
-    "titleTh": "MOE LINE 5",
-    "description": "A container vessel concept with flexible cargo planning.",
-    "descriptionTh": "ตัวอย่างเรือบรรทุกตู้คอนเทนเนอร์สำหรับการวางแผนขนส่ง",
-    "image": "/images/vessel-deck.webp",
-    "category": "Container",
-    "status": "Published",
-    "categoryTh": "เรือคอนเทนเนอร์",
-    "order": 6,
-    "revision": 1,
-    "gallery": [
-      {
-        "url": "/images/container-deck-detail.webp",
-        "alt": "MOE LINE 5 — illustrative image 2",
-        "altTh": "MOE LINE 5 — ภาพประกอบ 2"
-      },
-      {
-        "url": "/images/port.webp",
-        "alt": "MOE LINE 5 — illustrative image 3",
-        "altTh": "MOE LINE 5 — ภาพประกอบ 3"
-      },
-      {
-        "url": "/images/logistics.webp",
-        "alt": "MOE LINE 5 — illustrative image 4",
-        "altTh": "MOE LINE 5 — ภาพประกอบ 4"
-      }
-    ]
-  },
-  {
-    "id": "moe-line-6",
-    "type": "Vessel",
-    "title": "MOE LINE 6",
-    "titleTh": "MOE LINE 6",
-    "description": "A fuel supply vessel concept.",
-    "descriptionTh": "ตัวอย่างเรือสนับสนุนการจัดหาเชื้อเพลิง",
-    "image": "/images/bunkering.webp",
-    "category": "Tanker",
-    "status": "Published",
-    "categoryTh": "เรือบรรทุกน้ำมัน",
-    "order": 7,
-    "revision": 1,
-    "gallery": [
-      {
-        "url": "/images/tanker-deck-detail.webp",
-        "alt": "MOE LINE 6 — illustrative image 2",
-        "altTh": "MOE LINE 6 — ภาพประกอบ 2"
-      },
-      {
-        "url": "/images/tugboat.webp",
-        "alt": "MOE LINE 6 — illustrative image 3",
-        "altTh": "MOE LINE 6 — ภาพประกอบ 3"
-      },
-      {
-        "url": "/images/bridge.webp",
-        "alt": "MOE LINE 6 — illustrative image 4",
-        "altTh": "MOE LINE 6 — ภาพประกอบ 4"
-      }
-    ]
-  },
-  {
-    "id": "moe-line-7",
-    "type": "Vessel",
-    "title": "MOE LINE 7",
-    "titleTh": "MOE LINE 7",
-    "description": "A heavy lift and marine project concept.",
-    "descriptionTh": "ตัวอย่างงานยกสินค้าหนักและโครงการทางทะเล",
-    "image": "/images/crane.webp",
-    "category": "Crane",
-    "status": "Published",
-    "categoryTh": "เครน",
-    "order": 8,
-    "revision": 1,
-    "gallery": [
-      {
-        "url": "/images/crane-lift-detail.webp",
-        "alt": "MOE LINE 7 — illustrative image 2",
-        "altTh": "MOE LINE 7 — ภาพประกอบ 2"
-      },
-      {
-        "url": "/images/tugboat.webp",
-        "alt": "MOE LINE 7 — illustrative image 3",
-        "altTh": "MOE LINE 7 — ภาพประกอบ 3"
-      },
-      {
-        "url": "/images/port.webp",
-        "alt": "MOE LINE 7 — illustrative image 4",
-        "altTh": "MOE LINE 7 — ภาพประกอบ 4"
-      }
-    ]
   },
   {
     "id": "port-operation-support",
@@ -453,8 +270,8 @@ export const websiteContentRecords = [
     "revision": 1,
     "bodyHeading": "A voyage starts before departure",
     "bodyHeadingTh": "การเดินเรือเริ่มก่อนออกจากท่า",
-    "body": "A useful voyage plan considers the vessel, cargo, destination, weather and port arrangements together. Clear communication helps teams revisit the plan when conditions change.\n\nThis educational preview does not provide navigation instructions or describe a scheduled MOE Navigation voyage.",
-    "bodyTh": "แผนการเดินเรือที่เหมาะสมควรพิจารณาเรือ สินค้า ปลายทาง สภาพอากาศ และการจัดการท่าเรือร่วมกัน การสื่อสารที่ชัดเจนช่วยให้ทีมทบทวนแผนเมื่อสถานการณ์เปลี่ยน\n\nบทความตัวอย่างเพื่อการเรียนรู้นี้ไม่ใช่คำแนะนำด้านการนำทางหรือข้อมูลเที่ยวเรือที่กำหนดไว้ของ MOE Navigation",
+    "body": "A useful voyage plan considers the vessel, cargo, destination, weather and port arrangements together. Clear communication helps teams revisit the plan when conditions change.\n\nThis educational preview does not provide navigation instructions or describe a scheduled voyage by Moe Navigation Co.,Ltd.",
+    "bodyTh": "แผนการเดินเรือที่เหมาะสมควรพิจารณาเรือ สินค้า ปลายทาง สภาพอากาศ และการจัดการท่าเรือร่วมกัน การสื่อสารที่ชัดเจนช่วยให้ทีมทบทวนแผนเมื่อสถานการณ์เปลี่ยน\n\nบทความตัวอย่างเพื่อการเรียนรู้นี้ไม่ใช่คำแนะนำด้านการนำทางหรือข้อมูลเที่ยวเรือที่กำหนดไว้ของบริษัท โม เนวิเกชั่น จำกัด",
     "date": "2026-09-24"
   },
   {
@@ -715,8 +532,8 @@ export const websiteContentRecords = [
   {
     "id": "about",
     "type": "Page",
-    "title": "About MOE Navigation",
-    "titleTh": "เกี่ยวกับ MOE Navigation",
+    "title": "About Moe Navigation Co.,Ltd.",
+    "titleTh": "เกี่ยวกับบริษัท โม เนวิเกชั่น จำกัด",
     "description": "Built around the people and partnerships that keep maritime operations moving.",
     "descriptionTh": "ร่วมงานกับผู้คนและพันธมิตรเพื่อขับเคลื่อนการปฏิบัติงานทางทะเล",
     "image": "/images/container-vessel.webp",
@@ -1047,8 +864,8 @@ export const websiteContentRecords = [
     "type": "Page",
     "title": "Our fleet",
     "titleTh": "กองเรือของเรา",
-    "description": "Explore vessel concepts and view individual details.",
-    "descriptionTh": "สำรวจตัวอย่างเรือและดูรายละเอียดแต่ละลำ",
+    "description": clientFleetPageCopy.description,
+    "descriptionTh": clientFleetPageCopy.descriptionTh,
     "eyebrow": "VESSEL COLLECTION",
     "eyebrowTh": "คอลเลกชันเรือ",
     "image": "/images/container-vessel.webp",

@@ -1,10 +1,7 @@
 .header { position: sticky; top: 0; z-index: 30; height: var(--header-height); background: #fffffffa; border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
 .headerInner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
-.brand { display: inline-flex; flex-direction: column; line-height: 1; color: var(--navy); }
-.brandMark { display: flex; align-items: center; gap: .35rem; }
-.brandMark strong { font-size: var(--font-h2); letter-spacing: -.06em; font-weight: 800; }
-.brandMark svg { width: 2.15rem; height: 2.15rem; flex: 0 0 auto; }
-.brandName { font-size: var(--font-small); letter-spacing: .13em; margin-top: .25rem; }
+.brand { display: inline-flex; align-items: center; line-height: 1; }
+.brandLogo { display: block; width: 7.75rem; height: auto; }
 .desktopNav { display: flex; align-items: center; gap: 1.6rem; }
 .desktopNav a { font-size: var(--font-small); position: relative; white-space: nowrap; padding: .6rem 0; }
 .desktopNav a[aria-current=page]::after { content: ''; height: 2px; position: absolute; bottom: 0; inset-inline: 0; background: var(--navy); }
@@ -26,7 +23,8 @@
 .drawerLanguage a[aria-current=page] { color: var(--navy); background: #e5f0f7; }
 @media (hover:hover) and (pointer:fine) { .drawerNav>a:hover { background: var(--pale); } .drawerContact:hover { background: #16446d; } }
 .footer { background: #072747; color: #fff; padding-block: 3.5rem 1.5rem; }
-.footer .brand { color: #fff; }
+.footer .brand { padding: .6rem .9rem; border-radius: .35rem; background: #fff; }
+.footer .brandLogo { width: 10.5rem; }
 .footerTop { padding-bottom: 3rem; text-align: center; }
 .footerTop p { color: #b2c4d5; margin-top: 1rem; }
 .footerBottom { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 1.5rem; border-top: 1px solid #ffffff20; padding-block: 0; color: #b2c4d5; font-size: var(--font-small); text-align: center; }
@@ -34,4 +32,4 @@
 @media (hover:hover) and (pointer:fine) { .footer a:hover { color: #fff; } .footerBottom a:hover { text-decoration: underline; text-underline-offset: .25rem; } }
 @media(max-width:1200px) { .desktopNav { gap: 1rem; } .actions { gap: .75rem; } }
 @media(max-width:1100px) { .desktopNav { display: none; } .menu { display: grid; } }
-@media(max-width:700px) { .headerInner { gap: .25rem; } .brandMark strong { font-size: var(--font-h3); } .brandMark svg { width: 1.8rem; height: 1.8rem; } .brandName { letter-spacing: .02em; } .contact { min-height: 2.75rem; padding-inline: .55rem; gap: .35rem; } .contactLong { display: none; } .contactShort { display: inline; } .actions { gap: .2rem; } .footerBottom { flex-direction: column; gap: .75rem; } .footerBottom > span { order: 1; max-width: calc(100% - 8.5rem); } }
+@media(max-width:700px) { .headerInner { gap: .25rem; } .brandLogo { width: 6.5rem; } .contact { min-height: 2.75rem; padding-inline: .55rem; gap: .35rem; } .contactLong { display: none; } .contactShort { display: inline; } .actions { gap: .2rem; } .footerBottom { flex-direction: column; gap: .75rem; } .footerBottom > span { order: 1; max-width: calc(100% - 8.5rem); } }

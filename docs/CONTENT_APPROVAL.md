@@ -34,4 +34,10 @@ The service endings were tightened to practical scope, availability and quotatio
 
 Draft inputs live in `scripts/data/service-copy-drafts.ts`. To review changes before applying them, run `node --import tsx scripts/apply-service-copy.mts`. Apply only the displayed plan with `--apply --expected-plan=<hash>`. The script backs up the exact six previous records under `.local/service-copy`, checks revisions in one transaction, and verifies that no unrelated fields or record counts changed. Re-running it after a successful update makes no duplicate records or needless revisions. Do not replay it over later editorial changes without reviewing the new plan.
 
-The small SVG kit in `public/brand` follows the existing M-and-wave website mark, with navy and white variants and a matching favicon. It is a proposed visual identity for review, not proof of trademark ownership or the company's legal name. No generated vessel or project photograph has been added as evidence of actual company assets.
+The SVG in `public/brand` is traced from the supplied `Moe Logo - 2026.png`, preserving its red/navy lettering and waves. It replaces the previous draft identity throughout the site and CMS, including loading screens and browser icons. No generated vessel or project photograph has been added as evidence of actual company assets.
+
+## Client fleet information received on 29 October 2026
+
+The client supplied eight vessel names and types: ระนองโม, โม2, โม3, โม5, โม6 and โม7 are container vessels; โม4 is a crane vessel; Dumai Moe is a tanker. These replace the earlier demo classifications. Existing vessel URLs stay unchanged, and the new entries use `moe-line-4` and `dumai-moe`. The Thai names follow the supplied spelling, including the untranslated name Dumai Moe.
+
+The confirmed seed data lives in `scripts/data/client-fleet.ts` and is shared by the initial migration and isolated browser fixtures. No vessel photographs, dimensions, capacities, IMO numbers, flag, build year or operating availability were supplied. The confirmed records therefore leave media and technical particulars blank; previous illustrative photos remain available in the media library. Further CMS edits remain authoritative: the initial migration preserves existing field values rather than overwriting later editorial changes.

@@ -1,4 +1,4 @@
-# MOE Navigation
+# Moe Navigation Co.,Ltd. / บริษัท โม เนวิเกชั่น จำกัด
 
 A responsive maritime corporate website with a bilingual public site and
 an authenticated CMS. Built with Next.js App Router, TypeScript, CSS Modules,

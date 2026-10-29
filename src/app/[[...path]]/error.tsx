@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeft, RotateCcw, LifeBuoy } from "lucide-react";
 import { href, local, localeFromPathname } from "@/lib/content";
+import BrandMark from "@/components/BrandMark";
+import { companyName } from "@/lib/company";
 import styles from "@/components/RecoveryPage.module.css";
 
 export default function ErrorPage({ retry }: { retry: () => void }) {
@@ -12,11 +14,11 @@ export default function ErrorPage({ retry }: { retry: () => void }) {
 
   return (
     <main className={`container section ${styles.screen}`}>
-      <title>{`${local(locale, "Please try again", "โปรดลองอีกครั้ง")} | MOE Navigation`}</title>
+      <title>{`${local(locale, "Please try again", "โปรดลองอีกครั้ง")} | ${companyName(locale)}`}</title>
       <meta name="robots" content="noindex, nofollow" />
       <div className={styles.card}>
         <div className={styles.badge}><LifeBuoy aria-hidden="true" /></div>
-        <span className="eyebrow">MOE Navigation</span>
+        <BrandMark className={styles.brandLogo} locale={locale} />
         <h1>{local(locale, "We couldn't load this page", "ไม่สามารถโหลดหน้านี้ได้")}</h1>
         <p className={styles.description}>{local(locale, "Please try again. If the problem continues, return to the home page and continue exploring.", "โปรดลองอีกครั้ง หากยังพบปัญหา สามารถกลับไปยังหน้าแรกเพื่อดูข้อมูลต่อได้")}</p>
         <div className={styles.actions}>

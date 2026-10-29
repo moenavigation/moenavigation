@@ -13,6 +13,7 @@ import { selectPublicPageRecords } from '@/lib/public-page-content';
 import { PublicSearchParamsProvider } from '@/lib/use-public-search-params';
 import { indexingEnabled, siteOrigin } from '@/lib/site-config';
 import { idSchema } from '@/lib/validation';
+import { companyNameEn } from '@/lib/company';
 
 export const revalidate = 86400;
 // Generate public URLs on first visit, then reuse their rendered output. New
@@ -38,7 +39,7 @@ function validatePath(pieces: string[], page: string, slug?: string) {
 export async function generateMetadata({ params }: { params: Promise<{ path?: string[] }> }): Promise<Metadata> {
   const { path = [] } = await params;
   const { locale, page, slug, pieces } = resolve(path);
-  if (page === "cms" && pieces.length === 1) return { title: "MOE Navigation · จัดการเนื้อหา", robots: { index: false, follow: false } };
+  if (page === "cms" && pieces.length === 1) return { title: `${companyNameEn} · จัดการเนื้อหา`, robots: { index: false, follow: false } };
   validatePath(pieces, page, slug);
   const item = await getRouteRecord(page, slug);
   if (!item) notFound();

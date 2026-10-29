@@ -141,7 +141,7 @@ try {
         const result = await scoped.media.updateOne({ _id: mediaId(asset), state: { $in: ['staged', 'committed'] }, sourceSha256: asset.sha256 }, { $set: { state: 'committed', pinned: true, touchedAt: new Date() } }, { session });
         assert.equal(result.matchedCount, 1, `Media changed during migration: ${asset.sourcePath}`);
       }
-      if (!savedSettings) await scoped.settings.insertOne({ _id: 'website', companyName: 'MOE Navigation', companyNameTh: 'MOE Navigation', officeAddress: '', officeAddressTh: '', phone: '', email: '', mapUrl: '', revision: 1 }, { session });
+      if (!savedSettings) await scoped.settings.insertOne({ _id: 'website', companyName: 'Moe Navigation Co.,Ltd.', companyNameTh: 'บริษัท โม เนวิเกชั่น จำกัด', officeAddress: '', officeAddressTh: '', phone: '', email: '', mapUrl: '', revision: 1 }, { session });
     });
     console.log(JSON.stringify({ applied: true, contentRecords: await c.content.countDocuments(), mediaRecords: await c.media.countDocuments({ state: 'committed' }), instruction: 'Run this command again without --apply to verify zero changes, zero uploads, and zero local media references.' }));
   }

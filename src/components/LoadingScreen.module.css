@@ -30,11 +30,8 @@
 .public { min-height: calc(100svh - var(--header-height)); grid-template-rows: 1fr auto; }
 .public .header { display: none; }
 .header { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; width: min(100%, var(--content-width)); margin-inline: auto; }
-.brand { display: flex; align-items: center; gap: .7rem; }
-.brand > span { width: 2.8rem; height: 2.8rem; }
-.brand svg { width: 100%; height: 100%; }
-.brand strong { font-size: var(--font-h3); letter-spacing: .04em; line-height: 1.25; }
-.brand strong span { display: block; font-size: var(--font-small); letter-spacing: .14em; font-weight: 400; color: var(--loading-muted); }
+.brand { display: flex; align-items: center; flex: 0 0 auto; }
+.brand img { display: block; width: 7.75rem; height: auto; }
 .context { color: var(--loading-muted); font-size: var(--font-small); text-align: right; }
 .center { display: grid; justify-items: center; align-content: center; padding-block: 3rem; text-align: center; }
 .emblem { position: relative; width: min(11.5rem, 54vw); aspect-ratio: 1; margin-bottom: 2rem; border-radius: 50%; background: radial-gradient(circle, #edf4f9 0, #f5f9fc 52%, transparent 68%); }
@@ -42,8 +39,8 @@
 .chart { stroke: var(--loading-line); stroke-width: 1; }
 .orbit { stroke: var(--loading-accent); stroke-width: 1.5; stroke-linecap: round; animation: orbit 8s linear infinite; }
 .orbit circle { fill: var(--loading-accent); stroke: none; }
-.mark { position: absolute; inset: 23%; display: grid; place-items: center; padding: 1rem; border: 1px solid var(--loading-line); border-radius: 50%; background: var(--white); box-shadow: 0 .6rem 1.8rem rgb(8 43 80 / .07); color: var(--loading-ink); }
-.mark svg { width: 100%; height: 100%; }
+.mark { position: absolute; inset: 18%; display: grid; place-items: center; padding: .65rem; border: 1px solid var(--loading-line); border-radius: 50%; background: var(--white); box-shadow: 0 .6rem 1.8rem rgb(8 43 80 / .07); }
+.mark img { display: block; width: 100%; height: auto; }
 .copy { display: grid; justify-items: center; gap: .85rem; width: 100%; max-width: 30rem; }
 .copy p { max-width: 27rem; color: var(--loading-muted); font-size: var(--font-body); line-height: 1.7; }
 .copy .title { max-width: 100%; font-size: var(--font-h2); font-weight: 700; line-height: 1.25; letter-spacing: -.035em; text-wrap: balance; color: var(--loading-ink); }
@@ -59,8 +56,8 @@
 .panelHeading { display: flex; align-items: center; gap: .9rem; margin-bottom: 1.4rem; }
 .panelHeading h2 { font-size: var(--font-h3); line-height: 1.4; }
 .panelHeading p { margin-top: .25rem; font-size: var(--font-small); }
-.panelMark { display: grid; place-items: center; flex: 0 0 auto; width: 2.8rem; height: 2.8rem; padding: .35rem; border: 1px solid var(--line); border-radius: .7rem; background: var(--pale); color: var(--navy); }
-.panelMark svg { width: 100%; height: 100%; }
+.panelMark { display: grid; place-items: center; flex: 0 0 auto; width: 5rem; min-height: 2.8rem; padding: .35rem; border: 1px solid var(--line); border-radius: .7rem; background: #fff; }
+.panelMark img { display: block; width: 100%; height: auto; }
 .skeleton { display: grid; gap: .85rem; }
 .placeholder { display: flex; gap: 1rem; align-items: center; padding: .8rem; border: 1px solid #eaf0f5; border-radius: .4rem; }
 .placeholder > div { flex: 1; display: grid; gap: .7rem; min-width: 0; }
@@ -84,6 +81,6 @@
   .mediaGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mediaGrid .placeholder:last-child { display: none; }
 }
-@media (max-width: 360px) { .header { align-items: flex-start; gap: .75rem; } .context { max-width: 6.5rem; } .brand { gap: .4rem; } .brand > span { width: 2.2rem; height: 2.2rem; } }
+@media (max-width: 360px) { .header { align-items: flex-start; gap: .75rem; } .context { max-width: 6.5rem; } .brand img { width: 6.5rem; } }
 @media (max-height: 560px) { .center { padding-block: 1rem; } .emblem { width: 7rem; margin-bottom: 1rem; } .mark { padding: .5rem; } .track { margin-top: 1.25rem; } }
 @media (prefers-reduced-motion: reduce) { .orbit, .track span, .placeholder > div > span, .thumbnail { animation: none; } .track span { left: 28%; } }

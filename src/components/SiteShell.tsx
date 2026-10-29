@@ -11,11 +11,15 @@ import { contentText } from "@/lib/public-content";
 import { AdditionalSections } from "./EditorialContent";
 import MobileNavDrawer from "./MobileNavDrawer";
 import BrandMark from "./BrandMark";
+import { companyName } from "@/lib/company";
 import FloatingContact from "./FloatingContact";
 import ContactsBox from "./ContactsBox";
 import styles from "./SiteShell.module.css";
 
-export function Brand() { return <span className={styles.brand}><span className={styles.brandMark}><BrandMark/><strong>MOE</strong></span><span className={styles.brandName}>NAVIGATION</span></span>; }
+export function Brand({locale}:{locale:Locale}) { return <span className={styles.brand}><BrandMark className={styles.brandLogo} locale={locale}/></span>; }
+const subscribeToHydration=()=>()=>{};
+const interactiveSnapshot=()=>true;
+const prerenderedSnapshot=()=>false;
 function subscribeHash(listener:()=>void) {
   window.addEventListener("popstate",listener);
   window.addEventListener("hashchange",listener);
@@ -31,6 +35,7 @@ let lastClientPath: string | null = null;
 let historyNavigationPath: string | null = null;
 export function SiteHeader({locale}:{locale:Locale}) {
   const path=usePathname();
+  const interactive=useSyncExternalStore(subscribeToHydration,interactiveSnapshot,prerenderedSnapshot);
   const [open,setOpen]=useState(false);
   const menuButtonRef=useRef<HTMLButtonElement>(null);
   const closeMenu=useCallback(()=>setOpen(false),[]);
@@ -51,11 +56,11 @@ export function SiteHeader({locale}:{locale:Locale}) {
   return <>
     <a className="skip-link" href="#main">{local(locale,"Skip to content","ข้ามไปยังเนื้อหา")}</a>
     <header data-site-header="true" className={styles.header} onClickCapture={scrollCurrentPageToTop}><div className={`container ${styles.headerInner}`}>
-      <Link href={href(locale)} aria-label={local(locale,"MOE Navigation home","หน้าแรก MOE Navigation")}><Brand/></Link>
+      <Link href={href(locale)} aria-label={local(locale,`${companyName('en')} home`,`หน้าแรกของ${companyName('th')}`)}><Brand locale={locale}/></Link>
       <nav className={styles.desktopNav} aria-label={local(locale,"Main navigation","เมนูหลัก")}>
         {navigation.map(item=><Link key={item.id} href={href(locale,item.id)} aria-current={(item.id?current===item.id||current.startsWith(item.id+"/"):!current)?"page":undefined}>{item.title[locale]}</Link>)}
       </nav>
-      <div className={styles.actions}><Link className={`button ${styles.contact}`} href={href(locale,"contact")}><span className={styles.contactLong}>{local(locale,"Contact us","ติดต่อเรา")}</span><span className={styles.contactShort}>{local(locale,"Contact","ติดต่อ")}</span></Link><Link className={styles.language} href={languagePath} lang={locale} onClick={event=>selectPublicLocale(event,nextLocale)} onAuxClick={event=>{if(event.button===1)rememberPublicLocale(nextLocale);}} aria-label={local(locale,"Switch to Thai","เปลี่ยนเป็นภาษาอังกฤษ")} title={local(locale,"Switch to Thai","เปลี่ยนเป็นภาษาอังกฤษ")}>{locale==="th"?"TH":"EN"}</Link><button ref={menuButtonRef} className={styles.menu} type="button" onClick={()=>setOpen(true)} aria-expanded={open} aria-label={local(locale,"Open menu","เปิดเมนู")}><Menu/></button></div>
+      <div className={styles.actions}><Link className={`button ${styles.contact}`} href={href(locale,"contact")}><span className={styles.contactLong}>{local(locale,"Contact us","ติดต่อเรา")}</span><span className={styles.contactShort}>{local(locale,"Contact","ติดต่อ")}</span></Link><Link className={styles.language} href={languagePath} lang={locale} onClick={event=>selectPublicLocale(event,nextLocale)} onAuxClick={event=>{if(event.button===1)rememberPublicLocale(nextLocale);}} aria-label={local(locale,"Switch to Thai","เปลี่ยนเป็นภาษาอังกฤษ")} title={local(locale,"Switch to Thai","เปลี่ยนเป็นภาษาอังกฤษ")}>{locale==="th"?"TH":"EN"}</Link><button ref={menuButtonRef} className={styles.menu} type="button" disabled={!interactive} onClick={()=>setOpen(true)} aria-expanded={open} aria-label={local(locale,"Open menu","เปิดเมนู")}><Menu/></button></div>
     </div></header>
     <MobileNavDrawer
       open={open}
@@ -105,7 +110,7 @@ export default function SiteShell({locale,children}:{locale:Locale;children:Reac
     <SiteHeader locale={locale}/>
     <main id="main" tabIndex={-1}>{children}<div className="container"><AdditionalSections pageId="shared" locale={locale} exclude={["shared-callout","footer","footer-contact"]} /></div></main>
     <footer className={styles.footer} onClickCapture={scrollCurrentPageToTop}>
-      <div className={`container ${styles.footerTop}`}><div><Link href={href(locale)}><Brand/></Link><p>{contentText(footer,"title",locale)}</p></div><ContactsBox locale={locale} settings={settings}/></div>
+      <div className={`container ${styles.footerTop}`}><div><Link href={href(locale)}><Brand locale={locale}/></Link><p>{contentText(footer,"title",locale)}</p></div><ContactsBox locale={locale} settings={settings}/></div>
       <div className={`container ${styles.footerBottom}`}><span>© {new Date().getFullYear()} {local(locale,settings.companyName,settings.companyNameTh)}</span><Link href={href(locale,"privacy")}>{local(locale,"Privacy policy","นโยบายความเป็นส่วนตัว")}</Link></div>
       <FloatingContact key={path} locale={locale}/>
     </footer>

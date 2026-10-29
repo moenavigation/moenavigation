@@ -67,12 +67,12 @@ test('valid custom CMS page identifiers still render and switch between both lan
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(customPage.title);
   await expect(page.getByText(customPage.body!, { exact: true })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-  await expect(page).toHaveTitle(customPage.title + ' | MOE Navigation');
+  await expect(page).toHaveTitle(customPage.title + ' | Moe Navigation Co.,Ltd.');
   await page.getByRole('link', { name: 'Switch to Thai' }).click();
   await expect(page).toHaveURL(new RegExp('/th/' + customPage.id + '$'));
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(customPage.titleTh);
   expect((await page.reload())?.status()).toBe(200);
   await expect(page.getByText(customPage.bodyTh!, { exact: true })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'th');
-  await expect(page).toHaveTitle(customPage.titleTh + ' | MOE Navigation');
+  await expect(page).toHaveTitle(customPage.titleTh + ' | บริษัท โม เนวิเกชั่น จำกัด');
 });

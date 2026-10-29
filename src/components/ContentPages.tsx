@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "./NavigationLink";
 import { usePublicSearchParams } from "@/lib/use-public-search-params";
-import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import { Anchor, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Compass, Container, Fuel, LifeBuoy, MapPin, Maximize2, RotateCcw, Search, ShieldCheck, Ship, X } from "lucide-react";
 import { href, local, type Locale } from "@/lib/content";
 import type { ContentImage } from "@/lib/cms-types";
@@ -17,6 +17,7 @@ import Dialog from "./Dialog";
 import RoutesPage from "./RoutesPage";
 import ContactPage from "./ContactPage";
 import PrivacyPage from "./PrivacyPage";
+import VesselPhotoPlaceholder from "./VesselPhotoPlaceholder";
 import styles from "./ContentPages.module.css";
 
 type PageProps = { locale: Locale; page: string; slug?: string };
@@ -113,11 +114,17 @@ function Services({ locale, slug }: { locale: Locale; slug?: string }) {
   </div>;
 }
 
+const subscribeToHydration = () => () => {};
+const interactiveSnapshot = () => true;
+const prerenderedSnapshot = () => false;
+
 function Filters({ locale, categories, categoryTranslations, selected, onSelect, query, onQuery, placeholder, searchRef }: { locale: Locale; categories: string[]; categoryTranslations?: Record<string, string | undefined>; selected: string; onSelect: (value: string) => void; query: string; onQuery: (value: string) => void; placeholder: string; searchRef: RefObject<HTMLInputElement | null> }) {
   const searchId = useId();
+  // Keep the static listing visible without accepting input before its handlers attach.
+  const interactive = useSyncExternalStore(subscribeToHydration, interactiveSnapshot, prerenderedSnapshot);
   return <div className={styles.filters}>
-    <div className={styles.filterButtons} role="group" aria-label={local(locale, "Filter by category", "กรองตามประเภท")}>{categories.map((category) => <button type="button" key={category} aria-pressed={selected === category} className={selected === category ? styles.activeFilter : ""} onClick={() => onSelect(category)}><CategoryName locale={locale} category={category} categoryTh={categoryTranslations?.[category]} /></button>)}</div>
-    <div className={styles.search}><Search size={21} aria-hidden="true" /><label className="sr-only" htmlFor={searchId}>{placeholder}</label><input ref={searchRef} id={searchId} type="search" maxLength={listingQueryLimit} value={query} onChange={(event) => onQuery(event.target.value)} placeholder={placeholder} />{query && <button className={styles.clearSearch} type="button" aria-label={local(locale,"Clear search","ล้างคำค้นหา")} onClick={() => { onQuery(""); searchRef.current?.focus(); }}><X size={18} aria-hidden="true" /></button>}</div>
+    <div className={styles.filterButtons} role="group" aria-label={local(locale, "Filter by category", "กรองตามประเภท")}>{categories.map((category) => <button type="button" key={category} disabled={!interactive} aria-pressed={selected === category} className={selected === category ? styles.activeFilter : ""} onClick={() => onSelect(category)}><CategoryName locale={locale} category={category} categoryTh={categoryTranslations?.[category]} /></button>)}</div>
+    <div className={styles.search}><Search size={21} aria-hidden="true" /><label className="sr-only" htmlFor={searchId}>{placeholder}</label><input ref={searchRef} id={searchId} type="search" disabled={!interactive} maxLength={listingQueryLimit} value={query} onChange={(event) => onQuery(event.target.value)} placeholder={placeholder} />{query && <button className={styles.clearSearch} type="button" disabled={!interactive} aria-label={local(locale,"Clear search","ล้างคำค้นหา")} onClick={() => { onQuery(""); searchRef.current?.focus(); }}><X size={18} aria-hidden="true" /></button>}</div>
   </div>;
 }
 
@@ -147,7 +154,7 @@ function Fleet({ locale, slug }: { locale: Locale; slug?: string }) {
     <Filters locale={locale} categories={categories} categoryTranslations={categoryTranslations} selected={category} onSelect={setCategory} query={query} onQuery={setQuery} searchRef={searchRef} placeholder={local(locale, "Search vessels", "ค้นหาเรือ")} />
     <ResultsSummary locale={locale} active={category !== "All" || Boolean(query)} reset={resetFilters}>{local(locale, `${filtered.length} ${filtered.length === 1 ? "vessel" : "vessels"}`, `${filtered.length} ลำ`)}</ResultsSummary>
     {filtered.length ? <div className={styles.fleetGrid}>{filtered.map((item, index) => <Link href={listingHref(href(locale, `fleet/${item.id}`), { query, category })} key={item.id} className={styles.fleetCard}>
-      <div className={styles.fleetImage}><Image src={item.image} alt={item.imageAlt[locale] || local(locale, item.name, item.nameTh)} fill loading={index < 3 ? "eager" : "lazy"} sizes="(max-width: 650px) 100vw, (max-width: 1100px) 50vw, 33vw" /></div>
+      <div className={styles.fleetImage}>{item.image ? <Image src={item.image} alt={item.imageAlt[locale] || local(locale, item.name, item.nameTh)} fill loading={index < 3 ? "eager" : "lazy"} sizes="(max-width: 650px) 100vw, (max-width: 1100px) 50vw, 33vw" /> : <VesselPhotoPlaceholder locale={locale} />}</div>
       <span className={styles.fleetCardInfo}><span className={styles.fleetIdentity}><span className={styles.fleetType}><CategoryName locale={locale} category={item.type} categoryTh={item.typeTh} /></span><strong>{local(locale, item.name, item.nameTh)}</strong></span><span className={styles.fleetAction}>{local(locale, "View vessel", "ดูข้อมูลเรือ")}<ChevronRight aria-hidden="true" size={19} /></span></span>
     </Link>)}</div> : <Empty locale={locale} reset={resetFilters} />}
     <ContentBody text={contentText(page,"body",locale)} /><AdditionalSections pageId="fleet" locale={locale} exclude={["vessel-planning"]} />
@@ -172,7 +179,7 @@ function Gallery({ locale, images, title }: { locale: Locale; images: ContentIma
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
   }, [open, images.length]);
-  if (!images.length) return null;
+  if (!images.length) return <div className={styles.gallery}><div className={styles.galleryMain}><VesselPhotoPlaceholder locale={locale} /></div></div>;
   const controls = images.length > 1 ? <><button className={`${styles.galleryControl} ${styles.prev}`} type="button" onClick={() => change(-1)} aria-label={local(locale, "Previous image", "ภาพก่อนหน้า")}><ChevronLeft aria-hidden="true" /></button><button className={`${styles.galleryControl} ${styles.next}`} type="button" onClick={() => change(1)} aria-label={local(locale, "Next image", "ภาพถัดไป")}><ChevronRight aria-hidden="true" /></button><span className={styles.counter} aria-live="polite">{activeIndex + 1} / {images.length}</span></> : null;
   return <div className={styles.gallery}><div className={styles.galleryMain}><Image src={images[activeIndex].url} alt={local(locale, images[activeIndex].alt, images[activeIndex].altTh) || title} fill loading="eager" fetchPriority="high" sizes="(max-width: 850px) 100vw, 65vw" /><button ref={triggerRef} className={`${styles.galleryControl} ${styles.expand}`} type="button" onClick={() => setOpen(true)} aria-label={local(locale, "Open image gallery", "เปิดแกลเลอรีภาพ")}><Maximize2 size={21} aria-hidden="true" /></button>{controls}</div>{images.length > 1 && <div className={styles.thumbnails}>{images.map((src, thumbnail) => <button type="button" key={`${src.url}-${thumbnail}`} aria-label={local(locale, `Show image ${thumbnail + 1}`, `แสดงภาพที่ ${thumbnail + 1}`)} aria-pressed={activeIndex === thumbnail} onClick={() => setIndex(thumbnail)}><Image src={src.url} alt="" fill sizes="(max-width: 850px) 25vw, 16vw" /></button>)}</div>}<Dialog open={open} onClose={() => setOpen(false)} triggerRef={triggerRef} title={title} closeLabel={local(locale, "Close gallery", "ปิดแกลเลอรี")}><div className={styles.lightbox}>{open && <Image src={images[activeIndex].url} alt={local(locale, images[activeIndex].alt, images[activeIndex].altTh) || title} fill loading="eager" sizes="95vw" />}{controls}</div><p className={styles.lightboxCaption}>{images.length > 1 ? local(locale, "Use the arrows or arrow keys to explore. Press Escape to close.", "เลื่อนดูด้วยปุ่มลูกศรหรือแป้นลูกศร กด Escape เพื่อปิด") : local(locale, "Press Escape to close.", "กด Escape เพื่อปิด")}</p></Dialog></div>;
 }
@@ -182,7 +189,7 @@ function VesselDetail({ locale, slug }: { locale: Locale; slug: string }) {
   const vessel = vessels.find((item) => item.id === slug);
   const planning = sections.find((item) => item.id === "vessel-planning" && item.parentId === "fleet");
   if (!vessel) return <MissingEntry locale={locale} page="fleet" />;
-  const images = [{url:vessel.image,alt:vessel.imageAlt.en || vessel.name,altTh:vessel.imageAlt.th || vessel.nameTh},...vessel.gallery].filter((image,index,all) => all.findIndex((item) => item.url === image.url) === index);
+  const images = [{url:vessel.image,alt:vessel.imageAlt.en || vessel.name,altTh:vessel.imageAlt.th || vessel.nameTh},...vessel.gallery].filter((image,index,all) => image.url.trim() && all.findIndex((item) => item.url === image.url) === index);
   const vesselName = local(locale, vessel.name, vessel.nameTh);
   const specs = vessel.specs;
   const number = (value: number) => new Intl.NumberFormat(locale === "th" ? "th-TH" : "en-GB", { maximumFractionDigits: 2 }).format(value);
@@ -199,7 +206,7 @@ function VesselDetail({ locale, slug }: { locale: Locale; slug: string }) {
   return <div className="container section">
     <BackLink locale={locale} page="fleet" />
     <section className={styles.vesselDetail}>
-      <header className={styles.vesselTitle}><p className="eyebrow">{local(locale, "VESSEL PROFILE", "ข้อมูลเรือ")}</p><h1>{vesselName}</h1><p className={styles.lead}><CategoryName locale={locale} category={vessel.type} categoryTh={vessel.typeTh} /></p><PreviewNote>{local(locale, "Demo listing with illustrative imagery. Vessel details require verification.", "ข้อมูลและภาพเรือลำนี้เป็นตัวอย่าง รายละเอียดเรือยังต้องได้รับการยืนยัน")}</PreviewNote></header>
+      <header className={styles.vesselTitle}><p className="eyebrow">{local(locale, "VESSEL PROFILE", "ข้อมูลเรือ")}</p><h1>{vesselName}</h1><p className={styles.lead}><CategoryName locale={locale} category={vessel.type} categoryTh={vessel.typeTh} /></p></header>
       <Gallery key={vessel.id} locale={locale} images={images} title={vesselName} />
       <div className={styles.vesselInfo}>
         <div className={styles.specifications}><h2>{local(locale, "Vessel details", "รายละเอียดเรือ")}</h2><dl>

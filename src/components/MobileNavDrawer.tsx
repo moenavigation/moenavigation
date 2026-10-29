@@ -150,7 +150,7 @@ export default function MobileNavDrawer({ open, onClose, title, closeLabel, trig
   >
     <div ref={panelRef} className={styles.panel}>
       <div className={styles.heading}>
-        <span className={styles.wordmark} aria-hidden="true"><BrandMark /><span><strong>MOE</strong><small>NAVIGATION</small></span></span>
+        <span className={styles.wordmark} aria-hidden="true"><BrandMark /></span>
         <button ref={closeRef} type="button" className={styles.close} onClick={onClose} aria-label={closeLabel}><X aria-hidden="true" /></button>
       </div>
       {children}

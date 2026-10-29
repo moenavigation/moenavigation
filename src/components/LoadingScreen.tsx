@@ -8,7 +8,7 @@ type LoadingScreenProps = {
   stage?: 'session' | 'workspace' | 'page';
 };
 
-function NavigationEmblem() {
+function NavigationEmblem({ locale }: { locale: Locale }) {
   return <div className={styles.emblem} aria-hidden="true">
     <svg className={styles.chart} viewBox="0 0 240 240" fill="none">
       <circle cx="120" cy="120" r="111" />
@@ -19,7 +19,7 @@ function NavigationEmblem() {
       <path d="M120 9a111 111 0 0 1 111 111" />
       <circle cx="231" cy="120" r="4" />
     </svg>
-    <span className={styles.mark}><BrandMark /></span>
+    <span className={styles.mark}><BrandMark locale={locale} /></span>
   </div>;
 }
 
@@ -37,11 +37,11 @@ export default function LoadingScreen({ variant = 'public', locale = 'en', stage
 
   return <section className={`${styles.screen} ${variant === 'cms' ? styles.cms : styles.public}`} data-loading-screen={variant} lang={locale}>
     <div className={styles.header} data-loading-header>
-      <div className={styles.brand}><span><BrandMark /></span><strong>MOE <span>NAVIGATION</span></strong></div>
+      <div className={styles.brand}><BrandMark locale={locale} /></div>
       <span className={styles.context}>{variant === 'cms' ? thai ? 'จัดการเนื้อหาเว็บไซต์' : 'Content management' : thai ? 'บริการทางทะเล' : 'Maritime services'}</span>
     </div>
     <div className={styles.center}>
-      <NavigationEmblem />
+      <NavigationEmblem locale={locale} />
       <div className={styles.copy} role="status" aria-live="polite" aria-atomic="true">
         <span className={styles.status}><span aria-hidden="true" />{status}</span>
         <p className={styles.title}>{title}</p>

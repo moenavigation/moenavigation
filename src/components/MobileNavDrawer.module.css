@@ -37,10 +37,8 @@
 
 .drawer[data-phase="open"] { transform: translateX(0); transition-duration: 440ms; transition-timing-function: cubic-bezier(.42, 0, .58, 1); }
 .heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: max(1.25rem, env(safe-area-inset-top)) max(1.4rem, env(safe-area-inset-right)) 1.1rem 1.4rem; }
-.wordmark { display: inline-flex; align-items: center; gap: .55rem; color: var(--navy); line-height: 1; }
-.wordmark svg { width: 2rem; height: 2rem; flex: 0 0 auto; }
-.wordmark strong { display: block; font-size: var(--font-h3); letter-spacing: -.05em; }
-.wordmark small { display: block; margin-top: .2rem; font-size: var(--font-small); font-weight: 700; letter-spacing: .13em; }
+.wordmark { display: inline-flex; align-items: center; line-height: 1; }
+.wordmark img { display: block; width: 8rem; height: auto; }
 .close { display: grid; place-items: center; flex: 0 0 auto; width: 2.75rem; height: 2.75rem; padding: 0; border: 1px solid var(--line); border-radius: .45rem; background: #fff; color: var(--navy); }
 .close svg { width: 1.25rem; height: 1.25rem; }
 

@@ -2,7 +2,7 @@
 export const cmsMainThai: Record<string, string> = {
   "CMS navigation": "เมนูจัดการเว็บไซต์",
   "Close CMS navigation": "ปิดเมนูจัดการเว็บไซต์",
-  "MOE Navigation home in a new tab": "เปิดหน้าแรก MOE Navigation ในแท็บใหม่",
+  "Moe Navigation Co.,Ltd. home in a new tab": "เปิดหน้าแรกของบริษัท โม เนวิเกชั่น จำกัด ในแท็บใหม่",
   "View website in a new tab": "เปิดเว็บไซต์ในแท็บใหม่",
   "View website": "ดูเว็บไซต์",
   "Welcome back": "ยินดีต้อนรับ",

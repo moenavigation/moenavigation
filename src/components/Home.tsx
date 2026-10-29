@@ -10,6 +10,7 @@ import { contentText } from "@/lib/public-content";
 import { usePublicContent } from "@/lib/use-public-content";
 import { AdditionalSections, ContentBody } from "./EditorialContent";
 import RouteExplorer, { isMappedRoute } from "./RouteExplorer";
+import VesselPhotoPlaceholder from "./VesselPhotoPlaceholder";
 import styles from "./Home.module.css";
 const icons = { Ship, Fuel, Container, Anchor, ShieldCheck, Compass, MessagesSquare, LifeBuoy, MapPin };
 const placed = ["home-expertise", "home-trust", "home-trust-safety", "home-trust-practical", "home-trust-partnerships", "home-fleet", "home-connections", "home-news", "home-cta"];
@@ -36,7 +37,7 @@ export default function Home({ locale }: { locale: Locale }) {
     {trust && <section className={styles.trust}>{trust.image && <Image src={trust.image} alt="" fill sizes="100vw" />}<div className={`container ${styles.trustInner}`}><div>{copy(trust)}<Link href={href(locale,"about")} className="text-link">{local(locale,"Get to know us","รู้จักเราให้มากขึ้น")}<ArrowRight /></Link></div><div className={styles.trustValues}>{sections.filter((entry) => entry.parentId === "home" && ["home-trust-safety","home-trust-practical","home-trust-partnerships"].includes(entry.id)).map((value) => { const Icon=icons[value.icon as keyof typeof icons] || Compass; return <div key={value.id}><Icon /><span><h3>{text(value,"title")}</h3><p>{text(value,"description")}</p><ContentBody text={text(value,"body")} /></span></div>; })}</div></div></section>}
     {fleet && <section className="container section">
       <div className={styles.sectionHeading}><div>{copy(fleet)}</div></div>
-      <div className={styles.mediaGrid}>{vessels.slice(0,3).map((vessel) => <Link className={styles.mediaCard} href={href(locale,`fleet/${vessel.id}`)} key={vessel.id}><div className={styles.cardImage}><Image src={vessel.image} alt={vessel.imageAlt[locale] || local(locale,vessel.name,vessel.nameTh)} fill sizes="(max-width:700px) 90vw, 30vw" /></div><div className={styles.cardCopy}><div><span className="eyebrow">{categoryName(locale,vessel.type,vessel.typeTh)}</span><h3>{local(locale,vessel.name,vessel.nameTh)}</h3></div></div></Link>)}</div>
+      <div className={styles.mediaGrid}>{vessels.slice(0,3).map((vessel) => <Link className={styles.mediaCard} href={href(locale,`fleet/${vessel.id}`)} key={vessel.id}><div className={styles.cardImage}>{vessel.image ? <Image src={vessel.image} alt={vessel.imageAlt[locale] || local(locale,vessel.name,vessel.nameTh)} fill sizes="(max-width:700px) 90vw, 30vw" /> : <VesselPhotoPlaceholder locale={locale} />}</div><div className={styles.cardCopy}><div><span className="eyebrow">{categoryName(locale,vessel.type,vessel.typeTh)}</span><h3>{local(locale,vessel.name,vessel.nameTh)}</h3></div></div></Link>)}</div>
       <div className={styles.fleetAction}><Link href={href(locale,"fleet")} className="button">{local(locale,"View all vessels","ดูกองเรือทั้งหมด")}</Link></div>
     </section>}
     {connection && <section className={styles.connection}>

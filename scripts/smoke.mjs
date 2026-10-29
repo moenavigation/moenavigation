@@ -36,7 +36,7 @@ while(queue.length) {
     if(path==='/cms') {
       // Authentication resolves in the browser. SSR intentionally sends its
       // localized live loading region; browser workflows check the login h1.
-      assert.match(html,/<title>MOE Navigation[^<]+<\/title>/,`${path} CMS title`);
+      assert.match(html,/<title>Moe Navigation Co\.,Ltd\.[^<]+<\/title>/,`${path} CMS title`);
       assert.match(html,/data-cms-language="th"/,`${path} Thai-default CMS locale`);
       assert.match(html,/data-loading-screen="cms"/,`${path} session loading screen`);
       assert.match(html,/role="status"[^>]*aria-live="polite"/,`${path} accessible session loading status`);

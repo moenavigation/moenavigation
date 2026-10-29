@@ -82,7 +82,7 @@ export async function seedE2eDatabase(db: Db) {
   const salt = 'a'.repeat(32);
   const passwordHash = `scrypt:${salt}:${scryptSync(E2E_ADMIN.password, salt, 64).toString('hex')}`;
   await db.collection('moe_users').insertOne({ _id: E2E_ADMIN.id, username: E2E_ADMIN.username, passwordHash, passwordVersion: 1, createdAt: new Date() } as never);
-  await db.collection('moe_settings').insertOne({ _id: 'website', companyName: 'MOE Navigation', companyNameTh: 'MOE Navigation', officeAddress: 'Synthetic E2E office', officeAddressTh: 'สำนักงานทดสอบ E2E', phone: '+66000000000', email: 'contact@example.test', mapUrl: '', revision: 1 } as never);
+  await db.collection('moe_settings').insertOne({ _id: 'website', companyName: 'Moe Navigation Co.,Ltd.', companyNameTh: 'บริษัท โม เนวิเกชั่น จำกัด', officeAddress: 'Synthetic E2E office', officeAddressTh: 'สำนักงานทดสอบ E2E', phone: '+66000000000', email: 'contact@example.test', mapUrl: '', revision: 1 } as never);
   const statuses = ['New', 'In progress', 'Resolved'] as const;
   const enquiries = Array.from({ length: E2E_INBOX.total }, (_, index) => {
     const id = enquiryId(index), createdAt = new Date(Date.UTC(2026, 0, 1, 0, index)).toISOString();

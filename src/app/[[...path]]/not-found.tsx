@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeft, ArrowRight, Compass } from "lucide-react";
 import { href, local, localeFromPathname } from "@/lib/content";
+import BrandMark from "@/components/BrandMark";
+import { companyName } from "@/lib/company";
 import styles from "@/components/RecoveryPage.module.css";
 
 export default function NotFound() {
@@ -12,10 +14,11 @@ export default function NotFound() {
 
   return (
     <main className={`container section ${styles.screen}`}>
-        <title>{`${local(locale, "Page not found", "ไม่พบหน้านี้")} | MOE Navigation`}</title>
+        <title>{`${local(locale, "Page not found", "ไม่พบหน้านี้")} | ${companyName(locale)}`}</title>
         <div className={styles.card}>
           <div className={styles.badge}><Compass aria-hidden="true" /></div>
-          <span className="eyebrow">404 · MOE Navigation</span>
+          <BrandMark className={styles.brandLogo} locale={locale} />
+          <span className="eyebrow">404</span>
           <h1>{local(locale, "Page not found", "ไม่พบหน้านี้")}</h1>
           <p className={styles.description}>{local(locale, "The address may be incorrect, or this page may have moved. You can return home or explore our services.", "ลิงก์อาจไม่ถูกต้อง หรือหน้านี้อาจถูกย้ายไปแล้ว คุณสามารถกลับไปยังหน้าแรกหรือดูบริการของเราได้")}</p>
           <div className={styles.actions}>

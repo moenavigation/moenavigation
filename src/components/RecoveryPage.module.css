@@ -2,6 +2,7 @@
 .card { width: min(100%, 43rem); margin-inline: auto; padding: 2.25rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--white); box-shadow: var(--shadow-card); }
 .badge { display: grid; place-items: center; width: 4rem; height: 4rem; margin-bottom: 1.5rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--pale); color: var(--navy); }
 .badge svg { width: 2rem; height: 2rem; }
+.brandLogo { display: block; width: 8rem; max-width: 100%; height: auto; margin-bottom: 1rem; }
 .card :global(.eyebrow) { margin-bottom: .75rem; }
 .card h1 { margin-bottom: 1rem; }
 .description { max-width: 36rem; line-height: 1.75; }
