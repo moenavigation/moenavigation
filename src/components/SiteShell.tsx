@@ -56,7 +56,7 @@ export function SiteHeader({locale}:{locale:Locale}) {
   return <>
     <a className="skip-link" href="#main">{local(locale,"Skip to content","ข้ามไปยังเนื้อหา")}</a>
     <header data-site-header="true" className={styles.header} onClickCapture={scrollCurrentPageToTop}><div className={`container ${styles.headerInner}`}>
-      <Link href={href(locale)} aria-label={local(locale,`${companyName('en')} home`,`หน้าแรกของ${companyName('th')}`)}><Brand locale={locale}/></Link>
+      <Link className={styles.brandLink} href={href(locale)} aria-label={local(locale,`${companyName('en')} home`,`หน้าแรกของ${companyName('th')}`)}><Brand locale={locale}/></Link>
       <nav className={styles.desktopNav} aria-label={local(locale,"Main navigation","เมนูหลัก")}>
         {navigation.map(item=><Link key={item.id} href={href(locale,item.id)} aria-current={(item.id?current===item.id||current.startsWith(item.id+"/"):!current)?"page":undefined}>{item.title[locale]}</Link>)}
       </nav>

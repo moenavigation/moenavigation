@@ -24,6 +24,7 @@ test('confirmed fleet names, categories, order and all detail URLs work in both 
       await expect(cards.nth(index)).toHaveAttribute('href', `${prefix}/fleet/${id}`);
       await expect(cards.nth(index)).toContainText(locale === 'en' ? en : th);
       await expect(cards.nth(index)).toContainText(locale === 'en' ? category : categoryTh);
+      await expect(cards.nth(index).getByRole('img')).toHaveAttribute('alt', locale === 'en' ? /illustrative.+not a photograph of this vessel/ : /ภาพประกอบ.+ไม่ใช่ภาพถ่ายของเรือลำนี้/);
       const response = await request.get(`${prefix}/fleet/${id}`);
       expect(response.status()).toBe(200);
       const html = await response.text();
@@ -39,7 +40,7 @@ test('confirmed fleet names, categories, order and all detail URLs work in both 
   }
 });
 
-test('Thai mobile search opens the new crane vessel without broken photos or overflow', async ({ page }, testInfo) => {
+test('Thai mobile search opens the new crane vessel and its illustrative gallery without overflow', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 320, height: 780 });
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -49,8 +50,20 @@ test('Thai mobile search opens the new crane vessel without broken photos or ove
   await expect(page.getByRole('status')).toHaveText('1 ลำ');
   await page.getByRole('main').getByRole('link', { name: /โม4/ }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('โม4');
-  await expect(page.getByText('ยังไม่มีภาพเรือลำนี้', { exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: /gallery|แกลเลอรี/ })).toHaveCount(0);
+  const illustration = page.getByRole('img', { name: /โม4 — ภาพประกอบ/ });
+  await expect(illustration).toBeVisible();
+  await expect.poll(() => illustration.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+  const galleryTrigger = page.getByRole('button', { name: 'เปิดแกลเลอรีภาพ', exact: true });
+  await galleryTrigger.click();
+  const gallery = page.getByRole('dialog');
+  await expect(gallery).toBeVisible();
+  await gallery.getByRole('button', { name: 'ภาพถัดไป', exact: true }).click();
+  await expect(gallery).toContainText('2 / 2');
+  await expect(gallery.getByRole('img')).toHaveAttribute('alt', /ภาพประกอบ.+ไม่ใช่ภาพถ่ายของเรือลำนี้/);
+  await gallery.press('Escape');
+  await expect(gallery).not.toBeVisible();
+  await expect(galleryTrigger).toBeFocused();
+  await page.getByRole('button', { name: 'แสดงภาพที่ 1', exact: true }).click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath('fleet-detail-mobile-th.png'), fullPage: true });
   await page.getByRole('link', { name: 'กลับไปยังกองเรือ', exact: true }).click();
@@ -63,11 +76,11 @@ test('CMS saves a vessel with no photo and immediately refreshes its public prof
   expect((await request.post('/api/cms/login', { headers, data: E2E_ADMIN })).ok()).toBe(true);
   const records = (await (await request.get('/api/cms/content')).json()).records;
   const vessel = records.find((record: { id: string }) => record.id === 'dumai-moe');
-  expect(vessel.image).toBe('');
-  expect(vessel.gallery).toEqual([]);
+  expect(vessel.image).toBeTruthy();
+  expect(vessel.gallery).toHaveLength(2);
   await page.goto('/fleet/dumai-moe');
   const saved = await request.post('/api/cms/content', { headers, data: {
-    record: { ...vessel, description: 'Updated tanker profile from the CMS.' },
+    record: { ...vessel, description: 'Updated tanker profile from the CMS.', image: '', imageAlt: '', imageAltTh: '', mobileImage: '', gallery: [] },
     expectedRevision: vessel.revision, submissionId: randomUUID(),
   } });
   expect(saved.status(), await saved.text()).toBe(200);

@@ -118,5 +118,53 @@
     "width": 1672,
     "height": 941,
     "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet/moe-3-container-illustration.webp",
+    "sha256": "a5a98f6f6174b5bfdbc54fef75b25afd688010c25f5d67a337008020fd149b24",
+    "bytes": 276802,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet/moe-4-crane-illustration.webp",
+    "sha256": "aa6b7e010e533d5a6593c04d44dda6d0b796a20488da8d530c75989d6ec7f364",
+    "bytes": 296868,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet/moe-6-container-illustration.webp",
+    "sha256": "def80116288176dd7c6fde320172214e458491c7a0eeb90b36af44f1182855cf",
+    "bytes": 264480,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet/moe-7-container-illustration.webp",
+    "sha256": "88ae5c8cbbfe9fdb90ced14543075e1da9e391e71bed13eb527f8a9409538ea8",
+    "bytes": 216362,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet/dumai-moe-tanker-illustration.webp",
+    "sha256": "0e263328de33436ea58834a0a365e4e46303ea8218ef756a294b93635ba53386",
+    "bytes": 251964,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/contact-thai-planning.webp",
+    "sha256": "bcbde0905894c17515bb7c20ead7e3e8556eb0951521d57b05ba0c83478ff1e5",
+    "bytes": 116500,
+    "width": 1672,
+    "height": 941,
+    "format": "webp"
   }
 ]

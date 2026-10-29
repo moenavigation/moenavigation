@@ -932,7 +932,7 @@ export const websiteContentRecords = [
     "descriptionTh": "พูดคุยเกี่ยวกับงานทางทะเลครั้งต่อไปของคุณ",
     "eyebrow": "GET IN TOUCH",
     "eyebrowTh": "พูดคุยกับเรา",
-    "image": "/images/consulting.webp",
+    "image": "/images/contact-thai-planning.webp",
     "category": "Website pages",
     "categoryTh": "หน้าเว็บไซต์",
     "status": "Published",
@@ -940,8 +940,8 @@ export const websiteContentRecords = [
     "revision": 1,
     "body": "Tell us about your vessel, cargo, route or project. Include the operating area and preferred timing so the team can understand your requirements.",
     "bodyTh": "บอกเราเกี่ยวกับเรือ สินค้า เส้นทาง หรือโครงการ พร้อมพื้นที่ดำเนินงานและช่วงเวลาที่ต้องการ เพื่อให้ทีมงานเข้าใจความต้องการของคุณ",
-    "imageAlt": "Illustrative maritime planning team",
-    "imageAltTh": "ภาพประกอบทีมวางแผนงานทางทะเล"
+    "imageAlt": "Illustrative maritime planning discussion with a Thai professional seated at the table",
+    "imageAltTh": "ภาพประกอบการหารืองานทางทะเล โดยมีเจ้าหน้าที่ชาวไทยนั่งตรวจแบบที่โต๊ะ"
   },
   {
     "id": "privacy",
