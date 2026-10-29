@@ -373,6 +373,8 @@ export const cmsMainThai: Record<string, string> = {
   "IMO number": "หมายเลข IMO",
   "Year built": "ปีที่สร้าง (ค.ศ.)",
   "CMS language": "ภาษาของระบบจัดการเว็บไซต์",
+  "Switch to English": "เปลี่ยนเป็นภาษาอังกฤษ",
+  "Switch to Thai": "เปลี่ยนเป็นภาษาไทย",
   "Length overall": "ความยาวตลอดลำเรือ",
   "Beam": "ความกว้างลำเรือ",
   "Deadweight": "ระวางบรรทุก",

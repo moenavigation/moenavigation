@@ -3,9 +3,9 @@ import { expect, test } from '@playwright/test';
 test.use({ viewport: { width: 390, height: 844 }, reducedMotion: 'no-preference' });
 
 test('mobile menu enters from the right on first open and reopen', async ({ page }) => {
-  await page.goto('/en');
+  await page.goto('/');
   const trigger = page.getByRole('button', { name: 'Open menu', exact: true });
-  const drawer = page.getByRole('dialog', { name: 'Explore MOE Navigation' });
+  const drawer = page.getByRole('dialog', { name: 'Menu', exact: true });
 
   for (let cycle = 0; cycle < 2; cycle++) {
     // Start before the real click: waiting for a stable dialog first would miss

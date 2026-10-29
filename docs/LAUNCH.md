@@ -34,7 +34,7 @@ If Vercel logs report `MongoDB database name is missing or invalid.`, check **Se
 - Set `MONGODB_DB_NAME` to the database containing this site's content. The existing project database is `moenavigation`; enter the value without quotes or surrounding whitespace.
 - Set `MONGODB_URI` privately from the working configuration. `.env.local` is local-only and is not uploaded to Vercel.
 - Redeploy after saving environment changes; an existing deployment keeps its previous environment.
-- Verify `/`, `/en`, and a content detail page on the new deployment. React error #441 is a production server-render error; the corresponding server log identifies its cause.
+- Verify `/`, `/th`, and a content detail page in both languages on the new deployment. Also confirm an old `/en` link redirects to its unprefixed English equivalent and a remembered Thai choice returns to `/th` from the homepage entrance. React error #441 is a production server-render error; the corresponding server log identifies its cause.
 
 The static `/favicon.ico` and `/icon.svg` assets should respond without MongoDB. Missing asset filenames should return 404 instead of attempting a content query. Do not point the app at a new empty database or use fallback content to conceal a configuration failure.
 

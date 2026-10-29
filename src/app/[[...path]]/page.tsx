@@ -21,8 +21,8 @@ export function generateStaticParams() { return []; }
 
 const detailTypes: Record<string, ContentRecord["type"]> = { services: "Service", fleet: "Vessel", projects: "Project", news: "News" };
 function resolve(path: string[] = []) {
-  const locale: Locale = path[0] === "en" ? "en" : "th";
-  const pieces = locale === "en" ? path.slice(1) : path;
+  const locale: Locale = path[0] === "th" ? "th" : "en";
+  const pieces = path[0] === "th" || path[0] === "en" ? path.slice(1) : path;
   return { locale, pieces, page: pieces[0] || "", slug: pieces[1] };
 }
 
@@ -54,7 +54,7 @@ export async function generateMetadata({ params }: { params: Promise<{ path?: st
     title: `${title} | ${company}`,
     description,
     robots: { index: indexingEnabled(), follow: indexingEnabled() },
-    alternates: { canonical: href(locale, pathPart), languages: { th: href("th", pathPart), en: href("en", pathPart), "x-default": href("th", pathPart) } },
+    alternates: { canonical: href(locale, pathPart), languages: { th: href("th", pathPart), en: href("en", pathPart), "x-default": href("en", pathPart) } },
     openGraph: { title: `${title} | ${company}`, description, url: new URL(href(locale, pathPart), siteUrl).href, siteName: company, locale: locale === "en" ? "en_US" : "th_TH", alternateLocale: locale === 'en' ? 'th_TH' : 'en_US', images, type: item.type === 'News' ? 'article' : 'website' },
     twitter: { card: images.length ? 'summary_large_image' : 'summary', title: `${title} | ${company}`, description, images },
   };

@@ -32,14 +32,13 @@ export function selectPublicPageRecords(records: ContentRecord[], page: string, 
   include(visible.filter(record => record.type === 'Section' && record.parentId === 'shared'), true);
   const detailPlanning: Record<string, string> = { services: 'service-planning', fleet: 'vessel-planning', projects: 'project-planning' };
   const isDetail = Boolean(slug && ['services', 'fleet', 'projects', 'news'].includes(pageId));
-  const sections = visible.filter(record => record.type === 'Section' && record.parentId === pageId);
+  const sections = visible.filter(record => record.type === 'Section' && record.parentId === pageId && (pageId !== 'home' || record.id !== 'home-news'));
   include(isDetail ? sections.filter(record => record.id === detailPlanning[pageId]) : sections, true);
 
   if (pageId === 'home') {
     const hasSection = (id: string) => sections.some(section => section.id === id);
     if (hasSection('home-expertise')) include(collection('Service').slice(0, 4));
     if (hasSection('home-fleet')) include(collection('Vessel').slice(0, 3));
-    if (hasSection('home-news')) include(collection('News').slice(0, 3));
     if (hasSection('home-connections')) include(collection('Route'));
   } else if (pageId === 'routes') {
     // Selection changes without fetching a new page, so all routes need their geometry and copy.

@@ -3,6 +3,7 @@
 import NextLink, { useLinkStatus } from "next/link";
 import { useLayoutEffect, type ComponentProps } from "react";
 import { createPortal } from "react-dom";
+import { localeFromPathname } from "@/lib/content";
 import LoadingScreen from "./LoadingScreen";
 import styles from "./NavigationLink.module.css";
 
@@ -12,7 +13,7 @@ function PendingOverlay({ href }: { href: LinkProps["href"] }) {
   const path = typeof href === "string"
     ? new URL(href, window.location.href).pathname
     : href.pathname || window.location.pathname;
-  const locale = path === "/en" || path.startsWith("/en/") || path === "/cms" ? "en" : "th";
+  const locale = localeFromPathname(path);
 
   useLayoutEffect(() => {
     // Keep the visible header usable while the covered page waits for its replacement.

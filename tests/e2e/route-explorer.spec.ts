@@ -29,7 +29,7 @@ async function manyRoutes(db: Db) {
 test('many routes stay paginated and shared destinations use one map control', async ({ page, db }) => {
   await manyRoutes(db);
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/en/routes?from=removed-origin&to=removed-destination&route=connection-001&tracking=kept');
+  await page.goto('/routes?from=removed-origin&to=removed-destination&route=connection-001&tracking=kept');
   const finder = page.getByRole('region', { name: 'Find a route', exact: true });
   const details = page.getByRole('region', { name: 'Selected route details', exact: true });
   await expect(finder.getByRole('radio')).toHaveCount(6);
@@ -81,7 +81,7 @@ test('many routes stay paginated and shared destinations use one map control', a
 
 test('bilingual search and port filters preserve selection through reload and language changes', async ({ page, db }) => {
   await manyRoutes(db);
-  await page.goto('/en/routes');
+  await page.goto('/routes');
   const finder = page.getByRole('region', { name: 'Find a route', exact: true });
   await finder.getByRole('combobox', { name: 'Origin', exact: true }).selectOption({ label: 'Bangkok · Thailand' });
   await finder.getByRole('combobox', { name: 'Destination', exact: true }).selectOption({ label: 'Port 012 · Vietnam' });
@@ -127,7 +127,7 @@ test.describe('mobile route explorer', () => {
 
   test('route selection and the map shortcut remain usable with many results', async ({ page, db }) => {
     await manyRoutes(db);
-    await page.goto('/en/routes?route=connection-003');
+    await page.goto('/routes?route=connection-003');
     const finder = page.getByRole('region', { name: 'Find a route', exact: true });
     await expect(finder.getByRole('radio')).toHaveCount(6);
     await finder.getByRole('radio', { name: /Connection 004/ }).check();

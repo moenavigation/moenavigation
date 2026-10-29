@@ -49,7 +49,7 @@ test('core pages remain published and reserved routes cannot be replaced by gene
     assert.equal(recordSchema.safeParse({ ...validRecord, type: 'Page', id }).success, false);
     assert.equal(recordSchema.safeParse({ ...validRecord, type: 'Page', id, status: 'Published' }).success, true);
   }
-  for (const id of ['cms', 'api', 'en', 'sitemap', 'robots']) {
+  for (const id of ['cms', 'api', 'en', 'th', 'sitemap', 'robots']) {
     assert.equal(recordSchema.safeParse({ ...validRecord, type: 'Page', id, status: 'Published' }).success, false);
   }
 });

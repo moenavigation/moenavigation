@@ -53,7 +53,7 @@ export const recordSchema = z.object({
     if (!record.description) context.addIssue({ code: 'custom', path: ['description'], message: 'Enter an English summary.' });
     if (!record.descriptionTh) context.addIssue({ code: 'custom', path: ['descriptionTh'], message: 'Enter a Thai summary.' });
   }
-  if (record.type === 'Page' && ['en','cms','api','sitemap','robots'].includes(record.id)) {
+  if (record.type === 'Page' && ['en','th','cms','api','sitemap','robots'].includes(record.id)) {
     context.addIssue({ code: 'custom', path: ['id'], message: 'This address is reserved for an existing website section.' });
   }
   if (record.type === 'Page' && (corePageIds as readonly string[]).includes(record.id) && record.status !== 'Published') {

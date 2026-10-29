@@ -3,4 +3,6 @@
 .switch button[aria-pressed='true'] { color: var(--navy); background: #fff; box-shadow: 0 1px 4px #082b501a; font-weight: 700; }
 .switch button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .compact button { padding-inline: .5rem; }
+.headerSwitch { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; min-width: var(--target-size); min-height: var(--target-size); padding: 0; border: 0; color: var(--navy); background: transparent; font: inherit; font-weight: 600; cursor: pointer; }
+.headerSwitch:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: .25rem; }
 @media (hover: hover) and (pointer: fine) { .switch button:hover { color: var(--navy); background: var(--white); } }

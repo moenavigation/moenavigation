@@ -26,26 +26,26 @@ test('warm public HTML is cached and new routes share the published database sna
   await db.collection('moe_content').insertOne({ ...source!, _id: `Vessel:${id}`, id, title: 'Cached snapshot vessel', titleTh: 'เรือจากข้อมูลแคช' } as never);
   await refreshPublicCache();
 
-  await publicHtml(request, `/en/fleet/${id}`, 'Cached snapshot vessel');
-  const cached = await request.get(`/en/fleet/${id}`);
+  await publicHtml(request, `/fleet/${id}`, 'Cached snapshot vessel');
+  const cached = await request.get(`/fleet/${id}`);
   expect(cached.headers()['x-nextjs-cache']).toBe('HIT');
   expect(cached.headers()['cache-control']).toContain('s-maxage=');
 
   // Bypass publishing deliberately in the isolated test database. Both an existing
   // HTML page and a previously unvisited locale must retain the cached snapshot.
   await db.collection('moe_content').updateOne({ id, type: 'Vessel' }, { $set: { title: 'Fresh snapshot vessel', titleTh: 'เรือจากข้อมูลใหม่' } });
-  await publicHtml(request, `/en/fleet/${id}`, 'Cached snapshot vessel');
-  await publicHtml(request, `/fleet/${id}`, 'เรือจากข้อมูลแคช');
+  await publicHtml(request, `/fleet/${id}`, 'Cached snapshot vessel');
+  await publicHtml(request, `/th/fleet/${id}`, 'เรือจากข้อมูลแคช');
 
   await refreshPublicCache();
-  await publicHtml(request, `/en/fleet/${id}`, 'Fresh snapshot vessel');
-  await publicHtml(request, `/fleet/${id}`, 'เรือจากข้อมูลใหม่');
+  await publicHtml(request, `/fleet/${id}`, 'Fresh snapshot vessel');
+  await publicHtml(request, `/th/fleet/${id}`, 'เรือจากข้อมูลใหม่');
 });
 
 test('CMS saves, Trash and restore refresh cached pages, metadata, sitemap and missing URLs immediately', async ({ request, db }) => {
   await signIn(request);
   const id = 'e2e-cache-publish';
-  const paths = [`/fleet/${id}`, `/en/fleet/${id}`];
+  const paths = [`/th/fleet/${id}`, `/fleet/${id}`];
   for (const path of paths) expect((await request.get(path)).status()).toBe(404);
   expect(await (await request.get('/sitemap.xml')).text()).not.toContain(`/fleet/${id}`);
   const source = await db.collection('moe_content').findOne({ type: 'Vessel', deletedAt: { $exists: false } });
@@ -82,7 +82,7 @@ test('CMS saves, Trash and restore refresh cached pages, metadata, sitemap and m
 
 test('saving website details refreshes cached contact text and metadata in both languages', async ({ request }) => {
   await signIn(request);
-  for (const path of ['/contact', '/en/contact']) {
+  for (const path of ['/contact', '/th/contact']) {
     expect((await request.get(path)).status()).toBe(200);
     expect((await request.get(path)).headers()['x-nextjs-cache']).toBe('HIT');
   }
@@ -92,8 +92,8 @@ test('saving website details refreshes cached contact text and metadata in both 
     settings: { ...settings, companyName: 'Updated cache company', companyNameTh: 'บริษัททดสอบแคช', officeAddress: 'Updated cached office', officeAddressTh: 'สำนักงานที่แก้ไขแล้ว' },
   } });
   expect(response.status(), await response.text()).toBe(200);
-  const english = await (await request.get('/en/contact')).text();
-  const thai = await (await request.get('/contact')).text();
+  const english = await (await request.get('/contact')).text();
+  const thai = await (await request.get('/th/contact')).text();
   expect(english).toContain('Updated cached office');
   expect(english).toMatch(/<title>[^<]+ \| Updated cache company<\/title>/);
   expect(thai).toContain('สำนักงานที่แก้ไขแล้ว');

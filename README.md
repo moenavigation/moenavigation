@@ -17,8 +17,13 @@ npm run backend:setup
 npm run dev
 ```
 
-Open [http://localhost:3005](http://localhost:3005). Thai pages use `/`, English
-pages use `/en`, and the CMS is at `/cms`. First setup creates an
+Open [http://localhost:3005](http://localhost:3005). English public pages use
+unprefixed URLs, Thai pages use `/th`, and the CMS is at `/cms`. The public
+language switch remembers the last explicit choice for one year; a saved Thai
+choice restores `/th` when returning to the homepage entrance `/`. Explicit
+deep links keep their URL's language, and legacy `/en` links redirect to their
+unprefixed English equivalents. The CMS keeps its own Thai-default language
+preference. First setup creates an
 administrator and writes initial credentials to the ignored
 `.local/cms-access.json`. Change the password in **Account & tools** after
 signing in. Re-running setup preserves existing accounts and content.

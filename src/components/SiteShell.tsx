@@ -4,7 +4,8 @@ import { usePathname } from "next/navigation";
 import { usePublicSearchParams } from "@/lib/use-public-search-params";
 import { Menu } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type MouseEvent, type ReactNode } from "react";
-import { href, local, navigation, type Locale } from "@/lib/content";
+import { href, local, navigation, pathWithoutLocale, type Locale } from "@/lib/content";
+import { rememberPublicLocale, selectPublicLocale } from "@/lib/public-locale";
 import { usePublicContent } from "@/lib/use-public-content";
 import { contentText } from "@/lib/public-content";
 import { AdditionalSections } from "./EditorialContent";
@@ -33,11 +34,12 @@ export function SiteHeader({locale}:{locale:Locale}) {
   const [open,setOpen]=useState(false);
   const menuButtonRef=useRef<HTMLButtonElement>(null);
   const closeMenu=useCallback(()=>setOpen(false),[]);
-  const current=path.replace(/^\/en(?=\/|$)/,"").replace(/^\//,"");
+  const current=pathWithoutLocale(path);
   const search=usePublicSearchParams().toString();
   const query=search ? `?${search}` : "";
   const hash=useSyncExternalStore(subscribeHash,()=>window.location.hash,()=>"");
-  const languagePath=href(locale==="en"?"th":"en",current)+query+hash;
+  const nextLocale=locale==="en"?"th":"en";
+  const languagePath=href(nextLocale,current)+query+hash;
   useEffect(()=>{
     if(!open)return;
     const desktop=window.matchMedia("(min-width: 1101px)");
@@ -53,7 +55,7 @@ export function SiteHeader({locale}:{locale:Locale}) {
       <nav className={styles.desktopNav} aria-label={local(locale,"Main navigation","เมนูหลัก")}>
         {navigation.map(item=><Link key={item.id} href={href(locale,item.id)} aria-current={(item.id?current===item.id||current.startsWith(item.id+"/"):!current)?"page":undefined}>{item.title[locale]}</Link>)}
       </nav>
-      <div className={styles.actions}><Link className={`button ${styles.contact}`} href={href(locale,"contact")}><span className={styles.contactLong}>{local(locale,"Contact us","ติดต่อเรา")}</span><span className={styles.contactShort}>{local(locale,"Contact","ติดต่อ")}</span></Link><Link className={styles.language} href={languagePath} lang={locale} aria-label={local(locale,"Switch to Thai","เปลี่ยนเป็นภาษาอังกฤษ")} title={local(locale,"Switch to Thai","เปลี่ยนเป็นภาษาอังกฤษ")}>{locale==="th"?"TH":"EN"}</Link><button ref={menuButtonRef} className={styles.menu} type="button" onClick={()=>setOpen(true)} aria-expanded={open} aria-label={local(locale,"Open menu","เปิดเมนู")}><Menu/></button></div>
+      <div className={styles.actions}><Link className={`button ${styles.contact}`} href={href(locale,"contact")}><span className={styles.contactLong}>{local(locale,"Contact us","ติดต่อเรา")}</span><span className={styles.contactShort}>{local(locale,"Contact","ติดต่อ")}</span></Link><Link className={styles.language} href={languagePath} lang={locale} onClick={event=>selectPublicLocale(event,nextLocale)} onAuxClick={event=>{if(event.button===1)rememberPublicLocale(nextLocale);}} aria-label={local(locale,"Switch to Thai","เปลี่ยนเป็นภาษาอังกฤษ")} title={local(locale,"Switch to Thai","เปลี่ยนเป็นภาษาอังกฤษ")}>{locale==="th"?"TH":"EN"}</Link><button ref={menuButtonRef} className={styles.menu} type="button" onClick={()=>setOpen(true)} aria-expanded={open} aria-label={local(locale,"Open menu","เปิดเมนู")}><Menu/></button></div>
     </div></header>
     <MobileNavDrawer
       open={open}
@@ -70,8 +72,8 @@ export function SiteHeader({locale}:{locale:Locale}) {
         <div className={styles.drawerLocale}>
           <span className={styles.drawerLocaleLabel}>{local(locale,"Language","ภาษา")}</span>
           <div className={styles.drawerLanguage}>
-            <Link href={href("th",current)+query+hash} scroll={!!hash} onNavigate={closeMenu} lang="th" aria-current={locale==="th"?"page":undefined}>ไทย</Link>
-            <Link href={href("en",current)+query+hash} scroll={!!hash} onNavigate={closeMenu} lang="en" aria-current={locale==="en"?"page":undefined}>English</Link>
+            <Link href={href("th",current)+query+hash} scroll={!!hash} onClick={event=>selectPublicLocale(event,"th")} onAuxClick={event=>{if(event.button===1)rememberPublicLocale("th");}} onNavigate={closeMenu} lang="th" aria-current={locale==="th"?"page":undefined}>ไทย</Link>
+            <Link href={href("en",current)+query+hash} scroll={!!hash} onClick={event=>selectPublicLocale(event,"en")} onAuxClick={event=>{if(event.button===1)rememberPublicLocale("en");}} onNavigate={closeMenu} lang="en" aria-current={locale==="en"?"page":undefined}>English</Link>
           </div>
         </div>
       </div>

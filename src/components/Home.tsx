@@ -15,11 +15,11 @@ const icons = { Ship, Fuel, Container, Anchor, ShieldCheck, Compass, MessagesSqu
 const placed = ["home-expertise", "home-trust", "home-trust-safety", "home-trust-practical", "home-trust-partnerships", "home-fleet", "home-connections", "home-news", "home-cta"];
 
 export default function Home({ locale }: { locale: Locale }) {
-  const { services, vessels, news, pages, sections, routes } = usePublicContent();
+  const { services, vessels, pages, sections, routes } = usePublicContent();
   const [selectedRouteId, setSelectedRouteId] = useState("");
   const home = pages.find((page) => page.id === "home");
   const section = (id: string) => sections.find((entry) => entry.id === id && entry.parentId === "home");
-  const expertise = section("home-expertise"), trust = section("home-trust"), fleet = section("home-fleet"), connection = section("home-connections"), updates = section("home-news");
+  const expertise = section("home-expertise"), trust = section("home-trust"), fleet = section("home-fleet"), connection = section("home-connections");
   const text = (record: ContentRecord | undefined, field: Parameters<typeof contentText>[1]) => contentText(record, field, locale);
   const copy = (record: ContentRecord) => <><span className="eyebrow">{text(record,"eyebrow")}</span><h2>{text(record,"title")}</h2>{text(record,"description") && <p>{text(record,"description")}</p>}<ContentBody text={text(record,"body")} /></>;
   if (!home) return null;
@@ -50,7 +50,6 @@ export default function Home({ locale }: { locale: Locale }) {
         <RouteExplorer locale={locale} routes={routes.filter(isMappedRoute)} selectedId={selectedRouteId} onSelect={setSelectedRouteId} deferMap />
       </div>
     </section>}
-    {updates && <section className="container section"><div className={styles.sectionHeading}><div>{copy(updates)}</div><Link href={href(locale,"news")} className="text-link">{local(locale,"All updates","ข่าวสารทั้งหมด")}<ChevronRight /></Link></div><div className={styles.mediaGrid}>{news.slice(0,3).map((article) => <Link key={article.id} href={href(locale,`news/${article.id}`)} className={styles.newsCard}><div className={styles.cardImage}><Image src={article.image} alt={article.imageAlt[locale] || article.title[locale]} fill sizes="(max-width:700px) 90vw, 30vw" /></div><div className={styles.newsCopy}><span className="eyebrow">{categoryName(locale,article.category,article.categoryTh)}</span><h3>{article.title[locale]}</h3><span className="text-link">{local(locale,"Read story","อ่านเพิ่มเติม")}<ChevronRight /></span></div></Link>)}</div></section>}
     <div className="container"><AdditionalSections pageId="home" locale={locale} exclude={placed} /></div>
   </>;
 }

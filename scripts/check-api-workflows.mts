@@ -70,6 +70,7 @@ function action(record: ContentRecord, action: 'trash' | 'restore') {
 function track(record: ContentRecord) { const key = `${record.type}:${record.id}`; if (!recordIds.includes(key)) recordIds.push(key); return record; }
 async function publicPage(path: string, expected: number, text?: string) {
   const result = await request(path, { cookie: null }); status(result, expected, path);
+  if (expected === 200) assert.match(result.text, new RegExp(`<html[^>]*lang="${path === '/th' || path.startsWith('/th/') ? 'th' : 'en'}"`), `${path} document language`);
   if (text) assert.ok(result.text.includes(text), `${path} must server-render its current content`);
   return result;
 }
@@ -108,7 +109,7 @@ try {
       track(record); const result = await save(record, null); status(result, 200, `Create ${type}`); assert.ok(result.data.record); content.set(type, result.data.record);
       assert.equal(result.data.record.status, 'Draft'); assert.equal(result.data.record.revision, 1);
       const path = type === 'Page' ? `/${record.id}` : type === 'Vessel' ? `/fleet/${record.id}` : ['Project', 'Service', 'News'].includes(type) ? `/${type === 'News' ? 'news' : `${type.toLowerCase()}s`}/${record.id}` : null;
-      if (path) { await publicPage(path, 404); await publicPage(`/en${path}`, 404); }
+      if (path) { await publicPage(path, 404); await publicPage(`/th${path}`, 404); }
     }
   });
   await check('Content retry is idempotent and changed payloads cannot reuse its submission', async () => {
@@ -129,7 +130,7 @@ try {
     for (const [type, before] of content) {
       const saved = await save({ ...before, status: 'Published' }, before.revision); status(saved, 200, `Publish ${type}`); const record = saved.data.record!; content.set(type, record);
       const path = type === 'Page' ? `/${record.id}` : type === 'Section' ? `/${pageId}` : type === 'Route' ? '/routes' : type === 'Vessel' ? `/fleet/${record.id}` : `/${type === 'News' ? 'news' : `${type.toLowerCase()}s`}/${record.id}`;
-      await publicPage(path, 200, record.titleTh); const english = await publicPage(`/en${path}`, 200, record.title);
+      await publicPage(`/th${path}`, 200, record.titleTh); const english = await publicPage(path, 200, record.title);
       assert.match(english.text, /rel="canonical"/); assert.match(english.text, /hrefLang="th"/);
     }
   });
@@ -144,7 +145,7 @@ try {
   await check('Trash and restore enforce revisions, public exclusion, and parent availability', async () => {
     let page = content.get('Page')!; const section = content.get('Section')!;
     const trashed = await action(page, 'trash'); status(trashed, 200, 'Trash page');
-    status(await save(section, section.revision), 400, 'Section of trashed parent'); await publicPage(`/en/${page.id}`, 404);
+    status(await save(section, section.revision), 400, 'Section of trashed parent'); await publicPage(`/${page.id}`, 404);
     status(await action(page, 'restore'), 409, 'Stale restore'); page = trashed.data.record!;
     const restored = await action(page, 'restore'); status(restored, 200, 'Restore parent'); content.set('Page', restored.data.record!);
     for (const [type, before] of content) {

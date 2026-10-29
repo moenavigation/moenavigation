@@ -156,15 +156,15 @@ test.describe(`${layout.name} public loading`, () => {
 test.use({ viewport: layout.viewport, reducedMotion: layout.reducedMotion });
 test('public navigation shows the destination language while its page response is pending', async ({ page }, testInfo) => {
   // Register before the initial visit so a prefetch cannot populate this route.
-  const destination = await holdRequests(page, url => url.pathname === '/fleet', { rscOnly: true });
+  const destination = await holdRequests(page, url => url.pathname === '/th/fleet', { rscOnly: true });
   try {
-    await page.goto('/en/fleet?q=MOE');
+    await page.goto('/fleet?q=MOE');
     // Cached HTML is usable before hydration; wait for query state before
     // specifically exercising a React navigation rather than a document link.
     await expect(page.getByRole('searchbox', { name: 'Search vessels' })).toHaveValue('MOE');
     if (layout.name === 'mobile') {
       await page.getByRole('button', { name: 'Open menu', exact: true }).click();
-      await page.getByRole('dialog', { name: 'Explore MOE Navigation' }).getByRole('link', { name: 'ไทย', exact: true }).click();
+      await page.getByRole('dialog', { name: 'Menu', exact: true }).getByRole('link', { name: 'ไทย', exact: true }).click();
     } else {
       await page.getByRole('link', { name: 'Switch to Thai' }).click();
     }
@@ -182,7 +182,7 @@ test('public navigation shows the destination language while its page response i
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: testInfo.outputPath(`public-loading-thai-${layout.name}.png`), animations: 'disabled' });
   } finally { await destination.dispose(); }
-  await expect(page).toHaveURL(/\/fleet\?q=MOE$/);
+  await expect(page).toHaveURL(/\/th\/fleet\?q=MOE$/);
   await expect(page.locator('[data-navigation-loading]')).toHaveCount(0);
   await expect(page.getByRole('searchbox', { name: 'ค้นหาเรือ' })).toBeVisible();
   await expect(page.locator('main')).not.toHaveJSProperty('inert', true);
@@ -191,23 +191,23 @@ test('public navigation shows the destination language while its page response i
 }
 
 test('a newer header navigation cancels the pending view and restores page interaction', async ({ page }) => {
-  const projects = await holdRequests(page, url => url.pathname === '/en/projects', { rscOnly: true });
+  const services = await holdRequests(page, url => url.pathname === '/services', { rscOnly: true });
   try {
-    await page.goto('/en/fleet?q=MOE');
+    await page.goto('/fleet?q=MOE');
     await expect(page.getByRole('searchbox', { name: 'Search vessels' })).toHaveValue('MOE');
     const header = page.locator('[data-site-header]');
-    await header.getByRole('link', { name: 'Projects', exact: true }).click();
-    await projects.started();
+    await header.getByRole('link', { name: 'Services', exact: true }).click();
+    await services.started();
     await expect(page.locator('[data-navigation-loading]')).toBeVisible();
-    await header.getByRole('link', { name: 'News', exact: true }).click();
-    await expect(page).toHaveURL(/\/en\/news$/);
+    await header.getByRole('link', { name: 'Routes', exact: true }).click();
+    await expect(page).toHaveURL(/\/routes$/);
     await expect(page.locator('[data-navigation-loading]')).toHaveCount(0);
     await expect(page.locator('main')).not.toHaveJSProperty('inert', true);
     await expect(page.locator('main')).not.toHaveAttribute('aria-hidden', 'true');
-  } finally { await projects.dispose(); }
+  } finally { await services.dispose(); }
   // Releasing the older response must not replace the newer destination or
   // restore an obsolete inert/hidden state from an overlapping loading view.
-  await expect(page).toHaveURL(/\/en\/news$/);
+  await expect(page).toHaveURL(/\/routes$/);
   await expect(page.locator('[data-navigation-loading]')).toHaveCount(0);
   await expect(page.locator('main')).not.toHaveJSProperty('inert', true);
   await expect(page.locator('main')).not.toHaveAttribute('aria-hidden', 'true');

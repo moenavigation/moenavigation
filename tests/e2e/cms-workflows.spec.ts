@@ -30,9 +30,9 @@ test('Save immediately shows content, discard preserves it, and Trash/restore re
   expect(await db.collection('moe_content').findOne({ id, type: 'Vessel' })).toMatchObject({ status: 'Published', revision: 1 });
 
   const publicPage = await context.newPage();
-  await publicPage.goto('/en/fleet/' + id);
-  await expect(publicPage.getByRole('heading', { level: 1 })).toHaveText(title);
   await publicPage.goto('/fleet/' + id);
+  await expect(publicPage.getByRole('heading', { level: 1 })).toHaveText(title);
+  await publicPage.goto('/th/fleet/' + id);
   await expect(publicPage.getByRole('heading', { level: 1 })).toHaveText('เรือทดสอบระบบ');
 
   await page.getByRole('button', { name: 'Edit ' + title, exact: true }).click();
@@ -55,7 +55,7 @@ test('Save immediately shows content, discard preserves it, and Trash/restore re
   await page.getByRole('button', { name: 'Move ' + title + ' to Trash', exact: true }).click();
   await page.getByRole('dialog', { name: 'Move to Trash?' }).getByRole('button', { name: 'Move to Trash', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Move to Trash?' })).not.toBeVisible();
-  expect((await publicPage.goto('/en/fleet/' + id))?.status()).toBe(404);
+  expect((await publicPage.goto('/fleet/' + id))?.status()).toBe(404);
   await expect(publicPage.getByRole('heading', { level: 1 })).toHaveText('Page not found');
   await page.getByRole('button', { name: /^Trash 1$/ }).click();
   await page.getByRole('button', { name: 'Restore ' + title, exact: true }).click();
@@ -143,7 +143,7 @@ test('prepared uploads retry sequentially and an interrupted saved response reco
   expect(await db.collection('moe_media').countDocuments()).toBe(baselineMedia + 2);
   expect(await db.collection('moe_media').countDocuments({ submissionId: submittedIds[0], state: 'committed' })).toBe(2);
   const publicPage = await context.newPage();
-  await publicPage.goto('/en/fleet/' + id);
+  await publicPage.goto('/fleet/' + id);
   await expect(publicPage.getByRole('heading', { level: 1 })).toHaveText(title);
   await publicPage.getByRole('button', { name: 'Next image', exact: true }).click();
   await expect(publicPage.getByRole('img', { name: 'Gallery image description', exact: true })).toBeVisible();

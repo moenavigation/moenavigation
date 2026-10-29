@@ -41,9 +41,9 @@ test('malformed asset and content identifiers return localized 404 pages', async
     ...customPage, _id: 'Page:legacy-asset.png', id: 'legacy-asset.png',
   });
   const paths = [
-    '/legacy-asset.png', '/en/legacy-asset.png', '/missing-image.png',
-    '/en/missing-stylesheet.css', '/en/fleet/not_a_slug', '/fleet/not--a-slug',
-    '/en/Fleet', '/en/fleet/' + 'a'.repeat(101),
+    '/legacy-asset.png', '/th/legacy-asset.png', '/missing-image.png',
+    '/th/missing-stylesheet.css', '/fleet/not_a_slug', '/th/fleet/not--a-slug',
+    '/Fleet', '/fleet/' + 'a'.repeat(101),
   ];
   for (const path of paths) {
     const response = await request.get(path);
@@ -51,9 +51,9 @@ test('malformed asset and content identifiers return localized 404 pages', async
   }
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto('/en/legacy-asset.png');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found');
   await page.goto('/legacy-asset.png');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found');
+  await page.goto('/th/legacy-asset.png');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('ไม่พบหน้านี้');
   expect(errors).toEqual([]);
 });
@@ -63,13 +63,13 @@ test('valid custom CMS page identifiers still render and switch between both lan
     _id: 'Page:' + customPage.id, ...customPage,
   });
   await refreshPublicCache();
-  expect((await page.goto('/en/' + customPage.id))?.status()).toBe(200);
+  expect((await page.goto('/' + customPage.id))?.status()).toBe(200);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(customPage.title);
   await expect(page.getByText(customPage.body!, { exact: true })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page).toHaveTitle(customPage.title + ' | MOE Navigation');
   await page.getByRole('link', { name: 'Switch to Thai' }).click();
-  await expect(page).toHaveURL(new RegExp('/' + customPage.id + '$'));
+  await expect(page).toHaveURL(new RegExp('/th/' + customPage.id + '$'));
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(customPage.titleTh);
   expect((await page.reload())?.status()).toBe(200);
   await expect(page.getByText(customPage.bodyTh!, { exact: true })).toBeVisible();

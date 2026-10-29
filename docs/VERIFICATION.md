@@ -1,8 +1,38 @@
 # Verification record
 
-Checked on **23 October 2026 (Asia/Bangkok)**. Machine-readable reports use UTC timestamps. This record distinguishes completed local/isolated checks from future launch acceptance.
+Latest public-language checks: **29 October 2026 (Asia/Bangkok)**. The earlier
+release record below was checked on **23 October 2026**. Machine-readable
+reports use UTC timestamps. This record distinguishes completed local/isolated
+checks from future launch acceptance.
 
-## Completed checks
+Current public URLs use English at `/` and unprefixed paths, with Thai under
+`/th`; legacy `/en` paths redirect to English. Dated evidence below records
+the scheme used during that historical run. Current regression commands
+and the browser checklist use the new routes.
+
+## Public language migration - 29 October 2026
+
+English uses `/` and unprefixed public paths; Thai uses `/th`. Explicit
+switcher selections persist for one year. Fresh homepage entrances restore a
+saved Thai choice, while explicit page links retain their URL language. Old
+`/en` addresses redirect permanently to English. Public pages retain ISR.
+
+- Typecheck, ESLint, and all 93 unit/boundary tests passed.
+- The isolated production build passed. The full browser run passed 135 of
+  138 scenarios; its three remaining assertions compared equivalent `%20`
+  and `+` query encodings. After correcting only those assertions, all 21
+  language scenarios passed across Chromium, Firefox, and WebKit. No runtime
+  changes were made between those two runs.
+- Checks cover desktop/mobile round trips with queries and anchors, cookie
+  persistence across a fresh browser context, legacy redirects, explicit
+  deep links, SEO, CMS independence, cached page invalidation, and recovery.
+- The read-only saved-site crawl passed 61 routes, 30 image URLs, four expected
+  404s, metadata, navigation, redirects, robots, and sitemap. A read-only CMS
+  check found no custom `Page` with the newly reserved `th` identifier.
+- Desktop and 390px mobile layouts were visually checked in both languages.
+  Screenshots and the summary are in `.local/public-language/`.
+
+## Earlier completed checks - 23 October 2026
 
 | Area | Evidence | Result |
 | --- | --- | --- |
@@ -68,7 +98,7 @@ The follow-up UI pass covered the public pages, representative detail pages, nav
 | CMS interactions | Required-field focus from the persistent Save action; search/count/empty/reset/reopen states; gallery order and description pairing; discard/reopen restoration; visible Save/Cancel and sticky media header passed. |
 | Browser diagnostics | Final English main-page sweep and fleet check produced no new warnings or errors. |
 
-Repeat the 404 regression in a browser at `/missing-page` and `/en/missing-page`: confirm the localized **Page not found** heading, appropriate home/services links, localized tab title, and no `Public content must be loaded by the page` error. The HTTP smoke check verifies status codes; this browser check also verifies the rendered recovery UI.
+Repeat the 404 regression in a browser at `/missing-page` and `/th/missing-page`: confirm the localized **Page not found** heading, appropriate home/services links, localized tab title, and no `Public content must be loaded by the page` error. The HTTP smoke check verifies status codes; this browser check also verifies the rendered recovery UI.
 
 Evidence: `.local/ui-review-qa-result.json` and `.local/ui-review-*.png`. Temporary contact text was cleared; unsaved gallery changes were discarded and the original order verified after reopening. This UI pass did not save production content or media. Email delivery, production hosting and company-content approval retain the limitations above.
 
@@ -109,7 +139,7 @@ Ran a fresh production-build rehearsal using the isolated QA database and Cloudi
 - Public and CMS dialogs allowed Tab or Shift+Tab to leave at their boundary. Shared focus containment now wraps within the active dialog and respects nested confirmations. Gallery, editor and discard-dialog keyboard flows were retested in the production build.
 - Backup restore accepted database names longer than Atlas supports. The recovery tool now rejects names exceeding 38 ASCII bytes before any provider writes, with a regression test.
 - Recovery cleanup missed the Cloudinary SDK's nested 404 error shape. It now recognizes already-removed assets while continuing to reject authentication, rate-limit and server failures; regression tests cover both error shapes.
-- Data-outage pages lacked a meaningful localized browser title. They now include Thai/English recovery titles and noindex metadata. The global recovery page's Thai home link now targets `/`.
+- Data-outage pages lacked a meaningful localized browser title. They now include Thai/English recovery titles and noindex metadata. The Thai home link was corrected to `/` during that run; its current locale URL is `/th`.
 
 ### Coverage and evidence
 

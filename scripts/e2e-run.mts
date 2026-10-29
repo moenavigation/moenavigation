@@ -69,7 +69,7 @@ async function waitForNext(child: ChildProcess) {
   const deadline = Date.now() + 60_000;
   while (Date.now() < deadline) {
     assert.equal(child.exitCode, null, 'The isolated Next server stopped before becoming ready.');
-    try { if ((await fetch('http://127.0.0.1:3011/en', { signal: AbortSignal.timeout(2000) })).status === 200) return; } catch { /* Not ready yet. */ }
+    try { if ((await fetch('http://127.0.0.1:3011/', { redirect: 'manual', signal: AbortSignal.timeout(2000) })).status === 200) return; } catch { /* Not ready yet. */ }
     await new Promise(resolveWait => setTimeout(resolveWait, 250));
   }
   throw new Error('The isolated Next server did not become ready within 60 seconds.');

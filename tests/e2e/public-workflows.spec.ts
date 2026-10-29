@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures';
 
 test('query preferences hydrate from cached pages and follow browser Back and Forward', async ({ page }) => {
-  await page.goto('/en/fleet?q=MOE&category=Tanker');
+  await page.goto('/fleet?q=MOE&category=Tanker');
   const search = page.getByRole('searchbox', { name: 'Search vessels' });
   await expect(search).toHaveValue('MOE');
   await expect(page.getByRole('button', { name: 'Tanker', exact: true })).toHaveAttribute('aria-pressed', 'true');
@@ -25,7 +25,7 @@ test('query preferences hydrate from cached pages and follow browser Back and Fo
 });
 
 test('fleet filters survive reload, language changes and detail/back navigation', async ({ page }) => {
-  await page.goto('/en/fleet');
+  await page.goto('/fleet');
   await page.getByRole('button', { name: 'Tanker', exact: true }).click();
   await page.getByRole('searchbox', { name: 'Search vessels' }).fill('MOE');
   await expect(page).toHaveURL(/category=Tanker/);
@@ -34,7 +34,7 @@ test('fleet filters survive reload, language changes and detail/back navigation'
   await page.reload();
   await expect(page.getByRole('searchbox')).toHaveValue('MOE');
   await page.getByRole('link', { name: 'Switch to Thai' }).click();
-  await expect(page).toHaveURL(/\/fleet\?/);
+  await expect(page).toHaveURL(/\/th\/fleet\?/);
   await expect(page.getByRole('button', { name: 'เรือบรรทุกน้ำมัน', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('searchbox')).toHaveValue('MOE');
   await page.getByRole('main').getByRole('link', { name: /MOE LINE 3/ }).click();
@@ -42,7 +42,7 @@ test('fleet filters survive reload, language changes and detail/back navigation'
   await page.getByRole('link', { name: 'กลับไปยังกองเรือ', exact: true }).click();
   await expect(page.getByRole('searchbox')).toHaveValue('MOE');
   await page.getByRole('button', { name: 'ล้างตัวกรอง', exact: true }).click();
-  await expect(page).toHaveURL(/\/fleet$/);
+  await expect(page).toHaveURL(/\/th\/fleet$/);
   await expect(page.getByRole('searchbox')).toBeFocused();
 });
 
@@ -51,7 +51,7 @@ for (const listing of [
   { path: 'projects', category: 'Container', query: 'logistics', title: 'Logistics project', back: 'Back to projects' },
 ]) {
   test(listing.path + ' search, empty state and detail return remain usable', async ({ page }) => {
-    await page.goto('/en/' + listing.path);
+    await page.goto('/' + listing.path);
     await page.getByRole('button', { name: listing.category, exact: true }).click();
     await page.getByRole('searchbox').fill('unmatched-e2e-result');
     await expect(page.getByRole('heading', { name: 'No matching results' })).toBeVisible();
@@ -63,7 +63,7 @@ for (const listing of [
     await expect(page.getByRole('searchbox')).toHaveValue(listing.query);
     await expect(page.getByRole('button', { name: listing.category, exact: true })).toHaveAttribute('aria-pressed', 'true');
     await page.getByRole('button', { name: 'Reset filters', exact: true }).click();
-    await expect(page).toHaveURL(new RegExp('/en/' + listing.path + '$'));
+    await expect(page).toHaveURL(new RegExp('/' + listing.path + '$'));
     await expect(page.getByRole('searchbox')).toBeFocused();
   });
 }
@@ -71,7 +71,7 @@ for (const listing of [
 test.describe('mobile browser layout', () => {
 test.use({ viewport: { width: 390, height: 844 } });
 test('mobile navigation returns to top and gallery keyboard focus stays contained', async ({ page }) => {
-  await page.goto('/en/fleet/moe-line-3');
+  await page.goto('/fleet/moe-line-3');
   const trigger = page.getByRole('button', { name: 'Open image gallery' });
   await trigger.click();
   const gallery = page.getByRole('dialog');
@@ -89,7 +89,7 @@ test('mobile navigation returns to top and gallery keyboard focus stays containe
   await expect(trigger).toBeFocused();
   await page.getByRole('contentinfo').scrollIntoViewIfNeeded();
   await page.getByRole('button', { name: 'Open menu' }).click();
-  const menu = page.getByRole('dialog', { name: 'Explore MOE Navigation' });
+  const menu = page.getByRole('dialog', { name: 'Menu', exact: true });
   await menu.getByRole('button', { name: 'Close menu' }).press('Shift+Tab');
   await expect(menu.getByRole('link', { name: 'English', exact: true })).toBeFocused();
   await menu.getByRole('link', { name: 'English', exact: true }).press('Tab');
@@ -99,13 +99,14 @@ test('mobile navigation returns to top and gallery keyboard focus stays containe
   await expect(menu).not.toBeVisible();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(2);
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.getByRole('contentinfo').getByRole('link', { name: 'Services', exact: true }).click();
+  await page.getByRole('button', { name: 'Open menu' }).click();
+  await menu.getByRole('link', { name: 'Services', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(2);
 });
 });
 
 test('route keyboard selection survives reload and language change', async ({ page }) => {
-  await page.goto('/en/routes');
+  await page.goto('/routes');
   await page.getByRole('radio', { name: /Laem Chabang — Singapore/ }).press('ArrowDown');
   await expect(page).toHaveURL(/route=laem-chabang-port-klang/);
   await expect(page.getByRole('radio', { name: /Laem Chabang — Port Klang/ })).toBeChecked();
@@ -120,7 +121,7 @@ test('route keyboard selection survives reload and language change', async ({ pa
 });
 
 test('contact draft survives a lost success response and retries without a duplicate', async ({ page, db }) => {
-  await page.goto('/en/contact?subject=Vessel%20enquiry');
+  await page.goto('/contact?subject=Vessel%20enquiry');
   await expect(page.getByRole('textbox', { name: 'Subject', exact: true })).toHaveValue('Vessel enquiry');
   await page.getByRole('button', { name: 'Send enquiry' }).click();
   await expect(page.getByRole('textbox', { name: 'Name', exact: true })).toBeFocused();

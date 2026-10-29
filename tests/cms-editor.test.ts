@@ -52,9 +52,11 @@ test('page filters include the page and its sections without unrelated content',
 
 test('published preview links respect locale, draft state and section parent visibility', () => {
   const section: ContentRecord = { ...vessel, id: 'home-intro', type: 'Section', parentId: 'home' };
-  assert.equal(publishedContentUrl(vessel, [], 'en'), '/en/fleet/verified-vessel');
-  assert.equal(publishedContentUrl(home, [home], 'en'), '/en');
-  assert.equal(publishedContentUrl(section, [home], 'th'), '/');
+  assert.equal(publishedContentUrl(vessel, [], 'en'), '/fleet/verified-vessel');
+  assert.equal(publishedContentUrl(vessel, [], 'th'), '/th/fleet/verified-vessel');
+  assert.equal(publishedContentUrl(home, [home], 'en'), '/');
+  assert.equal(publishedContentUrl(home, [home], 'th'), '/th');
+  assert.equal(publishedContentUrl(section, [home], 'th'), '/th');
   assert.equal(publishedContentUrl(section, [], 'th'), null);
   assert.equal(publishedContentUrl({ ...vessel, status: 'Draft' }, [], 'en'), null);
   assert.equal(publishedContentUrl({ ...vessel, deletedAt: new Date().toISOString() }, [], 'th'), null);

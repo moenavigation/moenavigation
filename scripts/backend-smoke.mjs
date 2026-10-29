@@ -43,6 +43,7 @@ async function check(label, run) {
 async function publicStatus(path, expected, label) {
   const result = await request(path, { authenticated: false });
   status(result, expected, label);
+  if (expected === 200) assert.match(result.text, new RegExp(`<html[^>]*lang="${path === '/th' || path.startsWith('/th/') ? 'th' : 'en'}"`), `${label} document language`);
   return result;
 }
 
@@ -202,8 +203,8 @@ try {
     });
 
     await check('Draft content returns HTTP 404 in both languages', async () => {
-      await publicStatus(`/news/${runId}`, 404, 'Thai draft');
-      await publicStatus(`/en/news/${runId}`, 404, 'English draft');
+      await publicStatus(`/th/news/${runId}`, 404, 'Thai draft');
+      await publicStatus(`/news/${runId}`, 404, 'English draft');
     });
 
     await check('Published content appears in HTML, metadata, and sitemap', async () => {
@@ -212,14 +213,15 @@ try {
       const staleRevision = current.revision;
       current = published.data.record;
       assert.ok(current.revision > staleRevision);
-      const english = await publicStatus(`/en/news/${runId}`, 200, 'English published');
+      const english = await publicStatus(`/news/${runId}`, 200, 'English published');
       assert.ok(english.text.includes(record.title), 'Published English title must be server rendered');
       assert.match(english.text, /<link rel="canonical"/);
       assert.match(english.text, /hrefLang="th"/);
-      const thai = await publicStatus(`/news/${runId}`, 200, 'Thai published');
+      const thai = await publicStatus(`/th/news/${runId}`, 200, 'Thai published');
       assert.ok(thai.text.includes(record.titleTh), 'Published Thai title must be server rendered');
       const sitemap = await request('/sitemap.xml', { authenticated: false });
       assert.ok(sitemap.text.includes(`/news/${runId}`), 'Published detail must be included in sitemap');
+      assert.ok(sitemap.text.includes(`/th/news/${runId}`), 'Published Thai detail must be included in sitemap');
       const conflict = await contentSave({ ...current, title: 'A stale edit must never win' }, staleRevision);
       status(conflict, 409, 'Stale update');
     });
@@ -230,7 +232,7 @@ try {
       const previous = current;
       current = trashed.data.record;
       assert.ok(current.deletedAt);
-      await publicStatus(`/en/news/${runId}`, 404, 'Trashed detail');
+      await publicStatus(`/news/${runId}`, 404, 'Trashed detail');
       const sitemap = await request('/sitemap.xml', { authenticated: false });
       assert.ok(!sitemap.text.includes(`/news/${runId}`), 'Trash must be excluded from sitemap');
       status(await contentAction(previous, 'restore'), 409, 'Stale restore');
@@ -238,11 +240,11 @@ try {
       status(restored, 200, 'Restore');
       current = restored.data.record;
       assert.ok(!current.deletedAt);
-      await publicStatus(`/en/news/${runId}`, 200, 'Restored detail');
+      await publicStatus(`/news/${runId}`, 200, 'Restored detail');
       const drafted = await contentSave({ ...current, status: 'Draft' }, current.revision);
       status(drafted, 200, 'Return to draft');
       current = drafted.data.record;
-      await publicStatus(`/en/news/${runId}`, 404, 'Unpublished detail');
+      await publicStatus(`/news/${runId}`, 404, 'Unpublished detail');
     });
 
     if (!skipUpload) {

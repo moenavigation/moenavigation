@@ -5,7 +5,7 @@ import { categoryName } from '../src/lib/category-name';
 
 test('shared collection links restore Unicode search and a known category', () => {
   const filters = { query: 'เรือ MOE', category: 'Container' };
-  const url = new URL(listingHref('/en/fleet/ranong-moe', filters), 'https://example.com');
+  const url = new URL(listingHref('/th/fleet/ranong-moe', filters), 'https://example.com');
   assert.deepEqual(readListingFilters(url.searchParams, ['All', 'Container']), filters);
   assert.equal(listingHref('/fleet', readListingFilters(url.searchParams)), `/fleet${url.search}`);
 });

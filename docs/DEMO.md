@@ -7,8 +7,14 @@ configuration, administration, uploads, enquiries, and verification commands.
 
 ## Public pages
 
-Thai is the default language at `/`; English uses equivalent paths under
-`/en`. The language switch preserves the equivalent page, query string and section anchor.
+English is the default public language at `/` and unprefixed paths; Thai
+uses equivalent paths under `/th`. The language switch preserves the
+equivalent page, query string and section anchor. A public-language cookie
+remembers explicit switcher selections for one year: a saved Thai preference temporarily
+redirects a new homepage visit from `/` to `/th`, while explicit deep links
+keep their requested language. Legacy `/en` URLs permanently redirect to the
+corresponding unprefixed English URLs. Preference redirects are private and
+uncached; public content continues to use the existing rendered-page cache.
 Public sections include Home, About, Services, Fleet, Routes, Projects,
 News, Contact, and Privacy. Services, vessels, projects, news, and additional
 published Pages have detail routes.

@@ -5,11 +5,11 @@ import { cloudinaryLoader as loader } from '../src/lib/cloudinary-loader';
 const origin = new URL(process.argv[2] || 'http://localhost:3005').origin;
 const routes: { path: string; bytes: number; warmResponseMs: number[] }[] = [];
 const originals = new Set<string>();
-for (const path of ['/', '/en/services', '/en/fleet']) {
+for (const path of ['/', '/services', '/fleet']) {
   let html = ''; const times: number[] = [];
   for (let attempt = 0; attempt < 3; attempt++) {
     const start = performance.now();
-    const response = await fetch(new URL(path, origin), { signal: AbortSignal.timeout(45_000) });
+    const response = await fetch(new URL(path, origin), { redirect: 'manual', signal: AbortSignal.timeout(45_000) });
     assert.equal(response.status, 200, `${path} is available`);
     html = await response.text();
     if (attempt > 0) times.push(Math.round(performance.now() - start));

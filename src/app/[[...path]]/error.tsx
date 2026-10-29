@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeft, RotateCcw, LifeBuoy } from "lucide-react";
-import { href, local, type Locale } from "@/lib/content";
+import { href, local, localeFromPathname } from "@/lib/content";
 import styles from "@/components/RecoveryPage.module.css";
 
 export default function ErrorPage({ retry }: { retry: () => void }) {
   const pathname = usePathname();
-  const locale: Locale = pathname === "/en" || pathname.startsWith("/en/") ? "en" : "th";
+  const locale = localeFromPathname(pathname);
 
   return (
     <main className={`container section ${styles.screen}`}>
