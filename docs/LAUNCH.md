@@ -3,7 +3,7 @@
 ## Current decisions
 
 - Intended domain supplied by the owner: **https://moe-navigation.com/**.
-- Temporary enquiry notification recipient: **poomtawee@outlook.com**. Keep it in server environment configuration so it can be changed easily.
+- Dev and Admin manage the private enquiry-notification recipient list in CMS Enquiries. The legacy server recipient is only a fallback before the first saved list; an empty saved list pauses mail.
 - Public deployment is not performed by the implementation workflow. DNS ownership, hosting access and production settings still require verification.
 - Draft branding and copy may be prepared, but generated material does not verify company facts. Keep search indexing disabled until the owner approves the actual public content.
 
@@ -14,7 +14,11 @@ npm.cmd run release:check
 npm.cmd run release:check -- --live
 ```
 
-The live option reads configuration, MongoDB content and Cloudinary connection status. It does not publish, migrate, upload or send email. The report is saved to `.local/release/readiness.json`; blocking checks return a nonzero exit code. Passing this tool is only one part of the human launch review.
+The live option uses direct read-only MongoDB queries and one Cloudinary authentication ping. It does not initialize indexes, migrate, upload, clean up data or send email. It checks the saved private CMS recipient list, while reporting only its count and setup state. A configuration-only run cannot establish the effective recipients.
+
+The report is saved to `.local/release/readiness.json`; blocking checks return a nonzero exit code. `automatedChecksPassed` describes the checks in that invocation. `ready` remains false because the tool cannot attest the external deployment, recovery and email-receipt evidence listed in `requiresExternalVerification`. An exit code of zero is not launch approval. Local origin/runtime results do not establish the deployed site's settings.
+
+The local browser-test harness performs its production build after seeding an isolated loopback MongoDB database. The browser tests run against that same build without live provider credentials.
 
 ## Hosting and domain
 
@@ -64,7 +68,7 @@ The public smoke check expects noindex by default. After approved indexing is en
 
 ## Enquiries and operational checks
 
-- Configure `RESEND_API_KEY`, `ENQUIRY_EMAIL_FROM` and `ENQUIRY_EMAIL_TO`. Verify the sender with the provider; a recipient address alone cannot enable delivery.
+- Configure `RESEND_API_KEY` and the plain `ENQUIRY_EMAIL_FROM`, then save recipients in **Enquiries → Notification recipients** as Dev or Admin. `ENQUIRY_EMAIL_TO` is only a fallback before the first saved CMS list. Verify the sender with the provider; recipients alone cannot enable delivery.
 - Send one clearly identified test enquiry, verify it is saved in the CMS and received by the intended inbox, then resolve that test record.
 - Test provider failure in an isolated environment: saved enquiries must remain accessible, retries must be bounded and duplicates controlled.
 - Review access, change the initial CMS password, and keep initial access files out of deployed assets.
@@ -73,12 +77,12 @@ The public smoke check expects noindex by default. After approved indexing is en
 
 ## Automated checks
 
-`.github/workflows/ci.yml` runs install, lint, all `tests/*.test.ts` unit/boundary checks, Next route type generation, TypeScript and a production build. It has read-only repository permissions and no production credentials. It never runs migrations, live uploads, notification sends or recovery rehearsals.
+GitHub Actions workflows are not used for this project. Run `npm run lint`, `npm run test:backend`, `npx next typegen`, `npm run typecheck` and `npm run test:e2e` locally before release. Install the browser engines once with `npm run test:e2e:install`. The browser harness builds and tests the application using an isolated local database; see [TESTING.md](TESTING.md).
 
-Make its `verify` job a required pull-request check in repository settings once the workflow has run successfully on GitHub. A local successful build does not prove that GitHub Actions or production hosting has run.
+Do not require the removed `Application checks` workflow's `verify` job for pull requests. If an existing branch rule requires it, remove that requirement in repository settings. Local checks do not establish that production hosting has run successfully.
 
 ## Final acceptance
 
-Check both languages on narrow/mobile and desktop layouts: navigation and browser history, service/vessel/project details, route selection/zoom, galleries, contact validation/success, CMS publishing, upload retry/cleanup, Trash and restoration. Measure production loading behavior and fix observed issues; avoid promising performance scores without a deployed measurement.
+Check both languages on narrow/mobile and desktop layouts: navigation and browser history, service/vessel/project details, route selection/zoom, galleries, contact validation/success, CMS save and immediate public updates, upload retry/cleanup, Trash and restoration. Measure production loading behavior and fix observed issues; avoid promising performance scores without a deployed measurement.
 
 Document the deployed URL, deployment revision, checks, backup location, remaining owner decisions and rollback steps before enabling public indexing.

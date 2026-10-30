@@ -83,7 +83,7 @@ unit/boundary suite (`npm run test:backend`); they do not replace those checks.
 ## Expanded role and mobile checks
 
 The complete matrix has a 35-minute global timeout; each case still has its
-own bounded timeout. The CI job allows 45 minutes including setup and builds.
+own bounded timeout.
 The broad mobile geometry sweeps run once in Chromium at 320 and 390 pixels
 with 430-pixel spot checks. Critical touch dialogs and native touch slider
 submission run across all three engines in English and Thai, including a
@@ -96,7 +96,7 @@ Settings, enquiry and recoverable-image work; unfinished-upload ownership
 for every role; late account-edit responses after session expiry; and
 settings dismissal while the account list is still loading.
 
-## Results and CI
+## Local results
 
 - `test-results/results.json`: machine-readable browser results.
 - `playwright-report/index.html`: HTML report; view with
@@ -105,12 +105,13 @@ settings dismissal while the account list is still loading.
 - `.local/e2e/result.json` and `.local/e2e/runner.log`: isolated runner status and
   application/test output.
 
-These generated files are ignored by Git. CI runs lint, unit tests, route type
-generation, TypeScript and production build, then installs all three engines
-and runs the same isolated browser suite. Failed browser artifacts are retained
-for seven days. It uses no live provider secrets. A workflow file in the
-repository is configuration; a remote CI result is only established after it
-runs on GitHub.
+These generated files are ignored by Git. GitHub Actions workflows are not
+used for this project. Run `npm run lint`, `npm run test:backend`,
+`npx next typegen`, `npm run typecheck` and `npm run test:e2e` locally.
+Install all three browser engines once with `npm run test:e2e:install`.
+The browser harness performs a production build against its isolated local
+database without live provider secrets. Review failed screenshots and traces
+in the local results directories.
 
 See [VERIFICATION.md](VERIFICATION.md) for the latest executed results.
 

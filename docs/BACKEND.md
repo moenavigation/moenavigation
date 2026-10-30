@@ -535,12 +535,12 @@ password rotation, session expiry and logout. It restores the QA settings
 snapshot and removes only its own records and account. Avoid simultaneous
 QA settings edits. Evidence is saved to `.local/full-test-api-result.json`.
 
-The repository CI workflow performs installation, lint, unit/boundary tests,
-Next route type generation, TypeScript checks, and a production build without
-provider secrets. It does not run remote migrations, uploads, notification
-sends, or recovery rehearsals. Its actual GitHub run and required-check
-settings must be verified separately. Completed local and isolated evidence
-is summarized in [VERIFICATION.md](VERIFICATION.md).
+GitHub Actions workflows are not used for this project. Run lint, unit/boundary
+tests, Next route type generation, TypeScript checks and the isolated browser
+suite locally as described in [TESTING.md](TESTING.md). Remote migrations,
+uploads, notification sends and recovery rehearsals remain explicit isolated
+checks. Completed local and isolated evidence is summarized in
+[VERIFICATION.md](VERIFICATION.md).
 
 An HTTP smoke pass does not establish visual quality. Also check CMS and
 public pages at narrow and wide widths, keyboard navigation, editor errors,

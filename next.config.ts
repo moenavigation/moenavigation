@@ -9,6 +9,16 @@ const config: NextConfig = {
     imageSizes: [96, 192, 320],
     remotePatterns: process.env.CLOUDINARY_CLOUD_NAME ? [{ protocol: 'https', hostname: 'res.cloudinary.com', pathname: `/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/**` }] : [],
   },
+  async redirects() {
+    // Keep the public site and CMS on the configured production origin.
+    // Exact host matching leaves local and preview domains unchanged.
+    return [{
+      source: '/:path*',
+      has: [{ type: 'host', value: 'www\\.moe-navigation\\.com' }],
+      destination: 'https://moe-navigation.com/:path*',
+      permanent: true,
+    }];
+  },
   async headers() {
     return [{ source: '/:path*', headers: [
       { key: 'X-Content-Type-Options', value: 'nosniff' },

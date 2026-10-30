@@ -104,10 +104,9 @@ protection, then removes its own exact artifacts and writes
 mode against another server.
 
 The notification QA command uses the isolated database and a stub sender;
-it sends no external email and removes its exact test enquiries. CI in
-`.github/workflows/ci.yml` runs installation, lint, unit tests, generated route
-types, TypeScript, a build, and Chromium/Firefox/WebKit regressions without
-provider credentials. Run `npm run test:e2e:install` once, then
+it sends no external email and removes its exact test enquiries. GitHub Actions
+workflows are not used for this project; run validation locally as described in
+the testing guide. Run `npm run test:e2e:install` once, then
 `npm run test:e2e` locally. See [docs/TESTING.md](docs/TESTING.md) for isolation,
 coverage and reports. Live uploads,
 migrations, email delivery, and recovery rehearsals remain explicit isolated

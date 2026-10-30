@@ -63,7 +63,7 @@ The backup rehearsal preserved 58 content records, 15 image records and original
 ## Prepared, awaiting external acceptance
 
 - Resend notifications are implemented; the owner will supply the provider key and verified sender. External delivery remains untested.
-- CI is defined in `.github/workflows/ci.yml`; a successful GitHub Actions run and required-check configuration have not been established by local tests.
+- GitHub Actions workflows were removed on 31 October 2026 at the owner's request. Validation runs locally; a GitHub workflow run is not a release requirement.
 - `release:check` produces a read-only readiness report. It does not verify domain ownership, deploy the website, approve business claims, or enable provider backups.
 - Hosting, DNS, HTTPS, production environment variables, provider backup policies, and actual enquiry delivery still require their respective account access and verification.
 - Company facts, generated/illustrative assets, fleet specifications, route availability, and privacy wording remain subject to approval. Search indexing stays disabled while approval is pending.
