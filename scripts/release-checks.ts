@@ -42,9 +42,13 @@ export function emailReadiness(env: Environment, recipientDocument?: ReleaseReco
 }
 
 export function contactReadiness(settings: ReleaseRecord | null): ReleaseCheck {
-  const required = ['companyName', 'companyNameTh', 'officeAddress', 'officeAddressTh', 'phone', 'email'];
-  const missing = required.filter(name => typeof settings?.[name] !== 'string' || !String(settings[name]).trim());
-  return result('Company contact details', missing.length === 0, missing.length ? `Missing fields: ${missing.join(', ')}` : 'Company contact fields are populated; the owner must still approve their accuracy.');
+  const missing = (fields: string[]) => fields.filter(name => typeof settings?.[name] !== 'string' || !String(settings[name]).trim());
+  const required = missing(['companyName', 'companyNameTh']);
+  if (required.length) return result('Company contact details', false, `Missing required company fields: ${required.join(', ')}`);
+  const optional = missing(['officeAddress', 'officeAddressTh', 'phone', 'email']);
+  return result('Company contact details', optional.length === 0, optional.length
+    ? `Optional contact fields awaiting owner confirmation: ${optional.join(', ')}. Confirm which contact methods should be public; optional fields may remain blank until verified.`
+    : 'Company contact fields are populated; the owner must still approve their accuracy.', 'review');
 }
 
 export function contentReadiness(records: readonly ReleaseRecord[], media: readonly ReleaseRecord[]): ReleaseCheck[] {

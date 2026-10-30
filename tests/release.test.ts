@@ -3,7 +3,7 @@ import test from 'node:test';
 import { indexingEnabled, publicHttpsOrigin, siteOrigin } from '../src/lib/site-config';
 import loader from '../src/lib/cloudinary-loader';
 import { safeErrorDetails } from '../src/lib/error-reporting';
-import { cloudinaryVariables, configurationChecks, contentReadiness, emailReadiness, mongoVariables, populated, releaseReport } from '../scripts/release-checks';
+import { cloudinaryVariables, configurationChecks, contactReadiness, contentReadiness, emailReadiness, mongoVariables, populated, releaseReport } from '../scripts/release-checks';
 
 test('indexing requires explicit content approval and a production public HTTPS origin', () => {
   const ready = { NODE_ENV: 'production', NEXT_PUBLIC_SITE_URL: 'https://moe-navigation.com', SITE_INDEXING_ENABLED: 'true', SITE_CONTENT_APPROVED: 'true' };
@@ -94,6 +94,23 @@ test('provider prerequisites are independent and whitespace does not count as co
   assert.equal(populated(env, cloudinaryVariables), false);
   assert.equal(configurationChecks(env).find(item => item.name === 'Server configuration')!.status, 'blocked');
   assert(!JSON.stringify(configurationChecks(env)).includes(env.MONGODB_URI));
+});
+
+test('an omitted public email is an owner review, while missing company names remain blocking', () => {
+  const contacts = { companyName: 'Example company', companyNameTh: 'บริษัทตัวอย่าง', officeAddress: 'Confirmed address', officeAddressTh: 'ที่อยู่ที่ยืนยันแล้ว', phone: 'Confirmed phone', email: '' };
+  const check = contactReadiness(contacts);
+  assert.equal(check.status, 'review');
+  assert.match(check.detail, /Optional contact fields awaiting owner confirmation: email/);
+  assert.match(check.detail, /may remain blank until verified/);
+  assert.equal(contactReadiness({ ...contacts, email: 'confirmed@example.com' }).status, 'pass');
+  for (const name of ['companyName', 'companyNameTh']) {
+    const missing = contactReadiness({ ...contacts, [name]: ' ' });
+    assert.equal(missing.status, 'blocked');
+    assert(missing.detail.includes(name));
+  }
+  assert.equal(contactReadiness(null).status, 'blocked');
+  assert.equal(contactReadiness({ companyName: contacts.companyName, companyNameTh: contacts.companyNameTh }).status, 'review');
+  assert(!JSON.stringify(check).includes(contacts.phone));
 });
 
 test('passing automated checks does not falsely attest external launch readiness', () => {

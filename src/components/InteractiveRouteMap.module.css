@@ -38,7 +38,7 @@
 @media (max-width: 520px) {
   .viewport { height: 26rem; }
   .portTooltip, .hoverTooltip { display: none; }
-  .notice { bottom: 3.1rem; left: .75rem; max-width: calc(100% - 1.5rem); padding: .5rem .7rem; }
+  .notice { bottom: 1rem; left: .75rem; max-width: calc(100% - 1.5rem); padding: .5rem .7rem; }
   .controls { top: .75rem; right: .75rem; }
   .tileError { bottom: 9rem; }
 }

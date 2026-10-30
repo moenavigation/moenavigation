@@ -252,7 +252,7 @@
 .error { margin: .45rem 0 0; color: #a03c32; font-size: var(--font-small); line-height: 1.5; }
 .formActions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1.5rem; }
 .clearDraft { font: inherit; color: var(--muted); border: 0; background: transparent; text-decoration: underline; text-underline-offset: .25rem; padding: .8rem .2rem; cursor: pointer; }
-.success { display: flex; gap: .7rem; padding: 1.15rem; border: 1px solid #b7d8c6; border-radius: .5rem; background: #f0f9f4; color: #245c43; margin-top: 1.5rem; }
+.success { display: flex; gap: .7rem; padding: 1.15rem; border: 1px solid #b7d8c6; border-radius: .5rem; background: #f0f9f4; color: #245c43; margin-top: 1.5rem; scroll-margin-block: 1rem calc(6rem + env(safe-area-inset-bottom)); }
 .success > svg { flex-shrink: 0; }
 .success p { font-size: var(--font-small); margin: .4rem 0 0; line-height: 1.5; }
 .privacy { max-width: 55rem; }

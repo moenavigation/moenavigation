@@ -86,7 +86,7 @@
   overflow-wrap: anywhere;
   transition: background-color .18s ease;
 }
-.itemDetail { display: block; margin-top: .1rem; color: var(--muted); font-weight: 400; }
+.itemDetail { display: block; color: var(--muted); font-weight: 400; }
 .itemIcon {
   display: grid;
   place-items: center;

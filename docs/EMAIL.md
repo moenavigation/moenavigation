@@ -121,4 +121,17 @@ Any authenticated Dev, Admin, or Operator may inspect setup status and request a
 
 The older `test:notifications:qa` script changes the database name but still uses the configured MongoDB host. It is not the isolated offline harness and is unnecessary for connecting Resend. It was not run during this preparation.
 
-Once credentials and domain verification are ready, submit one clearly identified test enquiry. Confirm its CMS record, **Email accepted**, provider history, and actual receipt in the selected inbox (including spam). Reply once to verify the visitor's Reply-To address, then mark the test enquiry resolved. This live acceptance check remains outstanding until connection is authorized and configured. A successful setup checklist alone does not complete it.
+Once credentials and domain verification are ready, submit one clearly identified test enquiry. Confirm its CMS record, **Email accepted**, provider history, and actual receipt in the selected inbox (including spam). Reply once to verify the visitor's Reply-To address, then mark the test enquiry resolved. A successful setup checklist alone does not complete this acceptance check.
+
+On 31 October 2026, the owner explicitly approved one live enquiry labelled
+**MOE production test — no action required**. The deployed endpoint returned
+201, exactly one enquiry was saved and one notification attempt was accepted.
+A read-only Resend email lookup returned `delivered`. The provider copy had the
+MOE Navigation sender, HTML and plain text, and the test label. The test record
+remains in CMS; no recipient configuration was changed. The owner confirmed
+**Arrived in Inbox**. Resend's domain API also reports the domain and sending
+DNS records verified, with open/click tracking disabled. Received-message
+authentication headers and Reply-To behavior still require mailbox verification;
+this one result does not certify other recipients. Safe evidence is in
+`.local/release/preproduction-20261031/live-email-test.json`; see the
+[full preproduction report](PREPRODUCTION_2026-10-31.md).

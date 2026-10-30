@@ -18,6 +18,8 @@ The live option uses direct read-only MongoDB queries and one Cloudinary authent
 
 The report is saved to `.local/release/readiness.json`; blocking checks return a nonzero exit code. `automatedChecksPassed` describes the checks in that invocation. `ready` remains false because the tool cannot attest the external deployment, recovery and email-receipt evidence listed in `requiresExternalVerification`. An exit code of zero is not launch approval. Local origin/runtime results do not establish the deployed site's settings.
 
+English and Thai company names are required. Public office addresses, phone and email are optional: missing values require owner confirmation, not a technical release block. Leave unconfirmed fields blank. The owner may choose the enquiry form and a verified phone number without displaying a public email address; notification recipients remain separate and private.
+
 The local browser-test harness performs its production build after seeding an isolated loopback MongoDB database. The browser tests run against that same build without live provider credentials.
 
 ## Hosting and domain
@@ -55,12 +57,16 @@ The runtime additionally requires production mode, a public HTTPS origin, and ei
 
 The current Project, News, and Route examples remain visible by owner choice
 with generic wording. They do not establish completed work, reported events,
-or confirmed sailings. The 30 October 2026 local read-only check reached
-MongoDB and Cloudinary and found all nine core pages, but the local origin,
-content approval, public company email, eight vessels without specifications,
-and unconfigured notification email still need resolution or explicit review.
-Re-run the check in the intended hosting environment; keep indexing off until
-the entire public content is approved.
+or confirmed sailings. The 31 October 2026 read-only audit reached MongoDB and
+Cloudinary and found all nine core pages. Sender configuration and one legacy
+fallback recipient are present. One approved test enquiry was saved once and
+Resend reported its notification delivered; the owner confirmed Inbox receipt.
+Received authentication headers and Reply-To behavior still require inspection.
+Eight vessels without specifications, provisional wording and the optional
+public email still need owner review. The local origin remains localhost;
+the deployed canonical origin is correct. See the
+[preproduction report](PREPRODUCTION_2026-10-31.md) for executed checks and
+remaining acceptance. Keep indexing off until the public content is approved.
 
 Inspect actual deployed `/robots.txt`, `/sitemap.xml`, Thai/English canonicals, hreflang, page titles, descriptions, sharing images, and CMS noindex behavior. Submit the sitemap to the owner's search-console account only after the approved launch. The flags express the owner's approval; they cannot independently prove the accuracy of business claims or ownership of a domain.
 

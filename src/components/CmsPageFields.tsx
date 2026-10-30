@@ -17,7 +17,7 @@ function editableFields(record: ContentRecord): PageFields {
     return {
       text: ['title', 'description', 'eyebrow', 'body', ...(record.id === 'home' ? ['caption' as const] : []), ...(hasImage ? ['imageAlt' as const] : [])],
       mainImage: hasImage,
-      mobileImage: record.id === 'home',
+      mobileImage: false,
     };
   }
   if (record.id === 'footer' && record.parentId === 'shared') return { text: ['title'], mainImage: false, mobileImage: false };

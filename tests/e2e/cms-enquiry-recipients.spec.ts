@@ -96,7 +96,8 @@ for (const screen of [{ locale: 'en', width: 1280, height: 800 }, { locale: 'th'
     await expect(dialog).toHaveCount(0);
     expect((await db.collection<Stored>('moe_settings').findOne({ _id: id }))?.recipients).toEqual(['second@example.com']);
     expect(sends).toBe(0);
-    expect(await page.evaluate(() => document.body.style.overflow)).not.toBe('hidden');
+    await expect(opener).toBeFocused();
+    await expect.poll(() => page.evaluate(() => document.body.style.overflow)).not.toBe('hidden');
   });
 });
 

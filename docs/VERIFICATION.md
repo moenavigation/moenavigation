@@ -612,3 +612,57 @@ deployment changed. Static previews do not certify Outlook/Gmail rendering,
 authentication or inbox delivery. SPF/DKIM/DMARC verification, provider tracking
 settings and a received-message header/inbox check remain the live acceptance
 steps described in [EMAIL.md](EMAIL.md).
+
+## 2026-10-31 — Full preproduction verification
+
+**249/249 offline tests** and **630 unique active browser scenarios** have
+passing evidence across 39 specifications: Chromium 222, Firefox 204, WebKit
+204. Another 36 broad geometry duplicates intentionally skip in Firefox/WebKit.
+The complete matrix covers role permissions, user/password/session workflows,
+fixed-page and collection editing, media, unified Trash, activity logs,
+enquiries and notification recipients, exports, usage, caching and refresh
+cooldowns, together with bilingual keyboard/touch/mobile layouts. These counts
+deduplicate passing reruns rather than adding them to the total.
+
+Production builds, ESLint and TypeScript passed. The production-dependency
+audit reported zero advisories. Supplemental checks cover enlarged root text,
+200%-equivalent CSS reflow, a declared-DPR2 4800px layout, native touch Thai
+submission and actual export/draft downloads. Physical-device use, native
+browser zoom and OS display scaling were not certified.
+
+The audit corrected release-reporting false positives and added an exact-host
+WWW-to-apex redirect. Actual local HTTP requests verify path/query preservation
+and host exclusions. The final read-only live check also returned the correct
+308. Screenshot review caught the floating contact button covering part of a
+Thai mobile success reference; the local receipt now focuses and centers clear
+of fixed controls. All **66 affected regressions** passed in three engines.
+Initial test-settling and accessible-name mistakes were corrected without
+removing their assertions; original reports remain alongside passing reruns.
+
+Read-only deployed checks passed for all 64 public sitemap URLs, 35 existing
+Cloudinary image URLs, ten unauthenticated CMS API boundaries and four invalid
+routes. Domain/HTTPS, canonicals, static assets and response headers were checked.
+The public site remains noindex. Live MongoDB/Cloudinary reads found nine core
+pages, 59 registered image references and no unfinished uploads or retained
+failed deletions. These smoke checks do not certify every authenticated workflow
+on the exact deployed revision.
+
+With explicit owner approval, one **MOE production test — no action required**
+enquiry returned 201 and was saved once. Its single notification attempt was
+accepted, Resend reported `delivered`, and the owner confirmed **Arrived in
+Inbox**. Resend reports the sender domain/DNS verified and open/click tracking
+disabled. The test record remains for review; no recipient settings changed.
+Received-message authentication headers and Reply-To behavior were not inspected.
+
+**Remaining production risk:** the current login slide API returns its target
+position to the client. Single-use and rate-limit checks work, but the puzzle
+does not prove the visitor is human and can be solved by a script. Content
+decisions and current independent backup/key/provider-retention arrangements
+also need review. Optional public email may remain blank. No indexing change,
+deployment or commit was performed by the testing agents.
+
+The isolated harnesses used synthetic data with live provider credentials
+disabled. Owned services/directories were cleaned, generated type declarations
+were restored, and the final tested source hashes stayed unchanged. Full
+evidence, historical failures, per-case passing-run mapping and acceptance
+limits are linked from [PREPRODUCTION_2026-10-31.md](PREPRODUCTION_2026-10-31.md).

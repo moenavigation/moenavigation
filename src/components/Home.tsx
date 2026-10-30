@@ -1,5 +1,5 @@
 "use client";
-import Image, { getImageProps } from "next/image";
+import Image from "next/image";
 import { useState } from "react";
 import Link from "./NavigationLink";
 import { ArrowRight, ChevronRight, Ship, Fuel, Container, Anchor, ShieldCheck, Compass, MessagesSquare, LifeBuoy, MapPin } from "lucide-react";
@@ -24,13 +24,12 @@ export default function Home({ locale }: { locale: Locale }) {
   const text = (record: ContentRecord | undefined, field: Parameters<typeof contentText>[1]) => contentText(record, field, locale);
   const copy = (record: ContentRecord) => <><span className="eyebrow">{text(record,"eyebrow")}</span><h2>{text(record,"title")}</h2>{text(record,"description") && <p>{text(record,"description")}</p>}<ContentBody text={text(record,"body")} /></>;
   if (!home) return null;
-  const heroProps = { alt: text(home,"imageAlt") || text(home,"title"), width: 1672, height: 941, sizes: "100vw", loading: "eager" as const, fetchPriority: "high" as const };
-  const desktopHero = getImageProps({ ...heroProps, src: home.image }).props;
-  const mobileHero = getImageProps({ ...heroProps, src: home.mobileImage || home.image }).props;
+  const heroProps = { width: 1672, height: 941, sizes: "100vw", loading: "eager" as const, fetchPriority: "high" as const };
   return <>
     <section className={styles.hero}>
-      <picture className={styles.heroPhoto}><source media="(max-width: 700px)" srcSet={mobileHero.srcSet || mobileHero.src} sizes="100vw" /><img {...desktopHero} alt={heroProps.alt} /></picture>
-      <div className={`container ${styles.heroInner}`}><div className={styles.heroCopy}><span className="eyebrow">{text(home,"eyebrow")}</span><h1>{text(home,"title")}</h1><p>{text(home,"description")}</p><div className={styles.heroActions}><Link href={href(locale,"services")} className="button">{local(locale,"Explore services","ดูบริการของเรา")}</Link><Link href={href(locale,"contact")} className="button secondary">{local(locale,"Contact our team","ติดต่อทีมงาน")}</Link></div><span className={styles.heroCaption}>{text(home,"caption")}</span></div></div>
+      <div className={styles.heroPhoto}><Image {...heroProps} src={home.image} alt={text(home,"imageAlt") || text(home,"title")} /></div>
+      <div className={`container ${styles.heroHeading}`}><div><span className="eyebrow">{text(home,"eyebrow")}</span><h1>{text(home,"title")}</h1></div></div>
+      <div className={`container ${styles.heroInner}`}><div className={styles.heroCopy}><p>{text(home,"description")}</p><div className={styles.heroActions}><Link href={href(locale,"services")} className="button">{local(locale,"Explore services","ดูบริการของเรา")}</Link><Link href={href(locale,"contact")} className="button secondary">{local(locale,"Contact our team","ติดต่อทีมงาน")}</Link></div><span className={styles.heroCaption}>{text(home,"caption")}</span></div></div>
     </section>
     {text(home,"body") && <section className={`container ${styles.homeBody}`}><ContentBody text={text(home,"body")} /></section>}
     {expertise && <section className={`container section ${styles.expertise}`}><div className={styles.sectionHeading}><div>{copy(expertise)}</div><Link className="text-link" href={href(locale,"services")}>{local(locale,"View all services","บริการทั้งหมด")}<ChevronRight /></Link></div><div className={styles.expertiseGrid}>{services.slice(0,4).map((service) => { const Icon=icons[service.icon as keyof typeof icons] || Ship; return <Link href={href(locale,`services/${service.id}`)} key={service.id} className={styles.expertiseCard}><Icon className={styles.serviceIcon} /><div><h3>{service.title[locale]}</h3><p>{service.description[locale]}</p></div></Link>; })}</div></section>}

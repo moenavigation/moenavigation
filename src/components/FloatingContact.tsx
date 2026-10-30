@@ -90,7 +90,8 @@ export default function FloatingContact({ locale }: { locale: Locale }) {
     <nav id={itemsId} className={styles.items} aria-label={local(locale, "Contact options", "เลือกช่องทางติดต่อ")} aria-hidden={!open} inert={!open}>
       {actions.map((action, index) => {
         const content = <>
-          <span className={styles.itemText}>{action.label}{action.detail && <span className={styles.itemDetail}>{action.detail}</span>}</span>
+          <span className="sr-only">{action.label}{action.detail ? ': ' : ''}</span>
+          {action.detail && <span className={styles.itemText}><span className={styles.itemDetail}>{action.detail}</span></span>}
           <span className={styles.itemIcon}>
             <Image src={action.icon} width={48} height={48} alt="" unoptimized />
           </span>

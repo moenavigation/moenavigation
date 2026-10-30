@@ -72,7 +72,14 @@ export default function ContactPage({ locale }: { locale: Locale }) {
     if (invalidFocusRef.current) document.getElementById(`contact-${invalidFocusRef.current}`)?.focus();
     invalidFocusRef.current = null;
   }, [errors]);
-  useLayoutEffect(() => { if (receipt) successRef.current?.focus(); }, [receipt]);
+  useLayoutEffect(() => {
+    const success = successRef.current;
+    if (!receipt || !success) return;
+    success.focus({ preventScroll: true });
+    // Reveal the whole focused receipt immediately, clear of fixed controls.
+    // Its scroll margins reserve space below the header and above the shortcut.
+    success.scrollIntoView({ block: "center", inline: "nearest", behavior: "instant" });
+  }, [receipt]);
 
   function update(field: keyof ContactValues, value: string | boolean) {
     const next = { ...values, [field]: value };
