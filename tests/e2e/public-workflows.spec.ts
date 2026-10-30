@@ -47,8 +47,8 @@ test('fleet filters survive reload, language changes and detail/back navigation'
 });
 
 for (const listing of [
-  { path: 'news', category: 'Articles', query: 'voyage', title: 'What goes into planning a voyage?', back: 'Back to news' },
-  { path: 'projects', category: 'Container', query: 'logistics', title: 'Logistics project', back: 'Back to projects' },
+  { path: 'news', category: 'Articles', query: 'voyage', title: 'What goes into planning a voyage?', back: 'Back to articles' },
+  { path: 'projects', category: 'Container', query: 'handoff', title: 'Planning a sea-to-land handoff', back: 'Back to topics' },
 ]) {
   test(listing.path + ' search, empty state and detail return remain usable', async ({ page }) => {
     await page.goto('/' + listing.path);

@@ -50,8 +50,8 @@ export async function createSession(user: UserDocument) {
   (await cookies()).set(cookieName, token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_SITE_URL?.startsWith('https://'), sameSite: 'strict', path: '/', maxAge: sessionDuration });
 }
 export async function login(username: string, password: string) {
-  await rateLimit(`login:${username}`, 10, 15 * 60);
   await rateLimit('login:global', 100, 15 * 60);
+  await rateLimit(`login:username:${username}`, 10, 15 * 60);
   const c = collections(await getDb());
   const user = await c.users.findOne({ username });
   const valid = await verifyPassword(password, user?.passwordHash || `scrypt:${'0'.repeat(32)}:${'0'.repeat(128)}`);

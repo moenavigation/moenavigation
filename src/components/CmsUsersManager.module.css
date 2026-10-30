@@ -1,0 +1,26 @@
+.grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(18rem, .8fr); gap: 1.15rem; align-items: start; margin-top: 1.5rem; }
+.panel { min-width: 0; padding: 1.5rem; border: 1px solid var(--line); border-radius: .5rem; background: white; }
+.heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.4rem; }
+.heading h2 { margin: 0 0 .25rem; font-size: var(--font-h3); }
+.heading p { margin: 0; color: var(--muted); font-size: var(--font-small); line-height: 1.5; }
+.list { list-style: none; margin: 0; padding: 0; }
+.list li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 0; border-top: 1px solid var(--line); }
+.identity { display: flex; align-items: center; gap: .8rem; min-width: 0; }
+.identity > span:last-child { display: grid; min-width: 0; }
+.identity strong { overflow-wrap: anywhere; }
+.identity small { color: var(--muted); }
+.avatar { display: grid; place-items: center; flex: 0 0 2.6rem; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: #e9f2fc; }
+.actions { display: flex; gap: .4rem; }
+.remove, .close { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border: 1px solid var(--line); border-radius: .35rem; background: #fff; color: var(--navy); cursor: pointer; }
+.remove { color: #a33320; }
+.form { display: grid; gap: 1rem; }
+.form label { display: grid; gap: .45rem; font-weight: 600; }
+.form input { width: 100%; min-width: 0; padding: .75rem .85rem; border: 1px solid #c9d8ee; border-radius: .35rem; color: var(--navy); background: #fff; }
+.form button[type=submit] { justify-self: start; }
+.hint { margin: 0; color: var(--muted); font-size: var(--font-small); }
+.error, .success { display: flex; align-items: center; gap: .5rem; padding: .8rem; border-radius: .35rem; }
+.error { color: #a33320; background: #fff0ed; }
+.success { color: #155c49; background: #ecf8f2; }
+.form input:focus-visible, .remove:focus-visible, .close:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 520px) { .list li { align-items: flex-start; flex-direction: column; } .actions { width: 100%; } .actions .remove { margin-left: auto; } .panel { padding: 1rem; } }

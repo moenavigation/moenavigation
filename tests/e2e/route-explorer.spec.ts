@@ -52,9 +52,9 @@ test('many routes stay paginated and shared destinations use one map control', a
   // The selected connection remains visible alongside the current six results.
   await expect(page.locator('.leaflet-marker-icon')).toHaveCount(5);
 
-  const groupedPort = page.getByRole('button', { name: '2 routes to Port 004', exact: true });
+  const groupedPort = page.getByRole('button', { name: '2 connections to Port 004', exact: true });
   await groupedPort.press('Enter');
-  const routeChoices = page.getByRole('dialog', { name: '2 routes to Port 004', exact: true });
+  const routeChoices = page.getByRole('dialog', { name: '2 connections to Port 004', exact: true });
   await expect(routeChoices).toBeVisible();
   await expect(routeChoices.getByRole('button', { name: connectionName(7), exact: true })).toBeFocused();
   await page.getByRole('button', { name: connectionName(8), exact: true }).click();
@@ -130,10 +130,13 @@ test.describe('mobile route explorer', () => {
     await page.goto('/routes?route=connection-003');
     const finder = page.getByRole('region', { name: 'Find a route', exact: true });
     await expect(finder.getByRole('radio')).toHaveCount(6);
-    await finder.getByRole('radio', { name: /Connection 004/ }).check();
+    // Selecting a route updates the URL and can replace the radio before
+    // Playwright's immediate check() verification runs in WebKit.
+    await finder.getByRole('radio', { name: /Connection 004/ }).click();
+    await expect(finder.getByRole('radio', { name: /Connection 004/ })).toBeChecked();
     await expect(page.getByRole('region', { name: 'Selected route details' }).getByRole('heading')).toHaveText(connectionName(4));
     await finder.getByRole('button', { name: 'View selected route on map', exact: true }).click();
-    const map = page.getByRole('region', { name: 'Interactive map of an illustrative route from Bangkok to Port 002', exact: true });
+    const map = page.getByRole('region', { name: 'Interactive map of a connection between Bangkok and Port 002', exact: true });
     await expect(map).toBeInViewport();
     const mapBounds = await map.boundingBox();
     const headerBounds = await page.locator('[data-site-header]').boundingBox();

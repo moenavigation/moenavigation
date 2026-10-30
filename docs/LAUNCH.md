@@ -49,6 +49,15 @@ SITE_INDEXING_ENABLED=true
 
 The runtime additionally requires production mode, a public HTTPS origin, and either no `VERCEL_ENV` or `VERCEL_ENV=production`. Preview deployments stay noindex. Until approval, keep both flags false.
 
+The current Project, News, and Route examples remain visible by owner choice
+with generic wording. They do not establish completed work, reported events,
+or confirmed sailings. The 30 October 2026 local read-only check reached
+MongoDB and Cloudinary and found all nine core pages, but the local origin,
+content approval, public company email, eight vessels without specifications,
+and unconfigured notification email still need resolution or explicit review.
+Re-run the check in the intended hosting environment; keep indexing off until
+the entire public content is approved.
+
 Inspect actual deployed `/robots.txt`, `/sitemap.xml`, Thai/English canonicals, hreflang, page titles, descriptions, sharing images, and CMS noindex behavior. Submit the sitemap to the owner's search-console account only after the approved launch. The flags express the owner's approval; they cannot independently prove the accuracy of business claims or ownership of a domain.
 
 The public smoke check expects noindex by default. After approved indexing is enabled, use `npm run test:smoke -- https://moe-navigation.com --indexed` to check the production policy while ensuring the CMS stays noindex.

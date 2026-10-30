@@ -74,7 +74,7 @@ test('desktop language selection remembers a persistent preference and keeps the
   await page.getByRole('link', { name: 'Switch to Thai', exact: true }).click();
   await expectLanguage(page, 'th', '/th/fleet?q=MOE&category=Tanker#main');
   await expect(page.getByRole('searchbox', { name: 'ค้นหาเรือ', exact: true })).toHaveValue('MOE');
-  await expect(page.getByRole('button', { name: 'เรือบรรทุกน้ำมัน', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'เรือแทงเกอร์', exact: true })).toHaveAttribute('aria-pressed', 'true');
   // Revisit the initial route with an anchor, then switch back again. This
   // catches a cached canonical URL appending the same fragment twice.
   await page.getByRole('link', { name: 'เปลี่ยนเป็นภาษาอังกฤษ', exact: true }).click();

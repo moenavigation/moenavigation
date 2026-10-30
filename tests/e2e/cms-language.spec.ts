@@ -14,6 +14,24 @@ function languageControl(scope: Page | Locator) {
 function headerLanguage(page: Page) {
   return page.locator('header [data-cms-language-switch]');
 }
+async function expectDrawerSiteLink(drawer: Locator, locale: 'th' | 'en') {
+  const link = drawer.getByRole('link', { name: locale === 'th' ? cmsMainThai['View website in a new tab'] : 'View website in a new tab', exact: true });
+  await expect(link).toBeVisible();
+  await expect(link).toBeInViewport();
+  await expect(link).toHaveAttribute('href', locale === 'th' ? '/th' : '/');
+  await expect(link).toHaveAttribute('target', '_blank');
+  await expect(link).toHaveAttribute('rel', /\bnoopener\b/);
+  await expect(link).toHaveAttribute('rel', /\bnoreferrer\b/);
+  await expect(drawer.getByText(locale === 'th' ? cmsMainThai['Signed in as'] : 'Signed in as', { exact: true })).toHaveCount(1);
+  await expect(drawer.getByText(E2E_ADMIN.username, { exact: true })).toBeInViewport();
+  const signOut = drawer.getByRole('button', { name: locale === 'th' ? cmsMainThai['Sign out'] : 'Sign out', exact: true });
+  await expect(signOut).toBeInViewport();
+  const linkBox = await link.boundingBox();
+  const signOutBox = await signOut.boundingBox();
+  expect(linkBox).not.toBeNull();
+  expect(signOutBox).not.toBeNull();
+  expect(linkBox!.y + linkBox!.height).toBeLessThanOrEqual(signOutBox!.y + 1);
+}
 
 async function signInThai(page: Page) {
   await page.goto('/cms');
@@ -31,9 +49,17 @@ async function expectStickyHeader(page: Page) {
   await expect.poll(() => page.locator('header').evaluate(element => Math.round(element.getBoundingClientRect().top))).toBe(0);
 }
 
-test('CMS header remains at the top while scrolling the desktop overview', async ({ page }) => {
+test('CMS desktop header and drawer stay usable after scrolling', async ({ page }, testInfo) => {
   await signInThai(page);
   await expectStickyHeader(page);
+  const menu = page.getByRole('button', { name: cmsMainThai['Open CMS navigation'], exact: true });
+  await menu.click();
+  const drawer = page.getByRole('dialog', { name: cmsMainThai['CMS navigation'], exact: true });
+  await expectDrawerSiteLink(drawer, 'th');
+  await page.screenshot({ path: testInfo.outputPath('thai-navigation-desktop.png'), animations: 'disabled' });
+  await page.keyboard.press('Escape');
+  await expect(drawer).not.toBeVisible();
+  await expect(menu).toBeFocused();
 });
 
 test('CMS defaults to Thai during loading and remembers an explicit language choice', async ({ page }, testInfo) => {
@@ -52,9 +78,13 @@ test('CMS defaults to Thai during loading and remembers an explicit language cho
     releaseSession();
   }
   await expect(page.getByRole('heading', { name: cmsMainThai['Welcome back'], exact: true })).toBeVisible();
+  const loginSiteLink = page.locator('header').getByRole('link', { name: cmsMainThai['View website in a new tab'], exact: true });
+  await expect(loginSiteLink).toHaveAttribute('href', '/th');
+  await expect(loginSiteLink).toHaveAttribute('target', '_blank');
   await page.screenshot({ path: testInfo.outputPath('thai-sign-in.png'), animations: 'disabled' });
   await headerLanguage(page).click();
   await expect(page.getByRole('heading', { name: 'Welcome back', exact: true })).toBeVisible();
+  await expect(page.locator('header').getByRole('link', { name: 'View website in a new tab', exact: true })).toHaveAttribute('href', '/');
   await expect(headerLanguage(page)).toHaveText('EN');
   await expect(headerLanguage(page)).toHaveAttribute('aria-label', 'Switch to Thai');
   await page.reload();
@@ -112,42 +142,77 @@ test('Thai and English mobile navigation stay within the viewport and restore fo
   await menu.click();
   const drawer = page.getByRole('dialog', { name: cmsMainThai['CMS navigation'], exact: true });
   await expect(drawer).toBeVisible();
+  await expect(drawer.getByRole('heading', { name: cmsMainThai['CMS navigation'], exact: true })).toHaveCount(0);
+  await expect(languageControl(drawer)).toHaveCount(0);
+  await expect(drawer.getByRole('button', { name: cmsMainThai['Content overview'], exact: true })).toHaveAttribute('aria-current', 'page');
+  await expectDrawerSiteLink(drawer, 'th');
   await expect.poll(() => drawer.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath('thai-navigation-mobile.png'), animations: 'disabled' });
-  await languageControl(drawer).getByRole('button', { name: 'English', exact: true }).click();
+  // The modal keeps the background header inert. Close it before changing language.
+  await page.keyboard.press('Escape');
+  await expect(drawer).not.toBeVisible();
+  await expect(menu).toBeFocused();
+  await headerLanguage(page).click();
+  await expect(headerLanguage(page)).toHaveText('EN');
+  await page.getByRole('button', { name: 'Open CMS navigation', exact: true }).click();
   const englishDrawer = page.getByRole('dialog', { name: 'CMS navigation', exact: true });
   await expect(englishDrawer.getByRole('button', { name: 'Content overview', exact: true })).toBeVisible();
+  await expectDrawerSiteLink(englishDrawer, 'en');
   await expect.poll(() => englishDrawer.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
   await page.keyboard.press('Escape');
   await expect(englishDrawer).not.toBeVisible();
   await expect(page.getByRole('button', { name: 'Open CMS navigation', exact: true })).toBeFocused();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.getByRole('button', { name: 'Open CMS navigation', exact: true }).click();
+  await page.getByRole('dialog', { name: 'CMS navigation', exact: true }).getByRole('button', { name: 'Sign out', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Welcome back', exact: true })).toBeVisible();
 });
 });
 
 test.describe('narrow CMS header', () => {
 test.use({ viewport: { width: 320, height: 750 } });
 
-test('language switch stays beside the site button in both languages', async ({ page }, testInfo) => {
+test('signed-in header keeps the language control on the right in both languages', async ({ page }, testInfo) => {
   await signInThai(page);
   const header = page.locator('header');
-  const site = header.getByRole('link', { name: /^(เปิดเว็บไซต์ในแท็บใหม่|View website in a new tab)$/ });
+  await expect(header.getByRole('link', { name: /^(เปิดเว็บไซต์ในแท็บใหม่|View website in a new tab)$/ })).toHaveCount(0);
+  const menu = header.locator('button[aria-haspopup="dialog"]');
   const language = headerLanguage(page);
   const onSameRow = async () => {
-    const siteBox = await site.boundingBox();
+    const menuBox = await menu.boundingBox();
     const languageBox = await language.boundingBox();
-    expect(siteBox).not.toBeNull();
+    const headerBox = await header.boundingBox();
+    expect(menuBox).not.toBeNull();
     expect(languageBox).not.toBeNull();
-    expect(Math.abs(siteBox!.y + siteBox!.height / 2 - languageBox!.y - languageBox!.height / 2)).toBeLessThan(2);
-    expect(languageBox!.x).toBeGreaterThan(siteBox!.x + siteBox!.width);
+    expect(headerBox).not.toBeNull();
+    expect(Math.abs(menuBox!.y + menuBox!.height / 2 - languageBox!.y - languageBox!.height / 2)).toBeLessThan(2);
+    expect(languageBox!.x).toBeGreaterThan(menuBox!.x + menuBox!.width);
+    expect(headerBox!.x + headerBox!.width - languageBox!.x - languageBox!.width).toBeLessThan(24);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   };
   await onSameRow();
   await page.screenshot({ path: testInfo.outputPath('thai-header-narrow.png'), animations: 'disabled' });
+  await menu.click();
+  const thaiDrawer = page.getByRole('dialog', { name: cmsMainThai['CMS navigation'], exact: true });
+  await expectDrawerSiteLink(thaiDrawer, 'th');
+  await page.screenshot({ path: testInfo.outputPath('thai-navigation-narrow.png'), animations: 'disabled' });
+  await page.keyboard.press('Escape');
+  await expect(thaiDrawer).not.toBeVisible();
+  await expect(menu).toBeFocused();
   await language.click();
   await expect(language).toHaveText('EN');
   await onSameRow();
   await page.screenshot({ path: testInfo.outputPath('english-header-narrow.png'), animations: 'disabled' });
+  await menu.click();
+  const drawer = page.getByRole('dialog', { name: 'CMS navigation', exact: true });
+  await expectDrawerSiteLink(drawer, 'en');
+  const accountLink = drawer.getByRole('button', { name: 'Account & tools', exact: true });
+  await accountLink.scrollIntoViewIfNeeded();
+  await expect(accountLink).toBeInViewport();
+  await page.screenshot({ path: testInfo.outputPath('english-navigation-narrow.png'), animations: 'disabled' });
+  await page.keyboard.press('Escape');
+  await expect(drawer).not.toBeVisible();
+  await expect(menu).toBeFocused();
   await expectStickyHeader(page);
 });
 });

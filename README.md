@@ -28,7 +28,7 @@ administrator and writes initial credentials to the ignored
 `.local/cms-access.json`. Change the password in **Account & tools** after
 signing in. Re-running setup preserves existing accounts and content.
 Setup creates access controls only; it does not repopulate the website with
-local demo content. The connected database is the source of website content.
+earlier browser-local content. The connected database is the source of website content.
 For an empty database, use the reviewed migration in
 [docs/BACKEND.md](docs/BACKEND.md#website-migration-and-local-cleanup) before
 starting the public site.
@@ -165,12 +165,22 @@ for hosting, the intended domain, approval, and deployed acceptance checks.
 
 ## Content approval
 
-Photography and business examples remain illustrative. Company contacts,
-vessel specifications, route availability, projects, news, and the final
-privacy policy require confirmation before public launch. The site remains
-**noindex, nofollow**. Map connections are approximate illustrations and must
-not be used for navigation; map tiles require internet access.
+The existing Project, News, and Route records remain visible while approved
+content is gathered. Their wording describes illustrative topics without
+claiming completed company work, actual news events, or scheduled sailings.
+Images and map connections remain illustrative; map connections are not
+navigation guidance. Company facts, vessel specifications, route availability,
+project references, news, and the final privacy policy still need approval.
+The site remains **noindex, nofollow** while this review is open.
 
-See [docs/DEMO.md](docs/DEMO.md) for the public experience, sample-content
+The 30 October 2026 local read-only readiness check reached MongoDB and
+Cloudinary, found all nine core pages and 59 published image references backed
+by committed media, and found no unfinished uploads. It did **not** establish
+launch readiness: the local origin is not the public HTTPS domain, content and
+indexing approval are off, the public company email is blank, all eight
+published vessels lack verified specifications, and notification email is
+unconfigured. See `.local/release/readiness.json` and [docs/LAUNCH.md](docs/LAUNCH.md).
+
+See [docs/WEBSITE.md](docs/WEBSITE.md) for the public experience, content
 boundaries, and source locations. Project instructions remain in `AGENTS.md`
 and the other documents in `docs/`.

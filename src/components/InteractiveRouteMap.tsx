@@ -183,8 +183,8 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
       const route = active || connections[0];
       const label = local(locale, route.destination.name, route.destination.nameTh);
       const action = connections.length === 1
-        ? local(locale, `Select route to ${label}`, `เลือกเส้นทางไป${label}`)
-        : local(locale, `${connections.length} routes to ${label}`, `${connections.length} เส้นทางไป${label}`);
+        ? local(locale, `Select connection to ${label}`, `เลือกเส้นทางเชื่อมต่อไป${label}`)
+        : local(locale, `${connections.length} connections to ${label}`, `${connections.length} เส้นทางเชื่อมต่อไป${label}`);
       const destination = route.waypoints.at(-1)!;
       const labelOnLeft = destination[1] < centerLongitude;
       const marker = leaflet.marker(destination, {
@@ -240,7 +240,7 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
   const selected = routes.find((route) => route.id === selectedId) || routes[0];
   const selectedName = local(locale, selected.destination.name, selected.destination.nameTh);
   const originName = local(locale, selected.origin.name, selected.origin.nameTh);
-  const mapLabel = local(locale, `Interactive map of an illustrative route from ${originName} to ${selectedName}`, `แผนที่แบบโต้ตอบของเส้นทางตัวอย่างจาก${originName}ไป${selectedName}`);
+  const mapLabel = local(locale, `Interactive map of a connection between ${originName} and ${selectedName}`, `แผนที่แสดงการเชื่อมต่อระหว่าง${originName}กับ${selectedName}`);
   const controlsDisabled = mapVersion === 0 || mapFailed;
 
   return <div className={styles.shell}>
@@ -270,7 +270,7 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
         <button className={styles.popupClose} type="button" onClick={closePortChoices} aria-label={local(locale, "Close route choices", "ปิดตัวเลือกเส้นทาง")}>{local(locale, "Close", "ปิด")}</button>
       </div>}
       {(tileError || mapFailed) && <p className={styles.tileError} role="status">{mapFailed ? local(locale, "The map is unavailable. You can still choose a route from the list.", "ไม่สามารถโหลดแผนที่ได้ คุณยังเลือกเส้นทางจากรายการได้") : local(locale, "The map background is unavailable. Route markers and controls still work.", "ไม่สามารถโหลดพื้นหลังแผนที่ได้ จุดท่าเรือและปุ่มควบคุมยังใช้งานได้")}</p>}
-      <span id={descriptionId} className={styles.srOnly}>{local(locale, "Use the arrow keys to move the map and plus or minus to zoom. Choose a destination marker or a route in the list. This is an illustrative overview, not a navigational chart or confirmed sailing route.", "ใช้แป้นลูกศรเพื่อเลื่อนแผนที่ และปุ่มบวกหรือลบเพื่อขยายหรือย่อ เลือกท่าเรือปลายทางบนแผนที่หรือเลือกเส้นทางจากรายการ แผนที่นี้ใช้ประกอบการนำเสนอเท่านั้น ไม่ใช่แผนที่สำหรับเดินเรือหรือเส้นทางที่ยืนยันแล้ว")}</span>
+      <span id={descriptionId} className={styles.srOnly}>{local(locale, "Use the arrow keys to move the map and plus or minus to zoom. Choose a destination marker or a connection in the list. The map shows approximate connections for enquiry planning. It is not a navigational chart and does not confirm sailing routes, timing or service availability.", "ใช้แป้นลูกศรเลื่อนแผนที่ และปุ่มบวกหรือลบเพื่อขยายหรือย่อ เลือกท่าเรือปลายทางบนแผนที่หรือเลือกเส้นทางจากรายการ แผนที่แสดงการเชื่อมต่อโดยประมาณเพื่อประกอบการสอบถาม ไม่ใช่แผนที่สำหรับเดินเรือ และไม่ได้ยืนยันเส้นทางเดินเรือ ช่วงเวลา หรือความพร้อมให้บริการ")}</span>
     </div>
   </div>;
 }

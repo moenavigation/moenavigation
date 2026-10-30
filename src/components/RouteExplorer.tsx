@@ -52,6 +52,7 @@ export default function RouteExplorer({ locale, routes, selectedId, onSelect, fi
   const selectedOnPage = result.items.some(item => item.id === route?.id);
   const country = (port: RoutePort) => local(locale, port.country || port.countryTh, port.countryTh || port.country);
   const name = (port: RoutePort) => local(locale, port.name || port.nameTh, port.nameTh || port.name);
+  const routeDescription = contentText(route, "description", locale);
   const resetFilters = () => { updateFilters({ ...emptyRouteFilters }); searchRef.current?.focus(); };
   function showSelected() {
     if (!route) return;
@@ -67,9 +68,9 @@ export default function RouteExplorer({ locale, routes, selectedId, onSelect, fi
     <p>{local(locale, "Published route details will appear here.", "รายละเอียดเส้นทางที่เผยแพร่จะแสดงที่นี่")}</p>
   </div>;
 
-  return <div className={styles.layout} role="region" aria-label={local(locale, "Explore shipping connections", "ดูเส้นทางเดินเรือ")}>
+  return <div className={styles.layout} role="region" aria-label={local(locale, "Explore port connections", "สำรวจการเชื่อมต่อระหว่างท่าเรือ")}>
     <section className={styles.panel} aria-label={local(locale, "Find a route", "ค้นหาเส้นทาง")}>
-      <div className={styles.finderHeading}><Compass size={25} aria-hidden="true" /><div><h2>{local(locale, "Find a route", "ค้นหาเส้นทาง")}</h2><p>{local(locale, "Search by port, country or route name.", "ค้นหาจากท่าเรือ ประเทศ หรือชื่อเส้นทาง")}</p></div></div>
+      <div className={styles.finderHeading}><Compass size={25} aria-hidden="true" /><div><h2>{local(locale, "Explore connections", "สำรวจเส้นทางเชื่อมต่อ")}</h2><p>{local(locale, "Search by port, country or connection name.", "ค้นหาจากท่าเรือ ประเทศ หรือชื่อเส้นทางเชื่อมต่อ")}</p></div></div>
       <div className={styles.search}>
         <Search size={20} aria-hidden="true" /><label className="sr-only" htmlFor={searchId}>{local(locale, "Search routes", "ค้นหาเส้นทางเดินเรือ")}</label>
         <input ref={searchRef} id={searchId} type="search" value={currentFilters.query} maxLength={listingQueryLimit} placeholder={local(locale, "Port, country or route", "ท่าเรือ ประเทศ หรือเส้นทาง")} onChange={event => updateFilters({ ...currentFilters, query: event.target.value, page: 1 })} />
@@ -106,9 +107,9 @@ export default function RouteExplorer({ locale, routes, selectedId, onSelect, fi
         <h3>{contentText(route, "title", locale)}</h3>
         <dl><div><dt>{local(locale, "Origin", "ต้นทาง")}</dt><dd>{name(route.origin)}<span>{country(route.origin)}</span></dd></div><div><dt>{local(locale, "Destination", "ปลายทาง")}</dt><dd>{name(route.destination)}<span>{country(route.destination)}</span></dd></div></dl>
         <p className="sr-only" role="status">{local(locale, "Showing " + name(route.origin) + " to " + name(route.destination) + ".", "กำลังแสดงเส้นทางจาก" + name(route.origin) + "ไป" + name(route.destination))}</p>
-        <p className={styles.description}>{contentText(route, "description", locale)}</p>
+        {routeDescription && <p className={styles.description}>{routeDescription}</p>}
         <ContentBody text={contentText(route, "body", locale)} />
-        <p className={styles.note}>{local(locale, "Illustrative connection. Confirm routing, schedules and availability with our team.", "เส้นทางนี้ใช้ประกอบการนำเสนอ กรุณาติดต่อทีมงานเพื่อยืนยันเส้นทาง ตารางเดินเรือ และความพร้อมให้บริการ")}</p>
+        <p className={styles.note}>{local(locale, "Confirm routing, timing and availability with our team before planning a shipment.", "กรุณาสอบถามทีมงานเพื่อยืนยันเส้นทาง ช่วงเวลา และความพร้อมให้บริการก่อนวางแผนขนส่ง")}</p>
         <Link className="button" href={href(locale, "contact?subject=" + encodeURIComponent(contentText(route, "title", locale)))}>{local(locale, "Enquire about this route", "สอบถามเกี่ยวกับเส้นทางนี้")}<ChevronRight aria-hidden="true" size={20} /></Link>
       </section>
     </div>

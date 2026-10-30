@@ -1,9 +1,20 @@
 # Website experience and content boundaries
 
-The website has a working MongoDB and Cloudinary backend. Its company
-examples and generated imagery remain illustrative until the business
-provides and verifies the final content. See [BACKEND.md](BACKEND.md) for
+The website has a working MongoDB and Cloudinary backend. The client supplied
+eight vessel names and types; project examples, generated vessel imagery, and
+other unverified company details remain illustrative until the business
+confirms the final content. See [BACKEND.md](BACKEND.md) for
 configuration, administration, uploads, enquiries, and verification commands.
+
+## Interim published content
+
+Existing Project, News, and Route records remain public while approved
+materials are gathered. Their generic descriptions avoid claiming completed
+company projects, reported events, live schedules, or confirmed service
+availability. The records and images are still illustrative, and route lines
+are approximate rather than navigation guidance. Replace them through the CMS
+when verified material is supplied. Their continued visibility does not
+approve the content for indexing.
 
 ## Public pages
 
@@ -108,8 +119,15 @@ claiming email delivery.
 
 ## CMS
 
-The Thai/English CMS at `/cms` requires an administrator sign-in. Thai is
-the default; the language selector remembers the choice in this browser.
+The Thai/English CMS at `/cms` requires an administrator sign-in. The overview
+uses `/cms`; Pages, Sections, Fleet, Routes, Projects, Services and News use
+their matching `/cms/<view>` paths. Enquiries, Trash and Account & tools use
+`/cms/enquiries`, `/cms/trash` and `/cms/account`; the media library uses
+`/cms/media`. These URLs support direct loading, refresh and browser history
+while preserving unsaved workspace state during in-app navigation. Content
+editors remain dialogs within the current view.
+
+Thai is the default; the language selector remembers the choice in this browser.
 Switching the interface language preserves open editors and unsaved input.
 English and Thai website content remain separate editable fields. Its
 menu opens as an edge drawer. It provides content search and filters,
@@ -125,7 +143,7 @@ to Cloudinary and committed with the record. Save errors retain editor input;
 retries reuse the submission and any successful upload. Records use versions
 to prevent an older editor from overwriting a newer change.
 
-Existing demo data is not silently discarded. **Review local content**
+Earlier browser-local data is not silently discarded. **Review local content**
 checks the current browser's older `moe-content-v1` data and can import new
 type-and-ID combinations through the media upload workflow. Records already
 present on the server are compared before cleanup, and the original browser
@@ -174,7 +192,7 @@ visible.
 | `src/lib/use-public-content.ts` | Public context access without browser-local content fallback |
 | `src/server/` | Database, authentication, validation, content, media, and enquiries |
 | `src/app/api/` | Authorized CMS endpoints and contact submission |
-| `src/components/CmsDemo.tsx` | CMS interface and local-content import |
+| `src/components/CmsWorkspace.tsx` | CMS interface and local-content import |
 | `src/components/Home.tsx` | Homepage sections |
 | `src/components/ContentPages.tsx` | Company, service, fleet/gallery, article, and custom Page layouts |
 | `src/components/EditorialContent.tsx` | Long-form paragraphs and additional database Sections |
@@ -186,9 +204,12 @@ visible.
 
 ## Imagery and factual review
 
-The existing 15 optimized WebP assets were migrated to Cloudinary and registered
-in the MongoDB media library. They illustrate fictional vessels and operations;
-they do not document the company's actual assets or work. Home keeps separate
+The original 15 optimized WebP assets were migrated to Cloudinary and registered
+in the MongoDB media library. Five later generated vessel illustrations are
+included in `scripts/data/media-manifest.json` and the fleet migration recipe;
+verify their committed media records in each target environment. These images
+illustrate vessel types and operations; they do not document the company's
+actual vessels or work. Home keeps separate
 desktop and portrait hero URLs in its Page record, preserving the mobile crop.
 The Home hero and connection image have separate bilingual caption fields;
 categories stay separate from image captions. Vessel records store supporting
@@ -202,8 +223,9 @@ are design references.
   Project and News records. Local seed datasets and editorial fallback modules
   have been removed from the application.
 
-The MOE mark is a provisional identity. Replace it with approved brand files
-when supplied. Review company contacts, ownership and specifications,
+The site and CMS use an SVG traced from the client-supplied
+`Moe Logo - 2026.png`, preserving the original lettering and waves. Confirm
+final brand approval alongside company contacts, ownership and specifications,
 service scope, route availability, projects, and news before launch.
 
 ## Release checks
@@ -231,5 +253,5 @@ both languages, narrow layouts, the CMS drawer and editor, image preparation,
 save failures, media selection, contact validation, and inbox updates.
 
 The site continues to request **noindex, nofollow**, and `robots.txt`
-disallows crawling while sample content and launch details are pending.
+disallows crawling while illustrative content and launch details are pending.
 Enabling indexing and public deployment require a separate release decision.

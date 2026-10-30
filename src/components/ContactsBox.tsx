@@ -44,10 +44,6 @@ export default function ContactsBox({ locale, settings }: { locale: Locale; sett
     external: true,
   });
 
-  const mockups = [
-    { id: "line", label: "LINE", icon: "/icons/LINE.svg" },
-    { id: "whatsapp", label: "WhatsApp", icon: "/icons/Whatsapp.svg" },
-  ];
   return <nav className={styles.contactBar} aria-label={local(locale, "Footer contact options", "ช่องทางติดต่อท้ายเว็บไซต์")}>
     {links.map(link => {
       const props = { className: styles.contactIcon, "aria-label": link.label, title: link.label };
@@ -55,15 +51,5 @@ export default function ContactsBox({ locale, settings }: { locale: Locale; sett
         ? <Link key={link.id} href={link.href} {...props}>{link.icon}</Link>
         : <a key={link.id} href={link.href} {...props} target={link.external ? "_blank" : undefined} rel={link.external ? "noopener noreferrer" : undefined}>{link.icon}</a>;
     })}
-    {mockups.map(mockup => <a
-      key={mockup.id}
-      href=""
-      className={styles.contactIcon}
-      onClick={event => event.preventDefault()}
-      aria-label={mockup.label}
-      title={mockup.label}
-    >
-      <Image className={styles.image} src={mockup.icon} width={96} height={96} alt="" unoptimized />
-    </a>)}
   </nav>;
 }

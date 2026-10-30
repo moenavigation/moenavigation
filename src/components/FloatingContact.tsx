@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useId, useRef, useState, type CSSProperties, type MouseEvent } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { href, local, type Locale } from "@/lib/content";
 import { usePublicContent } from "@/lib/use-public-content";
 import Link from "./NavigationLink";
@@ -49,10 +49,6 @@ export default function FloatingContact({ locale }: { locale: Locale }) {
     id: "phone", label: local(locale, "Call us", "โทรหาเรา"), detail: settings.phone,
     href: `tel:${phone}`, icon: "/icons/Phone.svg",
   });
-  actions.unshift(
-    { id: "line", label: "LINE", href: "", icon: "/icons/LINE.svg" },
-    { id: "whatsapp", label: "WhatsApp", href: "", icon: "/icons/Whatsapp.svg" },
-  );
   if (settings.email) actions.push({
     id: "email", label: local(locale, "Email us", "ส่งอีเมล"), detail: settings.email,
     href: `mailto:${settings.email}`, icon: "/icons/Email.svg",
@@ -101,11 +97,7 @@ export default function FloatingContact({ locale }: { locale: Locale }) {
           {action.external && <span className="sr-only">{local(locale, "(opens in a new tab)", "(เปิดในแท็บใหม่)")}</span>}
         </>;
         const style = { "--item-index": actions.length - index - 1 } as CSSProperties;
-        const onClick = (event: MouseEvent<HTMLAnchorElement>) => {
-          if (action.href === "") { event.preventDefault(); return; }
-          closeAndFocusTrigger();
-        };
-        const props = { className: styles.item, style, tabIndex: open ? 0 : -1, onClick };
+        const props = { className: styles.item, style, tabIndex: open ? 0 : -1, onClick: closeAndFocusTrigger };
         return action.internal
           ? <Link key={action.id} {...props} href={action.href}>{content}</Link>
           : <a key={action.id} {...props} href={action.href} target={action.external ? "_blank" : undefined} rel={action.external ? "noopener noreferrer" : undefined}>{content}</a>;

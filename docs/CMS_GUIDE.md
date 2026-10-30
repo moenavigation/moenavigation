@@ -1,10 +1,15 @@
 # Everyday CMS guide
 
 Open `/cms` on the website and sign in with your administrator account.
+Each page view has its own `/cms/...` URL, so you can bookmark it or use the
+browser's Back and Forward buttons. The Media library is at `/cms/media`.
+Content editors still open as dialogs within the current view.
 
 ## Find the right content
 
-- Use **Menu** to open Pages, Sections, Fleet, Services, Routes, Projects, News, Enquiries, Media library, Trash, or Account & tools.
+- Use **Menu** to open Pages, Sections, Fleet, Services, Routes, Projects, News, Enquiries, Media library, Administrators, Trash, or Account & tools.
+
+At `/cms/users`, an administrator can add another administrator, reset their password, or remove their account. Each change requires the acting administrator's current password. Password resets sign out the affected account on all devices. Change your own password under **Account & tools**; your own account and the final administrator cannot be removed here.
 - Under Content, **Find a page and its sections** narrows the list to that page and its related sections. Sections appear in display order.
 - On a Page row, **Manage sections** opens only that page's sections. **Shared across pages** contains sections used throughout the website.
 - Search accepts English and Thai titles, categories, identifiers, and parent page identifiers.
@@ -49,6 +54,8 @@ The current IMO number format is documented by the [International Maritime Organ
 4. Select Save. Prepared images upload sequentially, then the content and image URLs save together.
 
 If an upload fails, your text and prepared images remain available. Retry uploads only after checking the error. If saving has an uncertain outcome, use **Check saved content** before trying again. Successful uploads are reused; unreferenced files from an unsuccessful submission are removed only after its save outcome is resolved.
+
+Open **Media library** at `/cms/media` to upload reusable images and search saved images. Choosing a device image prepares a preview and editable name; **Save image** starts the upload. The prepared image and name remain available while you move between CMS pages in the same tab.
 
 The Media library's **Clean unfinished uploads** action handles confirmed unused uploads after its grace period. Content and Trash references remain protected. Removing an image from an editor does not delete its saved library copy.
 

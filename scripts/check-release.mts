@@ -32,8 +32,17 @@ if (live) {
     const vessels = records.filter(record => record.type === 'Vessel');
     const noSpecs = vessels.filter(record => !record.vesselSpecs || Object.keys(record.vesselSpecs).length === 0);
     check('Vessel specification review', vessels.length > 0 && noSpecs.length === 0, `${noSpecs.length} of ${vessels.length} published vessels have no specifications. Supply verified values where available; never invent missing numbers.`, 'review');
-    const provisional = records.filter(record => /illustrative|pending verification|demonstration|placeholder/i.test([record.title, record.description, record.body, record.caption].join(' ')));
-    check('Provisional content review', provisional.length === 0, `${provisional.length} published records contain explicit provisional wording. Review business accuracy before approval.`, 'review');
+    const provisionalPattern = /\b(?:demo|sample|illustrative|preview|placeholder|not verified|not a photograph)\b|ตัวอย่าง|ภาพประกอบ|ยังต้องได้รับการตรวจสอบ/i;
+    const provisional = records.filter(record => provisionalPattern.test([
+      record.title, record.titleTh, record.description, record.descriptionTh, record.body, record.bodyTh,
+      record.eyebrow, record.eyebrowTh, record.bodyHeading, record.bodyHeadingTh,
+      record.category, record.categoryTh, record.caption, record.captionTh,
+      record.imageAlt, record.imageAltTh,
+      ...(record.gallery || []).flatMap((image: { alt?: string; altTh?: string }) => [image.alt, image.altTh]),
+    ].join(' ')));
+    check('Provisional content review', provisional.length === 0, provisional.length
+      ? `${provisional.length} published records need editorial review: ${provisional.map(record => `${record.type}:${record.id}`).join(', ')}. Text matching cannot replace owner approval.`
+      : 'No explicit provisional wording found. Owner approval is still required for facts and media.', 'review');
     const media = await db.collection('moe_media').find().toArray(), urls = new Set(media.filter(item => item.state === 'committed').map(item => item.url));
     const references = records.flatMap(record => [record.image, record.mobileImage, ...(record.gallery || []).map((image: { url: string }) => image.url)]).filter(Boolean);
     check('Registered content images', references.every(url => urls.has(url)), `${references.length} published image references checked against committed media.`);

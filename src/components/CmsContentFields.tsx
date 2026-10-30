@@ -7,7 +7,7 @@ import { contentTypes, type ContentRecord, type MediaItem, type RoutePort, type 
 import { useCmsLocale } from '@/lib/cms-locale';
 import { cmsPageLabel } from '@/lib/cms-navigation';
 import type { PreparedImage } from '@/lib/cms-client';
-import styles from './CmsDemo.module.css';
+import styles from './CmsWorkspace.module.css';
 
 export type ImageTarget = 'image' | 'mobileImage' | number;
 const iconOptions = ['', 'Ship', 'Fuel', 'Container', 'Compass', 'Anchor', 'LifeBuoy', 'ShieldCheck', 'MessagesSquare', 'MapPin'];

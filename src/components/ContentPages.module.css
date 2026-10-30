@@ -4,8 +4,6 @@
 .heading .lead { max-width: 54rem; }
 .heading > a { flex-shrink: 0; margin-bottom: .3rem; }
 .lead { color: var(--muted); font-size: var(--font-lead); line-height: 1.5; margin: .45rem 0 1.5rem; }
-.previewNote { max-width: 58rem; margin: 0 0 2rem; padding: .7rem 1rem; border-left: 3px solid #8aa9c8; background: #f5f9fc; color: #425b73; line-height: 1.55; font-size: var(--font-small); }
-.heading + .previewNote { margin-top: -1rem; }
 .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
 .card { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; text-decoration: none; background: white; color: var(--navy); transition: box-shadow .2s, transform .2s; min-width: 0; }
 .cardImage { position: relative; aspect-ratio: 1.85; overflow: hidden; background: var(--pale); }
@@ -111,7 +109,6 @@
 .vesselTitle { grid-column: 2; }
 .vesselTitle h1 { margin: .6rem 0 .25rem; overflow-wrap: anywhere; }
 .vesselTitle .lead { margin-bottom: 1rem; }
-.vesselTitle .previewNote { margin-bottom: 0; }
 .gallery { grid-column: 1; grid-row: 1 / 3; min-width: 0; }
 .galleryMain { position: relative; aspect-ratio: 1.7; border-radius: var(--radius); overflow: hidden; background: var(--pale); }
 .galleryMain img { object-fit: cover; }
@@ -144,7 +141,6 @@
 .detailMasthead { max-width: 58rem; margin-bottom: 2rem; }
 .detailMasthead h1 { margin: .6rem 0; }
 .detailMasthead .lead { margin-bottom: 1.2rem; }
-.detailMasthead .previewNote { margin-bottom: 0; }
 .serviceDetail { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); align-items: center; gap: 3rem; }
 .detailPhoto { aspect-ratio: 1.15; position: relative; border-radius: var(--radius); overflow: hidden; background: var(--pale); }
 .detailPhoto img { object-position: center 55%; }
@@ -169,7 +165,6 @@
 .articleDetail { max-width: 78rem; margin-inline: auto; }
 .articleHeader { max-width: 58rem; margin-bottom: 2rem; }
 .articleHeader h1 { margin: .6rem 0 .9rem; }
-.articleHeader .previewNote { margin: 1.3rem 0 0; }
 .articleImage { position: relative; aspect-ratio: 2.25; border-radius: var(--radius); overflow: hidden; background: var(--pale); }
 .articleImage img { object-fit: cover; object-position: center 56%; }
 .newsDetail .articleImage { aspect-ratio: 2.5; }
