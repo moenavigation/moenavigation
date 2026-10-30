@@ -1,5 +1,5 @@
 import type { Page, Route } from '@playwright/test';
-import { test, expect, login, E2E_ADMIN, E2E_BASE_URL, E2E_INBOX } from './fixtures';
+import { test, expect, login, E2E_ADMIN, E2E_BASE_URL, E2E_INBOX, loginChallengeData } from './fixtures';
 
 type RouteMatch = Parameters<Page['route']>[0];
 
@@ -40,7 +40,7 @@ async function holdRequests(page: Page, match: RouteMatch, options: { error?: st
 async function authenticate(page: Page) {
   const response = await page.request.post('/api/cms/login', {
     headers: { Origin: E2E_BASE_URL },
-    data: { username: E2E_ADMIN.username, password: E2E_ADMIN.password },
+    data: { username: E2E_ADMIN.username, password: E2E_ADMIN.password, ...await loginChallengeData(page.request) },
   });
   expect(response.status()).toBe(200);
 }
@@ -76,26 +76,26 @@ test('CMS checks the session without flashing login and respects reduced motion 
 
 test('an authenticated CMS waits for its first content response before showing the dashboard', async ({ page }, testInfo) => {
   await authenticate(page);
-  const content = await holdRequests(page, '**/api/cms/content');
+  const content = await holdRequests(page, url => url.pathname === '/api/cms/content' && url.searchParams.get('scope') === 'overview');
   try {
     await page.goto('/cms', { waitUntil: 'domcontentloaded' });
     await content.started();
     const loading = page.locator('[data-loading-screen="cms"]');
     await expect(loading).toBeVisible();
     await expect(loading).toContainText('Getting your workspace ready');
-    await expect(page.getByRole('heading', { name: 'Content overview', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Welcome back' })).toHaveCount(0);
     await expect(page.getByRole('table')).toHaveCount(0);
     await page.screenshot({ path: testInfo.outputPath('cms-workspace-desktop.png'), animations: 'disabled' });
   } finally { await content.dispose(); }
-  await expect(page.getByRole('heading', { name: 'Content overview', exact: true })).toBeVisible();
-  await expect(page.getByRole('table').locator('tbody tr')).toHaveCount(12);
+  await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Recently updated', exact: true }).locator('li button')).toHaveCount(5);
   await expect(page.locator('[data-loading-screen]')).toHaveCount(0);
 });
 
 test('a failed initial CMS load leaves loading and can be recovered with Refresh', async ({ page }) => {
   await authenticate(page);
-  const content = await holdRequests(page, '**/api/cms/content', { error: 'Synthetic initial content unavailable' });
+  const content = await holdRequests(page, url => url.pathname === '/api/cms/content' && url.searchParams.get('scope') === 'overview', { error: 'Synthetic initial content unavailable' });
   try {
     await page.goto('/cms', { waitUntil: 'domcontentloaded' });
     await content.started();
@@ -105,24 +105,72 @@ test('a failed initial CMS load leaves loading and can be recovered with Refresh
   await expect(alerts).toContainText('Synthetic initial content unavailable');
   await expect(page.locator('[data-loading-screen]')).toHaveCount(0);
   await page.getByRole('button', { name: 'Refresh workspace', exact: true }).click();
-  await expect(page.getByRole('table').locator('tbody tr')).toHaveCount(12);
+  await expect(page.getByRole('region', { name: 'Recently updated', exact: true }).locator('li button')).toHaveCount(5);
   await expect(alerts).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Refresh workspace', exact: true })).toBeEnabled();
+});
+
+test('Refresh has a short cooldown so repeated clicks cannot start extra requests', async ({ page }) => {
+  await login(page);
+  const refresh = page.getByRole('button', { name: 'Refresh workspace', exact: true });
+  let overviewRequests = 0;
+  await page.route(url => url.pathname === '/api/cms/content' && url.searchParams.get('scope') === 'overview', route => {
+    overviewRequests += 1;
+    return route.continue();
+  });
+  await refresh.click();
+  await expect(refresh).toBeDisabled();
+  await expect.poll(() => overviewRequests).toBe(1);
+  await expect(refresh).toBeEnabled({ timeout: 6_000 });
+  expect(overviewRequests).toBe(1);
+  await refresh.click();
+  await expect.poll(() => overviewRequests).toBe(2);
+});
+
+test('a partial Refresh failure identifies the area while successful areas update', async ({ page, db }) => {
+  await login(page);
+  const recent = page.getByRole('region', { name: 'Recently updated', exact: true });
+  const firstTitle = await recent.locator('li button').first().innerText();
+  const source = await db.collection('moe_media').findOne({ state: 'committed' });
+  expect(source).not.toBeNull();
+  const addedTitle = 'Image added before partial refresh';
+  const addedMedia = {
+    _id: 'partial-refresh-image', id: 'partial-refresh-image', title: addedTitle,
+    url: `${source!.url}?partial-refresh=1`, publicId: 'moe-e2e/partial-refresh-image',
+    state: 'committed', owner: source!.owner, submissionId: '50000000-0000-4000-8000-000000000001',
+    pinned: true, createdAt: new Date().toISOString(), touchedAt: new Date(), bytes: source!.bytes,
+  };
+  await db.collection<{ _id: string }>('moe_media').insertOne(addedMedia);
+  const settings = await holdRequests(page, url => url.pathname === '/api/cms/settings', { error: 'Synthetic settings unavailable' });
+  try {
+    await page.getByRole('button', { name: 'Refresh workspace', exact: true }).click();
+    await settings.started();
+  } finally { await settings.dispose(); }
+  const alert = page.locator('#cms-content').getByRole('alert');
+  await expect(alert).toContainText('Website details');
+  await expect(alert).toContainText('Synthetic settings unavailable');
+  await expect(recent.locator('li button').first()).toHaveText(firstTitle.replace(/\s+/g, ' ').trim(), { useInnerText: true });
+  await page.getByRole('button', { name: 'Open CMS navigation', exact: true }).click();
+  await page.getByRole('dialog', { name: 'CMS navigation' }).getByRole('button', { name: 'Media library', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Saved images' }).getByText(addedTitle, { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Refresh workspace', exact: true })).toBeEnabled({ timeout: 6_000 });
+  await page.getByRole('button', { name: 'Refresh workspace', exact: true }).click();
+  await expect(alert).toHaveCount(0);
 });
 
 test.describe('mobile workspace loading', () => {
 test.use({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
 test('background refresh keeps content visible and an inbox search resolves its loading panel', async ({ page }, testInfo) => {
   await login(page);
-  const firstRow = page.getByRole('table').locator('tbody tr').first();
+  const firstRow = page.getByRole('region', { name: 'Recently updated', exact: true }).locator('li button').first();
   const originalText = await firstRow.innerText();
-  const content = await holdRequests(page, '**/api/cms/content');
+  const content = await holdRequests(page, url => url.pathname === '/api/cms/content' && url.searchParams.get('scope') === 'overview');
   try {
     await page.getByRole('button', { name: 'Refresh workspace', exact: true }).click();
     await content.started();
     await expect(page.getByText('Refreshing workspace', { exact: true })).toBeVisible();
     await expect(firstRow).toHaveText(originalText.replace(/\s+/g, ' ').trim(), { useInnerText: true });
-    await expect(page.getByRole('table').locator('tbody tr')).toHaveCount(12);
+    await expect(page.getByRole('region', { name: 'Recently updated', exact: true }).locator('li button')).toHaveCount(5);
     await expect(page.locator('[data-loading-screen]')).toHaveCount(0);
     await page.screenshot({ path: testInfo.outputPath('cms-refresh-mobile.png'), animations: 'disabled' });
   } finally { await content.dispose(); }
@@ -131,7 +179,7 @@ test('background refresh keeps content visible and an inbox search resolves its 
 
   await page.getByRole('button', { name: /New enquiries/ }).click();
   const inbox = page.getByRole('region', { name: 'Enquiry inbox' });
-  await expect(inbox.getByRole('status')).toHaveText(`Showing 50 of ${E2E_INBOX.total} enquiries`);
+  await expect(inbox.getByRole('status').filter({ hasText: /^Showing / })).toHaveText(`Showing 50 of ${E2E_INBOX.total} enquiries`);
   const enquiry = await holdRequests(page, url => url.pathname === '/api/cms/inbox' && url.searchParams.get('q') === E2E_INBOX.oldThai.query);
   try {
     await inbox.getByRole('searchbox').fill(E2E_INBOX.oldThai.query);
@@ -143,7 +191,7 @@ test('background refresh keeps content visible and an inbox search resolves its 
     await page.screenshot({ path: testInfo.outputPath('cms-inbox-mobile.png'), animations: 'disabled' });
   } finally { await enquiry.dispose(); }
   await expect(inbox.locator('[data-loading-panel]')).toHaveCount(0);
-  await expect(inbox.getByRole('status')).toHaveText('Showing 1 of 1 enquiries');
+  await expect(inbox.getByRole('status').filter({ hasText: /^Showing / })).toHaveText('Showing 1 of 1 enquiries');
   await expect(inbox.getByText(E2E_INBOX.oldThai.subject, { exact: true })).toBeVisible();
 });
 });

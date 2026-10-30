@@ -71,9 +71,10 @@ unpublished, and trashed detail records return HTTP 404.
 
 All nine main Page records remain published and control their page headings,
 summaries, and longer copy. Section records control homepage and company
-sections, shared calls to action, footer copy, and privacy text. Custom
-published Pages have their own routes;
-adding a page does not automatically add it to the primary navigation.
+sections, shared calls to action, footer copy, and privacy text. Existing
+custom published Pages retain their own routes. CMS users edit the copy and
+images of existing Pages and Sections; they cannot create or delete these
+records, reparent them, or change their layout order.
 
 Business copy, article bodies, gallery lists, route ports, coordinates, and
 media URLs are stored in MongoDB. Public components never fall back to local
@@ -87,9 +88,10 @@ Lower display-order numbers appear first in listings, value groups, and
 additional Sections; an omitted order is treated as zero. Equal values retain
 the server's identifier order. The migrated records preserve their original
 sequence. Established Section identifiers occupy designed template positions.
-New Sections append to their selected Page in display order; `shared` Sections
-append once before the footer on all public pages. Moving a Section to another
-parent removes it from its former page. A draft or trashed Section is hidden.
+Additional Sections render under their saved parent; generic `shared` Sections
+render once before the footer on all public pages. CMS editing preserves
+these relationships and positions. A historical unpublished or trashed
+Section stays hidden until explicitly saved or restored.
 
 ## Contact and privacy
 
@@ -119,36 +121,48 @@ claiming email delivery.
 
 ## CMS
 
-The Thai/English CMS at `/cms` requires an administrator sign-in. The overview
-uses `/cms`; Pages, Sections, Fleet, Routes, Projects, Services and News use
-their matching `/cms/<view>` paths. Enquiries, Trash and Account & tools use
-`/cms/enquiries`, `/cms/trash` and `/cms/account`; the media library uses
-`/cms/media`. These URLs support direct loading, refresh and browser history
+The Thai/English CMS at `/cms` requires an administrator sign-in. The Dashboard
+uses `/cms` and shows a website overview with task shortcuts. Pages, Fleet,
+Routes, Projects, Services and News use their matching `/cms/<view>` paths.
+Pages presents page cards; selecting one shows its introduction and existing
+text/image areas in website order. Shared/footer content has a separate group.
+Sections are managed within this page workflow; `/cms/sections` is removed.
+Collection links on relevant pages open their searchable item lists, where
+adding collection items remains available. Enquiries, Trash and Settings use
+`/cms/enquiries`, `/cms/trash` and `/cms/setting`; the media library uses
+`/cms/media`, and Administrators uses `/cms/users`. The former `/cms/account`
+URL redirects to `/cms/setting`. These URLs support direct loading, refresh and browser history
 while preserving unsaved workspace state during in-app navigation. Content
 editors remain dialogs within the current view.
 
 Thai is the default; the language selector remembers the choice in this browser.
 Switching the interface language preserves open editors and unsaved input.
 English and Thai website content remain separate editable fields. Its
-menu opens as an edge drawer. It provides content search and filters,
-bilingual editors, image preparation, publication status, 30-day Trash and
-restore, a media library, enquiries, and account tools.
+menu opens as an edge drawer. It provides searchable collection lists,
+bilingual editors, image preparation, 30-day Trash and restore, a media
+library, enquiries, website settings, and administrator tools. Page editors
+hide technical identifiers and structural settings and expose the copy and
+image fields used by their template. Pages and Sections cannot be newly
+deleted through the CMS, while historical Trash restoration remains available.
 
-**Account & tools → Website details** manages bilingual company names and
+**Settings → Website details** manages bilingual company names and
 addresses, a public phone number and email, and a map link. The public
 contact page uses these saved details; unverified optional fields stay blank.
+Settings also contains content export. The Contact page's CMS view links to
+Website details for company contact changes.
+Personal password changes live in the **User settings** dialog at `/cms/users`,
+opened from the signed-in administrator's row or the header avatar.
 
 Image selection stays in the browser until Save. Saved images are uploaded
 to Cloudinary and committed with the record. Save errors retain editor input;
 retries reuse the submission and any successful upload. Records use versions
 to prevent an older editor from overwriting a newer change.
 
-Earlier browser-local data is not silently discarded. **Review local content**
-checks the current browser's older `moe-content-v1` data and can import new
-type-and-ID combinations through the media upload workflow. Records already
-present on the server are compared before cleanup, and the original browser
-data can be exported before removal. Browser storage remains specific
-to the browser and origin, including its port.
+Earlier browser-local data is preserved, but local import and cleanup controls
+are not exposed in client settings. Legacy helpers remain for trusted
+maintenance and recovery. Browser storage remains specific to the browser
+and origin, including its port; any maintenance review must preserve existing
+server data and recovery archives.
 
 ## Routes map
 
@@ -185,14 +199,14 @@ visible.
 | File or directory | Responsibility |
 | --- | --- |
 | `src/lib/content.ts` | Language types, navigation labels, and link helpers |
-| `src/lib/cms-legacy.ts` | Explicit older-browser content review and import, with no embedded seed |
+| `src/lib/cms-legacy.ts` | Retained older-browser data helpers for trusted maintenance and recovery |
 | `src/lib/cms-types.ts` | Shared content, media, and enquiry types |
 | `src/lib/public-content.ts` | Published record projection for public components |
 | `src/lib/public-content-provider.tsx` | Server-provided public content context |
 | `src/lib/use-public-content.ts` | Public context access without browser-local content fallback |
 | `src/server/` | Database, authentication, validation, content, media, and enquiries |
 | `src/app/api/` | Authorized CMS endpoints and contact submission |
-| `src/components/CmsWorkspace.tsx` | CMS interface and local-content import |
+| `src/components/CmsWorkspace.tsx` | Dashboard, page content editing, collection lists, and CMS tools |
 | `src/components/Home.tsx` | Homepage sections |
 | `src/components/ContentPages.tsx` | Company, service, fleet/gallery, article, and custom Page layouts |
 | `src/components/EditorialContent.tsx` | Long-form paragraphs and additional database Sections |

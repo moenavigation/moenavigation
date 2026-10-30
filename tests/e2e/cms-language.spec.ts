@@ -1,18 +1,23 @@
 import type { Locator, Page } from '@playwright/test';
-import { test, expect, E2E_ADMIN } from './fixtures';
+import { test, expect, E2E_ADMIN, solveLoginSlide } from './fixtures';
 import { cmsMainThai } from '../../src/lib/cms-main-th';
 import { cmsFieldsThai } from '../../src/lib/cms-fields-th';
 import { cmsMessagesThai } from '../../src/lib/cms-messages-th';
+import { translateCms } from '../../src/lib/cms-locale';
 
 // An untouched browser has no stored preference. Existing workflow tests opt in
 // to English through the fixture; these tests exercise the actual Thai default.
 test.use({ cmsLocale: 'th' });
 
-function languageControl(scope: Page | Locator) {
-  return scope.getByRole('group', { name: /^(CMS language|ภาษาของระบบจัดการเว็บไซต์)$/ });
-}
 function headerLanguage(page: Page) {
   return page.locator('header [data-cms-language-switch]');
+}
+async function showTextField(editor: Locator, label: string) {
+  const field = editor.getByLabel(label, { exact: true });
+  for (const group of await field.locator('xpath=ancestor::details').all()) {
+    if (!await group.evaluate(element => element.hasAttribute('open'))) await group.locator(':scope > summary').click();
+  }
+  return field;
 }
 async function expectDrawerSiteLink(drawer: Locator, locale: 'th' | 'en') {
   const link = drawer.getByRole('link', { name: locale === 'th' ? cmsMainThai['View website in a new tab'] : 'View website in a new tab', exact: true });
@@ -39,8 +44,8 @@ async function signInThai(page: Page) {
   await expect(headerLanguage(page)).toHaveAttribute('aria-label', cmsMainThai['Switch to English']);
   await page.locator('input[name="username"]').fill(E2E_ADMIN.username);
   await page.locator('input[name="password"]').fill(E2E_ADMIN.password);
-  await page.getByRole('button', { name: cmsMainThai['Sign in'], exact: true }).click();
-  await expect(page.getByRole('heading', { name: cmsMainThai['Content overview'], exact: true })).toBeVisible();
+  await solveLoginSlide(page);
+  await expect(page.getByRole('heading', { name: cmsMainThai['Dashboard'], exact: true })).toBeVisible();
 }
 
 async function expectStickyHeader(page: Page) {
@@ -101,7 +106,7 @@ test('switching language preserves sign-in input and translates an existing erro
   await page.goto('/cms');
   await page.locator('input[name="username"]').fill('language-test');
   await page.locator('input[name="password"]').fill('unsaved-test-password');
-  await page.getByRole('button', { name: cmsMainThai['Sign in'], exact: true }).click();
+  await solveLoginSlide(page);
   await expect(page.getByRole('main').getByRole('alert')).toContainText(cmsMessagesThai[message]);
   await headerLanguage(page).click();
   await expect(page.getByRole('main').getByRole('alert')).toContainText(message);
@@ -112,24 +117,21 @@ test('switching language preserves sign-in input and translates an existing erro
 test.describe('mobile content editor', () => {
 test.use({ viewport: { width: 390, height: 844 } });
 
-test('content draft survives language changes inside its dialog without saving', async ({ page, db }, testInfo) => {
+test('mobile content editor keeps both language fields without a dialog language switch', async ({ page, db }, testInfo) => {
   await signInThai(page);
-  await headerLanguage(page).click();
   const recordCount = await db.collection('moe_content').countDocuments();
-  await page.getByRole('button', { name: 'Create content', exact: true }).click();
+  await page.goto('/cms/news');
+  await page.getByRole('button', { name: cmsMainThai['Add news'], exact: true }).click();
   const editor = page.locator('dialog[open]').filter({ has: page.locator('#cms-content-editor') });
-  await editor.getByLabel('Title · English', { exact: true }).fill('An unsaved English title');
-  await editor.getByLabel('Title · Thai', { exact: true }).fill('ชื่อภาษาไทยที่ยังไม่บันทึก');
-  await languageControl(editor).getByRole('button', { name: 'ไทย', exact: true }).click();
-  await expect(editor).toHaveAccessibleName(cmsMainThai['Create content']);
+  await expect(editor.locator('[data-cms-language-switch]')).toHaveCount(0);
+  await (await showTextField(editor, cmsFieldsThai['Title · English'])).fill('An unsaved English title');
+  await (await showTextField(editor, cmsFieldsThai['Title · Thai'])).fill('ชื่อภาษาไทยที่ยังไม่บันทึก');
+  await expect(editor).toHaveAccessibleName(cmsMainThai['Add news']);
   await expect(editor.getByLabel(cmsFieldsThai['Title · English'], { exact: true })).toHaveValue('An unsaved English title');
   await expect(editor.getByLabel(cmsFieldsThai['Title · Thai'], { exact: true })).toHaveValue('ชื่อภาษาไทยที่ยังไม่บันทึก');
   await expect(editor.getByRole('button', { name: cmsMainThai['Save'], exact: true })).toBeVisible();
   await expect.poll(() => editor.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath('thai-editor-mobile.png'), animations: 'disabled' });
-  await languageControl(editor).getByRole('button', { name: 'English', exact: true }).click();
-  await expect(editor.getByLabel('Title · English', { exact: true })).toHaveValue('An unsaved English title');
-  await expect(editor.getByLabel('Title · Thai', { exact: true })).toHaveValue('ชื่อภาษาไทยที่ยังไม่บันทึก');
   expect(await db.collection('moe_content').countDocuments()).toBe(recordCount);
 });
 });
@@ -143,8 +145,8 @@ test('Thai and English mobile navigation stay within the viewport and restore fo
   const drawer = page.getByRole('dialog', { name: cmsMainThai['CMS navigation'], exact: true });
   await expect(drawer).toBeVisible();
   await expect(drawer.getByRole('heading', { name: cmsMainThai['CMS navigation'], exact: true })).toHaveCount(0);
-  await expect(languageControl(drawer)).toHaveCount(0);
-  await expect(drawer.getByRole('button', { name: cmsMainThai['Content overview'], exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(drawer.locator('[data-cms-language-switch]')).toHaveCount(0);
+  await expect(drawer.getByRole('button', { name: cmsMainThai['Dashboard'], exact: true })).toHaveAttribute('aria-current', 'page');
   await expectDrawerSiteLink(drawer, 'th');
   await expect.poll(() => drawer.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath('thai-navigation-mobile.png'), animations: 'disabled' });
@@ -156,7 +158,7 @@ test('Thai and English mobile navigation stay within the viewport and restore fo
   await expect(headerLanguage(page)).toHaveText('EN');
   await page.getByRole('button', { name: 'Open CMS navigation', exact: true }).click();
   const englishDrawer = page.getByRole('dialog', { name: 'CMS navigation', exact: true });
-  await expect(englishDrawer.getByRole('button', { name: 'Content overview', exact: true })).toBeVisible();
+  await expect(englishDrawer.getByRole('button', { name: 'Dashboard', exact: true })).toBeVisible();
   await expectDrawerSiteLink(englishDrawer, 'en');
   await expect.poll(() => englishDrawer.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
   await page.keyboard.press('Escape');
@@ -178,16 +180,22 @@ test('signed-in header keeps the language control on the right in both languages
   await expect(header.getByRole('link', { name: /^(เปิดเว็บไซต์ในแท็บใหม่|View website in a new tab)$/ })).toHaveCount(0);
   const menu = header.locator('button[aria-haspopup="dialog"]');
   const language = headerLanguage(page);
+  const avatar = header.locator('button[class*="avatar"]');
+  await expect(avatar).toHaveAccessibleName(/.+/);
   const onSameRow = async () => {
     const menuBox = await menu.boundingBox();
     const languageBox = await language.boundingBox();
     const headerBox = await header.boundingBox();
+    const avatarBox = await avatar.boundingBox();
+    expect(avatarBox).not.toBeNull();
     expect(menuBox).not.toBeNull();
     expect(languageBox).not.toBeNull();
     expect(headerBox).not.toBeNull();
     expect(Math.abs(menuBox!.y + menuBox!.height / 2 - languageBox!.y - languageBox!.height / 2)).toBeLessThan(2);
     expect(languageBox!.x).toBeGreaterThan(menuBox!.x + menuBox!.width);
-    expect(headerBox!.x + headerBox!.width - languageBox!.x - languageBox!.width).toBeLessThan(24);
+    expect(Math.abs(avatarBox!.y + avatarBox!.height / 2 - languageBox!.y - languageBox!.height / 2)).toBeLessThan(2);
+    expect(languageBox!.x + languageBox!.width).toBeLessThanOrEqual(avatarBox!.x + 1);
+    expect(headerBox!.x + headerBox!.width - avatarBox!.x - avatarBox!.width).toBeLessThan(24);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   };
   await onSameRow();
@@ -206,7 +214,7 @@ test('signed-in header keeps the language control on the right in both languages
   await menu.click();
   const drawer = page.getByRole('dialog', { name: 'CMS navigation', exact: true });
   await expectDrawerSiteLink(drawer, 'en');
-  const accountLink = drawer.getByRole('button', { name: 'Account & tools', exact: true });
+  const accountLink = drawer.getByRole('button', { name: 'Settings', exact: true });
   await accountLink.scrollIntoViewIfNeeded();
   await expect(accountLink).toBeInViewport();
   await page.screenshot({ path: testInfo.outputPath('english-navigation-narrow.png'), animations: 'disabled' });
@@ -219,35 +227,36 @@ test('signed-in header keeps the language control on the right in both languages
 
 test('Thai content form saves original enum values and both content languages unchanged', async ({ page, context, db }) => {
   await signInThai(page);
-  await page.getByRole('button', { name: cmsMainThai['Create content'], exact: true }).click();
-  const editor = page.getByRole('dialog', { name: cmsMainThai['Create content'], exact: true });
-  const contentType = editor.getByRole('combobox', { name: cmsFieldsThai['Content type'], exact: true });
-  await contentType.selectOption({ label: cmsFieldsThai.Vessel });
-  await expect(contentType).toHaveValue('Vessel');
-  const id = 'e2e-thai-cms-vessel';
+  await page.goto('/cms/fleet');
+  await page.getByRole('button', { name: cmsMainThai['Add vessel'], exact: true }).click();
+  const editor = page.getByRole('dialog', { name: cmsMainThai['Add vessel'], exact: true });
+  await expect(editor.getByRole('combobox', { name: cmsFieldsThai['Content type'], exact: true })).toHaveCount(0);
   // Deliberately use a translated UI word as content: saved text must stay exact.
   const title = 'Save';
   const titleTh = 'เรือทดสอบจากระบบภาษาไทย';
   const summary = 'Original English vessel summary entered in the Thai interface.';
   const summaryTh = 'เนื้อหาภาษาไทยที่กรอกผ่านหน้าจัดการภาษาไทย';
-  await editor.getByLabel(cmsFieldsThai['Title · English'], { exact: true }).fill(title);
-  await editor.getByLabel(cmsFieldsThai['Title · Thai'], { exact: true }).fill(titleTh);
-  await editor.getByLabel(cmsMainThai['URL identifier']).fill(id);
+  await (await showTextField(editor, cmsFieldsThai['Title · English'])).fill(title);
+  await (await showTextField(editor, cmsFieldsThai['Title · Thai'])).fill(titleTh);
   await editor.getByLabel(`${cmsFieldsThai['Vessel type']} · ${cmsFieldsThai.English}`, { exact: true }).fill('Container');
   await editor.getByLabel(`${cmsFieldsThai['Vessel type']} · ${cmsFieldsThai.Thai}`, { exact: true }).fill('เรือตู้คอนเทนเนอร์');
   await editor.getByLabel(cmsFieldsThai['Summary · English'], { exact: true }).fill(summary);
   await editor.getByLabel(cmsFieldsThai['Summary · Thai'], { exact: true }).fill(summaryTh);
   const media = await db.collection('moe_media').findOne({ state: 'committed' });
   expect(media).not.toBeNull();
-  const imageLabel = cmsFieldsThai['Browse library for {label}'].replace('{label}', cmsFieldsThai['Main image']);
+  const imageLabel = translateCms('th', 'Browse library for {label}', { label: translateCms('th', 'Main image') });
   await editor.getByRole('button', { name: imageLabel, exact: true }).click();
+  const searchLabel = translateCms('th', 'Search library for {label}', { label: translateCms('th', 'Main image') });
+  await editor.getByRole('searchbox', { name: searchLabel, exact: true }).fill(String(media!.title));
   await editor.getByRole('button', { name: media!.title, exact: true }).click();
   await editor.getByRole('button', { name: cmsMainThai.Save, exact: true }).click();
   await expect(editor).not.toBeVisible();
-  expect(await db.collection('moe_content').findOne({ id })).toMatchObject({
+  const saved = await db.collection('moe_content').findOne({ title, type: 'Vessel' });
+  expect(saved).toMatchObject({
     type: 'Vessel', title, titleTh, description: summary, descriptionTh: summaryTh,
     category: 'Container', categoryTh: 'เรือตู้คอนเทนเนอร์', status: 'Published', revision: 1,
   });
+  const id = String(saved!.id);
   const publicPage = await context.newPage();
   await publicPage.goto(`/fleet/${id}`);
   await expect(publicPage.getByRole('heading', { level: 1 })).toHaveText(title);

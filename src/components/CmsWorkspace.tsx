@@ -2,20 +2,21 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { Check, ChevronDown, Container, Download, FileText, Globe2, ImagePlus, Inbox, LoaderCircle, LockKeyhole, LogOut, Menu, Newspaper, Plus, RefreshCw, RotateCcw, Route, Search, Settings, Ship, UserRound, Trash2, UploadCloud, X } from 'lucide-react';
+import { ArrowRight, BarChart3, Check, ChevronDown, Container, Download, FileText, Globe2, ImagePlus, Inbox, History, Link2, LoaderCircle, LogOut, Menu, Newspaper, Plus, RefreshCw, RotateCcw, Route, Search, Settings, Ship, UserRound, Trash2, UploadCloud, X } from 'lucide-react';
 import { legacyRecordKey, readLegacySnapshot, legacyRecordMatches, legacyMediaMatches, rememberLegacyRecord, rememberLegacyMedia, clearVerifiedLegacy, hasLegacyArchive, restoreLegacyArchive, getLegacySubmission, saveLegacySubmission, translateLegacyRecord, legacyImageUrl, type LegacyRecord, type LegacySnapshot } from '@/lib/cms-legacy';
-import { corePageIds, type ContentRecord, type MediaItem, type Enquiry, type SiteSettings } from '@/lib/cms-types';
+import { contentTypes, corePageIds, type CmsContentSummary, type ContentRecord, type MediaItem, type Enquiry, type SiteSettings } from '@/lib/cms-types';
 import { recordSchema, siteSettingsSchema } from '@/lib/validation';
-import { cmsPageLabel, contentBelongsToPage, publishedContentUrl } from '@/lib/cms-navigation';
+import { cmsPageLabel, publishedContentUrl } from '@/lib/cms-navigation';
 import { cmsPathForView, cmsViewFromPathname } from '@/lib/cms-routes';
 import { containDialogFocus } from '@/lib/dialog-focus';
-import { CmsRequestError, cmsErrorText, cmsRequest, prepareCmsImage, resolveSubmission, mapRecordImages, recordImageUrls, parseRouteCoordinates, refreshWebsiteDetailsDraft, createEditorDraftExport, changeEditorContentType, type PreparedImage } from '@/lib/cms-client';
+import { CmsRequestError, cmsErrorText, cmsRequest, prepareCmsImage, resolveSubmission, mapRecordImages, recordImageUrls, parseRouteCoordinates, refreshWebsiteDetailsDraft, createEditorDraftExport, type PreparedImage } from '@/lib/cms-client';
 import BrandMark from './BrandMark';
 import LoadingScreen, { LoadingPanel } from './LoadingScreen';
 import CmsContentFields, { type ImageTarget } from './CmsContentFields';
 import useCmsInbox from './useCmsInbox';
+import useCmsCollectionPage from './useCmsCollectionPage';
 import type { InboxStatus } from '@/lib/inbox-query';
 import styles from './CmsWorkspace.module.css';
 import { useCmsLocale } from '@/lib/cms-locale';
@@ -23,9 +24,22 @@ import { href } from '@/lib/content';
 import CmsLanguageSwitch from './CmsLanguageSwitch';
 import CmsLoginForm from './CmsLoginForm';
 import CmsUsersManager from './CmsUsersManager';
+import CmsDashboard from './CmsDashboard';
+import CmsPageManager from './CmsPageManager';
+import useCmsMediaSearch from './useCmsMediaSearch';
+import { collectionEditorTitle, createCollectionId, newCollectionDraft } from '@/lib/cms-collection-editor';
+import type { CmsUser } from '@/lib/cms-roles';
+import CmsTrashManager from './CmsTrashManager';
+import CmsActivityLog from './CmsActivityLog';
+import CmsUsageDashboard from './CmsUsageDashboard';
+import CmsAvatar from './CmsAvatar';
+import useCmsEmailSetup from './useCmsEmailSetup';
+import { CmsEmailSetupCard, CmsEmailSetupNotice, CmsNotificationSend } from './CmsEmailSetup';
+import CmsEnquiryRecipients from './CmsEnquiryRecipients';
+import type { CmsTrashItem } from '@/lib/cms-trash';
 
-type User = { username: string };
-type Section = 'content' | 'trash' | 'inbox' | 'media' | 'account' | 'users';
+type User = CmsUser;
+type Section = 'content' | 'trash' | 'inbox' | 'media' | 'setting' | 'users' | 'logs' | 'usage';
 const typeOptions: { title: string; type: ContentRecord['type']; icon: typeof Ship }[] = [
   { title: 'Pages', type: 'Page', icon: FileText }, { title: 'Sections', type: 'Section', icon: FileText }, { title: 'Fleet', type: 'Vessel', icon: Ship },
   { title: 'Routes', type: 'Route', icon: Route }, { title: 'Projects', type: 'Project', icon: Container },
@@ -33,10 +47,26 @@ const typeOptions: { title: string; type: ContentRecord['type']; icon: typeof Sh
 ];
 const enquiryStatuses: Enquiry['status'][] = ['New', 'In progress', 'Resolved'];
 const blankRecord = (type: ContentRecord['type']): ContentRecord => ({ id: '', type, title: '', titleTh: '', description: '', descriptionTh: '', image: '', category: '', status: 'Published', revision: 0 });
-const slug = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 100);
 const corePage = (record: ContentRecord) => record.type === 'Page' && (corePageIds as readonly string[]).includes(record.id);
 const MAX_ATTEMPTS = 3;
-const fieldNames: Record<string, string> = { caption: 'English image caption', captionTh: 'Thai image caption', parentId: 'Parent page', order: 'Display order', eyebrow: 'English eyebrow', eyebrowTh: 'Thai eyebrow', icon: 'Icon', mobileImage: 'Mobile image', gallery: 'Gallery images', bodyHeading: 'English content heading', bodyHeadingTh: 'Thai content heading', origin: 'Origin port', destination: 'Destination port', waypoints: 'Route coordinates', id: 'URL identifier', type: 'Content type', title: 'English title', titleTh: 'Thai title', description: 'English summary', descriptionTh: 'Thai summary', image: 'Content image', category: 'English category', categoryTh: 'Thai category', status: 'Status', body: 'English content', bodyTh: 'Thai content', date: 'Publication date', imageAlt: 'English image description', imageAltTh: 'Thai image description', companyName: 'English company name', companyNameTh: 'Thai company name', officeAddress: 'English office address', officeAddressTh: 'Thai office address', phone: 'Public phone number', email: 'Public email address', mapUrl: 'Map link' };
+const REFRESH_COOLDOWN_MS = 3000;
+type MediaUsage = { media: { id: string; title: string }; usages: { type: ContentRecord['type'] | 'User'; id: string; title: string; titleTh?: string; status: ContentRecord['status']; parentId?: string; deletedAt?: string; fields: ('image' | 'mobileImage' | 'gallery' | 'avatar')[] }[] };
+function mediaUsageHref(usage: { type: ContentRecord['type'] | 'User'; id: string; parentId?: string; deletedAt?: string }) {
+  const key = `${usage.type}:${usage.id}`;
+  if (usage.deletedAt) return `/cms/trash?item=${encodeURIComponent(key)}`;
+  if (usage.type === 'User') return `/cms/users?edit=${encodeURIComponent(key)}`;
+  const params = new URLSearchParams();
+  if (usage.type === 'Page') params.set('page', usage.id);
+  if (usage.type === 'Section' && usage.parentId) params.set('page', usage.parentId);
+  params.set('edit', key);
+  return `${cmsPathForView('content', usage.type)}?${params.toString()}`;
+}
+const emptySummary: CmsContentSummary = {
+  counts: Object.fromEntries(contentTypes.map(type => [type, { total: 0, published: 0, draft: 0 }])) as CmsContentSummary['counts'],
+  categories: {}, nextOrder: {}, recent: [], trashCount: 0,
+};
+const MEDIA_PAGE_SIZE = 30;
+const fieldNames: Record<string, string> = { caption: 'English image caption', captionTh: 'Thai image caption', parentId: 'Parent page', order: 'Display order', eyebrow: 'English eyebrow', eyebrowTh: 'Thai eyebrow', icon: 'Icon', mobileImage: 'Mobile image', gallery: 'Gallery images', bodyHeading: 'English content heading', bodyHeadingTh: 'Thai content heading', origin: 'Origin port', destination: 'Destination port', waypoints: 'Route coordinates', id: 'URL identifier', type: 'Content type', title: 'English title', titleTh: 'Thai title', description: 'English summary', descriptionTh: 'Thai summary', image: 'Content image', category: 'English category', categoryTh: 'Thai category', status: 'Status', body: 'English content', bodyTh: 'Thai content', date: 'Date', imageAlt: 'English image description', imageAltTh: 'Thai image description', companyName: 'English company name', companyNameTh: 'Thai company name', officeAddress: 'English office address', officeAddressTh: 'Thai office address', phone: 'Public phone number', email: 'Public email address', mapUrl: 'Map link' };
 const specFieldNames: Record<string, string> = { imo: 'IMO number', yearBuilt: 'Year built', lengthM: 'Length overall', beamM: 'Beam', draftM: 'Vessel draft', deadweightT: 'Deadweight', capacityTeu: 'Container capacity', flag: 'English flag state', flagTh: 'Thai flag state', availability: 'English availability', availabilityTh: 'Thai availability' };
 const validationMessages = (issues: { path: PropertyKey[]; message: string }[]) => issues.map(issue => `${issue.path[0] === 'vesselSpecs' ? specFieldNames[String(issue.path[1])] || 'Vessel specifications' : fieldNames[String(issue.path[0])] || 'Content'}: ${issue.message}`).join(' ');
 const notificationLabels = { not_configured: 'Email not configured', pending: 'Email pending', sending: 'Sending email', sent: 'Email accepted', failed: 'Email failed', review: 'Email needs review' };
@@ -56,7 +86,7 @@ function Modal({ open, onClose, title, children, busy = false, compact = false, 
     return () => { if (dialog.open) dialog.close(); document.body.style.overflow = overflow; if (previous?.isConnected) previous.focus(); };
   }, [open]);
   return <dialog ref={ref} aria-label={t(title)} className={`${styles.dialog} ${compact ? styles.confirmDialog : ''} ${actions ? styles.actionDialog : ''}`} onKeyDown={containDialogFocus} onCancel={event => { event.preventDefault(); if (!busy) onClose(); }} onPointerDown={event => { backdropPointerRef.current = event.target === event.currentTarget; }} onClick={event => { if (!busy && event.target === event.currentTarget && backdropPointerRef.current) onClose(); backdropPointerRef.current = false; }}>
-    {open && <div className={styles.dialogBody}><div className={styles.dialogHeading}><h2>{t(title)}</h2><div className={styles.dialogHeadingControls}><CmsLanguageSwitch compact /><button ref={closeRef} type="button" className={styles.iconButton} aria-label={t("Close {title}", { title: t(title) })} disabled={busy} onClick={onClose}><X size={22} /></button></div></div>{actions ? <><div className={styles.dialogScroll} tabIndex={0} role="region" aria-label={t("{title} fields", { title: t(title) })}>{children}</div><div className={styles.dialogActions}>{actions}</div></> : children}</div>}
+    {open && <div className={styles.dialogBody}><div className={styles.dialogHeading}><h2>{t(title)}</h2><div className={styles.dialogHeadingControls}><button ref={closeRef} type="button" className={styles.iconButton} aria-label={t("Close {title}", { title: t(title) })} disabled={busy} onClick={onClose}><X size={22} /></button></div></div>{actions ? <><div className={styles.dialogScroll} tabIndex={0} role="region" aria-label={t("{title} fields", { title: t(title) })}>{children}</div><div className={styles.dialogActions}>{actions}</div></> : children}</div>}
   </dialog>;
 }
 function NavigationDrawer({ open, onClose, children }: { open: boolean; onClose: () => void; children: ReactNode }) {
@@ -136,37 +166,54 @@ export default function CmsWorkspace() {
   const { t, locale } = useCmsLocale();
   const router = useRouter();
   const pathname = usePathname();
-  const { section, type: contentType } = cmsViewFromPathname(pathname);
+  const searchParams = useSearchParams();
+  const { section, type: contentType } = cmsViewFromPathname(pathname, searchParams);
   const dateLocale = locale === 'th' ? 'th-TH' : 'en-GB';
   const formatDate = (value?: string) => value ? new Date(value).toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
   const recordTitle = (record: { title: string; titleTh?: string }) => locale === 'th' ? record.titleTh || record.title : record.title || record.titleTh || '';
   const localizedPageLabel = (page: ContentRecord) => (corePageIds as readonly string[]).includes(page.id) ? t(cmsPageLabel(page)) : recordTitle(page);
+  const currentTrashTarget = useRef<string | null>(null);
+  useEffect(() => { currentTrashTarget.current = section === 'trash' ? searchParams.get('item') : null; }, [section, searchParams]);
   const [user, setUser] = useState<User | null>(null);
+  const emailSetup = useCmsEmailSetup(user?.id ?? null, Boolean(user) && (section === 'inbox' || section === 'setting'));
   const [sessionReady, setSessionReady] = useState(false);
   const [workspaceReady, setWorkspaceReady] = useState(false);
   const [loading, setLoading] = useState(false);
   const workspaceLoad = useRef<AbortController | null>(null);
+  const mediaPageRequest = useRef<AbortController | null>(null);
+  const lastManualRefresh = useRef(0);
+  const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [refreshCoolingDown, setRefreshCoolingDown] = useState(false);
+  const [refreshFailures, setRefreshFailures] = useState<{ area: string; message: string }[]>([]);
   const [busy, setBusy] = useState('');
+  const notificationRequest = useRef<AbortController | null>(null);
+  useEffect(() => () => {
+    if (!notificationRequest.current) return;
+    notificationRequest.current.abort();
+    notificationRequest.current = null;
+    setBusy(current => current === 'Sending notification…' ? '' : current);
+  }, [user?.id]);
   const [records, setRecords] = useState<ContentRecord[]>([]);
+  const [summary, setSummary] = useState<CmsContentSummary>(emptySummary);
+  const [contentRevision, setContentRevision] = useState(0);
   const [uploadedMedia, setUploadedMedia] = useState<MediaItem[]>([]);
   const [mediaCursor, setMediaCursor] = useState<string | null>(null);
   const [websiteDetails, setWebsiteDetails] = useState<{ saved: SiteSettings; draft: SiteSettings } | null>(null);
   const [settingsError, setSettingsError] = useState('');
   const [settingsNotice, setSettingsNotice] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [trashType, setTrashType] = useState('All');
-  const type = section === 'trash' ? trashType : contentType;
-  const [status, setStatus] = useState('All');
+  const [userSettingsOpen, setUserSettingsOpen] = useState(false);
+  const type = contentType;
+  const [enquiryStatus, setEnquiryStatus] = useState<InboxStatus>('All');
   const [search, setSearch] = useState('');
   const workspaceSearchRef = useRef<HTMLInputElement>(null);
-  const [pageFilter, setPageFilter] = useState('All');
-  const [limit, setLimit] = useState(12);
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
   const [loginError, setLoginError] = useState('');
   const [confirmation, setConfirmation] = useState<{ message: string; action: string; params?: Record<string, string | number> } | null>(null);
   const confirmationResolver = useRef<((accepted: boolean) => void) | null>(null);
   const [editing, setEditing] = useState<ContentRecord | null>(null);
+  const editLinkHandled = useRef<string | null>(null);
   const [original, setOriginal] = useState<ContentRecord | null>(null);
   const [editorError, setEditorError] = useState('');
   const editorErrorRef = useRef<HTMLDivElement>(null);
@@ -178,9 +225,15 @@ export default function CmsWorkspace() {
   const [preparing, setPreparing] = useState(false);
   const [deleteRecord, setDeleteRecord] = useState<ContentRecord | null>(null);
   const [mediaSearch, setMediaSearch] = useState('');
+  const [mediaSearchRevision, setMediaSearchRevision] = useState(0);
+  const [mediaPage, setMediaPage] = useState(0);
   const mediaSearchRef = useRef<HTMLInputElement>(null);
   const [mediaError, setMediaError] = useState('');
+  const [mediaUploadOpen, setMediaUploadOpen] = useState(false);
+  const [mediaUploadError, setMediaUploadError] = useState('');
   const [mediaNotice, setMediaNotice] = useState('');
+  const [mediaUsage, setMediaUsage] = useState<{ item: MediaItem; result: MediaUsage | null; loading: boolean; error: string } | null>(null);
+  const mediaUsageRequest = useRef<AbortController | null>(null);
   const [preparedMedia, setPreparedMedia] = useState<PreparedImage | null>(null);
   const [mediaTitle, setMediaTitle] = useState('');
   const [mediaPreparing, setMediaPreparing] = useState(false);
@@ -197,17 +250,27 @@ export default function CmsWorkspace() {
   const legacyPrepared = useRef(new Map<string, PreparedImage>());
   const [importError, setImportError] = useState('');
   const [importProgress, setImportProgress] = useState('');
+  const editorBaseline = useRef<ContentRecord | null>(null);
   const editorSubmission = useRef(''); const mediaSubmission = useRef('');
   const attemptedEditor = useRef(''); const attemptedMedia = useRef(''); const reviewedLegacy = useRef<LegacyRecord | null>(null);
   const editorStaged = useRef(new Map<string, MediaItem>()); const libraryStaged = useRef<MediaItem | null>(null);
   const uploadVersion = useRef(0); const mediaVersion = useRef(0);
   const importSubmissions = useRef(new Map<string, { id: string; staged?: MediaItem; attempts: number }>());
-  const inboxStatus: InboxStatus = section === 'inbox' && enquiryStatuses.includes(status as Enquiry['status']) ? status as Enquiry['status'] : 'All';
+  const inboxStatus: InboxStatus = section === 'inbox' ? enquiryStatus : 'All';
   const inbox = useCmsInbox(Boolean(user), section === 'inbox' ? search : '', inboxStatus);
   const { refresh: refreshInbox } = inbox;
+  const collectionType = section === 'content' && !['All', 'Page', 'Section'].includes(type) ? type as Exclude<ContentRecord['type'], 'Page' | 'Section'> : null;
+  const collectionPage = useCmsCollectionPage(collectionType, search, Boolean(user), contentRevision);
   const media = uploadedMedia;
-  const filteredMedia = media.filter(item => item.title.toLocaleLowerCase().includes(mediaSearch.trim().toLocaleLowerCase()));
-  const editorDirty = Boolean(editing && (recordImageUrls(editing).some(url => Boolean(editorImages[url])) || routeText !== (original?.waypoints || []).map(point => point.join(', ')).join('\n') || JSON.stringify(editing) !== JSON.stringify(original || blankRecord(editing.type))));
+  const mediaSearching = Boolean(mediaSearch.trim());
+  const searchedMedia = useCmsMediaSearch(mediaSearch, Boolean(user) && section === 'media', mediaSearchRevision);
+  const filteredMedia = mediaSearching ? searchedMedia.items : media;
+  const activeMediaCursor = mediaSearching ? searchedMedia.nextCursor : mediaCursor;
+  const mediaPageCount = Math.max(1, Math.ceil(filteredMedia.length / MEDIA_PAGE_SIZE));
+  const currentMediaPage = Math.min(mediaPage, mediaPageCount - 1);
+  const mediaPageStart = currentMediaPage * MEDIA_PAGE_SIZE;
+  const visibleMedia = filteredMedia.slice(mediaPageStart, mediaPageStart + MEDIA_PAGE_SIZE);
+  const editorDirty = Boolean(editing && (recordImageUrls(editing).some(url => Boolean(editorImages[url])) || routeText !== (original?.waypoints || []).map(point => point.join(', ')).join('\n') || JSON.stringify(editing) !== JSON.stringify(original || editorBaseline.current || blankRecord(editing.type))));
   const settingsDirty = Boolean(websiteDetails && JSON.stringify(websiteDetails.saved) !== JSON.stringify(websiteDetails.draft));
   const publishedPreview = original ? publishedContentUrl(original, records, 'th') : null;
   function confirmAction(message: string, action: string, params?: Record<string, string | number>) {
@@ -228,21 +291,36 @@ export default function CmsWorkspace() {
   const load = useCallback(async () => {
     refreshInbox();
     workspaceLoad.current?.abort();
+    mediaPageRequest.current?.abort();
+    mediaPageRequest.current = null;
+    setBusy(current => current === 'Loading more images…' ? '' : current);
     const controller = new AbortController(); workspaceLoad.current = controller;
     const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(65_000)]);
-    setLoading(true);
-    const results = await Promise.allSettled([cmsRequest<{ records: ContentRecord[] }>('/api/cms/content', { signal }), cmsRequest<{ media: MediaItem[]; nextCursor: string | null }>('/api/cms/media', { signal }), cmsRequest<{ settings: SiteSettings }>('/api/cms/settings', { signal })]);
+    setLoading(true); setRefreshFailures([]); setError('');
+    setContentRevision(value => value + 1);
+    setMediaSearchRevision(value => value + 1);
+    const results = await Promise.allSettled([cmsRequest<{ records: ContentRecord[]; summary: CmsContentSummary }>('/api/cms/content?scope=overview', { signal }), cmsRequest<{ media: MediaItem[]; nextCursor: string | null }>('/api/cms/media', { signal }), cmsRequest<{ settings: SiteSettings }>('/api/cms/settings', { signal })]);
     if (controller.signal.aborted) return;
-    if (results[0].status === 'fulfilled') setRecords(results[0].value.records);
+    if (results[0].status === 'fulfilled') { setRecords(results[0].value.records); setSummary(results[0].value.summary); }
     if (results[1].status === 'fulfilled') { setUploadedMedia(results[1].value.media); setMediaCursor(results[1].value.nextCursor); }
     if (results[2].status === 'fulfilled') { const settings = results[2].value.settings; setWebsiteDetails(current => refreshWebsiteDetailsDraft(current, settings)); }
-    const failed = results.find(result => result.status === 'rejected'); setError(failed?.status === 'rejected' ? cmsErrorText(failed.reason) : ''); setWorkspaceReady(true); setLoading(false); workspaceLoad.current = null;
+    setRefreshFailures(results.flatMap((result, index) => result.status === 'rejected' ? [{ area: ['Content', 'Media library', 'Website details'][index], message: cmsErrorText(result.reason) }] : []));
+    setWorkspaceReady(true); setLoading(false); workspaceLoad.current = null;
   }, [refreshInbox]);
+  function refreshWorkspace() {
+    if (workspaceLoad.current || busy || searchedMedia.loadingMore || Date.now() - lastManualRefresh.current < REFRESH_COOLDOWN_MS) return;
+    lastManualRefresh.current = Date.now();
+    setRefreshCoolingDown(true);
+    if (refreshTimer.current) clearTimeout(refreshTimer.current);
+    refreshTimer.current = setTimeout(() => { setRefreshCoolingDown(false); refreshTimer.current = null; }, REFRESH_COOLDOWN_MS);
+    void load();
+  }
   function invalidateWorkspaceRefresh() { workspaceLoad.current?.abort(); workspaceLoad.current = null; setLoading(false); }
+  useEffect(() => () => { if (refreshTimer.current) clearTimeout(refreshTimer.current); }, []);
   useEffect(() => {
     let cancelled = false;
     cmsRequest<{ user: User | null }>('/api/cms/session').then(result => { if (!cancelled) { setUser(result.user); if (result.user) void load(); } }).catch(cause => { if (!cancelled) setLoginError(cmsErrorText(cause)); }).finally(() => { if (!cancelled) setSessionReady(true); });
-    function expired() { invalidateWorkspaceRefresh(); refreshInbox(); setUser(null); setLoginError('Your session has expired. Sign in again to continue. Your open editor is preserved.'); }
+    function expired() { invalidateWorkspaceRefresh(); refreshInbox(); mediaUsageRequest.current?.abort(); setMediaUsage(null); setUser(null); setUserSettingsOpen(false); setLoginError('Your session has expired. Sign in again to continue. Your open editor is preserved.'); }
     window.addEventListener('moe-cms-session-expired', expired);
     return () => { cancelled = true; workspaceLoad.current?.abort(); window.removeEventListener('moe-cms-session-expired', expired); };
   }, [load, refreshInbox]);
@@ -252,13 +330,13 @@ export default function CmsWorkspace() {
     window.addEventListener('beforeunload', beforeUnload); return () => window.removeEventListener('beforeunload', beforeUnload);
   }, [editorDirty, preparedMedia, settingsDirty, preparing, mediaPreparing, busy]);
   useEffect(() => () => { Object.values(imagesRef.current).forEach(image => URL.revokeObjectURL(image.preview)); legacyPrepared.current.forEach(image => URL.revokeObjectURL(image.preview)); }, []);
-  function resetEditorImages() { Object.values(imagesRef.current).forEach(image => URL.revokeObjectURL(image.preview)); imagesRef.current = {}; setEditorImages({}); }
+  const resetEditorImages = useCallback(() => { Object.values(imagesRef.current).forEach(image => URL.revokeObjectURL(image.preview)); imagesRef.current = {}; setEditorImages({}); }, []);
   useEffect(() => () => { if (preparedMedia) URL.revokeObjectURL(preparedMedia.preview); }, [preparedMedia]);
 
-  async function login(username: string, password: string): Promise<string | null> {
+  async function login(username: string, password: string, challengeId: string, challengePosition: number): Promise<string | null> {
     if (busy) return null;
     setBusy('login'); setLoginError('');
-    try { const result = await cmsRequest<{ user: User }>('/api/cms/login', { method: 'POST', body: JSON.stringify({ username, password }) }); setUser(result.user); await load(); window.scrollTo({ top: 0, behavior: 'instant' }); return result.user.username; }
+    try { const result = await cmsRequest<{ user: User }>('/api/cms/login', { method: 'POST', body: JSON.stringify({ username, password, challengeId, challengePosition }) }); setUser(result.user); await load(); window.scrollTo({ top: 0, behavior: 'instant' }); return result.user.username; }
     catch (cause) { setLoginError(cmsErrorText(cause)); return null; } finally { setBusy(''); }
   }
   async function logout() {
@@ -270,52 +348,90 @@ export default function CmsWorkspace() {
       await cmsRequest('/api/cms/logout', { method: 'POST', body: '{}' });
       invalidateWorkspaceRefresh();
       uploadVersion.current++; mediaVersion.current++;
-      setPreparing(false); setMediaPreparing(false); setUser(null); setWorkspaceReady(false); setDrawerOpen(false); setEditing(null); setOriginal(null);
-      resetEditorImages(); setPreparedMedia(null); setSelectedEnquiry(null); setImportOpen(false); setDeleteRecord(null);
-      setWebsiteDetails(null); setSettingsError(''); setSettingsNotice(''); setRecords([]); refreshInbox(); setUploadedMedia([]); setMediaCursor(null);
-      setNotice(''); setError(''); setLoginError(''); setTrashType('All'); setStatus('All'); setSearch(''); setPageFilter('All'); setLimit(12);
+      setPreparing(false); setMediaPreparing(false); closeMediaUsage(); setUser(null); setWorkspaceReady(false); setDrawerOpen(false); setUserSettingsOpen(false); setEditing(null); setOriginal(null);
+      resetEditorImages(); setPreparedMedia(null); setMediaUploadOpen(false); setMediaUploadError(''); setSelectedEnquiry(null); setImportOpen(false); setDeleteRecord(null);
+      setWebsiteDetails(null); setSettingsError(''); setSettingsNotice(''); setRecords([]); setSummary(emptySummary); setRefreshFailures([]); refreshInbox(); setUploadedMedia([]); setMediaCursor(null); setMediaPage(0);
+      setNotice(''); setError(''); setLoginError(''); setEnquiryStatus('All'); setSearch('');
     }
     catch (cause) { setError(cmsErrorText(cause)); } finally { setBusy(''); }
   }
   function clearFilters() {
-    if (section === 'content' && type !== 'All') navigate('content');
-    else { setTrashType('All'); setStatus('All'); setSearch(''); setPageFilter('All'); setLimit(12); }
+    setEnquiryStatus('All'); setSearch('');
+    if (section === 'trash' && searchParams.has('item')) router.replace('/cms/trash', { scroll: false });
     workspaceSearchRef.current?.focus({ preventScroll: true });
   }
   function navigate(next: Section, nextType = 'All') {
-    setTrashType('All'); setStatus('All'); setSearch(''); setPageFilter('All'); setLimit(12); setDrawerOpen(false);
+    setEnquiryStatus('All'); setSearch('');  setDrawerOpen(false); setUserSettingsOpen(false); setMediaUploadOpen(false);
     const destination = cmsPathForView(next, nextType);
-    if (pathname !== destination) router.push(destination, { scroll: false });
+    const current = `${pathname}${searchParams.size ? `?${searchParams.toString()}` : ''}`;
+    if (current !== destination) router.push(destination, { scroll: false });
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
+  const openExistingEditor = useCallback((record: ContentRecord) => {
+    editorBaseline.current = record; setOriginal(record); setEditing({ ...record }); resetEditorImages(); setRouteText((record.waypoints || []).map(point => point.join(', ')).join('\n')); setEditorError(''); setEditorConflict(false); setEditorAttempts(0); editorSubmission.current = crypto.randomUUID(); editorStaged.current.clear(); attemptedEditor.current = ''; reviewedLegacy.current = null;
+  }, [resetEditorImages]);
   function openEditor(record?: ContentRecord) {
-    const draft = blankRecord(type === 'All' ? 'News' : type as ContentRecord['type']); if (draft.type === 'Section' && pageFilter !== 'All') draft.parentId = pageFilter; setOriginal(record || null); setEditing(record ? { ...record } : draft); resetEditorImages(); setRouteText((record?.waypoints || []).map(point => point.join(', ')).join('\n')); setEditorError(''); setEditorConflict(false); setEditorAttempts(0); editorSubmission.current = crypto.randomUUID(); editorStaged.current.clear(); attemptedEditor.current = ''; reviewedLegacy.current = null;
+    if (record) { openExistingEditor(record); return; }
+    if (!record && (type === 'All' || type === 'Page' || type === 'Section')) return;
+    const draftType = type === 'All' ? 'News' : type as ContentRecord['type'];
+    const draft = newCollectionDraft(draftType, records, new Date(), summary.nextOrder[draftType]); editorBaseline.current = draft; setOriginal(null); setEditing(draft); resetEditorImages(); setRouteText(''); setEditorError(''); setEditorConflict(false); setEditorAttempts(0); editorSubmission.current = crypto.randomUUID(); editorStaged.current.clear(); attemptedEditor.current = ''; reviewedLegacy.current = null;
   }
+  const linkedEdit = searchParams.get('edit');
+  useEffect(() => {
+    if (!linkedEdit) { editLinkHandled.current = null; return; }
+    if (!user || !workspaceReady || section !== 'content' || editLinkHandled.current === linkedEdit) return;
+    const match = /^(Page|Section|Vessel|Route|Project|Service|News):([a-z0-9]+(?:-[a-z0-9]+)*)$/.exec(linkedEdit);
+    if (!match || cmsPathForView('content', match[1]) !== pathname) return;
+    const controller = new AbortController();
+    editLinkHandled.current = linkedEdit;
+    void cmsRequest<{ record: ContentRecord }>(`/api/cms/content/item?type=${encodeURIComponent(match[1])}&id=${encodeURIComponent(match[2])}`, { signal: controller.signal })
+      .then(result => { if (!controller.signal.aborted) openExistingEditor(result.record); })
+      .catch(cause => { if (!controller.signal.aborted) setError(cmsErrorText(cause)); });
+    return () => controller.abort();
+  }, [linkedEdit, openExistingEditor, pathname, section, user, workspaceReady]);
   function updateEditor(patch: Partial<ContentRecord>) {
-    setEditing(current => current ? { ...current, ...patch, ...(patch.title !== undefined && !original && (!current.id || current.id === slug(current.title)) ? { id: slug(patch.title) } : {}) } : current);
+    setEditing(current => current ? { ...current, ...patch } : current);
   }
-  async function changeEditorType(nextType: ContentRecord['type']) {
-    if (!editing || original || busy || preparing || editing.type === nextType) return;
-    const next = changeEditorContentType(editing, nextType, routeText);
-    if (next.discardedFields.length && !await confirmAction('Changing to {type} removes the {fields} from this unsaved item. Your titles, summaries and images stay in place.', 'Change content type', { type: nextType, fields: next.discardedFields.join(' and ') })) return;
-    setEditing(next.record);
-    if (nextType !== 'Route') setRouteText('');
-    setEditorError('');
+  function acceptRecord(record: ContentRecord) {
+    invalidateWorkspaceRefresh();
+    if (record.type === 'Page' || record.type === 'Section') {
+      setRecords(current => [record, ...current.filter(item => legacyRecordKey(item) !== legacyRecordKey(record))]);
+    } else if (!record.deletedAt) {
+      setSummary(current => ({
+        ...current,
+        nextOrder: { ...current.nextOrder, [record.type]: Math.max(current.nextOrder[record.type] ?? 0, Math.min(10000, (record.order ?? 0) + 1)) },
+      }));
+    }
+    setContentRevision(value => value + 1);
+    refreshContentOverview();
   }
-  function acceptRecord(record: ContentRecord) { invalidateWorkspaceRefresh(); setRecords(current => [record, ...current.filter(item => legacyRecordKey(item) !== legacyRecordKey(record))]); }
+  function refreshContentOverview() {
+    void cmsRequest<{ records: ContentRecord[]; summary: CmsContentSummary }>('/api/cms/content?scope=overview')
+      .then(result => { setRecords(result.records); setSummary(result.summary); setRefreshFailures(current => current.filter(failure => failure.area !== 'Content')); })
+      .catch(cause => setRefreshFailures([{ area: 'Content', message: cmsErrorText(cause) }]));
+  }
+  function committedImageResolver(record: ContentRecord) {
+    const committedUrls = new Set(recordImageUrls(record));
+    const savedImages = new Map([...editorStaged.current].filter(([, media]) => committedUrls.has(media.url)));
+    return (url: string) => savedImages.get(url)?.url || url;
+  }
   async function finishEditor(record: ContentRecord) {
     acceptRecord(record);
     if (reviewedLegacy.current) { try { await rememberLegacyRecord(reviewedLegacy.current, record); } catch { setImportError('Content saved, but the local migration receipt could not be stored. Keep or export your local copy.'); } }
-    setNotice('“' + record.title + '” saved and published.'); setEditing(null); resetEditorImages(); attemptedEditor.current = ''; editorStaged.current.clear(); navigate('content', record.type); if (record.type === 'Section' && record.parentId) setPageFilter(record.parentId);
+    setNotice('“' + record.title + '” saved.'); setEditing(null); resetEditorImages(); attemptedEditor.current = ''; editorStaged.current.clear(); if (record.type === 'Page' || record.type === 'Section') {
+      const selected = record.type === 'Page' ? record.id : record.parentId;
+      const destination = selected ? `/cms/pages?page=${encodeURIComponent(selected)}` : '/cms/pages';
+      if (`${pathname}?${searchParams.toString()}` !== destination) router.push(destination, { scroll: false });
+    } else navigate('content', record.type);
     void cmsRequest<{ media: MediaItem[]; nextCursor: string | null }>('/api/cms/media').then(result => { setUploadedMedia(result.media); setMediaCursor(result.nextCursor); }).catch(() => {});
   }
-  async function reconcileEditor(allowRetry = true): Promise<'committed' | 'aborted' | 'pending'> {
+  async function reconcileEditor(allowRetry = true, submitted?: ContentRecord): Promise<'committed' | 'aborted' | 'pending'> {
     if (!attemptedEditor.current) { if (allowRetry) setEditorAttempts(0); return 'aborted'; }
     setBusy('Checking saved content…');
     const result = await resolveSubmission(editorSubmission.current);
     if (result.status === 'committed' && result.record) {
-      let currentFingerprint = ''; try { currentFingerprint = JSON.stringify(editing ? { ...editing, status: 'Published', ...(editing.type === 'Route' ? { waypoints: parseRouteCoordinates(routeText) } : {}) } : null); } catch { /* Keep partially edited coordinate text. */ }
-      if (editing && currentFingerprint !== attemptedEditor.current) { acceptRecord(result.record); setOriginal(result.record); setEditing(current => current ? { ...current, revision: result.record!.revision } : current); editorSubmission.current = crypto.randomUUID(); editorStaged.current.clear(); attemptedEditor.current = ''; setEditorAttempts(0); setEditorConflict(false); setEditorError('Your earlier save succeeded. Your newer unsaved changes are still in this editor; review and save them when ready.'); return 'aborted'; }
+      let currentFingerprint = ''; try { currentFingerprint = JSON.stringify(submitted || (editing ? { ...editing, status: 'Published', ...(editing.type === 'Route' ? { waypoints: parseRouteCoordinates(routeText) } : {}) } : null)); } catch { /* Keep partially edited coordinate text. */ }
+      if (editing && currentFingerprint !== attemptedEditor.current) { acceptRecord(result.record); setOriginal(result.record); const savedImage = committedImageResolver(result.record); setEditing(current => current ? mapRecordImages({ ...current, revision: result.record!.revision }, savedImage) : current); editorSubmission.current = crypto.randomUUID(); editorStaged.current.clear(); attemptedEditor.current = ''; setEditorAttempts(0); setEditorConflict(false); setEditorError('Your earlier save succeeded. Your newer unsaved changes are still in this editor; review and save them when ready.'); return 'aborted'; }
       await finishEditor(result.record); return 'committed';
     }
     if (result.status === 'pending' || result.pending) { setEditorAttempts(MAX_ATTEMPTS); setEditorError('The previous save is still being checked. Your fields and prepared images are preserved. Choose Check saved content again before retrying.'); return 'pending'; }
@@ -327,24 +443,35 @@ export default function CmsWorkspace() {
   async function closeEditor() {
     if (busy || ((editorDirty || preparing) && !await confirmAction('Your unsaved fields and prepared images will be discarded. Any interrupted save will be checked first.', 'Discard changes'))) return;
     setBusy('Checking unfinished save…');
-    try { if (attemptedEditor.current && await reconcileEditor() === 'pending') return; uploadVersion.current++; setPreparing(false); setEditing(null); resetEditorImages(); }
+    try { if (attemptedEditor.current && await reconcileEditor() === 'pending') return; uploadVersion.current++; setPreparing(false); setEditing(null); resetEditorImages(); if (linkedEdit) { const params = new URLSearchParams(searchParams.toString()); params.delete('edit'); router.replace(`${pathname}${params.size ? `?${params.toString()}` : ''}`, { scroll: false }); } }
     catch (cause) { setEditorError(cmsErrorText(cause)); } finally { setBusy(''); }
   }
   async function saveEditor(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (!editing || preparing || busy || editorAttempts >= MAX_ATTEMPTS) return;
+    const identified = !original && !editing.id ? { ...editing, id: createCollectionId(editing.type, editing.title, editorSubmission.current) } : editing;
+    if (identified !== editing) setEditing(identified);
     let candidate: ContentRecord;
-    try { candidate = { ...editing, status: 'Published', ...(editing.type === 'Route' ? { waypoints: parseRouteCoordinates(routeText) } : {}) }; } catch (cause) { setEditorError(cmsErrorText(cause)); return; }
+    try { candidate = { ...identified, status: 'Published', ...(editing.type === 'Route' ? { waypoints: parseRouteCoordinates(routeText) } : {}) }; } catch (cause) { setEditorError(cmsErrorText(cause)); return; }
     const validated = recordSchema.safeParse(mapRecordImages(candidate, url => editorImages[url] ? 'prepared-image' : url));
     if (!validated.success) { setEditorError(validationMessages(validated.error.issues)); return; }
     setBusy('Saving content…'); setEditorError('');
+    let attemptsForSubmission = editorAttempts;
     try {
-      const fingerprint = JSON.stringify(candidate); let expectedRevision = original?.revision ?? null;
+      let fingerprint = JSON.stringify(candidate); let expectedRevision = original?.revision ?? null;
       if (attemptedEditor.current && attemptedEditor.current !== fingerprint) {
         const result = await resolveSubmission(editorSubmission.current);
         if (result.status === 'pending' || result.pending) { setEditorAttempts(MAX_ATTEMPTS); throw new Error('Your earlier save is still pending. Check saved content before saving these changes.'); }
-        if (result.status === 'committed' && result.record) { acceptRecord(result.record); setOriginal(result.record); expectedRevision = result.record.revision; }
+        if (result.status === 'committed' && result.record) {
+          acceptRecord(result.record); setOriginal(result.record); expectedRevision = result.record.revision;
+          // A newer text edit can reuse photos committed by the earlier save.
+          // Only reuse URLs confirmed on that saved record, never uncertain uploads.
+          const savedImage = committedImageResolver(result.record);
+          candidate = mapRecordImages(candidate, savedImage);
+          setEditing(current => current ? mapRecordImages(current, savedImage) : current);
+          fingerprint = JSON.stringify(candidate);
+        }
         else if (result.status !== 'aborted') throw new Error('The earlier submission could not be closed. Check saved content before trying again.');
-        editorSubmission.current = crypto.randomUUID(); editorStaged.current.clear(); setEditorAttempts(0);
+        editorSubmission.current = crypto.randomUUID(); editorStaged.current.clear(); setEditorAttempts(0); attemptsForSubmission = 0;
       }
       attemptedEditor.current = fingerprint;
       const urls = recordImageUrls(candidate).filter(url => editorImages[url]);
@@ -355,7 +482,7 @@ export default function CmsWorkspace() {
       await finishEditor(result.record);
     } catch (cause) {
       setEditorError(cmsErrorText(cause)); setEditorConflict(cause instanceof CmsRequestError && cause.status === 409);
-      if (!(cause instanceof CmsRequestError) || cause.status === 0 || cause.status >= 500) { const attempts = editorAttempts + 1; setEditorAttempts(attempts); if (attempts >= MAX_ATTEMPTS) { try { await reconcileEditor(false); } catch (recoveryError) { setEditorError(cmsErrorText(recoveryError) + ' The save outcome is uncertain. Keep this editor open and check saved content.'); } } }
+      if (!(cause instanceof CmsRequestError) || cause.status === 0 || cause.status >= 500) { const attempts = attemptsForSubmission + 1; setEditorAttempts(attempts); if (attempts >= MAX_ATTEMPTS) { try { await reconcileEditor(false, candidate); } catch (recoveryError) { setEditorError(cmsErrorText(recoveryError) + ' The save outcome is uncertain. Keep this editor open and check saved content.'); } } }
     } finally { setBusy(''); }
   }
   async function recoverEditor() {
@@ -374,58 +501,105 @@ export default function CmsWorkspace() {
   }
   async function changeRecord(record: ContentRecord, action: 'trash' | 'restore') {
     if (busy) return; setBusy(action); setError('');
-    try { const result = await cmsRequest<{ record: ContentRecord }>('/api/cms/content/action', { method: 'POST', body: JSON.stringify({ id: record.id, type: record.type, expectedRevision: record.revision, action }) }); acceptRecord(result.record); setDeleteRecord(null); setNotice(`“${record.title}” ${action === 'trash' ? 'moved to Trash. You can restore it within 30 days.' : 'restored.'}`); }
+    try { const result = await cmsRequest<{ record: ContentRecord }>('/api/cms/content/action', { method: 'POST', body: JSON.stringify({ id: record.id, type: record.type, expectedRevision: record.revision, action }) }); acceptRecord(result.record); setDeleteRecord(null); setNotice(`“${record.title}” ${action === 'trash' ? 'moved to Trash. You can restore it within 30 days.' : 'restored.'}`); if (action === 'restore' && targetedTrash === `${record.type}:${record.id}`) router.push(mediaUsageHref(result.record), { scroll: false }); }
     catch (cause) { setError(cmsErrorText(cause)); setDeleteRecord(null); } finally { setBusy(''); }
+  }
+  function handleTrashChange(item: CmsTrashItem, restored?: ContentRecord) {
+    invalidateWorkspaceRefresh();
+    if (restored) acceptRecord(restored);
+    else { setContentRevision(value => value + 1); refreshContentOverview(); }
+    if (item.kind === 'Image') {
+      setMediaSearchRevision(value => value + 1);
+      void refreshMediaLibrary().catch(cause => setMediaError(cmsErrorText(cause)));
+    }
+    if (currentTrashTarget.current === item.key) {
+      if (restored) router.push(mediaUsageHref(restored), { scroll: false });
+      else router.replace('/cms/trash', { scroll: false });
+    }
   }
   async function chooseEditorImage(file: File, target: ImageTarget = 'image') {
     const version = ++uploadVersion.current; setPreparing(true); setEditorError('');
     try { const image = await prepareCmsImage(file); if (version !== uploadVersion.current) { URL.revokeObjectURL(image.preview); return; } imagesRef.current = { ...imagesRef.current, [image.preview]: image }; setEditorImages(imagesRef.current); setEditing(current => !current ? current : typeof target === 'number' ? { ...current, gallery: current.gallery?.map((entry, index) => index === target ? { ...entry, url: image.preview } : entry) } : { ...current, [target]: image.preview }); }
     catch (cause) { if (version === uploadVersion.current) setEditorError(cmsErrorText(cause)); } finally { if (version === uploadVersion.current) setPreparing(false); }
   }
-  function finishMedia(items: MediaItem[]) { invalidateWorkspaceRefresh(); setUploadedMedia(current => [...items, ...current.filter(item => !items.some(saved => saved.id === item.id))]); setPreparedMedia(null); attemptedMedia.current = ''; libraryStaged.current = null; setMediaNotice('Image saved to the library. It is ready to use in your content.'); }
-  async function reconcileMedia(allowRetry = true): Promise<'committed' | 'aborted' | 'pending'> {
+  function finishMedia(items: MediaItem[], closeUpload = true) { invalidateWorkspaceRefresh(); setUploadedMedia(current => [...items, ...current.filter(item => !items.some(saved => saved.id === item.id))]); setMediaPage(0); setMediaSearchRevision(value => value + 1); setPreparedMedia(null); setMediaTitle(''); setMediaUploadError(''); if (closeUpload) setMediaUploadOpen(false); attemptedMedia.current = ''; libraryStaged.current = null; setMediaNotice('Image saved to the library. It is ready to use in your content.'); }
+  async function reconcileMedia(allowRetry = true, closeUpload = true): Promise<'committed' | 'aborted' | 'pending'> {
     if (!attemptedMedia.current) { if (allowRetry) setMediaAttempts(0); return 'aborted'; }
     setBusy('Checking saved media…'); const result = await resolveSubmission(mediaSubmission.current);
-    if (result.status === 'committed') { if (!result.media?.length) throw new Error('The saved image could not be identified. Refresh the library before retrying.'); finishMedia(result.media); return 'committed'; }
-    if (result.status === 'pending' || result.pending) { setMediaAttempts(MAX_ATTEMPTS); setMediaError('The previous upload is still being checked. Your prepared image is preserved. Check saved media again before retrying.'); return 'pending'; }
+    if (result.status === 'committed') { if (!result.media?.length) throw new Error('The saved image could not be identified. Refresh the library before retrying.'); finishMedia(result.media, closeUpload); return 'committed'; }
+    if (result.status === 'pending' || result.pending) { setMediaAttempts(MAX_ATTEMPTS); setMediaUploadError('The previous upload is still being checked. Your prepared image is preserved. Check saved media again before retrying.'); return 'pending'; }
     if (result.status !== 'aborted') throw new Error('The previous upload could not yet be closed safely. Check saved media again.');
     libraryStaged.current = null; mediaSubmission.current = crypto.randomUUID(); attemptedMedia.current = ''; if (allowRetry) setMediaAttempts(0);
-    setMediaError('The image did not save. Its unreferenced upload was removed. Retry to upload the prepared image again.' + (result.failed ? ' Manual Cleanup may be needed for an unfinished deletion.' : '')); return 'aborted';
+    setMediaUploadError('The image did not save. Its unreferenced upload was removed. Retry to upload the prepared image again.' + (result.failed ? ' Manual Cleanup may be needed for an unfinished deletion.' : '')); return 'aborted';
   }
   async function chooseLibraryImage(file?: File) {
-    if (!file || busy) return; const version = ++mediaVersion.current; setMediaPreparing(true); setMediaError(''); setMediaNotice('');
+    if (!file || busy) return; const version = ++mediaVersion.current; setMediaPreparing(true); setMediaUploadError(''); setMediaNotice('');
     try {
-      if (attemptedMedia.current) { setBusy('Checking previous upload…'); if (await reconcileMedia() === 'pending') return; }
+      if (attemptedMedia.current) { setBusy('Checking previous upload…'); if (await reconcileMedia(true, false) === 'pending') return; }
       const image = await prepareCmsImage(file); if (version !== mediaVersion.current) { URL.revokeObjectURL(image.preview); return; } setPreparedMedia(image); setMediaTitle(file.name.replace(/\.[^.]+$/, '')); libraryStaged.current = null; mediaSubmission.current = crypto.randomUUID(); setMediaAttempts(0);
-    } catch (cause) { if (version === mediaVersion.current) setMediaError(cmsErrorText(cause)); } finally { if (version === mediaVersion.current) setMediaPreparing(false); setBusy(''); }
+    } catch (cause) { if (version === mediaVersion.current) setMediaUploadError(cmsErrorText(cause)); } finally { if (version === mediaVersion.current) setMediaPreparing(false); setBusy(''); }
   }
   async function saveMedia(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); if (!preparedMedia || mediaPreparing || busy || mediaAttempts >= MAX_ATTEMPTS) return; setBusy('Uploading image…'); setMediaError('');
+    event.preventDefault(); if (!preparedMedia || mediaPreparing || busy || mediaAttempts >= MAX_ATTEMPTS) return; setBusy('Uploading image…'); setMediaUploadError('');
     try {
       const fingerprint = preparedMedia.preview + mediaTitle.trim();
       if (attemptedMedia.current && attemptedMedia.current !== fingerprint && await reconcileMedia() !== 'aborted') return;
       attemptedMedia.current = fingerprint;
       if (!libraryStaged.current) libraryStaged.current = await stageImage(preparedMedia, mediaSubmission.current);
       setBusy('Saving media…'); const result = await cmsRequest<{ media: MediaItem }>('/api/cms/media/commit', { method: 'POST', body: JSON.stringify({ mediaId: libraryStaged.current.id, submissionId: mediaSubmission.current, title: mediaTitle.trim() }) }); finishMedia([result.media]);
-    } catch (cause) { setMediaError(cmsErrorText(cause)); if (!(cause instanceof CmsRequestError) || cause.status === 0 || cause.status >= 500) { const attempts = mediaAttempts + 1; setMediaAttempts(attempts); if (attempts >= MAX_ATTEMPTS) { try { await reconcileMedia(false); } catch (recoveryError) { setMediaError(cmsErrorText(recoveryError) + ' The upload outcome is uncertain. Check saved media before retrying.'); } } } } finally { setBusy(''); }
+    } catch (cause) { setMediaUploadError(cmsErrorText(cause)); if (!(cause instanceof CmsRequestError) || cause.status === 0 || cause.status >= 500) { const attempts = mediaAttempts + 1; setMediaAttempts(attempts); if (attempts >= MAX_ATTEMPTS) { try { await reconcileMedia(false); } catch (recoveryError) { setMediaUploadError(cmsErrorText(recoveryError) + ' The upload outcome is uncertain. Check saved media before retrying.'); } } } } finally { setBusy(''); }
   }
-  async function recoverMedia() { if (busy) return; setBusy('Checking saved media…'); try { await reconcileMedia(); } catch (cause) { setMediaError(cmsErrorText(cause)); } finally { setBusy(''); } }
+  async function recoverMedia() { if (busy) return; setBusy('Checking saved media…'); try { await reconcileMedia(); } catch (cause) { setMediaUploadError(cmsErrorText(cause)); } finally { setBusy(''); } }
+  async function refreshMediaLibrary() {
+    invalidateWorkspaceRefresh();
+    refreshContentOverview();
+    const result = await cmsRequest<{ media: MediaItem[]; nextCursor: string | null }>('/api/cms/media');
+    setUploadedMedia(result.media); setMediaCursor(result.nextCursor); setMediaPage(0); setMediaSearchRevision(value => value + 1);
+  }
   async function cleanupMedia() {
-    if (busy || !await confirmAction('Remove unfinished, unreferenced uploads? Images used by content or saved in the library will be preserved.', 'Clean unfinished uploads')) return;
-    setBusy('Cleaning unfinished uploads…'); setMediaError('');
-    try { const result = await cmsRequest<{ deleted: number; failed: number }>('/api/cms/media/cleanup', { method: 'POST', body: '{}' }); setMediaNotice(`${result.deleted} unfinished upload${result.deleted === 1 ? '' : 's'} removed.${result.failed ? ` ${result.failed} could not be removed; try cleanup again later.` : ''}`); }
+    if (busy || !await confirmAction('Move saved images with no content usage to Media Trash? Images added in the last hour and images used by content or content in Trash stay in the library. Old unfinished uploads will be removed.', 'Clean unused images')) return;
+    setBusy('Cleaning unused images…'); setMediaError('');
+    try {
+      const result = await cmsRequest<{ trashed: number; deleted: number; failed: number }>('/api/cms/media/cleanup', { method: 'POST', body: '{}' });
+      invalidateWorkspaceRefresh(); refreshContentOverview();
+      setMediaNotice(`${result.trashed} unused saved images moved to Media Trash. ${result.deleted} unfinished uploads removed.${result.failed ? ` ${result.failed} unfinished uploads could not be removed; try again later.` : ''}`);
+      try { await refreshMediaLibrary(); }
+      catch { setMediaError('Cleanup finished, but the library could not refresh. Use Refresh to load the latest images.'); }
+    }
     catch (cause) { setMediaError(cmsErrorText(cause)); } finally { setBusy(''); }
   }
   async function loadMoreMedia() {
-    if (!mediaCursor || busy) return; setBusy('Loading more images…'); setMediaError('');
-    try { const result = await cmsRequest<{ media: MediaItem[]; nextCursor: string | null }>(`/api/cms/media?cursor=${encodeURIComponent(mediaCursor)}`); setUploadedMedia(current => [...current, ...result.media.filter(item => !current.some(existing => existing.id === item.id))]); setMediaCursor(result.nextCursor); }
-    catch (cause) { setMediaError(cmsErrorText(cause)); setEditorError(cmsErrorText(cause)); } finally { setBusy(''); }
+    if (!mediaCursor || busy || workspaceLoad.current || mediaPageRequest.current) return;
+    const controller = new AbortController(); mediaPageRequest.current = controller;
+    setBusy('Loading more images…'); setMediaError('');
+    try {
+      const result = await cmsRequest<{ media: MediaItem[]; nextCursor: string | null }>(`/api/cms/media?cursor=${encodeURIComponent(mediaCursor)}`, { signal: controller.signal });
+      if (controller.signal.aborted) return;
+      setUploadedMedia(current => [...current, ...result.media.filter(item => !current.some(existing => existing.id === item.id))]);
+      setMediaCursor(result.nextCursor);
+    } catch (cause) {
+      if (!controller.signal.aborted) { setMediaError(cmsErrorText(cause)); setEditorError(cmsErrorText(cause)); }
+    } finally {
+      if (mediaPageRequest.current === controller) { mediaPageRequest.current = null; setBusy(''); }
+    }
   }
-  async function removeMedia(item: { id: string; title: string }) {
-    if (busy || !await confirmAction(`Remove “${item.title}” from the library? Images used by content or Trash cannot be removed.`, 'Delete image from library')) return;
-    setBusy('Removing image…'); setMediaError('');
-    try { await cmsRequest('/api/cms/media/remove', { method: 'POST', body: JSON.stringify({ mediaId: item.id }) }); invalidateWorkspaceRefresh(); setUploadedMedia(current => current.filter(image => image.id !== item.id)); setMediaNotice('Image removed from the library.'); }
+  async function moveMediaToTrash(item: { id: string; title: string }) {
+    if (busy || !await confirmAction(`Move “${item.title}” to Media Trash? You can restore it later. Images used by content or content in Trash cannot be moved.`, 'Move to Media Trash')) return;
+    setBusy('Moving image to Media Trash…'); setMediaError('');
+    try { await cmsRequest('/api/cms/media/trash', { method: 'POST', body: JSON.stringify({ mediaId: item.id }) }); setUploadedMedia(current => current.filter(image => image.id !== item.id)); setMediaSearchRevision(value => value + 1); setMediaNotice('Image moved to Media Trash.'); invalidateWorkspaceRefresh(); refreshContentOverview(); try { await refreshMediaLibrary(); } catch { setMediaError('Image moved to Media Trash, but the library could not refresh. Use Refresh to load the latest images.'); } }
     catch (cause) { setMediaError(cmsErrorText(cause)); } finally { setBusy(''); }
+  }
+  function closeMediaUsage() { mediaUsageRequest.current?.abort(); mediaUsageRequest.current = null; setMediaUsage(null); }
+  async function showMediaUsage(item: MediaItem) {
+    mediaUsageRequest.current?.abort();
+    const controller = new AbortController(); mediaUsageRequest.current = controller;
+    setMediaUsage({ item, result: null, loading: true, error: '' });
+    try {
+      const result = await cmsRequest<MediaUsage>(`/api/cms/media/usage?mediaId=${encodeURIComponent(item.id)}`, { signal: controller.signal });
+      if (!controller.signal.aborted) setMediaUsage({ item, result, loading: false, error: '' });
+    } catch (cause) {
+      if (!controller.signal.aborted) setMediaUsage({ item, result: null, loading: false, error: cmsErrorText(cause) });
+    } finally { if (mediaUsageRequest.current === controller) mediaUsageRequest.current = null; }
   }
   async function changeEnquiry(enquiry: Enquiry, nextStatus: Enquiry['status']) {
     if (busy) return; setBusy('Updating enquiry…'); setEnquiryError(''); setEnquiryNotice('');
@@ -445,19 +619,23 @@ export default function CmsWorkspace() {
     } catch (cause) { setEnquiryError(cmsErrorText(cause)); } finally { setBusy(''); }
   }
   async function retryNotification(enquiry: Enquiry) {
-    if (busy) return; setBusy('Sending notification…'); setEnquiryError(''); setEnquiryNotice('');
+    const notification = enquiry.notification;
+    if (notificationRequest.current || busy || !emailSetup.canSend || !notification || notification.attempts >= 3 || !['not_configured', 'failed', 'pending'].includes(notification.status) || notification.retryAt && Date.parse(notification.retryAt) > Date.now()) return;
+    const controller = new AbortController();
+    notificationRequest.current = controller;
+    setBusy('Sending notification…'); setEnquiryError(''); setEnquiryNotice('');
     try {
-      const result = await cmsRequest<{ enquiry: Enquiry }>('/api/cms/inbox/notify', { method: 'POST', body: JSON.stringify({ id: enquiry.id }) });
+      const result = await cmsRequest<{ enquiry: Enquiry }>('/api/cms/inbox/notify', { method: 'POST', body: JSON.stringify({ id: enquiry.id }), signal: AbortSignal.any([controller.signal, AbortSignal.timeout(30_000)]) });
+      if (controller.signal.aborted || notificationRequest.current !== controller) return;
       acceptEnquiry(result.enquiry);
-    } catch (cause) { setEnquiryError(cmsErrorText(cause)); } finally { setBusy(''); }
-  }
-  async function changePassword(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); if (busy) return;
-    const form = event.currentTarget; const fields = new FormData(form);
-    if (fields.get('newPassword') !== fields.get('confirmPassword')) { setError('The new passwords do not match.'); return; }
-    setBusy('Updating password…'); setError('');
-    try { await cmsRequest('/api/cms/password', { method: 'POST', body: JSON.stringify({ currentPassword: fields.get('currentPassword'), newPassword: fields.get('newPassword') }) }); form.reset(); setNotice('Your password has been updated.'); }
-    catch (cause) { setError(cmsErrorText(cause)); } finally { setBusy(''); }
+    } catch (cause) {
+      if (!controller.signal.aborted && notificationRequest.current === controller) setEnquiryError(cmsErrorText(cause));
+    } finally {
+      if (notificationRequest.current === controller) {
+        notificationRequest.current = null;
+        setBusy(current => current === 'Sending notification…' ? '' : current);
+      }
+    }
   }
   async function saveWebsiteDetails(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (!websiteDetails || busy) return;
@@ -501,7 +679,7 @@ export default function CmsWorkspace() {
   async function reviewLocal(record: LegacyRecord) {
     if (busy || !importSnapshot) return; const saved = records.find(remote => legacyRecordKey(remote) === legacyRecordKey(record));
     if (saved?.deletedAt) { setImportError('This record is in server Trash. Restore it there before reviewing the local version.'); return; }
-    if (record.deletedAt && !await confirmAction('Review this local Trash item? It stays unchanged until you explicitly Save, which publishes the reviewed content.', 'Review content')) return;
+    if (record.deletedAt && !await confirmAction('Review this local Trash item? It stays unchanged until you explicitly Save, which makes the reviewed content available on the website.', 'Review content')) return;
     setBusy('Preparing local content…'); setImportError('');
     try {
       const currentSnapshot = readLegacySnapshot(); for (const localImage of currentSnapshot.media) { if (recordImageUrls(record).includes(localImage.image) && !await legacyMediaMatches(localImage, media, currentSnapshot)) throw new Error('Import the local library images first, then review this version. The same saved image will be reused.'); }
@@ -566,84 +744,123 @@ export default function CmsWorkspace() {
     catch (cause) { setError(cmsErrorText(cause)); } finally { setBusy(''); }
   }
 
-  const filtered = records.filter(record => (section === 'trash' ? Boolean(record.deletedAt) : !record.deletedAt) && (type === 'All' || record.type === type) && (status === 'All' || record.status === status) && contentBelongsToPage(record, pageFilter) && `${record.title} ${record.titleTh} ${record.id} ${record.category} ${record.categoryTh || ''} ${record.parentId || ''}`.toLowerCase().includes(search.trim().toLowerCase())).sort((a, b) => pageFilter === 'All' ? 0 : (a.type === 'Page' ? -1 : b.type === 'Page' ? 1 : (a.order ?? 0) - (b.order ?? 0)));
-  const hasContentFilters = Boolean(search.trim() || type !== 'All' || status !== 'All' || pageFilter !== 'All');
-  const hasInboxFilters = Boolean(search.trim() || status !== 'All');
+  const targetedTrash = section === 'trash' ? searchParams.get('item') : null;
+  const filtered = collectionPage.records;
+  const contentTotal = collectionPage.total ?? 0;
+  const contentShown = filtered.length;
+  const contentLoading = collectionPage.loading;
+  const hasContentFilters = Boolean(search.trim());
+  const hasInboxFilters = Boolean(search.trim() || enquiryStatus !== 'All');
   const pages = records.filter(record => record.type === 'Page' && !record.deletedAt);
   const pageLabel = (id?: string) => id === 'shared' ? t('Shared across pages') : pages.find(page => page.id === id) ? localizedPageLabel(pages.find(page => page.id === id)!) : id || t('No parent page');
-  const trashCount = records.filter(record => record.deletedAt).length;
+  const trashCount = summary.trashCount;
   const newEnquiries = inbox.newCount;
   const inboxItems = inbox.enquiries;
-  const title = section === 'trash' ? 'Trash' : section === 'inbox' ? 'Enquiries' : section === 'media' ? 'Media library' : section === 'users' ? 'Administrators' : section === 'account' ? 'Account & tools' : type === 'All' ? 'Content overview' : typeOptions.find(option => option.type === type)?.title || 'Content';
+  const title = section === 'trash' ? 'Trash' : section === 'inbox' ? 'Enquiries' : section === 'media' ? 'Media library' : section === 'usage' ? 'Data usage' : section === 'logs' ? 'Logs' : section === 'users' ? 'Users' : section === 'setting' ? 'Settings' : type === 'All' ? 'Dashboard' : typeOptions.find(option => option.type === type)?.title || 'Content';
 
   if (!sessionReady) return <LoadingScreen variant="cms" locale={locale} stage="session" />;
   if (user && !workspaceReady) return <LoadingScreen variant="cms" locale={locale} stage="workspace" />;
-  if (!user) return <div className={styles.cms} lang={locale}><header className={styles.header}><Brand /><span className={styles.cmsLabel}>CMS</span><Link href={href(locale)} target="_blank" rel="noopener noreferrer" className={`button secondary ${styles.viewSite}`} aria-label={t("View website in a new tab")}>{t("View website")} </Link><CmsLanguageSwitch header /></header><main className={styles.loginMain}><CmsLoginForm busy={Boolean(busy)} error={loginError} onSignIn={login} /></main></div>;
+  if (!user) return <div className={styles.cms} lang={locale}><header className={styles.header}><Brand /><span className={styles.cmsLabel}>CMS</span><Link href={href(locale)} target="_blank" rel="noopener noreferrer" className={`button secondary ${styles.viewSite}`} aria-label={t("View website in a new tab")}>{t("View website")} </Link><CmsLanguageSwitch /></header><main className={styles.loginMain}><CmsLoginForm busy={Boolean(busy)} error={loginError} onSignIn={login} /></main></div>;
 
   return <div className={styles.cms} lang={locale} data-cms-root>
     <a className="skip-link" href="#cms-content">{t("Skip to content")}</a>
-    <header className={`${styles.header} ${styles.workspaceHeader}`}><button className={styles.menuButton} type="button" onClick={event => { event.currentTarget.focus({ preventScroll: true }); setDrawerOpen(true); }} aria-label={t("Open CMS navigation")} aria-haspopup="dialog"><Menu /><span>{t("Menu")}</span></button><Brand /><span className={styles.cmsLabel}>CMS</span><CmsLanguageSwitch header /><button type="button" className={styles.avatar} title={t("Account: {name}", { name: user.username })} aria-label={t("Open account settings")} onClick={() => navigate('account')}>{user.username.slice(0, 1).toUpperCase()}</button></header>
+    <header className={`${styles.header} ${styles.workspaceHeader}`}><button className={styles.menuButton} type="button" onClick={event => { event.currentTarget.focus({ preventScroll: true }); setDrawerOpen(true); }} aria-label={t("Open CMS navigation")} aria-haspopup="dialog"><Menu /></button><Brand /><span className={styles.cmsLabel}>CMS</span><CmsLanguageSwitch /><button type="button" className={styles.avatar} title={t("Account: {name}", { name: user.username })} aria-label={t("Open user settings")} onClick={event => { event.currentTarget.focus({ preventScroll: true }); navigate('users'); setUserSettingsOpen(true); }}><CmsAvatar username={user.username} avatar={user.avatar} /></button></header>
     <main className={styles.main} id="cms-content">
-      <div className={styles.intro}><div><span className="eyebrow">{t("Website workspace")}</span><h1>{t(title)}</h1><p>{section === 'trash' ? t("Restore deleted content within 30 days.") : section === 'inbox' ? t("Keep track of messages from your website visitors.") : section === 'media' ? t("Upload and organize images for your website.") : section === 'users' ? t("Manage who can sign in to the CMS.") : section === 'account' ? t("Manage your sign-in and keep a copy of your content.") : t("Keep your website current, in English and Thai.")}</p></div><div className={styles.introActions}><button type="button" className={`button secondary ${styles.refreshButton}`} aria-label={t("Refresh workspace")} disabled={loading || Boolean(busy)} onClick={() => void load()}><RefreshCw className={loading ? styles.spinner : ''} size={20} /><span className={styles.refreshLabel}>{t("Refresh")}</span></button>{section === 'content' && <button type="button" className="button" onClick={() => openEditor()} disabled={loading || Boolean(busy)}><Plus size={21} />{t("Create content")}</button>}</div></div>
+      <div className={styles.intro}><div><span className="eyebrow">{t("Website workspace")}</span><h1>{t(title)}</h1><p>{section === 'trash' ? t("Restore removed content, images, and user accounts.") : section === 'inbox' ? t("Keep track of messages from your website visitors.") : section === 'media' ? t("Upload and organize images for your website.") : section === 'usage' ? t("Check usage and remaining allowances for your website services.") : section === 'logs' ? t("Review CMS activity and account security.") : section === 'users' ? t("Manage who can sign in to the CMS.") : section === 'setting' ? t("Manage website details and content tools.") : t("Keep your website current, in English and Thai.")}</p></div><div className={styles.introActions}>{section !== 'usage' && <button type="button" className={`button secondary ${styles.refreshButton}`} aria-label={t("Refresh workspace")} disabled={loading || Boolean(busy) || searchedMedia.loadingMore || refreshCoolingDown} onClick={refreshWorkspace}><RefreshCw className={loading ? styles.spinner : ''} size={20} /><span className={styles.refreshLabel}>{t("Refresh")}</span></button>}{section === 'media' && <button type="button" className="button" aria-haspopup="dialog" disabled={Boolean(busy) || mediaPreparing} onClick={event => { event.currentTarget.focus({ preventScroll: true }); setMediaUploadOpen(true); }}><ImagePlus size={20} />{t("Add an image")}</button>}{section === 'content' && !['All', 'Page', 'Section'].includes(type) && <button type="button" className="button" onClick={event => { event.currentTarget.focus({ preventScroll: true }); openEditor(); }} disabled={loading || Boolean(busy)}><Plus size={21} />{t(collectionEditorTitle(type as ContentRecord['type'], false))}</button>}</div></div>
       {loading && <div className={styles.refreshStatus} role="status"><span className={styles.refreshStatusIcon}><RefreshCw className={styles.spinner} size={19} aria-hidden="true" /></span><div><strong>{t("Refreshing workspace")}</strong><p>{t("Your current content stays available while the latest updates load.")}</p></div></div>}
-      {error && <div className={styles.error} role="alert">{t(error)}</div>}{notice && <div className={styles.success} role="status"><Check size={19} /><span>{t(notice)}</span><button type="button" className={styles.iconButton} onClick={() => setNotice('')} aria-label={t("Dismiss notification")}><X size={18} /></button></div>}
-      {section === 'content' && <div className={styles.overviewStats}><div><span>{t("Published")}</span><strong>{records.filter(item => item.status === 'Published' && !item.deletedAt).length}</strong></div><div><span>{t("Not public")}</span><strong>{records.filter(item => item.status === 'Draft' && !item.deletedAt).length}</strong></div><button type="button" onClick={() => navigate('inbox')}><span>{t("New enquiries")}</span><strong>{newEnquiries ?? '—'}</strong></button></div>}
-      {(section === 'content' || section === 'trash') && <div className={styles.workspace}><section className={styles.panel} aria-labelledby="content-heading"><div className={styles.panelHeading}><h2 id="content-heading">{section === 'trash' ? t("Deleted content") : t("Website content")}</h2><button className={styles.textButton} type="button" onClick={clearFilters}>{t("All content")}</button></div><div className={styles.tabs}><button type="button" aria-pressed={section === 'content'} className={section === 'content' ? styles.tabActive : ''} onClick={() => navigate('content')}>{t("Content")}<span>{records.length - trashCount}</span></button><button type="button" aria-pressed={section === 'trash'} className={section === 'trash' ? styles.tabActive : ''} onClick={() => navigate('trash')}>{t("Trash")}<span>{trashCount}</span></button></div><div className={styles.filters}><label className={styles.search}><Search size={20} /><input ref={workspaceSearchRef} type="search" placeholder={t("Search content…")} aria-label={t("Search content")} value={search} onChange={event => { setSearch(event.target.value); setLimit(12); }} /></label><label className={styles.select}><span className={styles.srOnly}>{t("Content type")}</span><select value={type} onChange={event => { if (section === 'content') navigate('content', event.target.value); else { setTrashType(event.target.value); setPageFilter('All'); setLimit(12); } }}><option value="All">{t("All types")}</option>{typeOptions.map(option => <option key={option.type} value={option.type}>{t(option.title)}</option>)}</select><ChevronDown size={17} /></label><label className={styles.select}><span className={styles.srOnly}>{t("Publication status")}</span><select value={status} onChange={event => { setStatus(event.target.value); setLimit(12); }}><option value="All">{t("All statuses")}</option><option value="Published">{t("Published")}</option><option value="Draft">{t("Not public")}</option></select><ChevronDown size={17} /></label></div>
-        {(type === 'All' || type === 'Page' || type === 'Section') && <div className={styles.pageFilter}><label>{t("Find a page and its sections")}<select value={pageFilter} onChange={event => { setPageFilter(event.target.value); setLimit(12); }}><option value="All">{t("All pages")}</option>{pages.map(page => <option key={page.id} value={page.id}>{localizedPageLabel(page)}</option>)}<option value="shared">{t("Shared across pages")}</option></select></label><span className={styles.fieldHint}>{pageFilter === 'All' ? t("Select a page to find its main content and related sections.") : t("{count} matching items for {page}.", { count: filtered.length, page: pageLabel(pageFilter) })}</span></div>}
-        <div className={styles.resultBar}><span role="status">{loading ? t("Refreshing content…") : t(hasContentFilters ? "Showing {shown} of {total} items matching your filters" : "Showing {shown} of {total} items", { shown: Math.min(filtered.length, limit), total: filtered.length })}</span>{hasContentFilters && <button className={styles.textButton} type="button" onClick={clearFilters}><X size={16} />{t("Clear filters")}</button>}</div>
-        {loading && !records.length ? <LoadingPanel title={t("Loading your content")} description={t("Bringing your pages and updates into view.")} kind="content" /> : !filtered.length ? <div className={styles.empty}><FileText size={34} /><h3>{hasContentFilters ? t("No matching content") : section === 'trash' ? t("Trash is empty") : t("No content yet")}</h3><p>{hasContentFilters ? t("Try another search or clear your filters.") : section === 'trash' ? t("Deleted items will appear here for 30 days.") : t("Create your first item to get started.")}</p></div> : <table className={styles.contentTable}><thead><tr><th>{t("Title")}</th><th>{t("Type")}</th><th>{t("Status")}</th><th>{t("Action")}</th></tr></thead><tbody>{filtered.slice(0, limit).map(record => <tr key={legacyRecordKey(record)}><td className={styles.titleCell}><>{record.image ? <img src={record.image} alt="" width={140} height={83} /> : <span className={styles.contentThumbEmpty}><FileText size={24} aria-hidden="true" /></span>}</><div><strong>{recordTitle(record)}</strong><span className={styles.mobileType}>{t(record.type)}</span>{record.type === 'Section' && <span className={styles.recordContext}>{pageLabel(record.parentId)} {t("· Order")} {record.order ?? 0}</span>}{record.type === 'Page' && <button type="button" className={styles.sectionLink} onClick={() => { navigate('content', 'Section'); setPageFilter(record.id); }}>{t("Manage sections (")}{records.filter(item => item.type === 'Section' && item.parentId === record.id && !item.deletedAt).length})</button>}{record.deletedAt && <span className={styles.expiry}>{t("Deleted")} {new Date(record.deletedAt).toLocaleDateString(dateLocale)}</span>}</div></td><td className={styles.typeCell}>{t(record.type)}</td><td className={styles.statusCell}><span className={`${styles.badge} ${record.status === 'Published' ? styles.published : styles.draft}`}>{record.status === 'Draft' ? t("Not public") : t(record.status)}</span></td><td className={styles.actionCell}>{section === 'trash' ? <button type="button" className={styles.textButton} aria-label={t("Restore {name}", { name: recordTitle(record) })} disabled={Boolean(busy)} onClick={() => void changeRecord(record, 'restore')}><RotateCcw size={18} />{t("Restore")}</button> : <><button type="button" className={styles.textButton} aria-label={t("Edit {name}", { name: recordTitle(record) })} onClick={() => openEditor(record)} disabled={Boolean(busy)}>{t("Edit")}</button><button type="button" className={styles.deleteButton} aria-label={t("Move {name} to Trash", { name: recordTitle(record) })} title={corePage(record) ? t("This core page must remain available.") : undefined} disabled={Boolean(busy) || (corePage(record))} onClick={() => setDeleteRecord(record)}><Trash2 size={18} /></button></>}</td></tr>)}</tbody></table>}
-        {filtered.length > limit && <button className={styles.showMore} type="button" onClick={() => setLimit(current => current + 12)}>{t("Show more (")}{filtered.length - limit} {t("remaining)")}</button>}{section === 'trash' && <p className={styles.retentionNote}>{t("Items are permanently removed after 30 days. Images referenced by other content remain protected.")}</p>}</section></div>}
+      {refreshFailures.length > 0 && <div className={styles.error} role="alert"><strong>{t("Some areas could not be refreshed. Previous information remains visible.")}</strong><ul>{refreshFailures.map(failure => <li key={failure.area}><strong>{t(failure.area)}:</strong> {t(failure.message)}</li>)}</ul></div>}{error && <div className={styles.error} role="alert">{t(error)}</div>}{notice && <div className={styles.success} role="status"><Check size={19} /><span>{t(notice)}</span><button type="button" className={styles.iconButton} onClick={() => setNotice('')} aria-label={t("Dismiss notification")}><X size={18} /></button></div>}
+      {section === 'content' && type === 'All' && <CmsDashboard summary={summary} newEnquiries={newEnquiries} onNavigate={navigate} onEdit={openEditor} disabled={Boolean(busy)} />}
+      {section === 'content' && (type === 'Page' || type === 'Section') && <CmsPageManager records={records} selectedPage={searchParams.get('page') || ''} onSelect={id => router.push(id ? `/cms/pages?page=${encodeURIComponent(id)}` : '/cms/pages', { scroll: false })} onEdit={openEditor} onCollection={nextType => navigate('content', nextType)} onSettings={() => navigate('setting')} disabled={loading || Boolean(busy)} />}
+      {section === 'trash' && <CmsTrashManager key={user.id + ':' + (searchParams.get('kind') || '')} role={user.role} target={targetedTrash} initialKind={searchParams.get('kind')} revision={contentRevision} onClearTarget={() => router.replace('/cms/trash', { scroll: false })} onBusyChange={pending => setBusy(pending ? 'Updating Trash…' : '')} onChanged={handleTrashChange} />}
+      {section === 'content' && !['All', 'Page', 'Section'].includes(type) && <div className={styles.workspace}><section className={styles.panel} aria-labelledby="content-heading">
+        <div className={styles.panelHeading}><h2 id="content-heading">{t(title)}</h2><button className={styles.textButton} type="button" onClick={clearFilters}>{t("Clear filters")}</button></div>
+        <div className={styles.filters}><label className={styles.search}><Search size={20} /><input ref={workspaceSearchRef} type="search" placeholder={t("Search content…")} aria-label={t("Search content")} maxLength={160} value={search} onChange={event => setSearch(event.target.value)} /></label></div>
+        <div className={styles.resultBar}><span role="status">{loading ? t("Refreshing content…") : contentLoading ? t("Loading your content") : t(hasContentFilters ? "Showing {shown} of {total} items matching your filters" : "Showing {shown} of {total} items", { shown: contentShown, total: contentTotal })}</span>{hasContentFilters && <button className={styles.textButton} type="button" onClick={clearFilters}><X size={16} />{t("Clear filters")}</button>}</div>
+        {collectionPage.error && <div className={styles.error} role="alert">{t(collectionPage.error)} <button type="button" className="button secondary" onClick={collectionPage.retry}>{t("Retry loading content")}</button></div>}
+        {contentLoading ? <LoadingPanel title={t("Loading your content")} description={t("Bringing your pages and updates into view.")} kind="content" /> : !filtered.length ? <div className={styles.empty}><FileText size={34} /><h3>{t(hasContentFilters ? "No matching content" : "No content yet")}</h3><p>{t(hasContentFilters ? "Try another search or clear your filters." : "Create your first item to get started.")}</p></div> : <table className={styles.contentTable}><thead><tr><th>{t("Title")}</th><th>{t("Type")}</th><th>{t("Action")}</th></tr></thead><tbody>{filtered.map(record => <tr key={legacyRecordKey(record)}><td className={styles.titleCell}>{record.image ? <img src={record.image} alt="" width={140} height={83} /> : <span className={styles.contentThumbEmpty}><FileText size={24} aria-hidden="true" /></span>}<div><strong>{recordTitle(record)}</strong><span className={styles.mobileType}>{t(record.type)}</span>{record.type === 'Section' && <span className={styles.recordContext}>{pageLabel(record.parentId)} {t("· Order")} {record.order ?? 0}</span>}</div></td><td className={styles.typeCell}>{t(record.type)}</td><td className={styles.actionCell}><button type="button" className={styles.textButton} aria-label={t("Edit {name}", { name: recordTitle(record) })} onClick={event => { event.currentTarget.focus({ preventScroll: true }); openEditor(record); }} disabled={Boolean(busy)}>{t("Edit")}</button><button type="button" className={styles.deleteButton} aria-label={t("Move {name} to Trash", { name: recordTitle(record) })} title={corePage(record) ? t("This core page must remain available.") : undefined} disabled={Boolean(busy) || corePage(record)} onClick={event => { event.currentTarget.focus({ preventScroll: true }); setDeleteRecord(record); }}><Trash2 size={18} /></button></td></tr>)}</tbody></table>}
+        {collectionPage.nextCursor && <button className={styles.showMore} type="button" disabled={collectionPage.loadingMore || Boolean(busy)} onClick={() => void collectionPage.loadMore()}>{t("Show more (")}{contentTotal - contentShown} {t("remaining)")}</button>}
+      </section></div>}
       {section === 'media' && <div className={styles.mediaPageLayout}>
-        <section className={`${styles.panel} ${styles.mediaUploadCard}`} aria-labelledby="media-upload-heading">
-          <div className={styles.panelHeading}><h2 id="media-upload-heading">{t("Add an image")}</h2></div>
-          <p className={styles.editorNotice}>{t("Prepare an image first. Upload starts only when you choose Save image.")}</p>{mediaNotice && <div className={styles.success} role="status"><Check size={19} />{t(mediaNotice)}</div>}<div className={styles.mediaUpload}><label className={`button secondary ${styles.fileButton}`}><UploadCloud size={20} />{mediaPreparing ? t("Preparing image…") : t("Choose device image")}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={mediaPreparing || Boolean(busy)} aria-label={t("Choose media library image")} onChange={event => { void chooseLibraryImage(event.target.files?.[0]); event.target.value = ''; }} /></label><p>{t("JPEG, PNG or WebP · up to 8 MB before preparation")}</p></div>{preparedMedia && <form className={styles.preparedImage} onSubmit={saveMedia}><img src={preparedMedia.preview} alt={t("Prepared media preview")} width={240} height={150} /><label>{t("Image name")}<input required maxLength={100} value={mediaTitle} disabled={Boolean(busy)} onChange={event => setMediaTitle(event.target.value)} /><span className={styles.fieldHint}>{preparedMedia.width} × {preparedMedia.height} · {(preparedMedia.blob.size / 1024).toFixed(0)} KB</span></label><button type="submit" className="button" disabled={mediaPreparing || !mediaTitle.trim() || Boolean(busy) || mediaAttempts >= MAX_ATTEMPTS}>{busy ? <LoaderCircle className={styles.spinner} size={18} /> : <Check size={18} />}{t(busy) || t("Save image")}</button></form>}{mediaError && <div className={styles.error} role="alert">{t(mediaError)}{mediaAttempts >= MAX_ATTEMPTS && <div className={styles.recoveryActions}><p>{t("Three attempts failed. Your prepared image is preserved.")}</p><button type="button" className="button secondary" disabled={Boolean(busy)} onClick={() => void recoverMedia()}>{t("Check saved media")}</button></div>}</div>}
-        </section>
         <section className={`${styles.panel} ${styles.mediaLibraryCard}`} aria-labelledby="media-library-heading">
-          <div className={styles.panelHeading}><h2 id="media-library-heading">{t("Saved images")}</h2></div>
-          <div className={styles.librarySearch}><label className={styles.search}><Search size={20} /><input ref={mediaSearchRef} type="search" aria-label={t("Search media library")} placeholder={t("Search image names…")} value={mediaSearch} onChange={event => setMediaSearch(event.target.value)} /></label>{mediaSearch && <button type="button" className={styles.textButton} onClick={() => { setMediaSearch(''); mediaSearchRef.current?.focus({ preventScroll: true }); }}><X size={16} />{t("Clear search")}</button>}</div><div className={styles.resultBar}><span role="status">{t(mediaCursor ? "{count} of {total} loaded images" : "{count} of {total} images", { count: filteredMedia.length, total: media.length })}</span></div>{loading && !media.length ? <LoadingPanel title={t("Loading your images")} description={t("Preparing your media library.")} kind="media" /> : !filteredMedia.length && <div className={styles.empty}><ImagePlus size={32} /><h3>{mediaSearch.trim() ? t("No matching images") : t("Your library is empty")}</h3><p>{mediaSearch.trim() ? t("Try another image name or clear your search.") : t("Choose a device image to get started.")}</p></div>}<div className={styles.libraryGrid}>{filteredMedia.map(item => <div key={item.id}><img src={item.url} alt="" width={260} height={160} loading="lazy" /><strong>{item.title}</strong>{<button type="button" className={styles.textButton} disabled={Boolean(busy)} onClick={() => void removeMedia(item)} aria-label={t("Remove {name} from library", { name: item.title })}><Trash2 size={16} />{t("Remove")}</button>}</div>)}</div>{mediaCursor && <button type="button" className={styles.showMore} disabled={Boolean(busy)} onClick={() => void loadMoreMedia()}>{t("Load more images")}</button>}{mediaCursor && <p className={styles.fieldHint}>{t("Search covers loaded images. Load more to include older images.")}</p>}<div className={styles.cleanup}><p>{t("Remove unused uploads after a one-hour grace period. Images in content or Trash remain protected.")}</p><button type="button" className={styles.textButton} onClick={() => void cleanupMedia()} disabled={Boolean(busy) || Boolean(preparedMedia) || Object.keys(editorImages).length > 0}><Trash2 size={18} />{t("Clean unfinished uploads")}</button></div>
+          <div className={styles.panelHeading}><h2 id="media-library-heading">{t("Saved images")}</h2><Link className={styles.textButton} href="/cms/trash?kind=Image" prefetch={false}><Trash2 size={18} />{t("Media Trash")}</Link></div>
+          {mediaNotice && <div className={styles.success} role="status"><Check size={19} />{t(mediaNotice)}</div>}
+          {mediaError && <div className={styles.error} role="alert">{t(mediaError)}</div>}
+          <div className={styles.librarySearch}><label className={styles.search}><Search size={20} /><input ref={mediaSearchRef} type="search" aria-label={t("Search media library")} maxLength={160} placeholder={t("Search image names…")} value={mediaSearch} onChange={event => { setMediaSearch(event.target.value); setMediaPage(0); }} /></label>{mediaSearch && <button type="button" className={styles.textButton} onClick={() => { setMediaSearch(''); setMediaPage(0); mediaSearchRef.current?.focus({ preventScroll: true }); }}><X size={16} />{t("Clear search")}</button>}</div><div className={styles.resultBar}><span role="status">{searchedMedia.loading ? t("Searching image library…") : filteredMedia.length ? t(activeMediaCursor ? "Showing {start}–{end} of {total} loaded images" : "Showing {start}–{end} of {total} images", { start: mediaPageStart + 1, end: mediaPageStart + visibleMedia.length, total: filteredMedia.length }) : t(activeMediaCursor ? "{count} of {total} loaded images" : "{count} of {total} images", { count: 0, total: media.length })}</span></div>{(loading && !media.length || searchedMedia.loading) ? <LoadingPanel title={t("Loading your images")} description={t("Preparing your media library.")} kind="media" /> : !searchedMedia.error && !filteredMedia.length && <div className={styles.empty}><ImagePlus size={32} /><h3>{mediaSearch.trim() ? t("No matching images") : t("Your library is empty")}</h3><p>{mediaSearch.trim() ? t("Try another image name or clear your search.") : t("Choose a device image to get started.")}</p></div>}{searchedMedia.error && <div className={styles.error} role="alert">{t(searchedMedia.error)} <button type="button" className="button secondary" onClick={searchedMedia.retry}>{t("Try search again")}</button></div>}<div className={styles.libraryGrid}>{visibleMedia.map(item => <div key={item.id}><img src={item.url} alt="" width={260} height={160} loading="lazy" /><strong>{item.title}</strong><div className={styles.mediaCardActions}><button type="button" className={styles.textButton} disabled={Boolean(busy)} onClick={event => { event.currentTarget.focus({ preventScroll: true }); void showMediaUsage(item); }} aria-label={t("Usage for {name}", { name: item.title })}><Link2 size={16} />{t("Used")}</button><button type="button" className={styles.textButton} disabled={Boolean(busy)} onClick={() => void moveMediaToTrash(item)} aria-label={t("Move {name} to Media Trash", { name: item.title })}><Trash2 size={16} />{t("Trash")}</button></div></div>)}</div>{mediaPageCount > 1 && <div className={styles.pickerPagination}><button type="button" className="button secondary" disabled={currentMediaPage === 0} onClick={() => setMediaPage(currentMediaPage - 1)}>{t("Previous images")}</button><span aria-live="polite">{t("Page {page} of {total}", { page: currentMediaPage + 1, total: mediaPageCount })}</span><button type="button" className="button secondary" disabled={currentMediaPage === mediaPageCount - 1} onClick={() => setMediaPage(currentMediaPage + 1)}>{t("Next images")}</button></div>}{activeMediaCursor && currentMediaPage === mediaPageCount - 1 && <button type="button" className={styles.showMore} disabled={Boolean(busy) || loading || searchedMedia.loadingMore} onClick={() => { if (mediaSearching) void searchedMedia.loadMore(); else void loadMoreMedia(); }}>{t(busy === "Loading more images…" || searchedMedia.loadingMore ? "Loading more images…" : "Load more images")}</button>}<div className={styles.cleanup}><p>{t("Unused saved images older than one hour move to Media Trash. Images used by content or content in Trash stay in the library. Old unfinished uploads are removed.")}</p><button type="button" className={styles.textButton} onClick={event => { event.currentTarget.focus({ preventScroll: true }); void cleanupMedia(); }} disabled={Boolean(busy) || Boolean(preparedMedia) || Object.keys(editorImages).length > 0}><Trash2 size={18} />{t("Clean unused images")}</button></div>
         </section>
       </div>}
       {section === 'inbox' && <section className={styles.panel} aria-label={t("Enquiry inbox")}>
+        {user && <CmsEnquiryRecipients key={user.id} role={user.role} onSaved={() => void emailSetup.refresh(true)} />}
+        <CmsEmailSetupNotice setup={emailSetup} />
         <div className={styles.inboxFilters}>
           <label className={styles.search}><Search size={20} /><input ref={workspaceSearchRef} type="search" aria-label={t("Search all enquiries")} placeholder={t("Search all enquiries…")} maxLength={200} value={search} onChange={event => setSearch(event.target.value)} /></label>
-          <label className={styles.select}><span className={styles.srOnly}>{t("Enquiry status")}</span><select value={status} onChange={event => setStatus(event.target.value)}><option value="All">{t("All statuses")}</option>{enquiryStatuses.map(value => <option key={value} value={value}>{t(value)}</option>)}</select><ChevronDown size={17} /></label>
+          <label className={styles.select}><span className={styles.srOnly}>{t("Enquiry status")}</span><select value={enquiryStatus} onChange={event => setEnquiryStatus(event.target.value as InboxStatus)}><option value="All">{t("All statuses")}</option>{enquiryStatuses.map(value => <option key={value} value={value}>{t(value)}</option>)}</select><ChevronDown size={17} /></label>
         </div>
         <div className={styles.resultBar}><span role={inbox.searching ? undefined : 'status'}>{inbox.searching ? t("Searching all enquiries…") : inbox.total !== null ? t("Showing {shown} of {total} enquiries", { shown: inboxItems.length, total: inbox.total }) : t("Enquiries could not be loaded")}</span>{hasInboxFilters && <button type="button" className={styles.textButton} onClick={clearFilters}><X size={16} />{t("Clear filters")}</button>}</div>
         {inbox.totalAll !== null && !inbox.searching && <p className={styles.fieldHint}>{t("{total} enquiries in your inbox · {new} new. Search covers all saved enquiries.", { total: inbox.totalAll, new: inbox.newCount ?? 0 })}</p>}
         {inbox.error && <div className={styles.error} role="alert"><p>{t(inbox.error)}</p><button type="button" className="button secondary" disabled={inbox.loadingMore || Boolean(busy)} onClick={() => inboxItems.length ? void inbox.loadMore() : refreshInbox()}><RefreshCw size={18} />{inboxItems.length ? t("Retry loading more") : t("Retry enquiry search")}</button></div>}
         <div id="enquiry-results" aria-busy={inbox.searching || inbox.loadingMore}>
-          {inbox.searching ? <LoadingPanel title={hasInboxFilters ? t("Finding matching enquiries") : t("Loading your enquiries")} description={hasInboxFilters ? t("Searching every saved message for your selection.") : t("Bringing your latest website messages into view.")} kind="inbox" /> : !inbox.error && !inboxItems.length ? <div className={styles.empty}><Inbox size={36} /><h3>{hasInboxFilters ? t("No matching enquiries") : t("Your inbox is clear")}</h3><p>{hasInboxFilters ? t("Try another search or clear your filters.") : t("Messages submitted through the contact form appear here.")}</p></div> : <div className={styles.inboxList}>{inboxItems.map(item => <button type="button" key={item.id} className={styles.enquiryRow} onClick={() => { setSelectedEnquiry(item); setEnquiryError(''); setEnquiryNotice(''); }}><div><strong>{item.subject}</strong><span>{item.name}{item.company ? ` · ${item.company}` : ''}</span><p>{item.message}</p></div><div className={styles.enquiryMeta}><span className={`${styles.badge} ${item.status === 'Resolved' ? styles.published : styles.draft}`}>{t(item.status)}</span><time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time></div></button>)}</div>}
+          {inbox.searching ? <LoadingPanel title={hasInboxFilters ? t("Finding matching enquiries") : t("Loading your enquiries")} description={hasInboxFilters ? t("Searching every saved message for your selection.") : t("Bringing your latest website messages into view.")} kind="inbox" /> : !inbox.error && !inboxItems.length ? <div className={styles.empty}><Inbox size={36} /><h3>{hasInboxFilters ? t("No matching enquiries") : t("Your inbox is clear")}</h3><p>{hasInboxFilters ? t("Try another search or clear your filters.") : t("Messages submitted through the contact form appear here.")}</p></div> : <div className={styles.inboxList}>{inboxItems.map(item => <button type="button" key={item.id} className={styles.enquiryRow} onClick={event => { event.currentTarget.focus({ preventScroll: true }); setSelectedEnquiry(item); setEnquiryError(''); setEnquiryNotice(''); }}><div><strong>{item.subject}</strong><span>{item.name}{item.company ? ` · ${item.company}` : ''}</span><p>{item.message}</p></div><div className={styles.enquiryMeta}><span className={`${styles.badge} ${item.status === 'Resolved' ? styles.resolved : styles.pending}`}>{t(item.status)}</span><time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time></div></button>)}</div>}
           {inbox.nextCursor && !inbox.error && <button type="button" className={styles.showMore} disabled={inbox.loadingMore || Boolean(busy)} onClick={() => void inbox.loadMore()}>{inbox.loadingMore ? <><LoaderCircle className={styles.spinner} size={18} />{t("Loading more enquiries…")}</> : <>{t("Load more enquiries")}</>}</button>}
         </div>
       </section>}
-      {section === 'users' && <CmsUsersManager />}
-      {section === 'account' && <div className={styles.accountGrid}><section className={`${styles.panel} ${styles.websiteSettings}`}><div className={styles.panelHeading}><h2>{t("Website details")}</h2><button type="button" className={styles.textButton} disabled={Boolean(busy)} onClick={() => void refreshWebsiteDetails()}><RefreshCw size={17} />{t("Refresh details")}</button></div><p className={styles.accountDescription}>{t("Use verified company information. Leave contact fields blank until the details are ready.")}</p>{websiteDetails ? <form className={styles.editor} onSubmit={saveWebsiteDetails}><fieldset className={styles.formFields} disabled={Boolean(busy)}><div className={styles.twoColumns}><label>{t("Company name · English")}<input required lang="en" maxLength={150} value={websiteDetails.draft.companyName} onChange={event => updateWebsiteDetails('companyName', event.target.value)} /></label><label>{t("Company name · Thai")}<input required lang="th" maxLength={150} value={websiteDetails.draft.companyNameTh} onChange={event => updateWebsiteDetails('companyNameTh', event.target.value)} /></label></div><div className={styles.twoColumns}><label>{t("Office address · English")}<textarea lang="en" rows={3} maxLength={1000} value={websiteDetails.draft.officeAddress} onChange={event => updateWebsiteDetails('officeAddress', event.target.value)} /></label><label>{t("Office address · Thai")}<textarea lang="th" rows={3} maxLength={1000} value={websiteDetails.draft.officeAddressTh} onChange={event => updateWebsiteDetails('officeAddressTh', event.target.value)} /></label></div><div className={styles.twoColumns}><label>{t("Public phone number")}<input type="tel" maxLength={40} value={websiteDetails.draft.phone} onChange={event => updateWebsiteDetails('phone', event.target.value)} autoComplete="tel" /></label><label>{t("Public email address")}<input type="email" maxLength={254} value={websiteDetails.draft.email} onChange={event => updateWebsiteDetails('email', event.target.value)} autoComplete="email" /></label></div><label>{t("Map link")}<input type="url" maxLength={1500} placeholder="https://" value={websiteDetails.draft.mapUrl} onChange={event => updateWebsiteDetails('mapUrl', event.target.value)} /><span className={styles.fieldHint}>{t("Paste the HTTPS link to your office location.")}</span></label></fieldset>{settingsError && <div className={styles.error} role="alert">{t(settingsError)}<p>{t("Your input is preserved. Refresh details only when you want to discard the unsaved version.")}</p></div>}{settingsNotice && <div className={styles.success} role="status"><Check size={18} />{t(settingsNotice)}</div>}<div className={styles.editorFooter}><button type="submit" className="button" disabled={Boolean(busy) || !settingsDirty}><Check size={18} />{busy === 'Saving website details…' ? t(busy) : t("Save website details")}</button></div></form> : <p className={styles.editorNotice}>{t("Website details could not be loaded. Use Refresh details to try again.")}</p>}</section><section className={styles.panel}><div className={styles.panelHeading}><h2>{t("Change password")}</h2><LockKeyhole size={22} /></div><p className={styles.accountDescription}>{t("Signed in as")} <strong>{user.username}</strong>{t(". Use at least 14 characters for your new password.")}</p><form className={styles.editor} onSubmit={changePassword}><label>{t("Current password")}<input name="currentPassword" disabled={Boolean(busy)} type="password" autoComplete="current-password" required maxLength={200} /></label><label>{t("New password")}<input name="newPassword" disabled={Boolean(busy)} type="password" autoComplete="new-password" required minLength={14} maxLength={200} /></label><label>{t("Confirm new password")}<input name="confirmPassword" disabled={Boolean(busy)} type="password" autoComplete="new-password" required minLength={14} maxLength={200} /></label><button className="button" disabled={Boolean(busy)} type="submit">{busy === 'Updating password…' ? t(busy) : t("Update password")}</button></form></section><section className={styles.panel}><h2>{t("Content tools")}</h2><div className={styles.toolCard}><Download size={24} /><div><h3>{t("Export website data")}</h3><p>{t("Download content, media references and enquiries as JSON. Image files and administrator accounts are stored separately.")}</p><button type="button" className="button secondary" onClick={() => void exportContent()} disabled={loading || Boolean(busy)}><Download size={18} />{busy === 'Preparing export…' ? t("Preparing export…") : t("Export data")}</button></div></div><div className={styles.toolCard}><UploadCloud size={24} /><div><h3>{t("Bring over local content")}</h3><p>{t("Review content previously saved in this browser. Import new records while preserving current website content.")}</p><button type="button" className="button secondary" onClick={previewImport}>{t("Review local content")}</button></div></div><button type="button" className={styles.textButton} onClick={() => void logout()} disabled={Boolean(busy)}><LogOut size={19} />{t("Sign out")}</button></section></div>}
+      {section === 'logs' && <CmsActivityLog revision={contentRevision} />}
+      {section === 'usage' && (user.role === 'Dev' || user.role === 'Admin' ? <CmsUsageDashboard /> : <p className={styles.editorNotice}>{t("Only Dev and Admin can view data usage.")}</p>)}
+      {section === 'users' && <CmsUsersManager targetUserId={searchParams.get('edit')?.startsWith('User:') ? searchParams.get('edit')!.slice(5) : null} onPhotoLinkClosed={() => router.replace('/cms/users', { scroll: false })} username={user.username} role={user.role} onCurrentUserChange={setUser} onUserTrashed={() => { invalidateWorkspaceRefresh(); refreshContentOverview(); }} settingsOpen={userSettingsOpen} onSettingsOpenChange={setUserSettingsOpen} />}
+      {section === 'setting' && <div className={styles.settingsGrid}><section className={`${styles.panel} ${styles.websiteSettings}`}><div className={styles.panelHeading}><h2>{t("Website details")}</h2><button type="button" className={styles.textButton} disabled={Boolean(busy)} onClick={event => { event.currentTarget.focus({ preventScroll: true }); void refreshWebsiteDetails(); }}><RefreshCw size={17} />{t("Refresh details")}</button></div><p className={styles.settingsDescription}>{t("Use verified company information. Leave contact fields blank until the details are ready.")}</p>{websiteDetails ? <form className={styles.editor} onSubmit={saveWebsiteDetails}><fieldset className={styles.formFields} disabled={Boolean(busy)}><div className={styles.twoColumns}><label>{t("Company name · English")}<input required lang="en" maxLength={150} value={websiteDetails.draft.companyName} onChange={event => updateWebsiteDetails('companyName', event.target.value)} /></label><label>{t("Company name · Thai")}<input required lang="th" maxLength={150} value={websiteDetails.draft.companyNameTh} onChange={event => updateWebsiteDetails('companyNameTh', event.target.value)} /></label></div><div className={styles.twoColumns}><label>{t("Office address · English")}<textarea lang="en" rows={3} maxLength={1000} value={websiteDetails.draft.officeAddress} onChange={event => updateWebsiteDetails('officeAddress', event.target.value)} /></label><label>{t("Office address · Thai")}<textarea lang="th" rows={3} maxLength={1000} value={websiteDetails.draft.officeAddressTh} onChange={event => updateWebsiteDetails('officeAddressTh', event.target.value)} /></label></div><div className={styles.twoColumns}><label>{t("Public phone number")}<input type="tel" maxLength={40} value={websiteDetails.draft.phone} onChange={event => updateWebsiteDetails('phone', event.target.value)} autoComplete="tel" /></label><label>{t("Public email address")}<input type="email" maxLength={254} value={websiteDetails.draft.email} onChange={event => updateWebsiteDetails('email', event.target.value)} autoComplete="email" /></label></div><label>{t("Map link")}<input type="url" maxLength={1500} placeholder="https://" value={websiteDetails.draft.mapUrl} onChange={event => updateWebsiteDetails('mapUrl', event.target.value)} /><span className={styles.fieldHint}>{t("Paste the HTTPS link to your office location.")}</span></label></fieldset>{settingsError && <div className={styles.error} role="alert">{t(settingsError)}<p>{t("Your input is preserved. Refresh details only when you want to discard the unsaved version.")}</p></div>}{settingsNotice && <div className={styles.success} role="status"><Check size={18} />{t(settingsNotice)}</div>}<div className={styles.editorFooter}><button type="submit" className="button" disabled={Boolean(busy) || !settingsDirty}><Check size={18} />{busy === 'Saving website details…' ? t(busy) : t("Save website details")}</button></div></form> : <p className={styles.editorNotice}>{t("Website details could not be loaded. Use Refresh details to try again.")}</p>}</section><CmsEmailSetupCard setup={emailSetup} /><section className={styles.panel}><h2>{t("Content tools")}</h2><div className={styles.toolCard}><Download size={24} /><div><h3>{t("Export website data")}</h3><p>{t("Download content, media references and enquiries as JSON. Image files and administrator accounts are stored separately.")}</p><button type="button" className="button secondary" onClick={() => void exportContent()} disabled={loading || Boolean(busy)}><Download size={18} />{busy === 'Preparing export…' ? t("Preparing export…") : t("Export data")}</button></div></div><button type="button" className={styles.textButton} onClick={event => { event.currentTarget.focus({ preventScroll: true }); void logout(); }} disabled={Boolean(busy)}><LogOut size={19} />{t("Sign out")}</button></section></div>}
     </main>
-    <NavigationDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+    <Modal open={section === 'media' && mediaUploadOpen} onClose={() => setMediaUploadOpen(false)} title={t("Add an image")} busy={Boolean(busy) || mediaPreparing} compact actions={<div className={`${styles.editorActionRow} ${styles.mediaUploadActions}`}>
+      <button type="button" className="button secondary" disabled={Boolean(busy) || mediaPreparing} onClick={() => setMediaUploadOpen(false)}>{t("Close")}</button>
+      <button type="submit" form="cms-media-upload" className="button" disabled={!preparedMedia || mediaPreparing || !mediaTitle.trim() || Boolean(busy) || mediaAttempts >= MAX_ATTEMPTS}>{busy && <LoaderCircle className={styles.spinner} size={18} />}{t(busy) || t("Save image")}</button>
+    </div>}>
+      <form id="cms-media-upload" className={styles.mediaUploadForm} onSubmit={saveMedia} aria-busy={Boolean(busy) || mediaPreparing}>
+        <p className={styles.editorNotice}>{t("Prepare an image first. Upload starts only when you choose Save image.")}</p>
+        <div className={styles.mediaUpload}>
+          <label className={`button secondary ${styles.fileButton}`}><UploadCloud size={20} />{mediaPreparing ? t("Preparing image…") : t("Choose device image")}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={mediaPreparing || Boolean(busy)} aria-label={t("Choose media library image")} onChange={event => { void chooseLibraryImage(event.target.files?.[0]); event.target.value = ''; }} /></label>
+          <p>{t("JPEG, PNG or WebP · up to 8 MB before preparation")}</p>
+        </div>
+        {preparedMedia && <div className={styles.preparedImage}>
+          <img src={preparedMedia.preview} alt={t("Prepared media preview")} width={240} height={150} />
+          <label>{t("Image name")}<input required maxLength={100} value={mediaTitle} disabled={Boolean(busy)} onChange={event => setMediaTitle(event.target.value)} /><span className={styles.fieldHint}>{preparedMedia.width} × {preparedMedia.height} · {(preparedMedia.blob.size / 1024).toFixed(0)} KB</span></label>
+        </div>}
+        {mediaUploadError && <div className={styles.error} role="alert">{t(mediaUploadError)}{mediaAttempts >= MAX_ATTEMPTS && <div className={styles.recoveryActions}><p>{t("Three attempts failed. Your prepared image is preserved.")}</p><button type="button" className="button secondary" disabled={Boolean(busy)} onClick={() => void recoverMedia()}>{t("Check saved media")}</button></div>}</div>}
+      </form>
+    </Modal>
+     <NavigationDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
       <nav className={styles.drawerLinks}>
-        <button type="button" aria-current={section === 'content' && type === 'All' ? 'page' : undefined} onClick={() => navigate('content')}><FileText size={20} />{t("Content overview")}</button>
-        {typeOptions.map(option => <button key={option.type} type="button" aria-current={section === 'content' && type === option.type ? 'page' : undefined} onClick={() => navigate('content', option.type)}><option.icon size={20} />{t(option.title)}</button>)}
+        <button type="button" aria-current={section === 'content' && (type === 'All' || type === 'Section') ? 'page' : undefined} onClick={() => navigate('content')}><FileText size={20} />{t("Dashboard")}</button>
+        {typeOptions.filter(option => option.type !== 'Section').map(option => <button key={option.type} type="button" aria-current={section === 'content' && type === option.type ? 'page' : undefined} onClick={() => navigate('content', option.type)}><option.icon size={20} />{t(option.title)}</button>)}
         <button type="button" aria-current={section === 'inbox' ? 'page' : undefined} onClick={() => navigate('inbox')}><Inbox size={20} />{t("Enquiries")} {newEnquiries !== null && newEnquiries > 0 && <span className={styles.navCount}>{newEnquiries}</span>}</button>
         <button type="button" aria-current={section === 'media' ? 'page' : undefined} onClick={() => navigate('media')}><ImagePlus size={20} />{t("Media library")}</button>
         <button type="button" aria-current={section === 'trash' ? 'page' : undefined} onClick={() => navigate('trash')}><Trash2 size={20} />{t("Trash (")}{trashCount})</button>
-        <button type="button" aria-current={section === 'users' ? 'page' : undefined} onClick={() => navigate('users')}><UserRound size={20} />{t("Administrators")}</button>
-        <button type="button" aria-current={section === 'account' ? 'page' : undefined} onClick={() => navigate('account')}><Settings size={20} />{t("Account & tools")}</button>
+        {(user.role === 'Dev' || user.role === 'Admin') && <button type="button" aria-current={section === 'usage' ? 'page' : undefined} onClick={() => navigate('usage')}><BarChart3 size={20} />{t("Data usage")}</button>}
+        <button type="button" aria-current={section === 'logs' ? 'page' : undefined} onClick={() => navigate('logs')}><History size={20} />{t("Logs")}</button>
+        <button type="button" aria-current={section === 'users' ? 'page' : undefined} onClick={() => navigate('users')}><UserRound size={20} />{t("Users")}</button>
+        <button type="button" aria-current={section === 'setting' ? 'page' : undefined} onClick={() => navigate('setting')}><Settings size={20} />{t("Settings")}</button>
       </nav>
       <div className={styles.drawerFoot}>
         <Link href={href(locale)} target="_blank" rel="noopener noreferrer" className={`button secondary ${styles.drawerViewSite}`} aria-label={t("View website in a new tab")} onClick={() => setDrawerOpen(false)}><Globe2 size={19} aria-hidden="true" />{t("View website")}</Link>
         <div className={styles.drawerUser}>
           <span className={styles.drawerUserAvatar} aria-hidden="true">{user.username.slice(0, 1).toUpperCase()}</span>
           <div className={styles.drawerUserText}><span>{t("Signed in as")}</span><strong title={user.username}>{user.username}</strong></div>
-          <button type="button" className={styles.drawerSignOut} aria-label={t("Sign out")} title={t("Sign out")} onClick={() => void logout()} disabled={Boolean(busy)}><LogOut size={19} aria-hidden="true" /><span>{t("Sign out")}</span></button>
+          <button type="button" className={styles.drawerSignOut} aria-label={t("Sign out")} title={t("Sign out")} onClick={event => { event.currentTarget.focus({ preventScroll: true }); void logout(); }} disabled={Boolean(busy)}><LogOut size={19} aria-hidden="true" /><span>{t("Sign out")}</span></button>
         </div>
       </div>
     </NavigationDrawer>
-    <Modal open={editing !== null} onClose={closeEditor} title={original ? t("Edit content") : t("Create content")} busy={Boolean(busy)} actions={<div className={styles.editorActionRow}><span className={styles.saveState} role="status">{editorDirty ? t("Unsaved changes") : original ? t("Showing the saved version") : t("New content")}</span>{editorDirty && <button type="button" className={styles.textButton} onClick={downloadDraft} disabled={Boolean(busy)}><Download size={18} />{t("Download unsaved text")}</button>}<button type="button" className="button secondary" onClick={closeEditor} disabled={Boolean(busy)}>{t("Cancel")}</button><button type="submit" form="cms-content-editor" className="button" disabled={preparing || Boolean(busy) || editorAttempts >= MAX_ATTEMPTS || editorConflict}>{busy ? <LoaderCircle className={styles.spinner} size={19} /> : <Check size={19} />}{t(busy) || (preparing ? t("Preparing image…") : t("Save"))}</button></div>}>{editing && <form id="cms-content-editor" className={styles.editor} aria-busy={Boolean(busy)} onSubmit={saveEditor} onInvalidCapture={event => { const field = event.target as HTMLElement; field.closest('details')?.setAttribute('open', ''); }}><p className={styles.editorNotice}>{t("Save makes your changes available on the website immediately.")}{publishedPreview && original && <span className={styles.previewLinks}><a className={styles.previewLink} href={publishedPreview} target="_blank" rel="noopener noreferrer">{t("View website · Thai")}</a><a className={styles.previewLink} href={publishedContentUrl(original, records, 'en')!} target="_blank" rel="noopener noreferrer">{t("View website · English")}</a></span>}</p><CmsContentFields record={editing} existing={Boolean(original)} pages={records.filter(record => record.type === 'Page')} media={media} images={editorImages} disabled={Boolean(busy)} preparing={preparing} hasMore={Boolean(mediaCursor)} onChange={updateEditor} onTypeChange={nextType => void changeEditorType(nextType)} onImage={(file, target) => void chooseEditorImage(file, target)} onMore={() => void loadMoreMedia()} routeText={routeText} onRouteText={setRouteText} />{editorError && <div ref={editorErrorRef} className={styles.error} role="alert" tabIndex={-1}>{t(editorError)}<p>{t("Your input is preserved.")}{editorAttempts >= MAX_ATTEMPTS ? t(" Three attempts failed. Check the saved content before retrying.") : editorConflict ? t(" Load the latest version before editing again.") : t(" Retry after checking the issue.")}</p>{(editorConflict || editorAttempts >= MAX_ATTEMPTS) && <div className={styles.recoveryActions}><button type="button" className="button secondary" onClick={() => void recoverEditor()} disabled={Boolean(busy)}>{editorConflict ? t("Load latest saved version") : t("Check saved content")}</button><button type="button" className={styles.textButton} onClick={downloadDraft}><Download size={18} />{t("Download unsaved text")}</button></div>}</div>}</form>}</Modal>
+    <Modal open={mediaUsage !== null} onClose={closeMediaUsage} title={t("Where this image is used")} compact>
+      {mediaUsage && <div className={styles.mediaUsage}>
+        <div className={styles.mediaUsageIntro}><img src={mediaUsage.item.url} alt="" width={640} height={400} /><strong>{mediaUsage.item.title}</strong></div>
+        {mediaUsage.loading && <p role="status">{t("Checking where this image is used…")}</p>}
+        {mediaUsage.error && <div className={styles.error} role="alert">{t(mediaUsage.error)} <button type="button" className="button secondary" onClick={() => void showMediaUsage(mediaUsage.item)}>{t("Try again")}</button></div>}
+        {mediaUsage.result && (mediaUsage.result.usages.length ? <><p>{t("Used in {count} item(s).", { count: mediaUsage.result.usages.length })}</p><ul className={styles.mediaUsageList}>{mediaUsage.result.usages.map(usage => <li key={`${usage.type}:${usage.id}`}><Link href={mediaUsageHref(usage)} onClick={closeMediaUsage}><span className={styles.mediaUsageLinkHeading}><strong>{recordTitle(usage)}</strong><ArrowRight size={18} aria-hidden="true" /></span><span>{t(usage.type)}{usage.deletedAt && <> · {t("In Trash")}</>}</span><span>{usage.fields.map(field => t(field === 'avatar' ? "Profile photo" : field === 'image' ? "Main image" : field === 'mobileImage' ? "Mobile image" : "Gallery image")).join(', ')}</span></Link></li>)}</ul></> : <p>{t("This image is not used by content or a user profile.")}</p>)}
+        <div className={styles.editorFooter}><button type="button" className="button secondary" onClick={closeMediaUsage}>{t("Close")}</button></div>
+      </div>}
+    </Modal>
+    <Modal open={editing !== null} onClose={closeEditor} title={editing ? collectionEditorTitle(editing.type, Boolean(original)) : "Edit content"} busy={Boolean(busy)} actions={<div className={styles.editorActionRow}><span className={styles.saveState} role="status">{editorDirty ? t("Unsaved changes") : original ? t("Showing the saved version") : t("New content")}</span>{editorDirty && <button type="button" className={styles.textButton} onClick={downloadDraft} disabled={Boolean(busy)}><Download size={18} />{t("Download unsaved text")}</button>}<button type="button" className="button secondary" onClick={closeEditor} disabled={Boolean(busy)}>{t("Cancel")}</button><button type="submit" form="cms-content-editor" className="button" disabled={preparing || Boolean(busy) || editorAttempts >= MAX_ATTEMPTS || editorConflict}>{busy ? <LoaderCircle className={styles.spinner} size={19} /> : <Check size={19} />}{t(busy) || (preparing ? t("Preparing image…") : t("Save"))}</button></div>}>{editing && <form id="cms-content-editor" className={styles.editor} aria-busy={Boolean(busy)} onSubmit={saveEditor} onInvalidCapture={event => { let group = (event.target as HTMLElement).closest('details'); while (group) { group.open = true; group = group.parentElement?.closest('details') || null; } }}><p className={styles.editorNotice}>{t("Save makes your changes available on the website immediately.")}{publishedPreview && original && <span className={styles.previewLinks}><a className={styles.previewLink} href={publishedPreview} target="_blank" rel="noopener noreferrer">{t("View website · Thai")}</a><a className={styles.previewLink} href={publishedContentUrl(original, records, 'en')!} target="_blank" rel="noopener noreferrer">{t("View website · English")}</a></span>}</p><CmsContentFields record={editing} existing={Boolean(original)} records={records} media={media} images={editorImages} disabled={Boolean(busy)} preparing={preparing} hasMore={Boolean(mediaCursor)} loadingMore={busy === "Loading more images…"} moreDisabled={loading} categories={summary.categories} onChange={updateEditor} onImage={(file, target) => void chooseEditorImage(file, target)} onMore={() => void loadMoreMedia()} routeText={routeText} onRouteText={setRouteText} />{editorError && <div ref={editorErrorRef} className={styles.error} role="alert" tabIndex={-1}>{t(editorError)}<p>{t("Your input is preserved.")}{editorAttempts >= MAX_ATTEMPTS ? t(" Three attempts failed. Check the saved content before retrying.") : editorConflict ? t(" Load the latest version before editing again.") : t(" Retry after checking the issue.")}</p>{(editorConflict || editorAttempts >= MAX_ATTEMPTS) && <div className={styles.recoveryActions}><button type="button" className="button secondary" onClick={() => void recoverEditor()} disabled={Boolean(busy)}>{editorConflict ? t("Load latest saved version") : t("Check saved content")}</button><button type="button" className={styles.textButton} onClick={downloadDraft}><Download size={18} />{t("Download unsaved text")}</button></div>}</div>}</form>}</Modal>
     <Modal open={deleteRecord !== null} onClose={() => setDeleteRecord(null)} title={t("Move to Trash?")} busy={Boolean(busy)}><p className={styles.confirmText}>{t("“{name}” will be hidden from the website. You can restore it for 30 days.", { name: deleteRecord ? recordTitle(deleteRecord) : '' })}</p><div className={styles.editorFooter}><button type="button" className="button secondary" onClick={() => setDeleteRecord(null)} disabled={Boolean(busy)}>{t("Cancel")}</button><button type="button" className="button" disabled={Boolean(busy)} onClick={() => { if (deleteRecord) void changeRecord(deleteRecord, 'trash'); }}><Trash2 size={18} />{busy === 'trash' ? t("Moving…") : t("Move to Trash")}</button></div></Modal>
-    
-    <Modal open={selectedEnquiry !== null} onClose={() => setSelectedEnquiry(null)} title={t("Enquiry details")} busy={Boolean(busy)}>{selectedEnquiry && <div className={styles.enquiryDetails}><div className={styles.enquiryToolbar}><span className={styles.fieldHint}>{t("Received")} {formatDate(selectedEnquiry.createdAt)}</span><button type="button" className="button secondary" disabled={Boolean(busy)} onClick={() => void refreshEnquiry(selectedEnquiry)}><RefreshCw size={18} />{busy === 'Refreshing enquiry…' ? t("Refreshing…") : t("Refresh enquiry")}</button></div>{enquiryNotice && <p className={styles.fieldHint} role="status">{t(enquiryNotice)}</p>}<h3>{selectedEnquiry.subject}</h3><dl><div><dt>{t("Name")}</dt><dd>{selectedEnquiry.name}</dd></div><div><dt>{t("Email")}</dt><dd><a href={`mailto:${selectedEnquiry.email}`}>{selectedEnquiry.email}</a></dd></div>{selectedEnquiry.company && <div><dt>{t("Company")}</dt><dd>{selectedEnquiry.company}</dd></div>}</dl><p className={styles.messageBody}>{selectedEnquiry.message}</p><section className={styles.notification} aria-label={t("Email notification")}><strong>{selectedEnquiry.notification ? t(notificationLabels[selectedEnquiry.notification.status]) : t("Email status unavailable")}</strong><p className={styles.fieldHint}>{t(selectedEnquiry.notification?.message || "") || (selectedEnquiry.notification?.status === 'sent' ? t("The email provider accepted the notification. Inbox delivery is not guaranteed.") : selectedEnquiry.notification?.status === 'sending' ? t("A notification is being processed. Refresh the enquiry to check the outcome.") : selectedEnquiry.notification?.status === 'review' ? t("Check the email provider before sending again to avoid a duplicate notification.") : t("The enquiry remains saved here regardless of email status."))}</p>{selectedEnquiry.notification?.sentAt && <span className={styles.fieldHint}>{t("Accepted")} {formatDate(selectedEnquiry.notification.sentAt)}</span>}{selectedEnquiry.notification && selectedEnquiry.notification.attempts < 3 && ['not_configured', 'failed', 'pending'].includes(selectedEnquiry.notification.status) && <button type="button" className="button secondary" disabled={Boolean(busy)} onClick={() => void retryNotification(selectedEnquiry)}><RefreshCw size={18} />{busy === 'Sending notification…' ? t(busy) : t("Retry notification")}</button>}{selectedEnquiry.notification && selectedEnquiry.notification.attempts >= 3 && selectedEnquiry.notification.status !== 'sent' && <p className={styles.fieldHint}>{t("The automatic retry limit has been reached. Review the provider before taking further action.")}</p>}</section>{enquiryError && <div className={styles.error} role="alert">{t(enquiryError)}</div>}<label className="field">{t("Status")}<select value={selectedEnquiry.status} disabled={Boolean(busy)} onChange={event => void changeEnquiry(selectedEnquiry, event.target.value as Enquiry['status'])}>{enquiryStatuses.map(value => <option key={value} value={value}>{t(value)}</option>)}</select></label><a className="button secondary" href={`mailto:${selectedEnquiry.email}?subject=${encodeURIComponent(`Re: ${selectedEnquiry.subject}`)}`}>{t("Reply by email")}</a></div>}</Modal>
+
+    <Modal open={selectedEnquiry !== null} onClose={() => setSelectedEnquiry(null)} title={t("Enquiry details")} busy={Boolean(busy)}>{selectedEnquiry && <div className={styles.enquiryDetails}><div className={styles.enquiryToolbar}><span className={styles.fieldHint}>{t("Received")} {formatDate(selectedEnquiry.createdAt)}</span><button type="button" className="button secondary" disabled={Boolean(busy)} onClick={() => void refreshEnquiry(selectedEnquiry)}><RefreshCw size={18} />{busy === 'Refreshing enquiry…' ? t("Refreshing…") : t("Refresh enquiry")}</button></div>{enquiryNotice && <p className={styles.fieldHint} role="status">{t(enquiryNotice)}</p>}<h3>{selectedEnquiry.subject}</h3><dl><div><dt>{t("Name")}</dt><dd>{selectedEnquiry.name}</dd></div><div><dt>{t("Email")}</dt><dd><a href={`mailto:${selectedEnquiry.email}`}>{selectedEnquiry.email}</a></dd></div>{selectedEnquiry.company && <div><dt>{t("Company")}</dt><dd>{selectedEnquiry.company}</dd></div>}</dl><p className={styles.messageBody}>{selectedEnquiry.message}</p><section className={styles.notification} aria-label={t("Email notification")}><strong>{selectedEnquiry.notification ? t(notificationLabels[selectedEnquiry.notification.status]) : t("Email status unavailable")}</strong><p className={styles.fieldHint}>{t(selectedEnquiry.notification?.message || "") || (selectedEnquiry.notification?.status === 'sent' ? t("The email provider accepted the notification. Inbox delivery is not guaranteed.") : selectedEnquiry.notification?.status === 'sending' ? t("A notification is being processed. Refresh the enquiry to check the outcome.") : selectedEnquiry.notification?.status === 'review' ? t("Check the email provider before sending again to avoid a duplicate notification.") : t("The enquiry remains saved here regardless of email status."))}</p>{selectedEnquiry.notification?.sentAt && <span className={styles.fieldHint}>{t("Accepted")} {formatDate(selectedEnquiry.notification.sentAt)}</span>}<CmsNotificationSend notification={selectedEnquiry.notification} setup={emailSetup} busy={Boolean(busy)} sending={busy === 'Sending notification…'} onSend={() => void retryNotification(selectedEnquiry)} onOpenSetup={() => setSelectedEnquiry(null)} />{selectedEnquiry.notification && selectedEnquiry.notification.attempts >= 3 && selectedEnquiry.notification.status !== 'sent' && <p className={styles.fieldHint}>{t("The automatic retry limit has been reached. Review the provider before taking further action.")}</p>}</section>{enquiryError && <div className={styles.error} role="alert">{t(enquiryError)}</div>}<label className="field">{t("Status")}<select value={selectedEnquiry.status} disabled={Boolean(busy)} onChange={event => void changeEnquiry(selectedEnquiry, event.target.value as Enquiry['status'])}>{enquiryStatuses.map(value => <option key={value} value={value}>{t(value)}</option>)}</select></label><a className="button secondary" href={`mailto:${selectedEnquiry.email}?subject=${encodeURIComponent(`Re: ${selectedEnquiry.subject}`)}`}>{t("Reply by email")}</a></div>}</Modal>
     <Modal open={importOpen} onClose={() => setImportOpen(false)} title={t("Review local content")} busy={Boolean(busy)}>
-      <p className={styles.editorNotice}>{t("Import new records and local images. Review changed versions individually before saving. Local Trash is never published automatically.")}</p>
+      <p className={styles.editorNotice}>{t("Import new records and local images. Review changed versions individually before saving. Local Trash is never added to the website automatically.")}</p>
       <div className={styles.importStats}><strong>{newImports.length} {t("new records ·")} {importSnapshot?.media.length || 0} {t("local library images")}</strong><span>{verifiedLocal.length} {t("of")} {importRecords.length} {t("retained records verified ·")} {verifiedLocalMedia} {t("local library images verified")}</span></div>
       {newImports.length > 0 && <ul className={styles.importList}>{newImports.map(record => <li key={legacyRecordKey(record)}><span>{recordTitle(record)}</span><span>{t(record.type)} · {t(record.status)}</span><button type="button" className={styles.textButton} disabled={Boolean(busy)} onClick={() => void reviewLocal(record)}>{t("Review before import")}</button></li>)}</ul>}
       {changedImports.length > 0 && <><h3>{t("Versions needing review")}</h3><p className={styles.fieldHint}>{t("Existing website content is preserved until you review and save each local version.")}</p><ul className={styles.importList}>{changedImports.map(record => <li key={legacyRecordKey(record)}><span>{recordTitle(record)}{record.deletedAt ? t(" · Local Trash") : ''}</span><button type="button" className={styles.textButton} disabled={Boolean(busy)} onClick={() => void reviewLocal(record)}>{t("Review local version")}</button></li>)}</ul></>}

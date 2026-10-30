@@ -194,6 +194,7 @@ async function verifyOrCleanup(cleanup: boolean) {
   for (const mapping of mappings.values()) {
     assert.equal(await sourceDb.collection('moe_media').countDocuments({ $or: [{ publicId: mapping.publicId }, { url: mapping.url }] }), 0, 'A recovery image is referenced by the active database.');
     assert.equal(await sourceDb.collection('moe_content').countDocuments({ $or: [{ image: mapping.url }, { mobileImage: mapping.url }, { 'gallery.url': mapping.url }] }), 0, 'A recovery image is used by active content.');
+    assert.equal(await sourceDb.collection('moe_users').countDocuments({ avatar: mapping.url }), 0, 'A recovery image is used by a user profile, including Trash.');
     const result = await provider().uploader.destroy(mapping.publicId, { resource_type: 'image', invalidate: true });
     assert(['ok', 'not found'].includes(result.result), 'Recovery image cleanup failed; target retained for retry.');
   }

@@ -1,4 +1,4 @@
-import { test as base, expect, request as apiRequest, type Page } from '@playwright/test';
+import { test as base, expect, request as apiRequest, type APIRequestContext, type Page } from '@playwright/test';
 import type { Db } from 'mongodb';
 import { connectE2eDatabase, seedE2eDatabase, E2E_ADMIN, E2E_BASE_URL, E2E_IMAGE_BUFFER, E2E_IMAGE_ORIGIN } from '../../scripts/e2e-fixtures';
 
@@ -29,13 +29,19 @@ export const test = base.extend<{ db: Db; _resetDatabase: void; cmsLocale: 'th' 
     await provide(context);
   },
 });
+export async function loginChallengeData(request: APIRequestContext) {
+  const response = await request.get('/api/cms/login/challenge');
+  expect(response.ok()).toBe(true);
+  const challenge = await response.json() as { id: string; target: number };
+  return { challengeId: challenge.id, challengePosition: challenge.target };
+}
 
 // Database fixtures bypass CMS writes, so explicitly invalidate through the
 // same authenticated maintenance operation available after a real restore.
 export async function refreshPublicCache() {
   const maintenance = await apiRequest.newContext({ baseURL: E2E_BASE_URL, ignoreHTTPSErrors: true, extraHTTPHeaders: { Origin: E2E_BASE_URL } });
   try {
-    expect((await maintenance.post('/api/cms/login', { data: { username: E2E_ADMIN.username, password: E2E_ADMIN.password } })).ok()).toBe(true);
+    expect((await maintenance.post('/api/cms/login', { data: { username: E2E_ADMIN.username, password: E2E_ADMIN.password, ...await loginChallengeData(maintenance) } })).ok()).toBe(true);
     expect((await maintenance.post('/api/cms/cache')).ok()).toBe(true);
     await maintenance.post('/api/cms/logout');
   } finally { await maintenance.dispose(); }
@@ -45,7 +51,20 @@ export async function login(page: Page) {
   await page.goto('/cms');
   await page.getByLabel('Username', { exact: true }).fill(E2E_ADMIN.username);
   await page.getByLabel('Password', { exact: true }).fill(E2E_ADMIN.password);
-  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Content overview', exact: true })).toBeVisible();
+  await solveLoginSlide(page);
+  await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Refresh workspace', exact: true })).toBeEnabled();
+}
+export async function solveLoginSlide(page: Page, { submit = true }: { submit?: boolean } = {}) {
+  const dialog = page.getByRole('dialog');
+  if (!await dialog.isVisible()) await page.locator('button[type="submit"]').click();
+  await expect(dialog).toBeVisible();
+  const slider = dialog.locator('input[type="range"]');
+  await expect(slider).toBeEnabled();
+  const target = Math.round(Number.parseFloat(await dialog.locator('[class*="loginPuzzleTarget"]').evaluate(element => (element as HTMLElement).style.left)) / .8);
+  await slider.focus();
+  await slider.press('End');
+  for (let value = 100; value > target; value--) await slider.press('ArrowLeft');
+  await expect(slider).toHaveAttribute('aria-valuetext', /Aligned|ตรง/);
+  if (submit) await slider.press('Enter');
 }

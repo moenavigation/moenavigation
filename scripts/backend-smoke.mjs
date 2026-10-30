@@ -29,6 +29,11 @@ async function request(path, { method = 'GET', body, authenticated = true, origi
   try { data = JSON.parse(text); } catch { data = null; }
   return { response, data, text };
 }
+async function loginChallenge() {
+  const result = await request('/api/cms/login/challenge', { authenticated: false });
+  status(result, 200, 'Login slide');
+  return { challengeId: result.data.id, challengePosition: result.data.target };
+}
 
 function status(result, expected, label) {
   assert.equal(result.response.status, expected, `${label}: expected HTTP ${expected}, received ${result.response.status}`);
@@ -93,12 +98,12 @@ try {
     assert.ok(credentials.username && credentials.password, 'Supply test credentials in the environment or the selected private credentials file.');
 
     await check('Wrong password is rejected', async () => {
-      const result = await request('/api/cms/login', { method: 'POST', body: { username: credentials.username, password: randomUUID() }, authenticated: false });
+      const result = await request('/api/cms/login', { method: 'POST', body: { username: credentials.username, password: randomUUID(), ...await loginChallenge() }, authenticated: false });
       status(result, 401, 'Wrong password');
     });
 
     await check('Login creates a private session cookie', async () => {
-      const result = await request('/api/cms/login', { method: 'POST', body: credentials, authenticated: false });
+      const result = await request('/api/cms/login', { method: 'POST', body: { ...credentials, ...await loginChallenge() }, authenticated: false });
       status(result, 200, 'Login');
       const setCookies = result.response.headers.getSetCookie();
       assert.ok(setCookies.length, 'Session cookie must be set');
@@ -164,7 +169,7 @@ try {
       type: 'News',
       title: `Backend verification ${runId}`,
       titleTh: `ตรวจสอบระบบ ${runId}`,
-      description: 'A temporary isolated QA record for persistence and publication checks.',
+      description: 'A temporary isolated QA record for persistence and immediate website visibility checks.',
       descriptionTh: 'ข้อมูลชั่วคราวสำหรับตรวจสอบการบันทึกและเผยแพร่',
       image: existingImage,
       imageAlt: 'Illustrative maritime scene',
@@ -194,6 +199,7 @@ try {
       current = first.data.record;
       report.content.push({ id: current.id, type: current.type });
       assert.ok(Number.isInteger(current.revision));
+      assert.equal(current.status, 'Published', 'A CMS Save ignores legacy Draft input and makes content available');
       const retry = await contentSave(record, null, submissionId);
       assert.ok([200, 201].includes(retry.response.status), `Retry received ${retry.response.status}`);
       assert.equal(retry.data.record.id, current.id);
@@ -202,26 +208,27 @@ try {
       assert.equal(list.data.records.filter(item => item.id === current.id && item.type === current.type).length, 1);
     });
 
-    await check('Draft content returns HTTP 404 in both languages', async () => {
-      await publicStatus(`/th/news/${runId}`, 404, 'Thai draft');
-      await publicStatus(`/news/${runId}`, 404, 'English draft');
-    });
-
-    await check('Published content appears in HTML, metadata, and sitemap', async () => {
-      const published = await contentSave({ ...current, status: 'Published' }, current.revision);
-      status(published, 200, 'Publish');
-      const staleRevision = current.revision;
-      current = published.data.record;
-      assert.ok(current.revision > staleRevision);
-      const english = await publicStatus(`/news/${runId}`, 200, 'English published');
-      assert.ok(english.text.includes(record.title), 'Published English title must be server rendered');
+    await check('Content appears in HTML, metadata, and sitemap immediately after Save', async () => {
+      const english = await publicStatus(`/news/${runId}`, 200, 'English saved content');
+      assert.ok(english.text.includes(record.title), 'Saved English title must be server rendered');
       assert.match(english.text, /<link rel="canonical"/);
       assert.match(english.text, /hrefLang="th"/);
-      const thai = await publicStatus(`/th/news/${runId}`, 200, 'Thai published');
-      assert.ok(thai.text.includes(record.titleTh), 'Published Thai title must be server rendered');
+      const thai = await publicStatus(`/th/news/${runId}`, 200, 'Thai saved content');
+      assert.ok(thai.text.includes(record.titleTh), 'Saved Thai title must be server rendered');
       const sitemap = await request('/sitemap.xml', { authenticated: false });
-      assert.ok(sitemap.text.includes(`/news/${runId}`), 'Published detail must be included in sitemap');
-      assert.ok(sitemap.text.includes(`/th/news/${runId}`), 'Published Thai detail must be included in sitemap');
+      assert.ok(sitemap.text.includes(`/news/${runId}`), 'Saved detail must be included in sitemap');
+      assert.ok(sitemap.text.includes(`/th/news/${runId}`), 'Saved Thai detail must be included in sitemap');
+    });
+
+    await check('Content updates stay visible despite legacy status input and reject stale edits', async () => {
+      const staleRevision = current.revision;
+      const updated = await contentSave({ ...current, status: 'Draft', description: `${record.description} Updated content.` }, staleRevision);
+      status(updated, 200, 'Save update');
+      current = updated.data.record;
+      assert.equal(current.status, 'Published');
+      assert.ok(current.revision > staleRevision);
+      await publicStatus(`/news/${runId}`, 200, 'English saved update');
+      await publicStatus(`/th/news/${runId}`, 200, 'Thai saved update');
       const conflict = await contentSave({ ...current, title: 'A stale edit must never win' }, staleRevision);
       status(conflict, 409, 'Stale update');
     });
@@ -241,10 +248,7 @@ try {
       current = restored.data.record;
       assert.ok(!current.deletedAt);
       await publicStatus(`/news/${runId}`, 200, 'Restored detail');
-      const drafted = await contentSave({ ...current, status: 'Draft' }, current.revision);
-      status(drafted, 200, 'Return to draft');
-      current = drafted.data.record;
-      await publicStatus(`/news/${runId}`, 404, 'Unpublished detail');
+      await publicStatus(`/th/news/${runId}`, 200, 'Restored Thai detail');
     });
 
     if (!skipUpload) {

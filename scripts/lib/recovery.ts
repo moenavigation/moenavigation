@@ -7,7 +7,7 @@ const MAGIC = Buffer.from('MOEBACKUP1\n');
 const MAX_ARCHIVE = 256 * 1024 * 1024;
 const MAX_PLAINTEXT = 512 * 1024 * 1024;
 export const includedCollections = ['moe_content', 'moe_media', 'moe_users', 'moe_enquiries', 'moe_settings'];
-export const excludedCollections = ['moe_sessions', 'moe_state', 'moe_operations', 'moe_recovery'];
+export const excludedCollections = ['moe_sessions', 'moe_state', 'moe_operations', 'moe_recovery', 'moe_logs'];
 export type BackupAsset = { mediaId: string; publicId: string; url: string; format: string; bytes: number; sha256: string; content: string };
 export type Backup = { schema: 1; id: string; createdAt: string; sourceDatabase: string; collections: Record<string, Document[]>; indexes: Record<string, Document[]>; assets: BackupAsset[] };
 export const sha256 = (input: string | Buffer) => createHash('sha256').update(input).digest('hex');
@@ -70,6 +70,9 @@ export function validateBackup(backup: Backup) {
   for (const record of backup.collections.moe_content) {
     for (const url of [record.image, record.mobileImage, ...(record.gallery || []).map((image: Document) => image.url)]) if (url) assert(urls.has(url), 'Content references an image missing from the backup.');
   }
+  for (const user of backup.collections.moe_users) {
+    if (user.avatar) assert(urls.has(user.avatar), 'A user profile references an image missing from the backup.');
+  }
 }
 export function validateTarget(source: string, current: string, target: string) {
   assert(target !== source && target !== current && target.startsWith(`${source}_restore_`) && /^[a-zA-Z0-9_-]+$/.test(target) && target.length > `${source}_restore_`.length, 'Restore target must be an isolated <source>_restore_<suffix> database, different from the active database.');
@@ -91,6 +94,9 @@ export function remapImages(collections: Backup['collections'], mappings: Map<st
   for (const media of result.moe_media) {
     const mapping = mappings.get(media.url);
     if (mapping) { media.url = mapping.url; media.publicId = mapping.publicId; }
+  }
+  for (const user of result.moe_users) {
+    if (user.avatar) user.avatar = mappings.get(user.avatar)?.url || user.avatar;
   }
   return result;
 }

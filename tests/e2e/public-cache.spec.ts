@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import type { APIRequestContext } from '@playwright/test';
-import { test, expect, E2E_ADMIN, E2E_BASE_URL, refreshPublicCache } from './fixtures';
+import { test, expect, E2E_ADMIN, E2E_BASE_URL, refreshPublicCache, loginChallengeData } from './fixtures';
 
 const headers = { origin: E2E_BASE_URL };
 
 async function signIn(request: APIRequestContext) {
-  const response = await request.post('/api/cms/login', { headers, data: E2E_ADMIN });
+  const response = await request.post('/api/cms/login', { headers, data: { ...E2E_ADMIN, ...await loginChallengeData(request) } });
   expect(response.status(), await response.text()).toBe(200);
 }
 

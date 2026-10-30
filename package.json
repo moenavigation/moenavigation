@@ -17,6 +17,7 @@
     "test:api:qa": "node --conditions=react-server --import tsx scripts/check-api-workflows.mts --qa",
     "test:media:qa": "node --conditions=react-server --import tsx scripts/check-media-workflow.mts --qa",
     "test:notifications:qa": "node --conditions=react-server --import tsx scripts/check-notifications.mts --qa",
+    "email:check": "node --conditions=react-server --import tsx scripts/check-email.mts",
     "backend:check": "node --conditions=react-server --import tsx scripts/check-backend.mts",
     "backend:setup": "node --conditions=react-server --import tsx scripts/setup-backend.mts",
     "backend:migrate": "node --conditions=react-server --import tsx scripts/migrate-website.mts",

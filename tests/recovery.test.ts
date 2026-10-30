@@ -33,7 +33,9 @@ test('wrong passphrase, tampered header/payload and truncated archive fail authe
 test('integrity validation rejects missing images, changed bytes and unknown collections', () => {
   const missing = fixture(); missing.assets = []; assert.throws(() => validateBackup(missing));
   const changed = fixture(); changed.assets[0].sha256 = '0'.repeat(64); assert.throws(() => validateBackup(changed));
-  const unknown = fixture(); unknown.collections.moe_sessions = []; assert.throws(() => validateBackup(unknown));
+  for (const name of ['moe_sessions', 'moe_logs']) {
+    const unknown = fixture(); unknown.collections[name] = []; assert.throws(() => validateBackup(unknown));
+  }
   const external = fixture(); external.collections.moe_content[0].image = '/images/unbacked.webp'; assert.throws(() => validateBackup(external));
 });
 test('restore target validation refuses main, active QA, malformed and unrelated databases', () => {
@@ -69,4 +71,34 @@ test('isolated media remapping covers main, mobile, gallery and Trash without ch
   assert.equal(backup.collections.moe_content[0].image, original);
   delete backup.collections.moe_content[0].deletedAt;
   assert.equal(documentHash(backup.collections.moe_content), before);
+});
+
+test('backup validation includes profile images while accepting older accounts without photos', () => {
+  const backup = fixture();
+  assert.doesNotThrow(() => validateBackup(backup));
+  backup.collections.moe_users.push({ _id: 'blank-photo', avatar: '' });
+  assert.doesNotThrow(() => validateBackup(backup));
+  backup.collections.moe_users[0].avatar = backup.assets[0].url;
+  assert.doesNotThrow(() => validateBackup(backup));
+  backup.collections.moe_users[0].avatar = 'https://res.cloudinary.com/example/image/upload/missing.webp';
+  assert.throws(() => validateBackup(backup), /user profile references an image missing/);
+});
+
+test('restoration remaps active and trashed profile images without changing account credentials or the archive', () => {
+  const backup = fixture();
+  const original = backup.assets[0].url;
+  const restoredUrl = 'https://res.cloudinary.com/example/image/upload/recovery/profile.webp';
+  backup.collections.moe_users[0].avatar = original;
+  backup.collections.moe_users.push({ _id: 'trashed-profile', username: 'retained-user', avatar: original, role: 'Operator', passwordHash: 'retained-test-hash', deletedAt: new Date('2026-10-30T10:00:00Z'), purgeAt: new Date('2026-11-29T10:00:00Z') });
+  backup.collections.moe_users.push({ _id: 'legacy-no-photo', username: 'legacy-user' });
+  const before = documentHash(backup.collections.moe_users);
+  const mapped = remapImages(backup.collections, new Map([[original, { url: restoredUrl, publicId: 'recovery/profile' }]]));
+  assert.equal(mapped.moe_users[0].avatar, restoredUrl);
+  assert.equal(mapped.moe_users[1].avatar, restoredUrl);
+  assert.equal(mapped.moe_users[1].passwordHash, 'retained-test-hash');
+  assert.equal(mapped.moe_users[1].role, 'Operator');
+  assert.equal(mapped.moe_users[1].deletedAt.toISOString(), '2026-10-30T10:00:00.000Z');
+  assert.equal(mapped.moe_users[1].purgeAt.toISOString(), '2026-11-29T10:00:00.000Z');
+  assert.equal('avatar' in mapped.moe_users[2], false);
+  assert.equal(documentHash(backup.collections.moe_users), before);
 });

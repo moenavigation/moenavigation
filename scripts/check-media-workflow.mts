@@ -241,7 +241,7 @@ try {
     } finally { deletionMock.mock.restore(); }
   });
 
-  await check('Manual cleanup removes only expired unreferenced uploads and retries failed deletions', async () => {
+  await check('Manual cleanup moves old unused saved images to Media Trash while removing stale uploads', async () => {
     // Use an entirely separate, newly created database for the global cleanup
     // scan so concurrent browser/API fixtures and migrated images are untouched.
     const previousDatabase = process.env.MONGODB_DB_NAME!;
@@ -251,17 +251,22 @@ try {
     const scoped = collections(isolatedDb);
     const expired = new Date(0);
     const now = new Date();
-    const rows = ['staged', 'deleting', 'uploading', 'retry', 'fresh-staged', 'fresh-uploading', 'pinned', 'committed', 'foreign-folder', 'referenced', 'trashed-gallery'].map(label => {
+    const rows = ['staged', 'deleting', 'uploading', 'retry', 'fresh-staged', 'fresh-uploading', 'fresh-committed', 'pinned', 'committed', 'committed-pinned', 'committed-active', 'committed-trashed', 'foreign-folder', 'referenced', 'trashed-gallery'].map(label => {
       const id = digest(`${runId}:cleanup:${label}`);
       const publicId = `${label === 'foreign-folder' ? 'outside-managed-folder' : 'moe-navigation-qa'}/${id}`;
-      return { _id: id, id, title: label, publicId, url: `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/${publicId}.png`, owner, submissionId: randomUUID(), state: (label === 'committed' ? 'committed' : label.includes('uploading') ? 'uploading' : label === 'deleting' || label === 'retry' ? 'deleting' : 'staged') as 'staged' | 'uploading' | 'deleting' | 'committed', pinned: label === 'pinned', touchedAt: label.startsWith('fresh-') ? now : expired, createdAt: now.toISOString() };
+      return { _id: id, id, title: label, publicId, url: `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/${publicId}.png`, owner, submissionId: randomUUID(), state: (label.includes('committed') ? 'committed' : label.includes('uploading') ? 'uploading' : label === 'deleting' || label === 'retry' ? 'deleting' : 'staged') as 'staged' | 'uploading' | 'deleting' | 'committed', pinned: label === 'pinned' || label === 'committed-pinned', touchedAt: label.startsWith('fresh-') ? now : expired, createdAt: now.toISOString() };
     });
     let deleteMock: ReturnType<typeof mock.method> | undefined;
     try {
       await scoped.media.insertMany(rows);
       await scoped.state.insertOne({ _id: runId });
       const base = saveSchema.parse({ record: section(`${runId}-isolated-references`), expectedRevision: null, submissionId: randomUUID() }).record;
-      await scoped.content.insertOne({ _id: `Section:${base.id}`, ...base, image: rows.find(row => row.title === 'referenced')!.url, gallery: [{ url: rows.find(row => row.title === 'trashed-gallery')!.url, alt: '', altTh: '' }], deletedAt: now.toISOString(), purgeAt: new Date(Date.now() + 86400000) });
+      await scoped.content.insertOne({ _id: `Section:${base.id}`, ...base, image: rows.find(row => row.title === 'referenced')!.url, gallery: [
+        { url: rows.find(row => row.title === 'trashed-gallery')!.url, alt: '', altTh: '' },
+        { url: rows.find(row => row.title === 'committed-trashed')!.url, alt: '', altTh: '' },
+      ], deletedAt: now.toISOString(), purgeAt: new Date(Date.now() + 86400000) });
+      const activeId = `${runId}-isolated-active`;
+      await scoped.content.insertOne({ _id: `Section:${activeId}`, ...base, id: activeId, image: rows.find(row => row.title === 'committed-active')!.url });
       const removed: string[] = [];
       let retryFailed = false;
       const retryId = rows.find(row => row.title === 'retry')!.publicId;
@@ -270,11 +275,25 @@ try {
         removed.push(publicId); return { result: 'not found' };
       });
       process.env.MONGODB_DB_NAME = isolatedName;
-      assert.deepEqual(await cleanupMedia(), { deleted: 3, failed: 1 });
-      assert.deepEqual(await cleanupMedia(), { deleted: 1, failed: 0 });
-      assert.deepEqual(await cleanupMedia(), { deleted: 0, failed: 0 });
+      assert.deepEqual(await cleanupMedia(), { trashed: 2, deleted: 3, failed: 1 });
+      assert.deepEqual(await cleanupMedia(), { trashed: 0, deleted: 1, failed: 0 });
+      assert.deepEqual(await cleanupMedia(), { trashed: 0, deleted: 0, failed: 0 });
       assert.deepEqual(new Set(removed), new Set(rows.filter(row => ['staged', 'deleting', 'uploading', 'retry'].includes(row.title)).map(row => row.publicId)));
       assert.equal(await scoped.media.countDocuments({}), rows.length - 4);
+      for (const title of ['committed', 'committed-pinned']) {
+        const row = await scoped.media.findOne({ title });
+        assert.equal(row?.state, 'trashed');
+        assert.ok(row?.trashedAt);
+      }
+      for (const title of ['fresh-committed', 'committed-active', 'committed-trashed']) {
+        assert.equal((await scoped.media.findOne({ title }))?.state, 'committed');
+      }
+      // Permanent deletion is a separate, explicit action after an image has
+      // been moved to recoverable Media Trash.
+      const trashed = rows.find(row => row.title === 'committed')!;
+      assert.deepEqual(await removeMedia(trashed.id), { removed: true });
+      assert.equal(await scoped.media.findOne({ _id: trashed.id }), null);
+      assert.ok(removed.includes(trashed.publicId));
     } finally {
       process.env.MONGODB_DB_NAME = previousDatabase;
       deleteMock?.mock.restore();

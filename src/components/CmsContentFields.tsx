@@ -2,86 +2,68 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { ArrowDown, ArrowUp, Check, ImagePlus, Plus, Search, Trash2, X } from 'lucide-react';
-import { contentTypes, type ContentRecord, type MediaItem, type RoutePort, type VesselSpecs } from '@/lib/cms-types';
+import { Check, ImagePlus, Search, X } from 'lucide-react';
+import type { CmsCategorySuggestions, ContentRecord, MediaItem } from '@/lib/cms-types';
 import { useCmsLocale } from '@/lib/cms-locale';
-import { cmsPageLabel } from '@/lib/cms-navigation';
 import type { PreparedImage } from '@/lib/cms-client';
 import styles from './CmsWorkspace.module.css';
+import CmsPageFields from './CmsPageFields';
+import CmsCollectionFields from './CmsCollectionFields';
+import useCmsMediaSearch from './useCmsMediaSearch';
 
 export type ImageTarget = 'image' | 'mobileImage' | number;
-const iconOptions = ['', 'Ship', 'Fuel', 'Container', 'Compass', 'Anchor', 'LifeBuoy', 'ShieldCheck', 'MessagesSquare', 'MapPin'];
-const emptyPort = (): RoutePort => ({ name: '', nameTh: '', country: '', countryTh: '' });
+const PICKER_PAGE_SIZE = 12;
 
-export default function CmsContentFields({ record, existing, pages, media, images, disabled, preparing, hasMore, onChange, onTypeChange, onImage, onMore, routeText, onRouteText }: {
-  record: ContentRecord; existing: boolean; pages: ContentRecord[]; media: MediaItem[]; images: Record<string, PreparedImage>;
-  disabled: boolean; preparing: boolean; hasMore: boolean; onChange: (patch: Partial<ContentRecord>) => void;
-  onTypeChange: (type: ContentRecord['type']) => void; onImage: (file: File, target: ImageTarget) => void; onMore: () => void; routeText: string; onRouteText: (text: string) => void;
+export default function CmsContentFields({ record, existing, records, categories, media, images, disabled, preparing, hasMore, loadingMore, moreDisabled = false, onChange, onImage, onMore, routeText, onRouteText }: {
+  record: ContentRecord; existing: boolean; records?: ContentRecord[]; categories?: CmsCategorySuggestions; media: MediaItem[]; images: Record<string, PreparedImage>;
+  disabled: boolean; preparing: boolean; hasMore: boolean; loadingMore: boolean; moreDisabled?: boolean; onChange: (patch: Partial<ContentRecord>) => void;
+  onImage: (file: File, target: ImageTarget) => void; onMore: () => void; routeText: string; onRouteText: (text: string) => void;
 }) {
   const { locale, t } = useCmsLocale();
   const [picker, setPicker] = useState<ImageTarget | null>(null);
   const [pickerSearch, setPickerSearch] = useState('');
+  const [pickerPage, setPickerPage] = useState(0);
   const pickerSearchRef = useRef<HTMLInputElement>(null);
-  const pickerMedia = media.filter(item => item.title.toLocaleLowerCase().includes(pickerSearch.trim().toLocaleLowerCase()));
-  const showMobile = (record.type === 'Page' && record.id === 'home') || Boolean(record.mobileImage);
-  const showGallery = record.type === 'Vessel' || Boolean(record.gallery?.length);
-  const categoryLabel = record.type === 'Vessel' ? 'Vessel type' : record.type === 'Section' || record.type === 'Page' ? 'Content group' : 'Category';
-  const showEyebrow = record.type === 'Page' || record.type === 'Section' || Boolean(record.eyebrow || record.eyebrowTh);
-  const showIcon = record.type === 'Service' || record.type === 'Section' || Boolean(record.icon);
-  function updateSpec(key: keyof VesselSpecs, value: string | number | undefined) {
-    const specs = { ...record.vesselSpecs, [key]: value };
-    if (value === undefined || value === '') delete specs[key];
-    onChange({ vesselSpecs: Object.keys(specs).length ? specs : undefined });
-  }
+  const search = useCmsMediaSearch(pickerSearch, picker !== null);
+  const searching = Boolean(pickerSearch.trim());
+  const pickerMedia = searching ? search.items : media;
+  const pickerHasMore = searching ? Boolean(search.nextCursor) : hasMore;
+  const pageCount = Math.max(1, Math.ceil(pickerMedia.length / PICKER_PAGE_SIZE));
+  const currentPage = Math.min(pickerPage, pageCount - 1);
+  const pageStart = currentPage * PICKER_PAGE_SIZE;
+  const visibleMedia = pickerMedia.slice(pageStart, pageStart + PICKER_PAGE_SIZE);
   function selectImage(url: string, target: ImageTarget) {
     if (typeof target === 'number') onChange({ gallery: (record.gallery || []).map((item, index) => index === target ? { ...item, url } : item) });
     else onChange({ [target]: url });
     setPicker(null);
     setPickerSearch('');
-  }
-  function moveGalleryImage(index: number, direction: -1 | 1) {
-    if (preparing || disabled) return;
-    const gallery = [...(record.gallery || [])];
-    const next = index + direction;
-    if (next < 0 || next >= gallery.length) return;
-    [gallery[index], gallery[next]] = [gallery[next], gallery[index]];
-    setPicker(null);
-    onChange({ gallery });
+    setPickerPage(0);
   }
   function imageField(label: string, target: ImageTarget, url: string, optional = false) {
     const prepared = images[url];
     return <div className={styles.assetField} key={String(target)}><h4>{label}</h4><div className={styles.editorImage}>
       {url ? <img src={url} alt={t('{label} preview', { label })} width={320} height={200} /> : <div className={styles.imageEmpty}><ImagePlus size={30} /><span>{t('No image selected')}</span></div>}
       <div><strong>{t(prepared ? 'Ready to upload' : url ? 'Saved image' : optional ? 'Optional image' : 'Choose an image')}</strong><p>{prepared ? t('{width} × {height} · {size} KB. Upload starts when you save.', { width: prepared.width, height: prepared.height, size: (prepared.blob.size / 1024).toFixed(0) }) : t('Choose from the library or prepare a device image.')}</p>
-        <button type="button" className="button secondary" disabled={preparing} aria-expanded={picker === target} aria-label={t('Browse library for {label}', { label: label.toLocaleLowerCase(locale) })} onClick={() => { setPicker(picker === target ? null : target); setPickerSearch(''); }}><ImagePlus size={18} />{t(picker === target ? 'Close library' : 'Browse library')}</button>
+        <button type="button" className="button secondary" disabled={preparing} aria-expanded={picker === target} aria-label={t('Browse library for {label}', { label: label.toLocaleLowerCase(locale) })} onClick={() => { setPicker(picker === target ? null : target); setPickerSearch(''); setPickerPage(0); }}><ImagePlus size={18} />{t(picker === target ? 'Close library' : 'Browse library')}</button>
         <label className={styles.fileButton}>{t('Choose device image')}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={preparing || disabled} aria-label={t('Choose {label}', { label: label.toLocaleLowerCase(locale) })} onChange={event => { const file = event.target.files?.[0]; if (file) onImage(file, target); event.target.value = ''; }} /></label>
         {optional && url && <button type="button" className={styles.textButton} disabled={preparing} onClick={() => selectImage('', target)}>{t('Remove image')}</button>}
       </div></div>
-      {picker === target && <div className={styles.pickerPanel}><div className={styles.librarySearch}><label className={styles.search}><Search size={18} /><input ref={pickerSearchRef} type="search" aria-label={t('Search library for {label}', { label: label.toLocaleLowerCase(locale) })} placeholder={t('Search image names…')} value={pickerSearch} onChange={event => setPickerSearch(event.target.value)} /></label>{pickerSearch && <button type="button" className={styles.textButton} onClick={() => { setPickerSearch(''); pickerSearchRef.current?.focus({ preventScroll: true }); }}><X size={16} />{t('Clear search')}</button>}</div><span className={styles.fieldHint} role="status">{t(hasMore ? '{count} of {total} loaded images' : '{count} of {total} images', { count: pickerMedia.length, total: media.length })}</span>{pickerMedia.length > 0 ? <div className={styles.imagePicker}>{pickerMedia.map(item => <button type="button" key={item.id} disabled={preparing} aria-pressed={url === item.url} onClick={() => selectImage(item.url, target)}><img src={item.url} alt="" width={180} height={110} loading="lazy" /><span>{item.title}</span>{url === item.url && <Check size={18} />}</button>)}</div> : <p className={styles.fieldHint}>{t(pickerSearch.trim() ? 'No matching images. Try another name or clear your search.' : 'No saved library images yet. Choose a device image to add one.')}</p>}{hasMore && <><button type="button" className="button secondary" onClick={onMore}>{t('Load more images')}</button><p className={styles.fieldHint}>{t('Search covers loaded images. Load more to include older images.')}</p></>}</div>}
+      {picker === target && <div className={styles.pickerPanel}>
+        <div className={styles.librarySearch}>
+          <label className={styles.search}><Search size={18} /><input ref={pickerSearchRef} type="search" maxLength={160} aria-label={t('Search library for {label}', { label: label.toLocaleLowerCase(locale) })} placeholder={t('Search image names…')} value={pickerSearch} onChange={event => { setPickerSearch(event.target.value); setPickerPage(0); }} /></label>
+          {pickerSearch && <button type="button" className={styles.textButton} onClick={() => { setPickerSearch(''); setPickerPage(0); pickerSearchRef.current?.focus({ preventScroll: true }); }}><X size={16} />{t('Clear search')}</button>}
+        </div>
+        {!search.loading && pickerMedia.length > 0 && <span className={styles.fieldHint} role="status">{t(pickerHasMore ? 'Showing {start}–{end} of {total} loaded images' : 'Showing {start}–{end} of {total} images', { start: pageStart + 1, end: pageStart + visibleMedia.length, total: pickerMedia.length })}</span>}
+        {search.loading ? <p className={styles.fieldHint} role="status">{t('Searching image library…')}</p> : search.error ? <div className={styles.error} role="alert">{t(search.error)} <button type="button" className="button secondary" onClick={search.retry}>{t('Try search again')}</button></div> : pickerMedia.length > 0 ? <div className={styles.imagePicker}>{visibleMedia.map(item => <button type="button" key={item.id} disabled={preparing} aria-pressed={url === item.url} onClick={() => selectImage(item.url, target)}><img src={item.url} alt="" width={180} height={110} loading="lazy" /><span>{item.title}</span>{url === item.url && <Check size={18} />}</button>)}</div> : <p className={styles.fieldHint}>{t(searching ? 'No matching images. Try another name or clear your search.' : 'No saved library images yet. Choose a device image to add one.')}</p>}
+        {pageCount > 1 && <div className={styles.pickerPagination}>
+          <button type="button" className="button secondary" disabled={currentPage === 0} onClick={() => setPickerPage(currentPage - 1)}>{t('Previous images')}</button>
+          <span aria-live="polite">{t('Page {page} of {total}', { page: currentPage + 1, total: pageCount })}</span>
+          <button type="button" className="button secondary" disabled={currentPage === pageCount - 1} onClick={() => setPickerPage(currentPage + 1)}>{t('Next images')}</button>
+        </div>}
+        {pickerHasMore && !search.loading && !search.error && currentPage === pageCount - 1 && <button type="button" className="button secondary" disabled={loadingMore || search.loadingMore || moreDisabled} onClick={() => { if (searching) void search.loadMore(); else onMore(); }}>{t(loadingMore || search.loadingMore ? 'Loading more images…' : 'Load more images')}</button>}
+      </div>}
     </div>;
   }
-  function portFields(key: 'origin' | 'destination', label: string) {
-    const port = record[key] || emptyPort();
-    return <div className={styles.fieldGroup}><h4>{label}</h4><div className={styles.twoColumns}>{(['name', 'nameTh', 'country', 'countryTh'] as const).map(field => <label key={field}>{t(field.startsWith('country') ? 'Country' : 'Port name')} · {t(field.endsWith('Th') ? 'Thai' : 'English')}<input maxLength={field.startsWith('country') ? 100 : 150} lang={field.endsWith('Th') ? 'th' : 'en'} value={port[field]} onChange={event => onChange({ [key]: { ...port, [field]: event.target.value } })} /></label>)}</div></div>;
-  }
-  return <fieldset className={styles.editorFields} disabled={disabled}>
-    <label>{t('Content type')}<select value={record.type} disabled={existing || preparing} onChange={event => onTypeChange(event.target.value as ContentRecord['type'])}>{contentTypes.map(type => <option key={type} value={type}>{t(type)}</option>)}</select></label>
-    <div className={styles.twoColumns}><label>{t('Title · English')}<input lang="en" required maxLength={200} value={record.title} onChange={event => onChange({ title: event.target.value })} /></label><label>{t('Title · Thai')}<input required maxLength={200} lang="th" value={record.titleTh} onChange={event => onChange({ titleTh: event.target.value })} /></label></div>
-    <label>{t('URL identifier')}<input lang="en" required maxLength={100} pattern="[a-z0-9]+(-[a-z0-9]+)*" value={record.id} disabled={existing} onChange={event => onChange({ id: event.target.value })} /><span className={styles.fieldHint}>{t('Use lowercase English letters, numbers and hyphens. This stays fixed after creation.')}</span></label>
-    {record.type === 'Section' && <label>{t('Parent page')}<select required value={record.parentId || ''} onChange={event => onChange({ parentId: event.target.value })}><option value="">{t('Choose a page')}</option><option value="shared">{t('Shared across pages')}</option>{pages.filter(page => !page.deletedAt).map(page => <option key={page.id} value={page.id}>{locale === 'th' && !['home', 'about', 'services', 'fleet', 'routes', 'projects', 'news', 'contact', 'privacy'].includes(page.id) ? page.titleTh || page.title : t(cmsPageLabel(page))}</option>)}</select><span className={styles.fieldHint}>{t('New sections appear on this page in display order. Existing template sections keep their designed placement.')}</span></label>}
-    <div className={styles.twoColumns}><label>{t(categoryLabel)} · {t('English')}<input lang="en" required maxLength={100} value={record.category} onChange={event => onChange({ category: event.target.value })} /></label><label>{t(categoryLabel)} · {t('Thai')}<input maxLength={100} lang="th" value={record.categoryTh || ''} onChange={event => onChange({ categoryTh: event.target.value })} /></label></div>
-    <div className={styles.twoColumns}><label>{t('Display order')}<input type="number" min={0} max={10000} step={1} value={record.order ?? 0} onChange={event => onChange({ order: Number(event.target.value) })} /><span className={styles.fieldHint}>{t('Lower numbers appear first within lists and additional sections.')}</span></label>{record.type === 'News' ? <label>{t('Publication date')}<input type="date" value={record.date || ''} onChange={event => onChange({ date: event.target.value })} /></label> : showIcon ? <label>{t('Icon')}<select value={record.icon || ''} onChange={event => onChange({ icon: event.target.value })}>{[...new Set([...iconOptions, record.icon || ''])].map(icon => <option key={icon} value={icon}>{t(icon || 'No icon')}</option>)}</select></label> : null}</div>
-    {showEyebrow && <div className={styles.twoColumns}><label>{t('Intro label · English')}<input lang="en" maxLength={160} value={record.eyebrow || ''} onChange={event => onChange({ eyebrow: event.target.value })} /></label><label>{t('Intro label · Thai')}<input lang="th" maxLength={160} value={record.eyebrowTh || ''} onChange={event => onChange({ eyebrowTh: event.target.value })} /></label></div>}
-    <div className={styles.twoColumns}><label>{t('Summary · English')}<textarea lang="en" required={record.type !== 'Section'} maxLength={2000} rows={4} value={record.description} onChange={event => onChange({ description: event.target.value })} /></label><label>{t('Summary · Thai')}<textarea required={record.type !== 'Section'} lang="th" maxLength={2000} rows={4} value={record.descriptionTh} onChange={event => onChange({ descriptionTh: event.target.value })} /></label></div>
-    <details className={styles.editorDetails} open={Boolean(record.body || record.bodyTh || record.bodyHeading || record.bodyHeadingTh)}><summary>{t('Detailed content')}</summary><div className={styles.twoColumns}><label>{t('Content heading · English')}<input lang="en" maxLength={200} value={record.bodyHeading || ''} onChange={event => onChange({ bodyHeading: event.target.value })} /></label><label>{t('Content heading · Thai')}<input lang="th" maxLength={200} value={record.bodyHeadingTh || ''} onChange={event => onChange({ bodyHeadingTh: event.target.value })} /></label></div><div className={styles.twoColumns}><label>{t('Content · English')}<textarea lang="en" maxLength={30000} rows={9} value={record.body || ''} onChange={event => onChange({ body: event.target.value })} /></label><label>{t('Content · Thai')}<textarea lang="th" maxLength={30000} rows={9} value={record.bodyTh || ''} onChange={event => onChange({ bodyTh: event.target.value })} /></label></div><p className={styles.fieldHint}>{t('Separate paragraphs with a blank line.')}</p></details>
-    {record.type === 'Route' && <details className={styles.editorDetails} open><summary>{t('Route map and ports')}</summary>{portFields('origin', t('Origin port'))}{portFields('destination', t('Destination port'))}<label>{t('Route coordinates')}<textarea rows={6} value={routeText} placeholder="13.08, 100.88" onChange={event => onRouteText(event.target.value)} /><span className={styles.fieldHint}>{t('One latitude, longitude pair per line, from origin to destination. At least two points are needed to show a route on the map. Latitude: −90 to 90; longitude: −180 to 180.')}</span></label></details>}
-    {record.type === 'Vessel' && <details className={styles.editorDetails} open={Boolean(record.vesselSpecs && Object.keys(record.vesselSpecs).length)}><summary>{t('Vessel specifications')}</summary><p className={styles.fieldHint}>{t('Enter approved vessel information only. Leave unknown values blank; they will not appear as confirmed specifications. Availability is a written statement, not live tracking.')}</p><div className={styles.twoColumns}><label>{t('IMO ship number')}<input inputMode="numeric" maxLength={7} pattern="[1-9][0-9]{6}" value={record.vesselSpecs?.imo || ''} onChange={event => updateSpec('imo', event.target.value)} /><span className={styles.fieldHint}>{t('Seven digits without the IMO prefix. The check digit is validated when saving.')}</span></label><label>{t('Year built')}<input type="number" min={1800} max={new Date().getUTCFullYear()} step={1} value={record.vesselSpecs?.yearBuilt ?? ''} onChange={event => updateSpec('yearBuilt', event.target.value === '' ? undefined : Number(event.target.value))} /></label>{([{ key: 'lengthM', label: 'Length overall (m)', max: 1000 }, { key: 'beamM', label: 'Beam (m)', max: 500 }, { key: 'draftM', label: 'Draft (m)', max: 100 }, { key: 'deadweightT', label: 'Deadweight (tonnes)', max: 2000000 }, { key: 'capacityTeu', label: 'Container capacity (TEU)', max: 100000 }] as const).map(field => <label key={field.key}>{t(field.label)}<input type="number" min={field.key === 'capacityTeu' ? 0 : 0.01} max={field.max} step={field.key === 'capacityTeu' ? 1 : 'any'} value={record.vesselSpecs?.[field.key] ?? ''} onChange={event => updateSpec(field.key, event.target.value === '' ? undefined : Number(event.target.value))} /></label>)}</div><div className={styles.twoColumns}><label>{t('Flag state · English')}<input lang="en" maxLength={100} value={record.vesselSpecs?.flag || ''} onChange={event => updateSpec('flag', event.target.value)} /></label><label>{t('Flag state · Thai')}<input lang="th" maxLength={100} value={record.vesselSpecs?.flagTh || ''} onChange={event => updateSpec('flagTh', event.target.value)} /></label><label>{t('Availability statement · English')}<input lang="en" maxLength={200} value={record.vesselSpecs?.availability || ''} onChange={event => updateSpec('availability', event.target.value)} /></label><label>{t('Availability statement · Thai')}<input lang="th" maxLength={200} value={record.vesselSpecs?.availabilityTh || ''} onChange={event => updateSpec('availabilityTh', event.target.value)} /></label></div></details>}
-    {imageField(t('Main image'), 'image', record.image, record.type === 'Vessel' || record.type === 'Section' || (record.type === 'Page' && record.id === 'privacy'))}
-    {((record.type === 'Page' && record.id === 'home') || (record.type === 'Section' && record.id === 'home-connections') || record.caption || record.captionTh) && <div className={styles.twoColumns}><label>{t('Image caption · English')}<input lang="en" maxLength={200} value={record.caption || ''} onChange={event => onChange({ caption: event.target.value })} /></label><label>{t('Image caption · Thai')}<input lang="th" maxLength={200} value={record.captionTh || ''} onChange={event => onChange({ captionTh: event.target.value })} /></label></div>}
-    <div className={styles.twoColumns}><label>{t('Image description · English')}<input lang="en" maxLength={250} value={record.imageAlt || ''} onChange={event => onChange({ imageAlt: event.target.value })} /></label><label>{t('Image description · Thai')}<input lang="th" maxLength={250} value={record.imageAltTh || ''} onChange={event => onChange({ imageAltTh: event.target.value })} /></label></div>
-    <>{(showMobile || showGallery) && <details className={styles.editorDetails} open={Boolean(record.mobileImage || record.gallery?.length)}><summary>{t(showMobile && showGallery ? 'Mobile image and gallery' : showMobile ? 'Mobile image' : 'Photo gallery')}</summary>{showMobile && <>{imageField(t('Mobile image'), 'mobileImage', record.mobileImage || '', true)}<p className={styles.fieldHint}>{t('Used for the Home hero on narrow screens. If empty, the main image is used.')}</p></>}{showGallery && <>
-      {(record.gallery || []).map((item, index) => <div className={styles.galleryRow} key={index}>{imageField(t('Gallery image {number}', { number: index + 1 }), index, item.url)}<div className={styles.twoColumns}><label>{t('Description · English')}<input lang="en" maxLength={250} value={item.alt} onChange={event => onChange({ gallery: record.gallery?.map((image, position) => position === index ? { ...image, alt: event.target.value } : image) })} /></label><label>{t('Description · Thai')}<input lang="th" maxLength={250} value={item.altTh} onChange={event => onChange({ gallery: record.gallery?.map((image, position) => position === index ? { ...image, altTh: event.target.value } : image) })} /></label></div><div className={styles.galleryActions}><div><button type="button" className={styles.iconButton} disabled={preparing || index === 0} aria-label={t('Move gallery image {number} earlier', { number: index + 1 })} title={t('Move earlier')} onClick={() => moveGalleryImage(index, -1)}><ArrowUp size={19} /></button><button type="button" className={styles.iconButton} disabled={preparing || index === (record.gallery?.length || 0) - 1} aria-label={t('Move gallery image {number} later', { number: index + 1 })} title={t('Move later')} onClick={() => moveGalleryImage(index, 1)}><ArrowDown size={19} /></button></div><button type="button" className={styles.textButton} disabled={preparing} aria-label={t('Remove gallery image {number}', { number: index + 1 })} onClick={() => { setPicker(null); onChange({ gallery: record.gallery?.filter((_, position) => position !== index) }); }}><Trash2 size={17} />{t('Remove image')}</button></div></div>)}
-      <button type="button" className="button secondary" disabled={preparing || (record.gallery?.length || 0) >= 12} onClick={() => onChange({ gallery: [...(record.gallery || []), { url: '', alt: '', altTh: '' }] })}><Plus size={18} />{t('Add gallery image')}</button><p className={styles.fieldHint}>{t('Up to 12 gallery images for vessel profiles. Use the arrows to set their display order. Images upload one at a time when you save.')}</p></>}
-    </details>}</>
-  </fieldset>;
+  if (record.type === 'Page' || record.type === 'Section') return <CmsPageFields key={`${record.type}:${record.id}`} record={record} disabled={disabled} onChange={onChange} imageField={imageField} />;
+  return <CmsCollectionFields key={`${record.type}:${existing ? record.id : 'new'}`} record={record} records={records} categories={categories} disabled={disabled} preparing={preparing} onChange={onChange} imageField={imageField} onGalleryChange={gallery => { setPicker(null); setPickerSearch(''); setPickerPage(0); onChange({ gallery }); }} routeText={routeText} onRouteText={onRouteText} />;
 }

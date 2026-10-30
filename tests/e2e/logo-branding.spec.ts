@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { test, expect, E2E_ADMIN } from './fixtures';
+import { test, expect, E2E_ADMIN, solveLoginSlide } from './fixtures';
 
 const logoSelector = 'img[src="/brand/moe-logo.svg"]';
 
@@ -82,8 +82,8 @@ test.describe('official logo in narrow CMS and recovery screens', () => {
 
     await page.getByLabel('Username', { exact: true }).fill(E2E_ADMIN.username);
     await page.getByLabel('Password', { exact: true }).fill(E2E_ADMIN.password);
-    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Content overview', exact: true })).toBeVisible();
+    await solveLoginSlide(page);
+    await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible();
     await expectOfficialLogo(home.locator(logoSelector));
     await expectNoHorizontalOverflow(page);
     await page.screenshot({ path: testInfo.outputPath('official-logo-cms-signed-in-320-en.png'), animations: 'disabled' });

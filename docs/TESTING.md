@@ -51,7 +51,7 @@ isolated database and application that the fixture safety checks require.
 
 ## Coverage
 
-The same 15 workflow cases run in Chromium, Firefox and WebKit:
+Browser regressions run in Chromium, Firefox and WebKit and cover these areas:
 
 | Area | Checked behavior |
 | --- | --- |
@@ -60,6 +60,11 @@ The same 15 workflow cases run in Chromium, Firefox and WebKit:
 | Routes | Keyboard selection, zoom/fit, reload and equivalent Thai route |
 | Enquiry form | Validation focus, local recovery, consent reset, failed response after server commit, duplicate-free retry |
 | CMS content | Single Save immediately visible in both languages, no publication selector, unsaved-change confirmation, Trash and restore |
+| Unified Trash | One list, type dialog, literal search, 30-item pagination, role-scoped totals, content/image/user restoration, safe failed-write reconciliation, retained image deletion retries, keyboard focus, English/Thai layouts |
+| Account recovery | Soft deletion disables login and sessions; usernames stay reserved; role and current-password checks protect restoration/permanent deletion; expired and active accounts are rejected; previous sessions never revive |
+| Activity logs | All-role read-only APIs, nested secret exclusion, exact expiry filtering and TTL configuration, tied-timestamp paging, literal search, audit-write rollback, save/logout idempotency, legacy usernames, exports, media/enquiry coverage, English/Thai mobile layouts |
+| Profile photos | Self/manager permissions, staged ownership, session preservation, revision/replay safety, audit rollback, media cleanup races, active/Trash image references, cancel without upload, retry without duplicate uploads, 12-image library pages, header fallback, English/Thai mobile dialogs |
+| Page editing | Page cards, selected-page URLs and history, existing text/image edits, bilingual validation, shared footer, mobile layouts, and server rejection of new pages, new sections, layout changes and deletion |
 | CMS images | No upload before Save, sequential preparation/upload, partial failure recovery, preserved descriptions, idempotent save after a lost response |
 | Entire inbox | Old Thai records beyond the first page, literal punctuation, all searchable fields, exact totals, combined status/search, 111 matching timestamp-tied records across three pages |
 | Inbox resilience | Revision conflicts, detail refresh, status changes, global New count, slow obsolete responses, failed search and failed next-page retry, enquiry updates during initial content loading |
@@ -74,6 +79,22 @@ enquiry must report `not_configured` with zero delivery attempts.
 The separate API, live-provider media and notification rehearsal commands remain
 documented in [BACKEND.md](BACKEND.md). Browser regressions complement the pure
 unit/boundary suite (`npm run test:backend`); they do not replace those checks.
+
+## Expanded role and mobile checks
+
+The complete matrix has a 35-minute global timeout; each case still has its
+own bounded timeout. The CI job allows 45 minutes including setup and builds.
+The broad mobile geometry sweeps run once in Chromium at 320 and 390 pixels
+with 430-pixel spot checks. Critical touch dialogs and native touch slider
+submission run across all three engines in English and Thai, including a
+short 844×390 landscape viewport. Duplicated broad sweeps are explicitly
+skipped in the other engines. Screens, dialogs and primary controls are checked
+for overflow, clipping, center-hit accessibility, focus return and touch size.
+
+The added role regressions cover allowed Operator collection, fixed-page,
+Settings, enquiry and recoverable-image work; unfinished-upload ownership
+for every role; late account-edit responses after session expiry; and
+settings dismissal while the account list is still loading.
 
 ## Results and CI
 
@@ -92,3 +113,18 @@ repository is configuration; a remote CI result is only established after it
 runs on GitHub.
 
 See [VERIFICATION.md](VERIFICATION.md) for the latest executed results.
+
+
+## Provider usage regressions
+
+`tests/usage-{mongodb,cloudinary,vercel}.test.ts` cover bounded reads, safe
+responses, exact units/scopes, shared credits, reporting windows and malformed
+provider responses. `tests/usage-settings.test.ts` covers defaults, unknown
+versus zero, balances, finite ratios and reporting-window validation.
+
+`tests/e2e/cms-usage.spec.ts` exercises role/origin checks, atomic audit saves,
+revisions, safe metadata, cache binding, concurrent refresh cooldowns, manual
+readings and timestamp preservation, form recovery, bilingual layouts and
+absence of background polling. Run it through the isolated E2E harness. That
+harness strips `VERCEL_USAGE_*` along with the existing provider credentials;
+UI usage fixtures are synthetic and must never contact real provider accounts.

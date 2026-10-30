@@ -1,0 +1,27 @@
+.launcher { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .75rem; margin-bottom: 1rem; }
+.launcher p { margin: 0; color: var(--muted); }
+.launcher button { min-height: 2.75rem; gap: .5rem; }
+.dialog { width: min(38rem, calc(100% - 2rem)); max-width: calc(100% - 2rem); max-height: calc(100dvh - 2rem); margin: auto; padding: 0; border: 1px solid var(--line); border-radius: .75rem; background: var(--white); color: var(--ink); overflow: auto; overscroll-behavior: contain; scroll-padding-block: 6rem 5rem; box-shadow: 0 1.5rem 6rem #03182b55; }
+.dialog::backdrop { background: #071f40b8; }
+.header { position: sticky; top: 0; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 1.25rem; background: var(--white); border-bottom: 1px solid var(--line); }
+.header h2 { margin: 0; min-width: 0; font-size: var(--font-h3); overflow-wrap: anywhere; }
+.close, .remove { display: grid; place-items: center; flex-shrink: 0; width: 2.75rem; min-height: 2.75rem; padding: .5rem; background: var(--pale); border: 1px solid var(--line); border-radius: .4rem; color: var(--navy); }
+.body { padding: 1.25rem; min-width: 0; }
+.body > p:first-child { margin-top: 0; }
+.list { display: grid; gap: 1rem; }
+.row { display: flex; align-items: flex-end; gap: .6rem; min-width: 0; }
+.row label { flex: 1; min-width: 0; }
+.row input { min-width: 0; width: 100%; }
+.remove { margin-bottom: .05rem; color: #9e342d; }
+.add { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; margin-block: 1rem; }
+.add button { gap: .5rem; }
+.add span, .hint { color: var(--muted); font-size: var(--font-small); }
+.hint { overflow-wrap: anywhere; }
+.empty { display: grid; justify-items: center; text-align: center; gap: .5rem; padding: 1.25rem; border: 1px dashed var(--line); border-radius: .5rem; background: var(--pale); }
+.empty p { margin: 0; color: var(--muted); }
+.error { padding: 1rem; border-radius: .5rem; background: #fff2ef; color: #9e342d; overflow-wrap: anywhere; }
+.error p { margin-top: 0; }
+.error p:last-child { margin-bottom: 0; }
+.footer { position: sticky; bottom: 0; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .75rem; padding: 1rem 1.25rem; background: var(--white); border-top: 1px solid var(--line); }
+.footer button { min-height: 2.75rem; }
+@media (max-width: 430px) { .header, .body, .footer { padding: 1rem; } .footer button { flex: 1; } }

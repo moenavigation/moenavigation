@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { test, expect, E2E_ADMIN, E2E_BASE_URL } from './fixtures';
+import { test, expect, E2E_ADMIN, E2E_BASE_URL, loginChallengeData } from './fixtures';
 
 const vessels = [
   ['ranong-moe', 'RANONG MOE', 'ระนองโม', 'Container', 'เรือคอนเทนเนอร์'],
@@ -73,7 +73,7 @@ test('Thai mobile search opens the new crane vessel and its illustrative gallery
 
 test('CMS saves a vessel with no photo and immediately refreshes its public profile', async ({ request, page }) => {
   const headers = { origin: E2E_BASE_URL };
-  expect((await request.post('/api/cms/login', { headers, data: E2E_ADMIN })).ok()).toBe(true);
+  expect((await request.post('/api/cms/login', { headers, data: { ...E2E_ADMIN, ...await loginChallengeData(request) } })).ok()).toBe(true);
   const records = (await (await request.get('/api/cms/content')).json()).records;
   const vessel = records.find((record: { id: string }) => record.id === 'dumai-moe');
   expect(vessel.image).toBeTruthy();

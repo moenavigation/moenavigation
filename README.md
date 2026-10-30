@@ -25,7 +25,7 @@ deep links keep their URL's language, and legacy `/en` links redirect to their
 unprefixed English equivalents. The CMS keeps its own Thai-default language
 preference. First setup creates an
 administrator and writes initial credentials to the ignored
-`.local/cms-access.json`. Change the password in **Account & tools** after
+`.local/cms-access.json`. Change the password in **Administrators → User settings** at `/cms/users` after
 signing in. Re-running setup preserves existing accounts and content.
 Setup creates access controls only; it does not repopulate the website with
 earlier browser-local content. The connected database is the source of website content.
@@ -123,8 +123,11 @@ Page sections, article bodies, vessel galleries, mobile hero images, and
 route ports/coordinates are stored in MongoDB. All 15 original website
 images are hosted in Cloudinary; public pages have no local content fallback.
 Optional vessel specifications are editable and appear publicly only when
-supplied; unknown values remain blank. Page/Section filters and bilingual
-published-page links make content easier to find and review.
+supplied; unknown values remain blank. Page cards lead to existing content
+areas, with copy and image editing that preserves the website's structure.
+Pages and Sections cannot be created, deleted, moved, or reordered through
+the CMS. Collection lists still support adding items. Bilingual website links
+help editors review their changes.
 Uploads begin on save, and conflicting edits are rejected. Retry recovery
 checks uncertain saves before cancelling their unfinished uploads. Durable
 cancellation locks prevent late saves, while committed images and images
@@ -135,10 +138,9 @@ Contact submissions are delivered to the CMS inbox. Optional Resend email
 notifications, status reporting, and bounded retries are prepared. The
 recipient is stored privately; the owner will supply the API key and verified
 sender later. No external email delivery has been tested. See
-[docs/EMAIL.md](docs/EMAIL.md). Previous browser-local content can be reviewed and imported
-without overwriting matching server records. Verified local data can be
-cleared only after a recovery archive is written; restoring that archive
-refuses to replace newer browser edits.
+[docs/EMAIL.md](docs/EMAIL.md). Previous browser-local content and recovery
+archives are preserved for trusted maintenance. Client settings no longer
+expose local import or browser-storage cleanup controls.
 
 `npm run backend:migrate` checks the one-time migration recipe against both
 providers without changing remote data. See the backend guide for applying

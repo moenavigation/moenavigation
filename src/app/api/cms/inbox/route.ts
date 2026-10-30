@@ -14,4 +14,4 @@ export const GET = api(async request => {
   }
   return json(await getEnquiryPage(parseInboxQuery(params)));
 });
-export const PATCH = api(async request => { sameOrigin(request); await requireUser(); return json({ enquiry: await updateEnquiry(inboxSchema.parse(await readJson(request))) }); });
+export const PATCH = api(async request => { sameOrigin(request); const user = await requireUser(); return json({ enquiry: await updateEnquiry(inboxSchema.parse(await readJson(request)), user) }); });

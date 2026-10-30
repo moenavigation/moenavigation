@@ -30,7 +30,7 @@ const submissions: string[] = [];
 const emails: string[] = [];
 let savedSettings: SiteSettings | undefined;
 const report = { runId, checkedAt: new Date().toISOString(), base: base.origin, database: db.databaseName, checks: [] as string[], failures: [] as string[], cleanup: {} as Record<string, unknown>, temporaryUser: userId, content: recordIds, enquiries: enquiryIds, email: 'QA server must use disabled email; notification rehearsal uses a stub sender.' };
-type Data = { record?: ContentRecord; records?: ContentRecord[]; enquiry?: Enquiry; enquiries?: Enquiry[]; settings?: SiteSettings; id?: string; error?: string; nextCursor?: string | null; user?: { username: string } | null; media?: { id: string; url: string; sourcePath?: string }[] };
+type Data = { record?: ContentRecord; records?: ContentRecord[]; enquiry?: Enquiry; enquiries?: Enquiry[]; settings?: SiteSettings; id?: string; target?: number; error?: string; nextCursor?: string | null; user?: { username: string } | null; media?: { id: string; url: string; sourcePath?: string }[] };
 type Options = { method?: string; body?: unknown; raw?: string; cookie?: string | null; origin?: string | null; headers?: Record<string, string> };
 async function request(path: string, options: Options = {}) {
   const method = options.method || 'GET';
@@ -53,8 +53,14 @@ async function check(label: string, run: () => Promise<void>) {
   catch (error) { const message = `${label}: ${error instanceof Error ? error.message : 'failed'}`; report.failures.push(message); throw new Error(message); }
 }
 function submission() { const value = randomUUID(); submissions.push(value); return value; }
+async function loginChallenge() {
+  const result = await request('/api/cms/login/challenge', { cookie: null });
+  status(result, 200, 'Login slide');
+  assert.ok(result.data.id && typeof result.data.target === 'number');
+  return { challengeId: result.data.id, challengePosition: result.data.target };
+}
 async function login() {
-  const result = await request('/api/cms/login', { method: 'POST', body: { username, password }, cookie: null });
+  const result = await request('/api/cms/login', { method: 'POST', body: { username, password, ...await loginChallenge() }, cookie: null });
   status(result, 200, 'Temporary QA login');
   const value = result.response.headers.getSetCookie().find(item => item.startsWith('moe_cms_session='));
   assert.ok(value); assert.match(value, /HttpOnly/i); assert.match(value, /SameSite=Strict/i); assert.match(value, /Path=\//i);
@@ -99,18 +105,33 @@ try {
   const image = library.data.media?.find(item => item.sourcePath)?.url; assert.ok(image, 'QA library requires a migrated baseline image; never borrow another test run’s temporary asset.');
   const pageId = `${runId}-page`;
   const shared = { title: `Workflow ${runId}`, titleTh: `ตรวจสอบ ${runId}`, description: 'Temporary isolated workflow test content.', descriptionTh: 'ข้อมูลชั่วคราวสำหรับตรวจสอบระบบ', category: 'QA', categoryTh: 'ตรวจสอบ', image, imageAlt: 'Illustration', imageAltTh: 'ภาพประกอบ', status: 'Draft' as const, revision: 0 };
-  await check('All seven content types create drafts and keep private details unavailable publicly', async () => {
+  await check('Collections appear immediately after Save; maintenance-seeded historical content stays unchanged', async () => {
     for (const type of ['Page', 'Vessel', 'Route', 'Project', 'Service', 'News', 'Section'] as const) {
       const record: ContentRecord = { ...shared, id: `${runId}-${type.toLowerCase()}`, type,
         ...(type === 'Section' ? { parentId: pageId, image: '' } : {}),
         ...(type === 'Vessel' ? { vesselSpecs: { imo: '7654329', lengthM: 120, beamM: 22, capacityTeu: 0, flag: 'Thailand', flagTh: 'ไทย' }, gallery: [{ url: image, alt: 'Deck', altTh: 'ดาดฟ้า' }] } : {}),
         ...(type === 'Route' ? { origin: { name: 'QA origin', nameTh: 'ท่าเรือต้นทาง', country: 'Thailand', countryTh: 'ไทย' }, destination: { name: 'QA destination', nameTh: 'ท่าเรือปลายทาง', country: 'Thailand', countryTh: 'ไทย' }, waypoints: [[13, 100], [13.5, 101]] as [number, number][] } : {}),
       };
-      track(record); const result = await save(record, null); status(result, 200, `Create ${type}`); assert.ok(result.data.record); content.set(type, result.data.record);
-      assert.equal(result.data.record.status, 'Draft'); assert.equal(result.data.record.revision, 1);
-      const path = type === 'Page' ? `/${record.id}` : type === 'Vessel' ? `/fleet/${record.id}` : ['Project', 'Service', 'News'].includes(type) ? `/${type === 'News' ? 'news' : `${type.toLowerCase()}s`}/${record.id}` : null;
-      if (path) { await publicPage(path, 404); await publicPage(`/th${path}`, 404); }
+      track(record);
+      if (type === 'Page' || type === 'Section') {
+        status(await save(record, null), 403, `Block new ${type}`);
+        assert.equal(await c.content.findOne({ _id: `${type}:${record.id}` }), null);
+        const seeded = { ...record, revision: 1, updatedAt: new Date().toISOString() };
+        await c.content.insertOne({ _id: `${type}:${record.id}`, ...seeded });
+        content.set(type, seeded);
+      } else {
+        const result = await save(record, null); status(result, 200, `Create ${type}`); assert.ok(result.data.record); content.set(type, result.data.record);
+        assert.equal(result.data.record.status, 'Published', 'CMS Save ignores legacy Draft input'); assert.equal(result.data.record.revision, 1);
+      }
+      const path = type === 'Page' ? `/${record.id}` : type === 'Route' ? '/routes' : type === 'Vessel' ? `/fleet/${record.id}` : ['Project', 'Service', 'News'].includes(type) ? `/${type === 'News' ? 'news' : `${type.toLowerCase()}s`}/${record.id}` : null;
+      if (path) {
+        const expected = type === 'Page' ? 404 : 200;
+        await publicPage(path, expected, expected === 200 ? record.title : undefined);
+        await publicPage(`/th${path}`, expected, expected === 200 ? record.titleTh : undefined);
+      }
     }
+    for (const type of ['Page', 'Section'] as const) assert.equal((await c.content.findOne({ _id: `${type}:${content.get(type)!.id}` }))?.status, 'Draft');
+    await publicPage(`/${pageId}`, 404); await publicPage(`/th/${pageId}`, 404);
   });
   await check('Content retry is idempotent and changed payloads cannot reuse its submission', async () => {
     const before = content.get('News')!; const id = submission(); const changed = { ...before, title: `${before.title} retry` };
@@ -126,30 +147,41 @@ try {
     assert.deepEqual(results.map(result => result.response.status).sort(), [200, 409]);
     content.set('Project', results.find(result => result.response.status === 200)!.data.record!);
   });
-  await check('Every content type publishes into its Thai and English public view', async () => {
+  await check('Explicit Save makes every content type available in Thai and English without a separate step', async () => {
     for (const [type, before] of content) {
-      const saved = await save({ ...before, status: 'Published' }, before.revision); status(saved, 200, `Publish ${type}`); const record = saved.data.record!; content.set(type, record);
+      const saved = await save({ ...before, status: 'Draft' }, before.revision); status(saved, 200, `Save ${type}`); const record = saved.data.record!; content.set(type, record);
+      assert.equal(record.status, 'Published');
+      assert.equal(record.revision, before.revision + 1);
       const path = type === 'Page' ? `/${record.id}` : type === 'Section' ? `/${pageId}` : type === 'Route' ? '/routes' : type === 'Vessel' ? `/fleet/${record.id}` : `/${type === 'News' ? 'news' : `${type.toLowerCase()}s`}/${record.id}`;
       await publicPage(`/th${path}`, 200, record.titleTh); const english = await publicPage(path, 200, record.title);
       assert.match(english.text, /rel="canonical"/); assert.match(english.text, /hrefLang="th"/);
     }
   });
-  await check('Invalid identifiers, unavailable Section parents, and invalid hidden fields are rejected', async () => {
+  await check('Fixed page structure, identifiers, and hidden fields cannot be changed through the API', async () => {
     const before = content.get('Section')!;
-    for (const parentId of ['', `${runId}-missing`]) status(await save({ ...before, parentId }, before.revision), 400, 'Invalid Section parent');
+    status(await save({ ...before, parentId: '' }, before.revision), 400, 'Missing Section parent');
+    for (const change of [{ parentId: `${runId}-missing` }, { order: 2 }, { icon: 'Ship' }, { category: 'Changed layout' }]) status(await save({ ...before, ...change }, before.revision), 403, 'Fixed Section structure');
+    const fixedPage = content.get('Page')!;
+    status(await save({ ...fixedPage, id: `${runId}-renamed` }, null), 403, 'Fixed Page address');
     const news = content.get('News')!;
     for (const invalid of [{ ...news, id: '../unsafe' }, { ...news, titleTh: '' }, { ...news, image: 'https://unowned.invalid/photo.jpg' }, { ...news, vesselSpecs: { lengthM: 100 } }]) status(await save(invalid, invalid.id === news.id ? news.revision : null), 400, 'Invalid record');
     const list = await request('/api/cms/content'); const home = list.data.records?.find(record => record.type === 'Page' && record.id === 'home'); assert.ok(home, 'QA has core Home page');
-    status(await save({ ...home, status: 'Draft' }, home.revision), 400, 'Core page unpublish'); status(await action(home, 'trash'), 400, 'Core page Trash');
+    status(await action(home, 'trash'), 403, 'Core page Trash');
   });
-  await check('Trash and restore enforce revisions, public exclusion, and parent availability', async () => {
+  await check('Fixed page removal is blocked; historical Trash restoration and collection Trash enforce revisions', async () => {
     let page = content.get('Page')!; const section = content.get('Section')!;
-    const trashed = await action(page, 'trash'); status(trashed, 200, 'Trash page');
+    status(await action(page, 'trash'), 403, 'Block Page Trash');
+    status(await action(section, 'trash'), 403, 'Block Section Trash');
+    // Maintenance fixtures model content trashed before client editing became fixed.
+    const trashedPage = { ...page, revision: page.revision + 1, deletedAt: new Date().toISOString(), purgeAt: new Date(Date.now() + 86400000) };
+    await c.content.replaceOne({ _id: `Page:${page.id}`, revision: page.revision }, { _id: `Page:${page.id}`, ...trashedPage });
+    const news = content.get('News')!;
+    const refresh = await save(news, news.revision); status(refresh, 200, 'Refresh public content after maintenance fixture'); content.set('News', refresh.data.record!);
     status(await save(section, section.revision), 400, 'Section of trashed parent'); await publicPage(`/${page.id}`, 404);
-    status(await action(page, 'restore'), 409, 'Stale restore'); page = trashed.data.record!;
+    status(await action(page, 'restore'), 409, 'Stale restore'); page = trashedPage;
     const restored = await action(page, 'restore'); status(restored, 200, 'Restore parent'); content.set('Page', restored.data.record!);
     for (const [type, before] of content) {
-      if (type === 'Page') continue;
+      if (type === 'Page' || type === 'Section') continue;
       const removed = await action(before, 'trash'); status(removed, 200, `Trash ${type}`); assert.ok(removed.data.record?.deletedAt);
       status(await save(before, before.revision), 409, 'Cannot edit Trash');
       const restoredItem = await action(removed.data.record!, 'restore'); status(restoredItem, 200, `Restore ${type}`); assert.equal(restoredItem.data.record?.deletedAt, undefined); content.set(type, restoredItem.data.record!);
@@ -221,7 +253,7 @@ try {
     const rotated = changed.response.headers.getSetCookie().find(value => value.startsWith('moe_cms_session=')); assert.ok(rotated); cookie = rotated.split(';', 1)[0];
     for (const old of [firstSession, secondSession]) status(await request('/api/cms/content', { cookie: old }), 401, 'Old session revoked');
     status(await request('/api/cms/content'), 200, 'Rotated session works');
-    status(await request('/api/cms/login', { method: 'POST', body: { username, password }, cookie: null }), 401, 'Old password rejected'); password = nextPassword; await login();
+    status(await request('/api/cms/login', { method: 'POST', body: { username, password, ...await loginChallenge() }, cookie: null }), 401, 'Old password rejected'); password = nextPassword; await login();
   });
   await check('Expired sessions and logout revoke access without changing saved content', async () => {
     await c.sessions.updateOne({ _id: digest(cookie.split('=', 2)[1]), userId }, { $set: { expiresAt: new Date(Date.now() - 1000) } });

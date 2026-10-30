@@ -5,4 +5,4 @@ import { saveSettingsSchema } from '@/server/validation';
 import { invalidatePublicContent } from '@/server/public-cache';
 export const runtime = 'nodejs';
 export const GET = api(async () => { await requireUser(); return json({ settings: await getSiteSettings() }); });
-export const PUT = api(async request => { sameOrigin(request); await requireUser(); const settings = await saveSiteSettings(saveSettingsSchema.parse(await readJson(request))); invalidatePublicContent(); return json({ settings }); });
+export const PUT = api(async request => { sameOrigin(request); const user = await requireUser(); const settings = await saveSiteSettings(saveSettingsSchema.parse(await readJson(request)), user); invalidatePublicContent(); return json({ settings }); });

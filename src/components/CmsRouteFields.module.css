@@ -1,0 +1,32 @@
+.fields { display: grid; gap: 1rem; min-width: 0; border: 0; padding: 0; margin: 0; }
+.heading { display: flex; align-items: center; gap: .6rem; color: var(--navy); }
+.heading h3 { margin: 0; font-size: var(--font-lead); }
+.heading svg { color: var(--blue); flex-shrink: 0; }
+.hint { margin: 0; color: var(--muted); font-size: var(--font-small); font-weight: 400; line-height: 1.55; }
+.ports { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.port { min-width: 0; margin: 0; padding: 1rem; border: 1px solid var(--line); border-radius: .6rem; background: #f8fbff; }
+.port legend { display: flex; align-items: center; gap: .45rem; padding-inline: .3rem; color: var(--navy); font-weight: 600; }
+.port legend svg { flex-shrink: 0; color: var(--blue); }
+.portFields { display: grid; gap: .9rem; }
+.fields label { display: grid; gap: .45rem; min-width: 0; color: var(--navy); font-weight: 600; }
+.fields input { width: 100%; min-width: 0; }
+.map { min-width: 0; border: 1px solid var(--line); border-radius: .6rem; background: #fff; }
+.map > summary { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem 1rem; padding: 1rem; cursor: pointer; font-weight: 600; color: var(--navy); }
+.map > summary::after { content: '+'; margin-inline-start: auto; font-size: var(--font-lead); }
+.map[open] > summary::after { content: '−'; }
+.map[open] > summary { border-bottom: 1px solid var(--line); }
+.map > summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: .4rem; }
+.mapBody { display: grid; gap: 1rem; padding: 1rem; }
+.mapBody > button { justify-self: start; max-width: 100%; white-space: normal; }
+.points { display: grid; gap: .8rem; list-style: none; padding: 0; margin: 0; }
+.point { min-width: 0; padding: 1rem; background: #f8fbff; border: 1px solid var(--line); border-radius: .5rem; }
+.pointHeading { display: flex; align-items: center; gap: .6rem; margin-bottom: .85rem; }
+.pointHeading strong { min-width: 0; overflow-wrap: anywhere; }
+.pointNumber { display: grid; place-items: center; flex-shrink: 0; min-width: 1.8rem; height: 1.8rem; padding-inline: .2rem; border-radius: 50%; color: var(--blue); background: #e6effc; font-weight: 600; }
+.remove { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; flex-shrink: 0; min-height: 2.75rem; min-width: 2.75rem; margin-inline-start: auto; padding: .4rem .65rem; border: 1px solid #e4ccd0; border-radius: .4rem; background: #fff; color: #962e3d; cursor: pointer; }
+.remove:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.remove:disabled { opacity: .5; cursor: not-allowed; }
+.coordinates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; }
+@media (hover: hover) and (pointer: fine) { .map > summary:hover { background: #f8fbff; } .remove:not(:disabled):hover { background: #fff3f4; border-color: #c8929c; } }
+@media (max-width: 600px) { .ports { grid-template-columns: minmax(0, 1fr); } .portFields { grid-template-columns: repeat(2, minmax(0, 1fr)); } .remove span { display: none; } .point { padding: .85rem; } }
+@media (max-width: 380px) { .portFields, .coordinates { grid-template-columns: minmax(0, 1fr); } }

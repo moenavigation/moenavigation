@@ -1,5 +1,6 @@
 export const contentTypes = ['Vessel', 'Project', 'News', 'Service', 'Page', 'Route', 'Section'] as const;
 export type ContentType = typeof contentTypes[number];
+export type CmsCategorySuggestions = Partial<Record<ContentType, { en: string[]; th: string[] }>>;
 export type ContentImage = { url: string; alt: string; altTh: string };
 export type RoutePort = { name: string; nameTh: string; country: string; countryTh: string };
 export type VesselSpecs = {
@@ -53,13 +54,22 @@ export type ContentRecord = {
   revision: number;
 };
 
+export type CmsContentSummary = {
+  counts: Record<ContentType, { total: number; published: number; draft: number }>;
+  categories: CmsCategorySuggestions;
+  nextOrder: Partial<Record<ContentType, number>>;
+  recent: ContentRecord[];
+  trashCount: number;
+};
+
 export type MediaItem = {
   id: string;
   title: string;
   url: string;
   publicId?: string;
-  state: 'staged' | 'committed';
+  state: 'staged' | 'committed' | 'trashed';
   createdAt: string;
+  trashedAt?: string;
   sourcePath?: string;
 };
 
@@ -68,6 +78,7 @@ export type EnquiryNotification = {
   attempts: number;
   lastAttemptAt?: string;
   sentAt?: string;
+  retryAt?: string;
   message?: string;
 };
 export type Enquiry = {

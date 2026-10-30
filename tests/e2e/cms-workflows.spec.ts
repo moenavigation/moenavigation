@@ -2,13 +2,21 @@ import { createHash } from 'node:crypto';
 import type { Locator, Page } from '@playwright/test';
 import { test, expect, login, E2E_ADMIN, E2E_IMAGE_BUFFER, E2E_IMAGE_ORIGIN } from './fixtures';
 
-async function createVessel(page: Page, id: string, title: string): Promise<Locator> {
-  await page.getByRole('button', { name: 'Create content', exact: true }).click();
-  const editor = page.getByRole('dialog', { name: 'Create content', exact: true });
-  await editor.getByRole('combobox', { name: 'Content type', exact: true }).selectOption('Vessel');
-  await editor.getByLabel('Title · English', { exact: true }).fill(title);
-  await editor.getByLabel('Title · Thai', { exact: true }).fill('เรือทดสอบระบบ');
-  await editor.getByLabel('URL identifier').fill(id);
+async function showField(editor: Locator, label: string) {
+  const field = editor.getByLabel(label, { exact: true });
+  const groups = field.locator('xpath=ancestor::details');
+  for (const group of await groups.all()) {
+    if (!await group.evaluate(element => element.hasAttribute('open'))) await group.locator(':scope > summary').click();
+  }
+  return field;
+}
+
+async function createVessel(page: Page, title: string): Promise<Locator> {
+  await page.goto('/cms/fleet');
+  await page.getByRole('button', { name: 'Add vessel', exact: true }).click();
+  const editor = page.getByRole('dialog', { name: /^(Add|Edit) vessel$/ });
+  await (await showField(editor, 'Title · English')).fill(title);
+  await (await showField(editor, 'Title · Thai')).fill('เรือทดสอบระบบ');
   await editor.getByLabel('Vessel type · English', { exact: true }).fill('Container');
   await editor.getByLabel('Summary · English', { exact: true }).fill('Synthetic browser workflow vessel.');
   await editor.getByLabel('Summary · Thai', { exact: true }).fill('เรือสำหรับทดสอบการทำงานของเว็บไซต์');
@@ -18,16 +26,18 @@ async function createVessel(page: Page, id: string, title: string): Promise<Loca
 
 test('Save immediately shows content, discard preserves it, and Trash/restore remains reversible', async ({ page, context, db }) => {
   await login(page);
-  const id = 'e2e-immediate-vessel';
   const title = 'Immediate save vessel';
-  const editor = await createVessel(page, id, title);
+  const editor = await createVessel(page, title);
   const media = await db.collection('moe_media').findOne({ state: 'committed' });
   expect(media).not.toBeNull();
   await editor.getByRole('button', { name: 'Browse library for main image' }).click();
+  await editor.getByRole('searchbox', { name: 'Search library for main image' }).fill(String(media!.title));
   await editor.getByRole('button', { name: media!.title, exact: true }).click();
   await editor.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(editor).not.toBeVisible();
-  expect(await db.collection('moe_content').findOne({ id, type: 'Vessel' })).toMatchObject({ status: 'Published', revision: 1 });
+  const savedVessel = await db.collection('moe_content').findOne({ title, type: 'Vessel' });
+  expect(savedVessel).toMatchObject({ status: 'Published', revision: 1 });
+  const id = String(savedVessel!.id);
 
   const publicPage = await context.newPage();
   await publicPage.goto('/fleet/' + id);
@@ -36,9 +46,9 @@ test('Save immediately shows content, discard preserves it, and Trash/restore re
   await expect(publicPage.getByRole('heading', { level: 1 })).toHaveText('เรือทดสอบระบบ');
 
   await page.getByRole('button', { name: 'Edit ' + title, exact: true }).click();
-  const edit = page.getByRole('dialog', { name: 'Edit content', exact: true });
-  await edit.getByLabel('Title · English', { exact: true }).fill('Unsaved replacement');
-  const firstControl = edit.getByRole('button', { name: 'ไทย', exact: true });
+  const edit = page.getByRole('dialog', { name: 'Edit vessel', exact: true });
+  await (await showField(edit, 'Title · English')).fill('Unsaved replacement');
+  const firstControl = edit.getByRole('button', { name: 'Close Edit vessel', exact: true });
   await firstControl.press('Shift+Tab');
   await expect(edit.getByRole('button', { name: 'Save', exact: true })).toBeFocused();
   await edit.getByRole('button', { name: 'Save', exact: true }).press('Tab');
@@ -57,7 +67,7 @@ test('Save immediately shows content, discard preserves it, and Trash/restore re
   await expect(page.getByRole('dialog', { name: 'Move to Trash?' })).not.toBeVisible();
   expect((await publicPage.goto('/fleet/' + id))?.status()).toBe(404);
   await expect(publicPage.getByRole('heading', { level: 1 })).toHaveText('Page not found');
-  await page.getByRole('button', { name: /^Trash 1$/ }).click();
+  await page.goto('/cms/trash');
   await page.getByRole('button', { name: 'Restore ' + title, exact: true }).click();
   await expect.poll(async () => (await db.collection('moe_content').findOne({ id, type: 'Vessel' }))?.deletedAt).toBeUndefined();
   await publicPage.reload();
@@ -66,9 +76,8 @@ test('Save immediately shows content, discard preserves it, and Trash/restore re
 
 test('prepared uploads retry sequentially and an interrupted saved response recovers once', async ({ page, context, db }) => {
   await login(page);
-  const id = 'e2e-upload-vessel';
   const title = 'Upload recovery vessel';
-  const editor = await createVessel(page, id, title);
+  const editor = await createVessel(page, title);
   const baselineMedia = await db.collection('moe_media').countDocuments();
   const files: string[] = [];
   const submittedIds: string[] = [];
@@ -103,7 +112,7 @@ test('prepared uploads retry sequentially and an interrupted saved response reco
   });
   await editor.getByLabel('Choose main image', { exact: true }).setInputFiles({ name: 'main-test.png', mimeType: 'image/png', buffer: E2E_IMAGE_BUFFER });
   await expect(editor.getByText('Ready to upload', { exact: true })).toHaveCount(1);
-  await editor.getByText('Photo gallery', { exact: true }).click();
+  await editor.getByText('More photos', { exact: true }).click();
   await editor.getByRole('button', { name: 'Add gallery image' }).click();
   await editor.getByLabel('Choose gallery image 1', { exact: true }).setInputFiles({ name: 'gallery-test.png', mimeType: 'image/png', buffer: E2E_IMAGE_BUFFER });
   await expect(editor.getByText('Ready to upload', { exact: true })).toHaveCount(2);
@@ -115,20 +124,31 @@ test('prepared uploads retry sequentially and an interrupted saved response reco
   await editor.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(editor.getByRole('alert')).toContainText('Synthetic second upload failure');
   await expect(editor.getByLabel('Title · English', { exact: true })).toHaveValue(title);
-  expect(await db.collection('moe_content').countDocuments({ id, type: 'Vessel' })).toBe(0);
+  expect(await db.collection('moe_content').countDocuments({ title, type: 'Vessel' })).toBe(0);
   expect(await db.collection('moe_media').countDocuments()).toBe(baselineMedia + 1);
 
-  let interruptSave = true;
+  let interruptedResponses = 0;
   await page.route('**/api/cms/content', async route => {
-    if (route.request().method() !== 'POST' || !interruptSave) return route.continue();
-    interruptSave = false;
+    if (route.request().method() !== 'POST' || interruptedResponses >= 2) return route.continue();
+    interruptedResponses++;
     const response = await route.fetch();
     expect(response.ok()).toBe(true);
     await route.fulfill({ status: 503, json: { error: 'Synthetic lost save response' } });
   });
   await editor.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(editor.getByRole('alert')).toContainText('Synthetic lost save response');
-  // A retry uses the same submission and receives the committed operation.
+  const committed = await db.collection('moe_content').findOne({ title, type: 'Vessel' });
+  expect(committed).toMatchObject({ revision: 1 });
+  const id = String(committed!.id);
+  const updatedTitle = 'Renamed while the saved response was uncertain';
+  await (await showField(editor, 'Title · English')).fill(updatedTitle);
+  // A second lost response belongs to the new text save, with its own retry budget.
+  await editor.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(editor).toBeVisible();
+  await expect(editor.getByRole('alert')).toContainText('Synthetic lost save response');
+  await expect(editor.getByRole('alert')).not.toContainText('Your newer unsaved changes');
+  await expect(editor.getByRole('button', { name: 'Save', exact: true })).toBeEnabled();
+  await expect(await showField(editor, 'Title · English')).toHaveValue(updatedTitle);
   await editor.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(editor).not.toBeVisible();
   expect(files).toHaveLength(3);
@@ -139,12 +159,13 @@ test('prepared uploads retry sequentially and an interrupted saved response reco
   expect(maximumConcurrentUploads).toBe(1);
   const saved = await db.collection('moe_content').find({ id, type: 'Vessel' }).toArray();
   expect(saved).toHaveLength(1);
-  expect(saved[0]).toMatchObject({ status: 'Published', revision: 1, gallery: [{ alt: 'Gallery image description', altTh: 'คำอธิบายภาพทดสอบ' }] });
+  expect(saved[0]).toMatchObject({ title: updatedTitle, status: 'Published', revision: 2, gallery: [{ alt: 'Gallery image description', altTh: 'คำอธิบายภาพทดสอบ' }] });
+  expect(await db.collection('moe_content').countDocuments({ type: 'Vessel', title: { $in: [title, updatedTitle] } })).toBe(1);
   expect(await db.collection('moe_media').countDocuments()).toBe(baselineMedia + 2);
   expect(await db.collection('moe_media').countDocuments({ submissionId: submittedIds[0], state: 'committed' })).toBe(2);
   const publicPage = await context.newPage();
   await publicPage.goto('/fleet/' + id);
-  await expect(publicPage.getByRole('heading', { level: 1 })).toHaveText(title);
+  await expect(publicPage.getByRole('heading', { level: 1 })).toHaveText(updatedTitle);
   await publicPage.getByRole('button', { name: 'Next image', exact: true }).click();
   await expect(publicPage.getByRole('img', { name: 'Gallery image description', exact: true })).toBeVisible();
 });

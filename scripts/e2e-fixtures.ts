@@ -33,7 +33,7 @@ export const E2E_INBOX = {
   oldResolved: { id: enquiryId(2), query: 'old-resolved-anchor', subject: 'old-resolved-anchor', status: 'Resolved' },
 } as const;
 
-const ownedCollections = ['moe_content', 'moe_media', 'moe_users', 'moe_sessions', 'moe_state', 'moe_operations', 'moe_enquiries', 'moe_settings'] as const;
+const ownedCollections = ['moe_content', 'moe_media', 'moe_users', 'moe_sessions', 'moe_state', 'moe_operations', 'moe_logs', 'moe_enquiries', 'moe_settings'] as const;
 function enquiryId(index: number) { return `10000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`; }
 
 export function e2eConnection() {

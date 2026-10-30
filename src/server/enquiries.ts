@@ -4,12 +4,13 @@ import type { Filter } from 'mongodb';
 import type { z } from 'zod';
 import type { Enquiry } from '@/lib/cms-types';
 import { escapeInboxSearch, type EnquiryPage, type InboxFilters, type InboxQuery } from '@/lib/inbox-query';
-import { collections, ensureIndexes, getDb, type EnquiryDocument } from './db';
+import { collections, ensureIndexes, getDb, transaction, type EnquiryDocument, type UserDocument } from './db';
 import { digest, rateLimit } from './auth';
 import { HttpError } from './http';
 import { enquirySchema, inboxSchema } from './validation';
 import { nextCursor, readCursor } from './pagination';
 import { initialNotification, notificationView } from './enquiry-notifications';
+import { appendAuditEvent, auditActor } from './audit';
 
 export function cleanEnquiry(record: EnquiryDocument): Enquiry {
   const { _id, submissionId, fingerprint, consentAt, notificationDelivery, ...value } = record;
@@ -82,8 +83,20 @@ export async function getEnquiryPage(query: InboxQuery): Promise<EnquiryPage> {
   ]);
   return { enquiries: items.slice(0, 50).map(cleanEnquiry), nextCursor: items.length > 50 ? nextCursor(items[49]) : null, total, totalAll, newCount };
 }
-export async function updateEnquiry(input: z.infer<typeof inboxSchema>) {
-  const result = await collections(await getDb()).enquiries.findOneAndUpdate({ _id: input.id, revision: input.expectedRevision }, { $set: { status: input.status, updatedAt: new Date().toISOString() }, $inc: { revision: 1 } }, { returnDocument: 'after' });
-  if (!result) throw new HttpError(409, 'This enquiry changed elsewhere. Refresh and try again.');
-  return cleanEnquiry(result);
+export async function updateEnquiry(input: z.infer<typeof inboxSchema>, actor?: UserDocument) {
+  return transaction(async (db, session) => {
+    const result = await collections(db).enquiries.findOneAndUpdate({ _id: input.id, revision: input.expectedRevision }, { $set: { status: input.status, updatedAt: new Date().toISOString() }, $inc: { revision: 1 } }, { returnDocument: 'after', session });
+    if (!result) throw new HttpError(409, 'This enquiry changed elsewhere. Refresh and try again.');
+    if (actor) await appendAuditEvent(db, session, { action: 'enquiry.status_changed', actor: auditActor(actor), target: { type: 'Enquiry', id: input.id } });
+    return cleanEnquiry(result);
+  });
+}
+
+export async function recordNotificationRequest(id: string, actor: UserDocument) {
+  await transaction(async (db, session) => {
+    const exists = await collections(db).enquiries.findOne({ _id: id }, { projection: { _id: 1 }, session });
+    if (!exists) throw new HttpError(404, 'This enquiry is no longer available.');
+    // This records the user's request, never a claim that the external email was delivered.
+    await appendAuditEvent(db, session, { action: 'enquiry.notification_requested', actor: auditActor(actor), target: { type: 'Enquiry', id } });
+  });
 }

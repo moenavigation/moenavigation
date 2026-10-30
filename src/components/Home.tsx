@@ -44,9 +44,6 @@ export default function Home({ locale }: { locale: Locale }) {
       <div className="container">
         <div className={styles.sectionHeading}>
           <div>{copy(connection)}</div>
-          <Link className="text-link" href={href(locale, selectedRouteId ? `routes?route=${encodeURIComponent(selectedRouteId)}` : "routes")}>
-            {local(locale,"Explore connections","สำรวจเส้นทางเชื่อมต่อ")}<ChevronRight aria-hidden="true" />
-          </Link>
         </div>
         <RouteExplorer locale={locale} routes={routes.filter(isMappedRoute)} selectedId={selectedRouteId} onSelect={setSelectedRouteId} deferMap />
       </div>

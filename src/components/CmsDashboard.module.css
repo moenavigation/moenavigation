@@ -1,0 +1,34 @@
+.dashboard { display: grid; gap: 1.25rem; margin-top: 1.5rem; }
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+.metric { display: grid; gap: .7rem; padding: 1.4rem; border: 1px solid var(--line); border-radius: .65rem; background: #fff; color: var(--navy); text-align: left; }
+.metricAction { display: inline-flex; align-items: center; justify-content: space-between; gap: .5rem; min-height: 2.75rem; border: 1px solid var(--line); border-radius: .35rem; background: #f8fbff; color: var(--navy); padding: .5rem .75rem; cursor: pointer; }
+.metric:first-child { background: var(--navy); color: #fff; border-color: var(--navy); }
+.metricLabel { display: flex; align-items: center; gap: .6rem; font-weight: 600; }
+.metricLabel svg { flex-shrink: 0; }
+
+.metric > strong { font-size: var(--font-h1); line-height: 1.15; }
+.hint { display: block; color: var(--muted); font-size: var(--font-small); line-height: 1.5; }
+.metric:first-child .hint { color: #d5e4f4; }
+.columns { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 1.25rem; }
+.panel { min-width: 0; padding: 1.5rem; border: 1px solid var(--line); border-radius: .65rem; background: #fff; }
+.heading { display: flex; align-items: center; gap: .8rem; margin-bottom: 1.4rem; }
+.heading h2 { margin: 0 0 .3rem; font-size: var(--font-h3); }
+.heading p { margin: 0; color: var(--muted); }
+.icon { display: grid; place-items: center; flex: 0 0 2.8rem; height: 2.8rem; border-radius: .6rem; color: var(--blue); background: #edf4fc; }
+.collections { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+.collections button { display: flex; align-items: center; gap: .8rem; text-align: left; padding: 1rem; border: 1px solid var(--line); border-radius: .45rem; color: var(--navy); background: #f8fbff; cursor: pointer; }
+.collections button > svg { flex-shrink: 0; }
+.collectionLabel { display: flex; align-items: center; justify-content: space-between; gap: .7rem; flex: 1; min-width: 0; }
+.collectionLabel strong { display: grid; place-items: center; min-width: 2.2rem; min-height: 2.2rem; padding-inline: .4rem; border-radius: .4rem; background: #e6eef8; }
+.recent { list-style: none; margin: 0; padding: 0; }
+.recent li { border-top: 1px solid var(--line); }
+.recent button { display: flex; align-items: center; justify-content: space-between; gap: .8rem; width: 100%; padding: 1rem 0; border: 0; background: transparent; color: var(--navy); text-align: left; cursor: pointer; }
+.recent button > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.recent button > svg { flex-shrink: 0; }
+.shortcuts { display: grid; gap: .4rem; margin-top: 1.2rem; border-top: 1px solid var(--line); padding-top: 1.2rem; }
+.shortcuts h3 { margin: 0 0 .4rem; font-size: var(--font-lead); }
+.shortcuts button { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 2.75rem; padding: .6rem .8rem; border: 1px solid var(--line); border-radius: .4rem; background: #f8fbff; color: var(--navy); text-align: left; cursor: pointer; }
+.empty { color: var(--muted); padding-block: 1rem; }
+@media (hover: hover) and (pointer: fine) { .collections button:hover, .shortcuts button:hover { background: #edf4ff; border-color: #8da7c3; } .metric:hover { box-shadow: 0 .3rem 1rem #082b5010; } .recent button:hover { color: var(--blue); } }
+@media (max-width: 1100px) { .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .columns { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 520px) { .metric, .panel { padding: 1rem; } .metrics { gap: .65rem; } .metricLabel { flex-wrap: wrap; }  .collections { grid-template-columns: minmax(0, 1fr); } .recent button { align-items: flex-start; } }

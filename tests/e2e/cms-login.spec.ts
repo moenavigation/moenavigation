@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { test, expect, E2E_ADMIN, E2E_BASE_URL } from './fixtures';
+import { test, expect, E2E_ADMIN, E2E_BASE_URL, loginChallengeData, solveLoginSlide } from './fixtures';
 import { cmsMainThai } from '../../src/lib/cms-main-th';
 
 const rememberedUsernameKey = 'moe-cms-remembered-username';
@@ -36,9 +36,16 @@ test('password visibility is keyboard accessible, preserves input, and submits o
   expect(loginRequests).toBe(0);
   try {
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('dialog').locator('[class*="loginPuzzleTarget"]')).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath('cms-login-puzzle-start.png'), animations: 'disabled' });
+    await solveLoginSlide(page, { submit: false });
+    expect(loginRequests).toBe(0);
+    await page.screenshot({ path: testInfo.outputPath('cms-login-puzzle-dialog.png'), animations: 'disabled' });
+    await page.getByRole('dialog').locator('input[type="range"]').press('Enter');
     await expect.poll(() => loginRequests).toBe(1);
     await expect(password).toHaveAttribute('type', 'password');
-    await expect(page.getByRole('button', { name: 'Signing in…', exact: true })).toBeDisabled();
+    await expect(page.getByRole('dialog').locator('input[type="range"]')).toBeDisabled();
     // Even repeated submit events while the request is in flight must not send more credentials.
     await password.evaluate(input => input.closest('form')!.requestSubmit());
     await expect.poll(() => loginRequests).toBe(1);
@@ -46,7 +53,11 @@ test('password visibility is keyboard accessible, preserves input, and submits o
     releaseLogin();
   }
   await expect(page.getByRole('main').getByRole('alert')).toContainText('The username or password is incorrect.');
-  await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeEnabled();
+  await solveLoginSlide(page, { submit: false });
+  await expect(page.getByRole('dialog').locator('input[type="range"]')).toBeEnabled();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeFocused();
   await expect(password).toHaveValue('Synthetic-password-not-for-storage');
   await expect(password).toHaveAttribute('type', 'password');
   const storage = await page.evaluate(key => ({ remembered: localStorage.getItem(key), local: JSON.stringify(localStorage), session: JSON.stringify(sessionStorage), cookie: document.cookie }), rememberedUsernameKey);
@@ -55,13 +66,65 @@ test('password visibility is keyboard accessible, preserves input, and submits o
   expect(loginRequests).toBe(1);
 });
 
+test('releasing the slider submits only when the puzzle matches', async ({ page }) => {
+  let loginRequests = 0;
+  let submittedPosition: unknown;
+  await page.route('**/api/cms/login', async route => {
+    loginRequests++;
+    submittedPosition = route.request().postDataJSON().challengePosition;
+    await route.fulfill({ status: 401, json: { error: 'The username or password is incorrect.' } });
+  });
+  await page.goto('/cms');
+  await page.getByLabel('Username', { exact: true }).fill('unverified-user');
+  await page.getByLabel('Password', { exact: true }).fill('Synthetic-password-not-for-storage');
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  const slider = dialog.locator('input[type="range"]');
+  await expect(slider).toBeEnabled();
+  const target = Number.parseFloat(await dialog.locator('[class*="loginPuzzleTarget"]').evaluate(element => (element as HTMLElement).style.left)) / .8;
+  const track = await slider.boundingBox();
+  expect(track).not.toBeNull();
+  const thumbWidth = Number(await slider.evaluate(() => Number.parseFloat(getComputedStyle(document.documentElement).fontSize))) * 3.2;
+  const x = (value: number) => track!.x + thumbWidth / 2 + (track!.width - thumbWidth) * value / 100;
+  const y = track!.y + track!.height / 2;
+  async function drag(from: number, to: number) {
+    await page.mouse.move(x(from), y);
+    await page.mouse.down();
+    await page.mouse.move(x(to), y, { steps: 10 });
+    // Read immediately while held: a delayed animation must not catch up before this assertion.
+    const movement = await slider.evaluate(input => {
+      const container = input.closest('dialog')!;
+      const board = container.querySelector('[class*="loginPuzzleBoard"]')!.getBoundingClientRect();
+      const piece = container.querySelector('[class*="loginPuzzlePiece"]')!.getBoundingClientRect();
+      return {
+        offset: piece.left - board.left,
+        expected: Number((input as HTMLInputElement).value) / 100 * (board.width - piece.width),
+        sliderTop: input.getBoundingClientRect().top,
+      };
+    });
+    expect(loginRequests).toBe(0);
+    expect(Math.abs(movement.offset - movement.expected)).toBeLessThanOrEqual(1);
+    expect(Math.abs(movement.sliderTop - track!.y)).toBeLessThanOrEqual(1);
+    await page.mouse.up();
+  }
+  await drag(0, 20);
+  expect(loginRequests).toBe(0);
+  await expect(dialog).toBeVisible();
+  const current = Number(await slider.inputValue());
+  await drag(current, target);
+  await expect.poll(() => loginRequests).toBe(1);
+  expect(typeof submittedPosition).toBe('number');
+  expect(Number.isInteger(submittedPosition)).toBe(true);
+  await expect(dialog).not.toBeVisible();
+});
+
 test('successful sign-in remembers only the username and logout revokes the server session', async ({ page, context, request }) => {
   await page.goto('/cms');
   await page.getByLabel('Username', { exact: true }).fill(` ${E2E_ADMIN.username.toUpperCase()} `);
   await page.getByLabel('Password', { exact: true }).fill(E2E_ADMIN.password);
   await page.getByRole('checkbox', { name: rememberLabel, exact: true }).check();
   const loginResponsePromise = page.waitForResponse(response => response.url().endsWith('/api/cms/login') && response.request().method() === 'POST');
-  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await solveLoginSlide(page);
   const loginResponse = await loginResponsePromise;
   expect(loginResponse.status()).toBe(200);
   const sessionHeader = (await loginResponse.headerValues('set-cookie')).find(value => value.startsWith('moe_cms_session='));
@@ -72,7 +135,7 @@ test('successful sign-in remembers only the username and logout revokes the serv
   expect(sessionHeader).toMatch(/;\s*HttpOnly(?:;|$)/i);
   expect(sessionHeader).toMatch(/;\s*Secure(?:;|$)/i);
   expect(sessionHeader).toMatch(/;\s*Max-Age=28800(?:;|$)/i);
-  await expect(page.getByRole('heading', { name: 'Content overview', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible();
   await expect.poll(() => page.evaluate(key => localStorage.getItem(key), rememberedUsernameKey)).toBe(E2E_ADMIN.username);
 
   const session = (await context.cookies()).find(cookie => cookie.name === 'moe_cms_session');
@@ -84,8 +147,8 @@ test('successful sign-in remembers only the username and logout revokes the serv
   expect(JSON.stringify(storage)).not.toContain(E2E_ADMIN.password);
   expect(JSON.stringify(storage)).not.toContain(session!.value);
 
-  await page.getByRole('button', { name: 'Open account settings', exact: true }).click();
-  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await page.getByRole('button', { name: 'Open CMS navigation', exact: true }).click();
+  await page.getByRole('dialog', { name: 'CMS navigation', exact: true }).getByRole('button', { name: 'Sign out', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Welcome back', exact: true })).toBeVisible();
   await expect(page.getByLabel('Username', { exact: true })).toHaveValue(E2E_ADMIN.username);
   await expect(page.getByLabel('Password', { exact: true })).toHaveValue('');
@@ -108,8 +171,8 @@ test('login rejects cross-site requests and gives the same failure for unknown u
   expect((await request.post('/api/cms/login', { headers: { origin: 'https://attacker.example' }, data })).status()).toBe(403);
   expect((await request.post('/api/cms/login', { headers: { origin: E2E_BASE_URL, 'sec-fetch-site': 'cross-site' }, data })).status()).toBe(403);
   const headers = { origin: E2E_BASE_URL };
-  const known = await request.post('/api/cms/login', { headers, data: { username: E2E_ADMIN.username, password: 'Incorrect-synthetic-password' } });
-  const unknown = await request.post('/api/cms/login', { headers, data: { username: 'no-such-admin', password: 'Incorrect-synthetic-password' } });
+  const known = await request.post('/api/cms/login', { headers, data: { username: E2E_ADMIN.username, password: 'Incorrect-synthetic-password', ...await loginChallengeData(request) } });
+  const unknown = await request.post('/api/cms/login', { headers, data: { username: 'no-such-admin', password: 'Incorrect-synthetic-password', ...await loginChallengeData(request) } });
   expect(known.status()).toBe(401);
   expect(unknown.status()).toBe(401);
   expect(await known.json()).toEqual({ error: 'The username or password is incorrect.' });
@@ -119,14 +182,32 @@ test('login rejects cross-site requests and gives the same failure for unknown u
   expect((await request.get('/api/cms/content')).status()).toBe(401);
 });
 
+test('slide verification is required, single-use, and checked by the server', async ({ request }) => {
+  const headers = { origin: E2E_BASE_URL };
+  const credentials = { username: E2E_ADMIN.username, password: E2E_ADMIN.password };
+  const missing = await request.post('/api/cms/login', { headers, data: credentials });
+  expect(missing.status()).toBe(400);
+
+  const challenge = await loginChallengeData(request);
+  const wrongPosition = challenge.challengePosition > 50 ? 0 : 100;
+  const wrong = await request.post('/api/cms/login', { headers, data: { ...credentials, ...challenge, challengePosition: wrongPosition } });
+  expect(wrong.status()).toBe(400);
+  const replay = await request.post('/api/cms/login', { headers, data: { ...credentials, ...challenge } });
+  expect(replay.status()).toBe(400);
+  expect(replay.headers()['set-cookie']).toBeUndefined();
+
+  const fresh = await request.post('/api/cms/login', { headers, data: { ...credentials, ...await loginChallengeData(request) } });
+  expect(fresh.status()).toBe(200);
+});
+
 for (const username of ['throttle-test-user', 'global']) {
 test(`username ${username} gets ten attempts without colliding with the global throttle`, async ({ request }) => {
   const headers = { origin: E2E_BASE_URL };
   const data = { username, password: 'Incorrect-synthetic-password' };
   for (let attempt = 0; attempt < 10; attempt++) {
-    expect((await request.post('/api/cms/login', { headers, data })).status()).toBe(401);
+    expect((await request.post('/api/cms/login', { headers, data: { ...data, ...await loginChallengeData(request) } })).status()).toBe(401);
   }
-  const limited = await request.post('/api/cms/login', { headers, data });
+  const limited = await request.post('/api/cms/login', { headers, data: { ...data, ...await loginChallengeData(request) } });
   expect(limited.status()).toBe(429);
   expect(await limited.json()).toEqual({ error: 'Too many attempts. Please wait a few minutes and try again.' });
   expect(limited.headers()['set-cookie']).toBeUndefined();
@@ -148,7 +229,7 @@ test('an exhausted global login budget prevents new per-username rate-limit stat
   const usernames = ['global-budget-new-one', 'global-budget-new-two', 'global-budget-new-three'];
   for (const username of usernames) {
     const response = await request.post('/api/cms/login', {
-      headers: { origin: E2E_BASE_URL }, data: { username, password: 'Incorrect-synthetic-password' },
+      headers: { origin: E2E_BASE_URL }, data: { username, password: 'Incorrect-synthetic-password', challengeId: '0'.repeat(48), challengePosition: 0 },
     });
     expect(response.status()).toBe(429);
     expect(response.headers()['set-cookie']).toBeUndefined();
@@ -180,8 +261,10 @@ test.describe('Thai mobile login', () => {
     await page.getByLabel(cmsMainThai['Username'], { exact: true }).fill(E2E_ADMIN.username);
     await page.getByLabel(cmsMainThai['Password'], { exact: true }).fill(E2E_ADMIN.password);
     await page.getByRole('checkbox', { name: cmsMainThai[rememberLabel], exact: true }).check();
-    await page.getByRole('button', { name: cmsMainThai['Sign in'], exact: true }).click();
-    await expect(page.getByRole('heading', { name: cmsMainThai['Content overview'], exact: true })).toBeVisible();
+    await solveLoginSlide(page, { submit: false });
+    await page.screenshot({ path: testInfo.outputPath('cms-login-puzzle-thai-320.png'), animations: 'disabled' });
+    await page.getByRole('dialog').locator('input[type="range"]').press('Enter');
+    await expect(page.getByRole('heading', { name: cmsMainThai['Dashboard'], exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: cmsMainThai['Refresh workspace'], exact: true })).toBeEnabled();
     expect(errors).toEqual([]);
   });

@@ -206,3 +206,409 @@ a fresh local database. The upload provider boundary was simulated; final
 content transactions and save recovery used the real application. No live
 MongoDB data, Cloudinary assets or external email were changed. GitHub Actions
 is configured but has not been executed remotely during this task.
+
+## 2026-10-30 — Client page editing
+
+Replaced the mixed page/section table with page cards and existing editable areas, with a separate shared/footer group and direct links to collection lists and Settings. Page/Section editors expose only applicable text and picture fields. CMS API saves reject new pages/sections and structural changes, and reject moving existing pages/sections to Trash. Historical restoration and trusted maintenance remain available. Collection entries retain their existing creation workflows.
+
+Validation completed locally:
+
+- Production build, full ESLint, TypeScript and `git diff --check` passed.
+- All 110 backend/unit tests passed, including fixed-layout restrictions and optional images on pages whose layouts do not display them.
+- Initial full Chromium run passed 84 of 89 cases. Four new editor tests had an incorrectly scoped helper; one existing inbox regression exposed disabled dashboard navigation during a background refresh. Both issues were fixed.
+- Focused dashboard, page editor, content/media recovery and inbox regression suite: 51 passed across Chromium, Firefox and WebKit. The final editor polish was then rebuilt and checked again: 18 passed across the three engines.
+- Browser checks include bilingual saves immediately reflected on public pages, preserving identity/layout/images, page history and reload, footer-only fields, hidden-language validation, historically moved sections, API rejection without changing saved records, and English/Thai mobile overflow. Desktop and mobile screenshots were visually reviewed.
+
+JSON evidence is retained under `.local/e2e/page-management-20261030/`: `initial-chromium-results.json`, `cross-browser-results.json`, and `final-editor-results.json`. Final screenshots are under `test-results/cms-pages-*/`. The runner used a disposable local database with synthetic media and no real provider credentials; its owned services and database directories were cleaned up. No deployment was performed.
+
+## 2026-10-30 — Simpler collection editors
+
+Vessels, routes, projects, services and news now open item-specific Add/Edit dialogs. The bilingual forms prioritize title, summary, applicable category and pictures. Longer content, vessel specifications, route ports/map points and extra vessel photos are expandable. Existing categories are suggested without restricting custom values. Publication dates remain editable for both projects and news.
+
+Technical identifiers, content-type selection, manual display order and raw icon choices are hidden. New addresses are allocated at the first Save and retained throughout retries and subsequent title edits; existing identities and hidden saved metadata remain intact. New items receive a display order after existing items, within the supported limit. Route points use labeled latitude/longitude rows, retain existing precision and intermediate points, and require complete valid input before saving.
+
+Validation completed locally:
+
+- Production build, full ESLint, TypeScript and `git diff --check` passed; all 116 backend/unit tests passed.
+- The initial focused Chromium run passed 14/15 tests and exposed duplicate photo uploads when a title changed after a lost successful-save response. Recovery now reuses only photo URLs confirmed in the committed record, retains the item identity, and gives the subsequent text save its own retry count.
+- The collection, language, dashboard, page-editor and content-recovery suite passed 72 tests across Chromium, Firefox and WebKit. After the final retry-count and fingerprint adjustment, six save/discard/Trash/media-recovery checks passed again across all three engines, including two lost successful responses with a title edit between them.
+- Browser coverage includes real creation of all five item types, duplicate non-Latin names, preserving hidden metadata/categories/specifications/route points, nested optional-field validation, mapped-route edits, bilingual content, and all five forms at 320px in English and Thai. Desktop and mobile screenshots were visually reviewed.
+
+JSON results are retained under `.local/e2e/collection-editing-20261030/`: `initial-chromium-results.json`, `cross-browser-results.json`, and `final-save-recovery-results.json`. Tests used isolated synthetic data; no live data or external media provider was changed. No deployment was performed.
+
+## 2026-10-30 — CMS users and role permissions
+
+Added Dev, Admin and Operator roles, with server-enforced account management and permanent Trash deletion permissions. Existing accounts without a role retain Admin access. Only Dev can manage Dev accounts; Admin manages Admin and Operator accounts; Operator retains content management and personal password settings. Every role is prevented from deleting itself. The last Dev and last management account are protected from demotion. Account changes revoke existing sessions and use transactional permission checks to prevent concurrent changes from bypassing the rules.
+
+Validation completed locally:
+
+- All 126 backend/unit tests passed. TypeScript, focused ESLint, production builds and `git diff --check` passed.
+- The first affected Chromium run passed 29 of 31 checks across roles, users, media Trash, image usage and CMS routing. The two failures identified a role-select label association issue. Explicit label associations fixed it.
+- The final role/account Chromium run passed all 16 checks, including the added content Trash confirmation/cancellation test. Eight focused form, responsive, password-reset and permanent-delete checks passed in Firefox and WebKit.
+- API checks cover every role, legacy and invalid roles, unauthorized promotion, Dev protection, self deletion, password resets, session revocation, self-demotion, concurrent last-Dev demotions, and cleanup/submission bypass attempts. Content deletion rejects active records, stale revisions, core pages and pages with linked sections. Confirmed deletion preserves saved library images.
+- English desktop (1280px) and Thai mobile (360px) user-management screenshots were visually reviewed. Keyboard focus containment and password clearing in personal settings passed in all three browsers.
+
+Final result JSON and screenshots are retained under `.local/e2e/cms-roles-20261030/`. Browser tests used isolated synthetic data and disabled real external provider credentials. After verification, the explicitly requested `dev` account was created in the configured project database with the Dev role and its supplied password hash verified. No plaintext password was written to the repository or printed by the provisioning script. Other live accounts and content were preserved. No deployment was performed.
+
+## 2026-10-30 — Unified Trash and account recovery
+
+Combined `/cms/trash` into one list for content, images and permitted user accounts. A reversible type-selection dialog and literal English/Thai search operate over all retained items on the server, with 30-item cursor pages and role-aware totals. Existing media usage links still locate the exact removed item and return restored content to its editor. The media shortcut selects the Images filter.
+
+Account removal now disables access immediately and moves the account to 30-day Trash. Usernames remain reserved during retention; restoring an account preserves its password and role while keeping old sessions invalid. Restore and permanent deletion require the acting user's current password and the existing Dev/Admin target-role rules. Active accounts, expired items, self-removal and removal of the last active privileged account remain protected. No user credentials enter Trash responses.
+
+The coverage review also corrected hidden image deletion retries and section restoration without an available parent page. Shared sections remain independently recoverable. Saved image cleanup moves eligible unused images to Trash, while incomplete upload rollback remains a temporary-upload cleanup operation. Enquiries have status updates only, and Settings edits a fixed record; neither exposes a deletion action. Images retain their existing manual permanent-deletion policy, while content and accounts expire after 30 days.
+
+Validation completed locally:
+
+- All 137 unit/backend tests passed; TypeScript, focused ESLint, production builds and `git diff --check` passed.
+- The first affected Chromium run passed 41 of 42 checks across Dashboard, users, roles, routing, media usage, save behavior and unified Trash. The sole failure was an old assertion matching the restored item's name inside its success notice; the assertion now checks row absence.
+- All 24 targeted Trash checks passed across Chromium, Firefox and WebKit, including mixed-type search and pagination, permission-scoped counts, account access revocation/restoration, expiry, username reservation, parent-page protection, failed provider deletion retries, uncertain successful-response reconciliation without a repeated write, dialog cancellation and focus recovery.
+- Two final Chromium checks passed after ensuring account and image removal refresh navigation totals immediately.
+- English desktop and Thai mobile list/filter layouts were visually reviewed. The mobile filter keeps its actions visible while the options scroll; keyboard focus, cancellation, and translated control labels were exercised.
+
+Result JSON and screenshots are retained under `.local/e2e/unified-trash-20261030/`. These checks used isolated synthetic data with real external provider credentials disabled. No live account or content was trashed or permanently deleted by this verification. No deployment was performed.
+
+## 2026-10-30 — Read-only CMS activity logs
+
+Added `/cms/logs` with username/item search, activity-category filters, 30-entry cursor pages, result counts, timestamps, outcomes, and expiry dates. Every authenticated CMS role can read safe log entries; no role, including Dev, has a create/edit/delete/Trash/restore API or control for logs. The application log-collection handle exposes append/read operations and blocks aggregation write stages.
+
+Entries cover sign-ins/sign-outs, own-password changes, account creation/edit/reset/Trash/restore/permanent deletion, content lifecycle changes, committed images (including content-form uploads), image Trash/restore/deletion/cleanup, enquiry status and notification requests, website settings, and data exports. Denied password sign-ins use an unidentified actor. Passwords/hashes, session or upload credentials, private enquiry text, request bodies, and provider error details are excluded. Notification events describe requests rather than confirmed delivery.
+
+Each entry receives a server-generated expiry one UTC calendar year after its timestamp; leap days clamp to February 28. Expired records disappear from both API results and totals immediately. MongoDB TTL removes the stored records asynchronously. The versioned index cache applies the new TTL to existing development processes after hot reload. Content recovery archives explicitly exclude `moe_logs`, preserving append-only history and preventing expired records from being reintroduced through restoration; the website backup policy continues to recognize every application collection.
+
+Validation completed locally:
+
+- All 148 unit/backend tests passed, including leap-year expiry, strict event schemas, safe projections, cursor/query validation, append-only handles, and concurrent/hot-reload index initialization. The recovery tests passed again after the explicit log-exclusion policy change.
+- TypeScript, focused ESLint, production builds and `git diff --check` passed.
+- The initial affected Chromium suite passed 43/43 checks across logs, users, roles, routing and unified Trash.
+- Final log coverage passed 24/24 checks across Chromium, Firefox and WebKit. Tests cover immutable/all-role APIs, expired entries/TTL configuration, secret-field exclusion, timestamp ties, literal English/Thai search, pagination, save retries, content-form image commits, concurrent logout idempotency, legacy email-style usernames, safe export events, all activity categories, notification requests, and read-only mobile layouts.
+- An isolated collection validator deliberately rejected a log insert. The associated content save and its retry marker both rolled back; retry succeeded once after the validator was removed. This proves successful content changes cannot silently bypass required auditing.
+- English desktop and Thai mobile viewport screenshots were visually reviewed. No horizontal overflow was found.
+
+Results and screenshots are retained under `.local/e2e/activity-logs-20261030/`. All browser checks used isolated synthetic data with real external provider credentials disabled. No live records were edited or deleted by verification. No deployment was performed. Direct privileged database administration remains outside CMS role permissions.
+
+## 2026-10-30 — User profile photos
+
+Added profile photos to `/cms/users` through each row's Photo action and User settings. The photo dialog supports prepared device images, a searchable library with 12 images per panel, preview, removal, cancellation and Save. Uploads begin only on Save. Photos appear in account rows, personal settings and the header, including mobile, with an initial fallback.
+
+Every role can change its own photo. Other-account changes retain current-password confirmation and the Dev/Admin target-role policy. Photo updates have a separate revision and idempotent operation, preserving passwords and all current sessions. The account change, staged image commit and immutable audit entry share one transaction. Failed saves keep prepared/staged input; uncertain successful responses reconcile without another upload. Conflicting edits preserve the selected photo for explicit review and retry. Late responses after session expiry cannot restore stale workspace user state.
+
+Media reference checks now protect account photos, including retained accounts in Trash, across cleanup, submission cancellation, image Trash and permanent deletion. Used links open the matching account or Trash item, and account Trash thumbnails show the photo. Backups validate and remap account-photo references, and recovery cleanup protects photos still used by accounts. Legacy accounts and archives without photos remain supported.
+
+Validation completed locally:
+
+- All 163 unit/backend tests passed, including profile permissions, session preservation, staging ownership, revisions/replay, audit rollback, media references and backup remapping. TypeScript, focused ESLint, production builds and diff checks passed.
+- The initial affected Chromium suite passed 40/41 across users, roles, Trash, media usage, logs and profile photos. It exposed the existing mobile rule hiding the header avatar; the account button now remains available on small screens.
+- The first corrected profile suite passed 24/24 checks across Chromium, Firefox and WebKit. Final review then added conflict-recovery and expired-session/late-response regressions. The final expanded suite passed 30/30 across all three browsers.
+- Browser tests cover cancel without upload, upload/database failure retries, reusing staged files, lost successful responses, all role combinations, active/Trash references, cleanup races, idempotency, library pagination, profile removal/fallback, and English/Thai responsive dialogs. Desktop and mobile screenshots were visually reviewed.
+
+Evidence is retained under `.local/e2e/user-profile-20261030/`. Tests used isolated synthetic accounts and media with real provider credentials disabled. No live account photos or provider images were changed by verification. No deployment was performed.
+
+
+## 2026-10-30 — Provider data usage
+
+Added `/cms/usage` for Dev/Admin with English/Thai provider cards, used and
+remaining figures, overage bars, precise scope/period labels, provider reporting
+times, console links, and monitoring-limit dialogs. Unknown figures stay
+unknown and explicit zero stays zero. MongoDB cluster storage is separate from
+this database's size; Cloudinary's reported shared credits remain the primary
+allowance. Plan wording is neutral.
+
+MongoDB and Cloudinary use existing server credentials for bounded read-only
+checks. Vercel has no monitoring credentials configured in this workspace, so
+its working path is a dashboard-reading dialog with recorded time and reporting
+label. Optional server configuration supports its documented Billing Charges
+API where accessible. Saved manual readings can be cleared to resume connected
+reporting. Monitoring-limit edits preserve the reading's time; explicitly
+checking unchanged readings updates it.
+
+Snapshots cache for ten minutes. Account-wide sixty-second leases prevent
+concurrent checks and reporting-window changes from bypassing the cooldown.
+The UI blocks repeated refreshes and the API enforces a shared POST/valid-PUT
+budget of 20 requests per user per minute. Credential/reporting scopes bind cache
+entries. Settings require the current active Dev/Admin role, revision checks and
+an atomic immutable audit event. Failed or uncertain saves retain input and
+reconcile with saved state before another attempt.
+
+Validation completed locally:
+
+- All 202 backend/unit tests passed. Full ESLint, TypeScript, production builds
+  and whitespace checks passed.
+- The combined browser matrix ran 96 checks: 94 passed and two WebKit focus-return
+  assertions failed. The affected media-upload and usage-dialog buttons now
+  explicitly focus their opener before showing the dialog. The final focused
+  rerun passed 9/9 checks across Chromium, Firefox and WebKit. Across the matrix
+  and corrected rerun, all 33 usage, 24 activity-log and 39 routing checks are
+  covered. The final build and TypeScript checks passed.
+- Browser coverage includes current-role/origin access, null versus zero, invalid
+  settings, stale revisions, audit-write rollback, safe metadata, cache binding,
+  cross-user cooldowns, the twenty-first refresh rejection, shared settings
+  request limits, manual-reading removal, timestamp preservation, cancel/retry,
+  explicit conflict review, lost-success reconciliation, in-flight refresh guards
+  and absence of background polling.
+- Desktop English and narrow Thai page/dialog screenshots were visually reviewed
+  in all three browser engines. Layouts have no horizontal overflow or clipping;
+  raw user-entered reporting labels remain unchanged.
+- One read-only live Cloudinary usage request and MongoDB metadata probe
+  confirmed adapter access. Browser tests used synthetic readings and isolated
+  accounts with real provider credentials disabled. No live content, media,
+  user accounts or provider plans were changed by verification.
+
+Evidence is retained under `.local/e2e/provider-usage-20261030/`, including the
+initial matrix and the final focused verification. No deployment was performed.
+
+
+## 2026-10-30–31 — Full workflow, role and mobile audit
+
+Ran the complete existing browser matrix with isolated synthetic data, reviewed
+server authorization and UI state paths, and expanded the regressions for
+mobile touch controls and all three CMS roles. Existing uncommitted project
+work was preserved.
+
+### Corrections
+
+- User-management responses now belong to a mounted session lifetime. Late
+  account edits cannot restore an expired workspace, restart a roster read, or
+  apply stale callbacks after navigation. Roster reads retain bounded timeouts.
+- User settings can close through its close button, Cancel, or Escape while
+  unrelated roster data loads. Password submission keeps its own busy and
+  duplicate-submission guard. Body scrolling and focus restore correctly with
+  nested profile dialogs and session expiry.
+- Operator cleanup only permanently removes its own unfinished uploads.
+  Dev/Admin can clean foreign unfinished uploads after a fresh role check
+  under the account lock. References, active submission leases, and recoverable
+  shared saved-image Trash remain protected.
+- Content, page-area, recent-item, media-usage, enquiry and confirmation
+  openers explicitly focus their trigger, preserving WebKit/touch focus return.
+- The CMS menu button now keeps the shared 44-pixel minimum width on mobile,
+  including 320-pixel screens. The logo, language control and account avatar
+  remain on the same row.
+- Updated stale header/translated-label assertions and removed an unnecessary
+  interception reconfiguration while Firefox thumbnails load. Mobile geometry
+  checks now wait for completed drawer movement and allow subpixel rounding
+  while retaining strict bounds, center-hit and touch-size assertions.
+  Firefox touch-emulation viewport resize commands stalled in this environment.
+  Viewports are now configured before page creation; Firefox portrait and
+  landscape run in independent contexts, while Chromium/WebKit retain live
+  rotation. Native touch, navigation, geometry and focus checks remain covered.
+- Increased the bounded browser-matrix timeout to 35 minutes and the CI job
+  allowance to 45 minutes so the expanded suite can complete with setup/builds.
+
+### Role coverage
+
+| Workflow | Dev | Admin | Operator |
+| --- | --- | --- | --- |
+| Manage Dev accounts | Allowed | Blocked | Blocked |
+| Manage Admin/Operator accounts | Allowed | Allowed | Blocked |
+| Delete own account | Blocked | Blocked | Blocked |
+| Change own password/profile photo | Allowed | Allowed | Allowed |
+| Edit fixed Page/Section text and images | Allowed | Allowed | Allowed |
+| Create, reorder, reparent or delete fixed Page/Section elements | Blocked | Blocked | Blocked |
+| Add/edit collections and recover content/images | Allowed | Allowed | Allowed |
+| Edit Settings and enquiries | Allowed | Allowed | Allowed |
+| Permanently delete retained Trash items | Allowed | Allowed | Blocked |
+| Clean own unfinished uploads | Allowed | Allowed | Allowed |
+| Clean others' unfinished uploads | Allowed | Allowed | Blocked |
+| Read retained activity logs | Allowed | Allowed | Allowed |
+| Edit/delete activity logs | Blocked | Blocked | Blocked |
+| Read/configure Data usage | Allowed | Allowed | Blocked |
+
+Account actions retain current-password, target-role, last-privileged-account
+and session-version checks. Permanent deletion retains core-page and image
+reference protections. The positive Operator regression saves and recovers
+all five collection types, edits existing fixed content, updates website
+settings and enquiries, and restores a shared saved image.
+
+### Executed checks
+
+- All 202 unit/backend tests, full ESLint and TypeScript passed. Production
+  builds passed through the isolated browser harness.
+- Full baseline: 480 cases across Chromium, Firefox and WebKit; 472 passed.
+  Six failures were stale expectations, one was a Firefox test-interception
+  race, and one exposed the settings-dismissal/loading issue corrected above.
+- Expanded mobile rerun: 28/28 Chromium cases passed, covering English/Thai
+  public templates and CMS views for every role at 320/390 pixels, 430-pixel
+  spot checks, and 360×640 plus 844×390 native-touch dialog/slider journeys.
+- Combined final evidence: 552 unique active browser scenarios have passing
+  results (Chromium 196, Firefox 178, WebKit 178), with 36 intentional
+  duplicated-sweep skips and zero unresolved cases. This combines the complete
+  baseline and corrected affected reruns; it is not one fresh 552-case run.
+  The final affected coverage includes Chromium 80/80 plus 2/2 landscape,
+  Firefox 52 functional plus 8/8 dialog/login and 4/4 public viewport cases,
+  and WebKit 64/64 active cases with 18 duplicate-sweep skips.
+- Visually reviewed representative baseline mobile layouts across engines and all 14 new
+  role/account screenshots, including 320-pixel headers and long Thai forms.
+  New public/library/landscape-dialog coverage also checks geometry, scroll
+  reachability and native touch; those passing cases do not all save PNGs.
+
+The login slider's target is visible to browser scripts, so it remains
+automatable. Single-use challenges and username/global attempt limits are
+enforced; these checks do not establish strong bot verification. This limitation
+is also described in the backend documentation.
+
+Browser tests use owned local MongoDB fixtures and simulated external image,
+map and upload responses. They do not establish live Cloudinary deletion,
+email delivery, Vercel access or physical-device behavior. No live content,
+provider assets, accounts, plans or credentials were changed. All test-owned
+processes and database directories were cleaned up. No deployment was performed.
+
+Reports, screenshots and failure/correction evidence are retained under
+`.local/e2e/full-audit-20261030/`.
+
+
+## 2026-10-31 — User edit and password-reset dialogs
+
+On `/cms/users`, Edit now opens a bounded, scrollable dialog for the selected
+account. Reset password is inside that dialog and opens its own native dialog.
+The Edit draft remains mounted across reset cancellation and success; resetting
+changes only the password, while username/role still require Save changes.
+Personal password changes remain in User settings. Add user and account Trash
+confirmation retain their existing layout and behavior.
+
+Both dialogs retain role/target protections, actor-password confirmation,
+strong replacement-password validation, duplicate-submit guards, and expired-
+session callback protection. Reset fields clear when closed. Focus returns to
+the appropriate enabled opener after cancellation or a completed save; nested
+expiry restores background scrolling. English/Thai copy and centered row
+actions are preserved. Native invalid-field focus is centered inside the dialog
+to avoid its sticky heading in short WebKit landscape viewports.
+
+Validation: 102 unique affected browser cases have passing evidence across
+Chromium, Firefox and WebKit (34 per engine), combining the initial affected
+runs and focused corrected rerun. The final expanded dialog suite passed 18/18
+with the focused-field visibility assertion unchanged. Checks cover canceled
+writes, preserved drafts, role restrictions, wrong current passwords, failed
+reset recovery, single successful reset writes, revoked target sessions, nested
+expiry, focus/scroll restoration, English desktop and Thai 360×640/844×390
+native-touch layouts. The initial WebKit landscape occlusion was corrected
+before the final pass. ESLint, TypeScript, production builds and whitespace
+checks passed. Desktop/mobile screenshots were visually reviewed.
+
+Evidence: `.local/e2e/user-edit-dialogs-20261031/`. Browser checks used isolated
+synthetic accounts with real provider credentials disabled. All owned test
+resources were cleaned up. No live accounts/data or deployment were changed.
+
+## 2026-10-31 — Enquiry email connection preparation
+
+Settings now includes an English/Thai **Email notifications** checklist, with
+an inbox shortcut and configuration-aware Send/Retry controls. The read-only
+authenticated status API returns only missing/invalid/added checks, never
+keys or addresses. Missing or unavailable setup blocks sending. Setup refresh
+has synchronous in-flight protection, cancellation, a timeout and cooldown;
+it never sends mail or polls the provider. Failed checks retain clearly
+labelled previous results without enabling notification actions.
+
+New notification attempts use escaped English/Thai HTML and plain text,
+readable Bangkok-time dates, mobile viewport metadata and a configured public
+HTTPS inbox link when available. Existing frozen payloads remain unchanged.
+The adapter bounds the entire provider operation to 12 seconds and responses
+to 16 KiB, rejects redirects, honors bounded Retry-After cooldowns, and requires
+review for payload conflicts or unsafe/exhausted/expired retry state. Reads
+project review state without writing or sending. Provider acceptance remains
+distinct from actual inbox delivery.
+
+Browser testing exposed a same-turn double-click race in Send notification.
+A synchronous request guard now prevents the second POST, and cancellation,
+controller identity and session-lifetime checks prevent late results from
+updating the workspace. The regression passes in all three engines. Existing
+inbox/loading tests were narrowed to the enquiry counter after the new setup
+notice introduced an additional accessible status region.
+
+Validation: **223/223 offline backend tests**, including **25 email tests**;
+**41 unique affected browser scenarios** with passing evidence: 18 new email
+checks across Chromium, Firefox and WebKit, 22 Chromium inbox/public-workflow/
+log checks, and one related loading check. ESLint, TypeScript and the isolated
+production build passed. Desktop/mobile Settings and enquiry-dialog screenshots
+were reviewed in English/Thai. Synthetic email previews at 320, 360 and 640
+pixels confirm readable text and no horizontal overflow; mail-client-specific
+rendering still needs the later live acceptance check.
+
+`npm run email:check` safely reported a missing API key and sender, with the
+private recipient already added. Its exit code 1 is expected until those
+settings are supplied. No secret values were printed or edited. Browser/build
+checks used the owned temporary loopback MongoDB with provider credentials
+disabled. No live data, provider assets, accounts, external emails or deployment
+were changed. Owned test processes, replicas and run directories were cleaned.
+
+Evidence: `.local/e2e/enquiry-email-20261031/verification-summary.json` and its
+initial/corrected browser reports; `.local/email-preview-20261031/` contains
+synthetic HTML/plain text, screenshots and viewport measurements. Connection
+instructions and the remaining live acceptance steps are in [EMAIL.md](EMAIL.md).
+
+## 2026-10-31 — Multiple enquiry-notification recipients
+
+`/cms/enquiries` now has a **Notification recipients** button for Dev and
+Admin. Its native dialog supports adding, editing and removing plain email
+addresses with one Save action, Cancel, focus restoration and scroll locking.
+It supports up to 50 distinct addresses; an explicitly empty saved list
+pauses mail without falling back to the earlier environment recipient.
+English/Thai copy explains that the same message goes to all saved recipients
+and that earlier notification retries retain their original recipient list.
+
+The private list lives in a separate `moe_settings` document, preserving
+encrypted-backup coverage while ordinary website settings and content exports
+exclude it. Authenticated Dev/Admin GET and origin-checked PUT APIs enforce
+validation, fresh stored role/session version, transactional audit records,
+revision conflicts and idempotent lost-response retries. Operator cannot
+read or edit recipient addresses and retains normal inbox/notification access.
+Readiness checks use the saved list; saving invalidates an older in-flight
+setup check. Public contact submission schedules its background delivery when
+the key/sender settings are present, allowing a CMS list to replace the old
+single environment recipient. Existing frozen single-recipient envelopes
+remain compatible and unchanged during retries.
+
+Validation: **229/229 offline backend tests** passed, including 31 notification/
+recipient cases. **58 unique browser scenarios** have passing evidence: 18 new
+recipient cases and 18 existing email cases across Chromium/Firefox/WebKit,
+plus 22 Chromium inbox/public-contact/activity-log regressions. The strengthened
+recipient rerun passed 18/18 after screenshot review caught focused-field
+occlusion by the footer on short mobile landscape screens; new fields now
+scroll into full view. Tests also cover cancel without writes, saved edits and
+removal, role changes after login, duplicates/limits/origin rejection, concurrent
+revision conflicts, single audit entries on retries, empty-list pause, private
+exports, failed-save draft retention, double clicks and ignored-cancellation
+responses after session expiry. English desktop and Thai 360×640/844×390
+screenshots were reviewed. ESLint, TypeScript, whitespace checks and the
+isolated production builds passed.
+
+Evidence is retained under `.local/e2e/enquiry-recipients-20261031/`, including
+the first run's corrected test locator, the email matrix, final recipient
+screenshots and regression reports. Tests used temporary loopback MongoDB and
+disabled provider credentials. No live recipient list, environment secrets,
+external emails or deployment were changed. All owned test resources were
+cleaned up. Live delivery still awaits the API key and verified sender.
+
+## 2026-10-31 — Enquiry email structure and appearance review
+
+New notification attempts now use a fixed MOE Navigation display name and a
+neutral localized SMTP subject with a short server reference. Visitor subject
+text stays in the escaped HTML/plain-text body. The email uses a fluid 600px
+table layout, inline fonts/styles, an Outlook-width fallback, semantic headings,
+full-width sender and message content, and reference/date metadata at the end.
+The validated inbox destination is visible below its button. No external images,
+fonts, attachments, scripts, hidden preview blocks or tracking resources are
+added by the app. HTML-only break opportunities preserve long ASCII tokens
+when CSS is removed without changing plain text, Thai graphemes or href values.
+The generated sender is validated alongside legacy plain senders; already-frozen
+plain-text and HTML retry envelopes are preserved byte-for-byte.
+
+Validation: **235/235 offline tests** passed, including **34 focused email and
+delivery tests** (recipient-schema tests also remain in the full suite). The
+largest maximum-valid-field HTML fixture is 42,248 UTF-8 bytes against a 65,536
+byte regression budget. **13 Chromium email/public-workflow browser checks**
+and the isolated production build passed. Twenty synthetic English/Thai previews
+cover normal and long inputs at 320/360/640px plus fully CSS-stripped fallbacks
+at 320/640px; all have no horizontal overflow. Normal message content starts
+about 104px earlier on 320px screens. Desktop/mobile screenshots and accessibility
+outlines were reviewed. Text contrast is at least 5.34:1 for the tested palette.
+ESLint, TypeScript and whitespace checks passed.
+
+Preview evidence: `.local/email-review-20261031/baseline/` and `final/`. Browser
+reports and the build lifecycle are retained in `browser-checks/` alongside the
+verification summary. The tests used synthetic data, an owned loopback MongoDB
+and disabled provider credentials; owned test processes/directories were cleaned.
+No external email, provider configuration, live data, environment secrets or
+deployment changed. Static previews do not certify Outlook/Gmail rendering,
+authentication or inbox delivery. SPF/DKIM/DMARC verification, provider tracking
+settings and a received-message header/inbox check remain the live acceptance
+steps described in [EMAIL.md](EMAIL.md).

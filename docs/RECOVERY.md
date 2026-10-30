@@ -12,6 +12,10 @@ The CMS JSON export is useful for editing and inspection. For recovery, use the 
 
 Sessions, request counters, upload leases, old idempotency-operation records and recovery ownership markers are excluded. Environment files, provider API keys, the initial CMS access file and the backup passphrase are never embedded. Signing in again is required after recovery. A new unknown `moe_` collection makes backup creation fail until its policy is added deliberately.
 
+Activity history (`moe_logs`) is also explicitly excluded. Content recovery
+cannot overwrite the append-only history or reintroduce expired entries.
+These archives recover website data and images; they do not recover activity logs.
+
 Archives use AES-256-GCM authenticated encryption, a unique salt and IV, and scrypt key derivation. Image SHA-256 checks detect incomplete or changed bytes. BSON dates and numeric values survive the archive. The bounded in-memory CLI limits database records to 64 MiB, original images to 128 MiB total / 25 MiB each, and the archive to 256 MiB encrypted / 512 MiB expanded. Use a streaming/native backup system if the site grows beyond those limits.
 
 ## Create and inspect
@@ -30,7 +34,7 @@ Creation refuses to overwrite an existing archive. A small adjacent `.report.jso
 
 ## Rehearse recovery
 
-Recovery always restores original images to a dedicated Cloudinary recovery folder with `overwrite: false`. It rewrites main, mobile and gallery references in the isolated copy, including images retained by Trash. Existing Cloudinary assets and the active database are not changed.
+Recovery always restores original images to a dedicated Cloudinary recovery folder with `overwrite: false`. It rewrites main, mobile, gallery and user-profile references in the isolated copy, including images retained by Trash. Account photos must reference archived image assets; older archives without account photos remain supported. Recovery cleanup also protects images still referenced by an active database account, including accounts in Trash. Existing Cloudinary assets and the active database are not changed.
 
 The target must be empty and named `<source database>_restore_<suffix>`, at most 38 ASCII characters to fit the Atlas database-name limit. Use a short unique suffix; the CLI rejects longer targets before connecting or uploading images. It also rejects the currently configured database as a target. Run a dry run, review its counts, destination and `planHash`, then pass that exact hash:
 

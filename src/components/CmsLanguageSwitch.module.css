@@ -1,8 +1,2 @@
-.switch { display: inline-flex; align-items: center; gap: .2rem; flex: 0 0 auto; padding: .2rem; border: 1px solid var(--line); border-radius: .5rem; background: #f3f7fc; }
-.switch button { min-width: 3rem; min-height: 2.75rem; padding: .4rem .65rem; border: 0; border-radius: .3rem; color: var(--muted); background: transparent; font-size: var(--font-small); line-height: 1.4; }
-.switch button[aria-pressed='true'] { color: var(--navy); background: #fff; box-shadow: 0 1px 4px #082b501a; font-weight: 700; }
-.switch button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-.compact button { padding-inline: .5rem; }
 .headerSwitch { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; min-width: var(--target-size); min-height: var(--target-size); padding: 0; border: 0; color: var(--navy); background: transparent; font: inherit; font-weight: 600; cursor: pointer; }
 .headerSwitch:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: .25rem; }
-@media (hover: hover) and (pointer: fine) { .switch button:hover { color: var(--navy); background: var(--white); } }

@@ -1,11 +1,10 @@
 import type { ContentRecord } from './cms-types';
 
-export type CmsSection = 'content' | 'inbox' | 'media' | 'trash' | 'account' | 'users';
+export type CmsSection = 'content' | 'inbox' | 'media' | 'trash' | 'setting' | 'users' | 'logs' | 'usage';
 export type CmsView = { section: CmsSection; type: ContentRecord['type'] | 'All' };
 
-const contentPaths: Record<ContentRecord['type'], string> = {
+const contentPaths: Partial<Record<ContentRecord['type'], string>> = {
   Page: '/cms/pages',
-  Section: '/cms/sections',
   Vessel: '/cms/fleet',
   Route: '/cms/routes',
   Project: '/cms/projects',
@@ -17,17 +16,21 @@ const sectionPaths: Record<Exclude<CmsSection, 'content'>, string> = {
   inbox: '/cms/enquiries',
   media: '/cms/media',
   trash: '/cms/trash',
-  account: '/cms/account',
+  setting: '/cms/setting',
   users: '/cms/users',
+  logs: '/cms/logs',
+  usage: '/cms/usage',
 };
 
 export function cmsPathForView(section: CmsSection, type: string = 'All') {
   if (section !== 'content') return sectionPaths[section];
+  if (type === 'Section') return '/cms/pages';
   return contentPaths[type as ContentRecord['type']] || '/cms';
 }
 
-export function cmsViewFromPathname(pathname: string): CmsView {
+export function cmsViewFromPathname(pathname: string, searchParams?: Pick<URLSearchParams, 'get'>): CmsView {
   const normalized = pathname.replace(/\/+$/, '') || '/';
+  if (normalized === '/cms' && searchParams?.get('type') === 'Section') return { section: 'content', type: 'Page' };
   for (const [type, path] of Object.entries(contentPaths)) {
     if (normalized === path) return { section: 'content', type: type as ContentRecord['type'] };
   }

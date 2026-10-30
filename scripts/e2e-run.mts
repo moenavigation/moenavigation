@@ -31,7 +31,7 @@ async function isolatedEnvironment(): Promise<NodeJS.ProcessEnv> {
       if (name) env[name] = '';
     }
   }
-  for (const name of Object.keys(env)) if (/^(MONGODB_|CLOUDINARY_|RESEND_|ENQUIRY_EMAIL_|BACKUP_|MONGOMS_|MOE_E2E_)/.test(name)) env[name] = '';
+  for (const name of Object.keys(env)) if (/^(VERCEL_USAGE_|MONGODB_|CLOUDINARY_|RESEND_|ENQUIRY_EMAIL_|BACKUP_|MONGOMS_|MOE_E2E_)/.test(name)) env[name] = '';
   for (const name of ['MONGODB_URI', 'MONGODB_DB_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET', 'CLOUDINARY_URL', 'RESEND_API_KEY', 'ENQUIRY_EMAIL_FROM', 'ENQUIRY_EMAIL_TO']) env[name] = '';
   return { ...env, NODE_ENV: 'production', NEXT_DIST_DIR: '.next-e2e', NEXT_TELEMETRY_DISABLED: '1', NEXT_PUBLIC_SITE_URL: E2E_BASE_URL, SITE_INDEXING_ENABLED: 'false', SITE_CONTENT_APPROVED: 'false', CLOUDINARY_CLOUD_NAME: 'moe-e2e', CLOUDINARY_FOLDER: 'moe-e2e', NEXT_PUBLIC_MAP_TILE_URL: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', NEXT_PUBLIC_MAP_TILE_ATTRIBUTION: 'Synthetic test tiles', MOE_E2E_OWNER: owner } satisfies NodeJS.ProcessEnv;
 }

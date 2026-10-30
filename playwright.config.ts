@@ -10,7 +10,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   timeout: 60_000,
   expect: { timeout: 10_000 },
-  globalTimeout: 15 * 60_000,
+  globalTimeout: 35 * 60_000,
   outputDir: 'test-results',
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }], ['json', { outputFile: 'test-results/results.json' }]],
   use: { baseURL: E2E_BASE_URL, ignoreHTTPSErrors: true, serviceWorkers: 'block', trace: 'retain-on-failure', screenshot: 'only-on-failure', video: 'off' },

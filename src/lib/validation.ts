@@ -59,14 +59,16 @@ export const recordSchema = z.object({
   if (record.type === 'Page' && (corePageIds as readonly string[]).includes(record.id) && record.status !== 'Published') {
     context.addIssue({ code: 'custom', path: ['status'], message: 'This core page must remain published.' });
   }
-  if (!record.image && record.type !== 'Vessel' && record.type !== 'Section' && !(record.type === 'Page' && record.id === 'privacy')) context.addIssue({ code: 'custom', path: ['image'], message: 'Choose an image for this content.' });
+  // These fixed page layouts display text and collection images, without a page image slot.
+  const pageWithoutImage = record.type === 'Page' && ['services', 'fleet', 'routes', 'projects', 'news', 'privacy'].includes(record.id);
+  if (!record.image && record.type !== 'Vessel' && record.type !== 'Section' && !pageWithoutImage) context.addIssue({ code: 'custom', path: ['image'], message: 'Choose an image for this content.' });
   if (record.type === 'Section' && !record.parentId) context.addIssue({ code: 'custom', path: ['parentId'], message: 'Choose the page this section belongs to.' });
   if (record.waypoints.length === 1 || (record.waypoints.length > 0 && (!record.origin || !record.destination))) context.addIssue({ code: 'custom', path: ['waypoints'], message: 'Mapped routes need both ports and at least two coordinates.' });
 });
 
 export const saveSchema = z.object({ record: recordSchema, expectedRevision: z.number().int().positive().nullable(), submissionId: submissionSchema });
 export const actionSchema = z.object({ id: idSchema, type: z.enum(contentTypes), expectedRevision: z.number().int().positive(), action: z.enum(['trash', 'restore']) });
-export const loginSchema = z.object({ username: z.string().trim().toLowerCase().min(3).max(80).regex(/^[a-z0-9@._-]+$/), password: z.string().min(1).max(200) });
+export const loginSchema = z.object({ username: z.string().trim().toLowerCase().min(3).max(80).regex(/^[a-z0-9@._-]+$/), password: z.string().min(1).max(200), challengeId: z.string().regex(/^[a-f0-9]{48}$/), challengePosition: z.number().int().min(0).max(100) });
 export const passwordSchema = z.object({ currentPassword: z.string().min(1).max(200), newPassword: z.string().min(14, 'Use at least 14 characters.').max(200) });
 export const enquirySchema = z.object({
   name: z.string().trim().min(2).max(contactFieldLimits.name), email: z.string().trim().toLowerCase().refine(isContactEmail, 'Enter a valid email address.').max(contactFieldLimits.email), company: optionalText(contactFieldLimits.company),

@@ -47,9 +47,9 @@ details to `.local/cms-access.json`. It does not replace an existing account.
 Treat that local file as a password and keep it private.
 
 Start the site with `npm run dev`, then open `/cms`. Sign in with the generated
-credentials. Open **Account & tools → Change password** after the first
+credentials. Open **Administrators → User settings** at `/cms/users` after the first
 sign-in; a new password needs at least 14 characters. Changing it invalidates
-the previous sessions. A normal session lasts eight hours.
+the previous sessions and creates a fresh session for this browser. A normal session lasts eight hours.
 
 The bootstrap process creates administrator access and indexes without inserting
 website content. The website reads its existing MongoDB content. For an empty
@@ -60,15 +60,35 @@ business review before public launch.
 
 ## Content workflow
 
-Use the CMS menu to select Pages, Sections, Fleet, Routes, Projects, Services, or News.
-English and Thai titles and descriptions are required. The editor also
-supports longer text, image descriptions, categories, and a supplied date
-where appropriate.
+Use **Pages** to choose an existing website page, then edit its introduction
+or one of its text and image areas. Shared content and footer copy are grouped
+separately. Collection shortcuts open Fleet, Routes, Projects, Services, or News;
+these views retain searchable lists and collection-item creation.
 
-Use **Find a page and its sections** or a Page's **Manage sections** action
-to edit related content in display order. The editor shows unsaved changes,
-uses accessible discard confirmation, and links to the saved website page
-in either language.
+Page and Section editing exposes the copy and images used by the relevant
+template. The authenticated CMS API rejects new Page/Section records,
+structural changes such as reparenting or reordering, and deletion of these
+records. This applies to requests sent outside the visible editor as well.
+Trusted setup and reviewed migration remain maintenance operations.
+
+The editor shows unsaved changes, uses accessible discard confirmation, and
+links to the saved website page in either language. Company contact details
+remain under **Settings → Website details**, with a shortcut from Contact.
+
+Authenticated content reads support three focused views. `GET /api/cms/content?scope=overview`
+returns retained Page and Section records plus active counts, recent items,
+category suggestions, the next hidden display order for each active type, and
+the combined Trash count of retained deleted content, saved images in Trash
+(including failed permanent deletions), and retained user accounts visible
+to the current role. Operator counts exclude accounts.
+`?scope=trash` returns retained
+deleted records. Collection lists use `?type=Vessel|Route|Project|Service|News`
+with optional literal `q` and cursor filters; each response includes
+up to 12 records, a matching total, and a next cursor. Search and counts cover
+the full saved collection, not only downloaded rows. The API retains the
+legacy `status` filter for maintenance compatibility; the CMS does not use it.
+The no-query GET still
+returns all retained records for existing maintenance workflows.
 
 Fleet records support optional typed specifications: IMO number, completed
 build year, dimensions, deadweight, TEU, bilingual flag state, and bilingual
@@ -76,21 +96,26 @@ availability statement. Blank values are not replaced with defaults. The
 IMO check digit and numeric boundaries are validated; these checks do not
 establish the truth of the business information. See [CMS_GUIDE.md](CMS_GUIDE.md).
 
-1. Add or edit an item and prepare its text in both languages.
+1. Choose an existing page area to edit, or add/edit an item in a collection list, and prepare its text in both languages.
 2. Choose an existing library image or prepare a JPEG, PNG, or WebP locally.
 3. Check the information, then select Save.
 4. Review the corresponding public page in both languages.
 
 Saving makes content available immediately across browsers and devices;
-there is no separate publication step. The editor submits Published for
-both new and edited records. Historical Draft records remain unchanged until
-explicitly saved; their compatibility fields and API support are retained.
+there is no separate publication step. The CMS server normalizes every
+explicit Save to the internal `Published` value before its retry fingerprint
+is calculated, even when a request carries legacy `Draft` metadata. The UI
+has no publication controls, badges, filters, or metrics. Historical Draft
+records remain unchanged until explicitly saved; trusted maintenance saves
+preserve their original status for data migration and recovery.
 Detail pages for missing, historical unpublished, or trashed records return
 HTTP 404. The sitemap includes available detail pages.
 
 Home, About, Services, Fleet, Routes, Projects, News, Contact, and Privacy
-are core pages: their content can be edited, but
-they cannot be unpublished or moved to Trash. Other content can be moved to
+are core pages and remain published. All existing Page and Section records
+have fixed placement: their copy and images can be edited, but the CMS cannot
+create or delete them or change their structure. Historical Trash restoration
+remains available within retention. Collection items can be moved to
 Trash and restored for 30 days. After that retention period, MongoDB removes
 the record automatically; its background expiry process may run shortly
 after the exact deadline. Expired records cannot be restored.
@@ -135,17 +160,21 @@ deletions retain their exact asset identity for a later cleanup retry.
 Main images, mobile images, and gallery images follow the same workflow.
 Uploads run one at a time and only start after the ordinary fields validate.
 
-Use **Clean unfinished uploads** for abandoned uploads and failed deletions.
+Use **Clean unused images** to move unused saved images older than one hour to Trash, remove abandoned uploads, and retry failed deletions. The media shortcut opens `/cms/trash?kind=Image`. The unified list uses `GET /api/cms/trash`; the older `GET /api/cms/media/trash` remains available for compatibility. Saved images have no automatic expiry and remain recoverable until Dev/Admin explicitly deletes them permanently; content and user accounts have a 30-day recovery period.
 Cleanup checks main, mobile, and gallery references across all records,
 including sections and Trash. Previously committed images remain in the
 library until explicitly removed, including images saved through content.
 Abandoned uploads have a one-hour grace period; failed deletions can be
 retried immediately. Cleanup is manual. **Remove** is blocked while any
 content, including Trash, references the image.
+The authenticated `GET /api/cms/media/usage?mediaId=...` lookup checks a
+single saved image on demand and returns the referencing content records and
+their main, mobile, or gallery placements. It includes Trash, consistent with
+the Remove protection. Website details have no image fields.
 
 ## Website details
 
-Open **Account & tools → Website details** to manage the English and Thai
+Open **Settings → Website details** at `/cms/setting` to manage the English and Thai
 company names and office addresses, public phone number, email address, and
 HTTPS map link. Save verified information; leave optional contact fields
 blank until confirmed. These details feed the public contact page.
@@ -155,31 +184,21 @@ the latest saved version and asks before discarding unsaved settings.
 
 ## Existing local content and exports
 
-Older demo content remains in its original browser storage. Open
-**Account & tools → Review local content** to inspect it. The bulk import adds
-new type-and-ID combinations only; existing server records are skipped.
-Modified existing records appear under **Versions needing review**. Choose
-**Review local version** to open one in the editor, review and adjust its
-fields, then explicitly save it using the current server revision. Restore
-an existing record from Trash before reviewing its local version. Core pages
-remain Published. Original browser records are preserved, and prepared local
-images upload only when the reviewed or imported record is saved.
+**Settings → Export data** downloads current content, media references, and
+enquiries. It does not include image binaries or administrator accounts;
+use the backup and recovery workflow for those.
 
-The review also includes standalone local media and retained local Trash.
-Local Trash requires explicit review as a draft; bulk import never revives
-it. Image preparation finishes before import begins. The importer saves media
-before records, stops on failure, and retains submission identifiers and retry
-counts across reloads in `moe-migration-v1`. Use **Check interrupted import**
-before retrying an uncertain result.
+Older browser-local content remains in its original storage. The client CMS
+no longer exposes import, local-data review, or browser-storage cleanup
+controls. The legacy helpers remain for trusted maintenance and recovery;
+they do not bypass the CMS API's restrictions on new Page/Section records.
+Review any required migration against the current server records before
+using a maintenance workflow, and preserve recovery copies.
 
-**Clear verified local data** fetches current server data and verifies every
-retained record and image. It writes an exact recovery archive to
-`moe-migration-archive-v1` before clearing the active legacy keys; if archiving
-fails, nothing is cleared. **Restore archived browser data** refuses to
-replace newer browser data. **Export local data** downloads the active data,
-receipts, and any archive. Expired local Trash is excluded from import but
-remains in the exact archive. Browser storage belongs to its browser and
-origin; another browser or port must be reviewed separately.
+Existing migration receipts use `moe-migration-v1`; exact recovery archives
+use `moe-migration-archive-v1`. Do not discard these or overwrite newer
+browser edits during recovery. Browser storage belongs to its browser and
+origin, including the port, so review each origin separately.
 
 ## Website migration and local cleanup
 
@@ -247,17 +266,38 @@ can be retried without losing the selected filters.
 
 The optional Resend adapter attempts a team notification after the enquiry
 has saved. Its result is independent of the public confirmation and inbox
-status. The selected recipient is configured privately, while the owner will
-supply the API key and verified sender later. External email delivery has
-not been tested.
+status. Dev and Admin manage up to 50 recipient addresses through the
+Notification recipients dialog on Enquiries. The owner will supply the API
+key and verified sender later. External email delivery has not been tested.
 
-CMS administrators can inspect notification state and request an eligible
+Any signed-in CMS role can inspect notification state and request an eligible
 retry. The first actual attempt freezes the email message, sender, and
 recipient. Retries reuse that message and idempotency key, with at most three
 attempts inside a 23-hour window. Concurrent sends share a database lease.
 **Email accepted** means provider acceptance, not verified inbox delivery.
 Missing configuration never removes a saved enquiry. See [EMAIL.md](EMAIL.md)
 for setup, safe recovery, and the remaining live acceptance check.
+
+`GET /api/cms/email/status` supplies the Settings checklist and inbox notice.
+Its authenticated response contains only missing/invalid/added configuration
+checks and a flag; credentials and addresses remain private. Reads never send
+email or contact Resend. The notification adapter includes English/Thai HTML
+and plain text for new attempts, preserves already-frozen messages, honors
+provider cooldowns, and requires review for unsafe retry state or payload
+conflicts. `npm run email:check` runs the same configuration checks locally
+without database access or provider requests; check the recipient list in the
+CMS separately.
+
+`GET/PUT /api/cms/email/recipients` is limited to Dev and Admin. A private
+`moe_settings` document stores the revision and list independently of website
+details, so encrypted backups retain it and ordinary content exports omit it.
+The earlier `ENQUIRY_EMAIL_TO` value is only a fallback before the first CMS
+save. A saved empty list pauses notifications without reusing the fallback.
+Saves recheck the stored role under the account-management lock, reject stale
+revisions, reconcile exact lost-response retries, and append a safe activity
+record transactionally. Newly attempted notifications use the whole saved
+list in one Resend request; already-attempted retries retain their original
+frozen list. Saving recipients does not itself send email.
 
 Local drafts are only a convenience for the visitor's current browser.
 Clearing a draft does not delete an enquiry already submitted to the inbox.
@@ -272,10 +312,11 @@ The application uses these collections in the selected database:
 | --- | --- |
 | `moe_content` | Bilingual records, publication state, versions, and Trash expiry |
 | `moe_media` | Owned Cloudinary assets, staged submissions, and library state |
-| `moe_users` | Administrator usernames and salted password hashes |
+| `moe_users` | CMS usernames, roles, salted password hashes, session versions, and account Trash expiry |
 | `moe_sessions` | Hashed session tokens and expiry |
 | `moe_enquiries` | Contact submissions, consent time, inbox status, notification state, and private frozen delivery envelope |
-| `moe_settings` | Bilingual company and public contact details |
+| `moe_settings` | Separate documents for public company details and private enquiry-notification recipients |
+| `moe_logs` | Append-only safe activity events and their one-year expiry |
 | `moe_operations` | Recent save results used to make retries idempotent |
 | `moe_state` | Durable submission cancellation locks, migration markers, and expiring request counters |
 
@@ -285,8 +326,115 @@ use Secure in production or when the configured website uses HTTPS. Login,
 password-change, and contact attempts have database-backed limits. Provider failures return
 a generic error rather than exposing credentials or connection strings.
 
+The CMS login also requires a short-lived slide challenge. `GET /api/cms/login/challenge`
+issues a two-minute challenge; `POST /api/cms/login` consumes it once before
+checking the password. Failed login attempts require a new slide. The slide is
+keyboard accessible, but its position is visible to browser clients, so it is
+friction against simple scripts rather than a guarantee against AI-assisted
+bots. The database-backed username and global login limits remain the primary
+protection against repeated password attempts.
+
 No public account registration is provided. This CMS is for authorized
-website administrators.
+website users. Stored roles are `Dev`, `Admin`, and `Operator`. Legacy accounts
+without a role retain Admin access; invalid stored roles receive Operator
+permissions. Session reads resolve the current stored role, not a client claim.
+
+Only Dev manages Dev accounts or grants the Dev role. Admin manages Admin and
+Operator accounts; Operator only changes its own password. User creation,
+username/role edits, password resets, removals, and password changes serialize
+through the same transaction lock. Mutations recheck the actor's current
+password version and the target's current role. Account edits revoke target
+sessions; self-edits renew only the current session. Self-deletion, last-Dev
+removal/demotion, and removal of the last active management account are blocked.
+
+`DELETE /api/cms/users` moves the permitted target to 30-day Trash using
+`deletedAt` and `purgeAt` dates, increments its password version, and revokes
+sessions. Active listings, login, session reads/creation, password changes,
+and mutation actors exclude trashed accounts. The unique username remains
+reserved until deletion. `POST /api/cms/users/restore` and `/users/remove`
+accept `{id,currentPassword}` and recheck current actor/target permissions
+under the same lock. Restoration preserves identity, password, and role,
+increments the version again, and clears retention dates; old sessions stay
+invalid. A TTL index removes expired accounts. Public DTOs omit password hashes.
+
+`GET /api/cms/trash` merges safe projections of content, images, and permitted
+accounts into one list. It supports `kind`, literal English/Thai `q`, a scoped
+`cursor`, and an exact `item=Kind:id` target. Results contain at most 30 items,
+newest first with a stable key tie-breaker, filtered totals, and unfiltered type
+counts. Operator responses exclude accounts. Read flags explain protected
+actions; mutation endpoints remain authoritative. Images in a failed
+`deleting` state with `trashedAt` stay visible for deletion retry. Dashboard
+and navigation totals include the same categories according to the actor's role.
+
+`POST /api/cms/content/remove` and `/api/cms/media/remove` require Dev or Admin
+and recheck permission inside the deletion transaction. Content deletion only
+accepts retained Trash with the expected revision and preserves saved images.
+Core pages and pages with linked sections remain protected. Operator media
+cleanup skips failed deletions originating in Trash, and submission rollback
+cannot delete images carrying a Trash timestamp. Ordinary unfinished upload
+cleanup and recoverable image cleanup remain available to every role.
+
+The owner-only local `scripts/provision-dev.mts` provisions the initial `dev`
+account with hidden standard input. `--check` is read-only. It never stores a
+password file or overwrites an existing account with different credentials.
+
+## User profile photos
+
+Accounts optionally store `avatar` and a separate `profileRevision` (legacy 0).
+`POST /api/cms/users/profile` accepts `{id,avatar,submissionId,expectedProfileRevision,currentPassword?}`.
+An empty avatar removes the photo. Every role can edit its own photo; other
+targets require current-password confirmation and the existing Dev/Admin role
+checks. Trashed/expired users cannot be edited. Responses contain the safe
+public user DTO, including current photo/revision, and an idempotency replay flag.
+
+The users lock rechecks current permissions. A media-submission lock, staged
+upload ownership validation, and a conflict-producing media-document touch
+serialize photo saving with cleanup and cancellation. The account update,
+image commit, `user.profile_updated` event and seven-day idempotency marker
+share one transaction. Credentials/session versions are unchanged. Replay
+returns the latest account photo and never overwrites a later save. Photo
+URLs are not written to activity events.
+
+Media reference checks include active and retained trashed account photos
+across cleanup, abort, Trash and permanent removal. Usage responses expose
+only account IDs/names, an optional deletion timestamp and `avatar` placement;
+links point to the account's photo dialog or Trash. User Trash thumbnails also
+use the stored photo. Existing account creation/credential forms remain
+separate from photo saving.
+
+## Activity logs
+
+`GET /api/cms/logs` is authenticated and read-only for every CMS role, including
+Dev. It accepts bounded literal `q`, `category`, `action`, and a scoped cursor,
+returning up to 30 entries, a matching total, and a next cursor. There are no
+log creation, update, deletion, Trash, or restore API methods.
+
+Server-authored events contain an actor snapshot (ID, username, role), a fixed
+action/outcome, a safe target identifier/name, and server-generated timestamps.
+Strict nested allowlists exclude request bodies, passwords/hashes, session and
+upload credentials, private enquiry text, and provider error details. Failed
+password sign-ins use an unidentified actor rather than retaining submitted
+usernames. Login throttles bound these events; challenge-generation and failed
+slide attempts do not create activity entries.
+
+Completed content, account, settings, enquiry-status and image database changes
+append their events in the same transaction. Content retry markers prevent
+duplicate events for replayed saves. Successful sign-in events are committed
+with their sessions, and sign-out logs require an actual session removal.
+Notification records describe a request, not confirmed delivery. External image
+deletions retain their retry claim until the final database deletion and audit
+entry commit together; provider failure entries are best effort if logging
+itself is unavailable. Data exports require an audit insert before returning data.
+
+Each event expires one UTC calendar year after its timestamp (February 29
+clamps to February 28). Reads exclude `expiresAt <= now` immediately; MongoDB's
+TTL index performs permanent removal asynchronously. The versioned index cache
+also applies this TTL when an existing development process reloads new code.
+The application collection handle exposes insert/read operations only and
+blocks aggregation write stages. These are CMS/application restrictions;
+direct database administration remains a privileged operation outside CMS roles.
+Ordinary exports and content-recovery archives exclude logs, so restoring
+website content cannot rewrite history or revive expired records.
 
 ## Verification
 
@@ -424,3 +572,53 @@ The encrypted CLI backup and isolated restore rehearsal are documented in
 The site retains `noindex, nofollow` and its crawling restriction while
 illustrative company content and launch details are under review. Public
 deployment and enabling indexing are separate release decisions.
+
+
+## Provider usage monitor
+
+Dev/Admin can use `/cms/usage` and `GET/POST/PUT /api/cms/usage`. Operator
+has no access. The browser receives aggregate readings and safe messages only;
+provider credentials and raw provider responses remain on the server.
+
+- MongoDB uses read-only `atlasSize` and `dbStats` commands with a six-second
+  deadline. Only the cluster measurement is compared with its cluster allowance;
+  this database's size is shown separately. Network usage requires Atlas.
+- Cloudinary makes one bounded read-only Admin API usage request, using the
+  existing server credentials. Reported shared credits are the primary allowance.
+  Stored bytes, delivery, transformations and Admin API requests have their own
+  scope/period labels. Storage and delivery are not assigned separate limits when
+  they share credits. The provider's last-update date is kept separate from the
+  time the CMS checked it.
+- Vercel dashboard readings record transfer bytes, CDN requests, a reporting
+  label and a server timestamp. Blank readings stay unknown. Optional
+  `VERCEL_USAGE_TOKEN` and `VERCEL_USAGE_TEAM_ID` enable the documented Billing
+  Charges API for accounts with access. Its measured resource quantities retain
+  their units and reporting window; undocumented endpoints and billing costs
+  are not used. A saved dashboard reading takes precedence until cleared.
+
+The initial included allowances match the owner's confirmed current plans:
+MongoDB cluster storage 512 MiB, Vercel Fast Data Transfer 100 GB and CDN
+Requests 1,000,000. Cloudinary limits come from its API. Allowances can be changed
+in Monitoring limits without altering any provider plan. Connected Vercel
+resource allowances must match their specific SKU, unit and reporting dates;
+the CMS does not infer resets or treat missing charges as zero.
+
+State is stored in `moe_state`: revisioned `usage:settings`, ten-minute
+provider snapshots with seven-day cache expiry, and sixty-second distributed
+provider leases. Cache scopes bind credentials/account and reporting window;
+leases bind the account independent of the window. Failed checks preserve the
+previous successful reading and retry after sixty seconds. Concurrent refreshes
+serve the cached result, and POST/valid PUT share a 20-per-minute per-user budget.
+No background polling or additional data collection is scheduled. Monitoring
+configuration is operational state and is excluded from content backups;
+re-enter custom allowances and dashboard readings after a full restore.
+
+Settings saves recheck the active actor and role under the account lock and
+commit an immutable `settings.usage_updated` event in the same transaction.
+Changing only allowances preserves the manual reading timestamp. Explicitly
+confirming a reading updates that timestamp even if its values are unchanged.
+Clearing the saved reading resumes connected reporting when configured.
+
+Provider references: [MongoDB measurement commands](https://www.mongodb.com/docs/atlas/free-tier-commands/),
+[Cloudinary usage API](https://cloudinary.com/documentation/admin_api#usage),
+and [Vercel Billing Charges API](https://vercel.com/docs/rest-api/billing/list-focus-billing-charges).

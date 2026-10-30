@@ -54,6 +54,15 @@ test('core pages remain published and reserved routes cannot be replaced by gene
   }
 });
 
+test('fixed text and listing pages can be saved without an unused page image', () => {
+  for (const id of ['services', 'fleet', 'routes', 'projects', 'news', 'privacy']) {
+    assert.equal(recordSchema.safeParse({ ...validRecord, type: 'Page', id, image: '', status: 'Published' }).success, true, id);
+  }
+  for (const id of ['home', 'about', 'contact', 'custom']) {
+    assert.equal(recordSchema.safeParse({ ...validRecord, type: 'Page', id, image: '', status: 'Published' }).success, false, id);
+  }
+});
+
 test('dates reject impossible calendar dates without throwing an unexpected error', () => {
   for (const date of ['2026-99-01', '2026-13-01', '2026-00-00', '2026-02-30', '2026-02-29', 'not-a-date']) {
     assert.doesNotThrow(() => recordSchema.safeParse({ ...validRecord, date }), date);
@@ -92,7 +101,7 @@ test('contact data requires explicit consent, valid address, and a fresh submiss
 });
 
 test('login normalizes usernames while preserving password bytes', () => {
-  const result = loginSchema.parse({ username: '  ADMIN  ', password: '  intentional spaces  ' });
+  const result = loginSchema.parse({ username: '  ADMIN  ', password: '  intentional spaces  ', challengeId: 'a'.repeat(48), challengePosition: 50 });
   assert.equal(result.username, 'admin');
   assert.equal(result.password, '  intentional spaces  ');
   assert.equal(passwordSchema.safeParse({ currentPassword: 'old-password', newPassword: 'short' }).success, false);
