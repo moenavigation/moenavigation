@@ -29,7 +29,8 @@ for (const locale of ['en', 'th'] as const) {
     await login(page);
     if (locale === 'th') await page.locator('header [data-cms-language-switch]').click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(t('Dashboard'));
-    await expect(page.getByText(t('Saved content'), { exact: true })).toBeVisible();
+    await expect(page.getByText(t('Saved content'), { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: new RegExp('^' + t('New enquiries')) })).toBeVisible();
     await expectSaveOnlyInterface(page.locator('main'));
 
     for (const [path, heading] of [['fleet', 'Fleet'], ['routes', 'Routes'], ['projects', 'Projects'], ['services', 'Services'], ['news', 'News']] as const) {

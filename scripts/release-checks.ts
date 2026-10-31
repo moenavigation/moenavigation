@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { enquiryRecipientList } from '../src/lib/enquiry-email';
 import { indexingEnabled, publicHttpsOrigin } from '../src/lib/site-config';
+import { isBundledHomeSlide } from '../src/lib/home-slides';
 
 export type ReleaseCheck = { name: string; status: 'pass' | 'blocked' | 'review'; detail: string };
 type Environment = Readonly<Record<string, string | undefined>>;
@@ -58,14 +59,16 @@ export function contentReadiness(records: readonly ReleaseRecord[], media: reado
   const noSpecs = vessels.filter(record => !record.vesselSpecs || typeof record.vesselSpecs !== 'object' || !Object.values(record.vesselSpecs).some(value => value !== null && value !== undefined && String(value).trim() !== ''));
   const provisionalPattern = /\b(?:demo|sample|illustrative|preview|placeholder|not verified|not a photograph)\b|ตัวอย่าง|ภาพประกอบ|ยังต้องได้รับการตรวจสอบ/i;
   const gallery = (record: ReleaseRecord) => Array.isArray(record.gallery) ? record.gallery.filter((image): image is ReleaseRecord => Boolean(image) && typeof image === 'object') : [];
+  const slides = (record: ReleaseRecord) => Array.isArray(record.heroSlides) ? record.heroSlides.filter((image): image is ReleaseRecord => Boolean(image) && typeof image === 'object') : [];
   const provisional = records.filter(record => provisionalPattern.test([
     record.title, record.titleTh, record.description, record.descriptionTh, record.body, record.bodyTh,
     record.eyebrow, record.eyebrowTh, record.bodyHeading, record.bodyHeadingTh,
     record.category, record.categoryTh, record.caption, record.captionTh, record.imageAlt, record.imageAltTh,
     ...gallery(record).flatMap(image => [image.alt, image.altTh]),
+    ...slides(record).flatMap(image => [image.alt, image.altTh]),
   ].join(' ')));
   const urls = new Set(media.filter(item => item.state === 'committed' && !item.trashedAt).map(item => item.url));
-  const references = records.flatMap(record => [record.image, record.mobileImage, ...gallery(record).map(image => image.url)]).filter(Boolean);
+  const references = records.flatMap(record => [record.image, record.mobileImage, ...gallery(record).map(image => image.url), ...slides(record).filter(image => !(record.type === 'Page' && record.id === 'home' && typeof image.url === 'string' && isBundledHomeSlide(image.url))).map(image => image.url)]).filter(Boolean);
   const unfinished = media.filter(item => ['uploading', 'staged', 'deleting'].includes(String(item.state)) && !item.trashedAt);
   const failedTrash = media.filter(item => item.state === 'deleting' && Boolean(item.trashedAt));
   return [

@@ -1,0 +1,86 @@
+{
+  "generatedDate": "2026-10-31",
+  "method": "Built-in image_gen tool, five separate generation calls",
+  "purpose": "Illustrative homepage banners; these depict fictional generic maritime scenes, not documented company vessels or facilities.",
+  "desktopAspectRatio": "3:1",
+  "mobileAspectRatio": "16:9",
+  "mobileCrop": "Centered horizontal crop. Retains 16/27 (59.259%) of the original width; crops 11/54 (20.370%) from each side.",
+  "webpConversion": {
+    "tool": "sharp",
+    "quality": 88,
+    "resize": false,
+    "crop": false
+  },
+  "assets": [
+    {
+      "name": "01-open-water",
+      "publicPath": "/images/hero/01-open-water.webp",
+      "sourceFile": "output/hero-banners/originals/01-open-water.png",
+      "originalGeneratedPath": "C:/Users/poomt/.codex/generated_images/01a19071-6503-7750-bbae-b33406ab3597/exec-940d4f0c-4972-42f6-a949-b5d9f6169ffd.png",
+      "alt": {
+        "en": "Cargo vessel crossing calm blue water at sunrise",
+        "th": "เรือบรรทุกสินค้าแล่นผ่านทะเลสงบในยามเช้า"
+      },
+      "prompt": "Use case: photorealistic-natural. Asset type: premium maritime corporate website hero banner, first slide. Create one beautiful ultra-wide 3:1 photographic panorama, 3072 by 1024 pixels if possible. A single elegant modern deep-navy cargo vessel with white bridge advances across an immense calm indigo ocean, viewed from an elevated drone in a three-quarter front angle, the ship diagonally oriented toward the viewer. Soft pale gold sunrise along a low distant horizon, atmospheric blue distance, delicate white wake, stunning authentic natural marine textures. Sophisticated navy, slate blue and warm ivory palette, cinematic but believable editorial photography, exceptional clarity and restrained grading. Composition essential: the entire ship and its main wake must sit within the central 50 percent of the width, roughly middle 25 to75 percent; ship fits inside the center when the image is horizontally cropped to16:9 mobile. Left and right edges show only beautiful open sea and sky. Ship is a fictional generic commercial vessel, not a company fleet portrait. No text, no numbers, no flags, no logos, no watermark, no inset, no collage, no borders.",
+      "width": 2172,
+      "height": 724,
+      "webpBytes": 324744
+    },
+    {
+      "name": "02-harbor-tug",
+      "publicPath": "/images/hero/02-harbor-tug.webp",
+      "sourceFile": "output/hero-banners/originals/02-harbor-tug.png",
+      "originalGeneratedPath": "C:/Users/poomt/.codex/generated_images/01a19071-6503-7750-bbae-b33406ab3597/exec-55125ad6-0424-432b-aa1b-b81037530564.png",
+      "alt": {
+        "en": "Harbor tug moving through blue water in the morning light",
+        "th": "เรือลากจูงแล่นผ่านน่านน้ำท่าเรือในแสงยามเช้า"
+      },
+      "prompt": "Use case: photorealistic-natural. Asset type: premium maritime corporate homepage hero banner, second coordinated slide. Create one ultra-wide 3:1 photographic panorama, 3072 by1024 pixels if possible. A powerful contemporary harbor tug with dark navy hull, white bridge and subtle warm ochre machinery at the center of a serene tropical harbor, viewed from an elevated forward three-quarter angle, crisp sculptural silhouette, gently rippled blue water, elegant curving wake. Very distant industrial port structures dissolve into soft warm early-morning haze at the horizon. Premium editorial maritime photography, realistic nautical construction, clean restrained color grading in deep navy, steel blue and warm cream, beautiful reflective light. Composition critical: the complete tug is entirely within the central 45 percent width so a center crop to16:9 keeps it intact; outer left and right are mostly calm water and distant atmosphere. No other foreground boats, no text, no letters, no numbers, no flags, no company branding, no logos or watermarks. Fictional conceptual maritime image, not a specific company fleet.",
+      "width": 2172,
+      "height": 724,
+      "webpBytes": 322340
+    },
+    {
+      "name": "03-blue-hour-port",
+      "publicPath": "/images/hero/03-blue-hour-port.webp",
+      "sourceFile": "output/hero-banners/originals/03-blue-hour-port.png",
+      "originalGeneratedPath": "C:/Users/poomt/.codex/generated_images/01a19071-6503-7750-bbae-b33406ab3597/exec-e2c83f3b-2639-4d3f-98da-913f6cc0473e.png",
+      "alt": {
+        "en": "Container ship and illuminated port cranes at dusk",
+        "th": "เรือบรรทุกตู้คอนเทนเนอร์และเครนท่าเรือในยามพลบค่ำ"
+      },
+      "prompt": "Use case: photorealistic-natural. Asset type: premium maritime corporate homepage hero banner, third coordinated slide. Create one panoramic 3:1 composition, 3072 by1024 pixels if possible. A tranquil commercial container terminal at blue hour viewed from across still dark blue harbor water. Center the principal group of elegant tall gantry cranes and a docked modern cargo ship in the central half of the image, their warm amber working lights reflected softly on water. Distant silhouettes of other port structures extend gracefully to the far edges under an open blue dusk sky, sophisticated industrial geometry, cinematic beautiful atmosphere, highly realistic architectural editorial photograph. Navy, slate blue and restrained warm gold palette; natural exposure and excellent detail. All primary ship and crane subjects must remain complete when left and right sides are cropped equally to a centered16:9 image. No text, no labels, no logos, no readable shipping container lettering, no flags, no watermark, no collage, no borders. A fictional generic port, no implication of actual Moe Navigation property.",
+      "width": 2172,
+      "height": 724,
+      "webpBytes": 261014
+    },
+    {
+      "name": "04-ocean-carrier",
+      "publicPath": "/images/hero/04-ocean-carrier.webp",
+      "sourceFile": "output/hero-banners/originals/04-ocean-carrier.png",
+      "originalGeneratedPath": "C:/Users/poomt/.codex/generated_images/01a19071-6503-7750-bbae-b33406ab3597/exec-edceae6a-91a2-41c7-a4a9-72146ab505a3.png",
+      "alt": {
+        "en": "Cargo vessel with deck cranes sailing toward the coast",
+        "th": "เรือบรรทุกสินค้าพร้อมเครนบนดาดฟ้าแล่นใกล้ชายฝั่ง"
+      },
+      "prompt": "Use case: photorealistic-natural. Asset type: premium maritime corporate homepage hero banner, fourth coordinated slide. Create a single beautiful ultra-wide3:1 aerial maritime photograph, 3072 by1024 pixels if possible. A modern multipurpose bulk cargo ship with deep navy hull, warm ivory superstructure and elegantly aligned deck cranes crosses clear deep-teal open sea. High three-quarter aerial perspective; vessel travels diagonally from lower center toward upper center, its full length contained comfortably within the middle half of the image and beautiful foamy wake receding behind. Sparkling subdued late-afternoon sunlight, luminous natural sea textures, expansive uncluttered water to both sides, distant pale coastal mountains along very low horizon. Luxurious editorial quality, refined navy/teal/ivory grading, realistic marine scale and believable deck equipment. Center crop to16:9 must preserve complete ship. No words, no numbers, no vessel names, no logos, no flags, no watermark, no collage, no text overlay. Fictional generic commercial vessel for illustrative atmosphere.",
+      "width": 2172,
+      "height": 724,
+      "webpBytes": 408470
+    },
+    {
+      "name": "05-coastal-passage",
+      "publicPath": "/images/hero/05-coastal-passage.webp",
+      "sourceFile": "output/hero-banners/originals/05-coastal-passage.png",
+      "originalGeneratedPath": "C:/Users/poomt/.codex/generated_images/01a19071-6503-7750-bbae-b33406ab3597/exec-1383f019-1867-48d3-a8f8-d15ac2d2d724.png",
+      "alt": {
+        "en": "Coastal cargo vessel sailing between distant islands at sunset",
+        "th": "เรือบรรทุกสินค้าชายฝั่งแล่นผ่านหมู่เกาะในยามเย็น"
+      },
+      "prompt": "Use case: photorealistic-natural. Asset type: premium maritime corporate homepage hero banner, fifth coordinated slide. Create one exceptionally beautiful ultra-wide3:1 photographic panorama,3072 by1024 pixels if possible. A small contemporary coastal cargo ship with a dark navy hull and ivory white bridge sails across glassy blue tropical coastal water between soft layered islands in the far distance. Wide elevated drone perspective; graceful calm sea fills foreground, a gentle silver wake curves behind the centrally placed ship. Muted warm sunset light breaks through pale clouds, distant mountain silhouettes fade into marine blue haze, refined peaceful composition conveying connection and continuity. Premium natural editorial maritime photography, believable details, cohesive navy/blue/warm cream palette, no exaggerated orange or oversaturated colors. The entire ship and strongest scenic focal point fit within central45percent width, safe for symmetrical left-and-right cropping from3:1 to16:9 mobile. Edges are expendable sea and atmospheric sky. No text, no numbers, no logos, no flags, no watermark or framing. Generic fictional vessel, not an actual company-owned ship.",
+      "width": 2172,
+      "height": 724,
+      "webpBytes": 204504
+    }
+  ]
+}

@@ -102,6 +102,14 @@
 .enquiryMeta { display: flex; align-items: end; flex-direction: column; gap: .6rem; }
 .enquiryMeta time { color: var(--muted); font-size: var(--font-small); }
 .enquiryDetails { display: grid; gap: 1.15rem; }
+.enquiryStatus { display: grid; gap: .6rem; }
+.enquiryStatusLabel { color: var(--navy); font-weight: 600; }
+.statusPills { display: flex; flex-wrap: wrap; gap: .5rem; }
+.statusPill { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: var(--target-size); padding: .55rem .9rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--navy); font-size: var(--font-small); font-weight: 600; }
+.statusPill svg { flex-shrink: 0; visibility: hidden; }
+.statusPill[aria-pressed='true'] { border-color: var(--blue); background: var(--pale); color: var(--blue); }
+.statusPill[aria-pressed='true'] svg { visibility: visible; }
+.statusPill:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 .enquiryToolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; }
 .enquiryDetails h3 { overflow-wrap: anywhere; }
 .enquiryDetails dl { display: grid; gap: .6rem; margin: 0; padding: 1rem; background: var(--pale); border-radius: .4rem; }
@@ -328,6 +336,7 @@
 .cms button:disabled { opacity: .5; cursor: not-allowed; }
 .cms button:focus-visible, .cms a:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 @media (hover: hover) and (pointer: fine) {
+  .statusPill:hover:not(:disabled) { border-color: var(--blue); background: var(--pale); }
   .drawer .dialogHeading .iconButton:hover:not(:active) { border-color: #8da7c3; background: #e4effb; }
   .drawerLinks button:hover { border-color: var(--blue); background: #edf4ff; }
   .drawerLinks button[aria-current='page']:hover { background: #e4effb; }

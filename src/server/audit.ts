@@ -2,7 +2,7 @@ import 'server-only';
 import { createHash, randomUUID } from 'node:crypto';
 import type { ClientSession, Db, Document } from 'mongodb';
 import { z } from 'zod';
-import { cmsLogActions, cmsLogCategory, cmsLogEventSchema, cmsLogPageSize, cmsLogSummary, type CmsLogActor, type CmsLogEvent, type CmsLogItem, type CmsLogPage, type CmsLogQuery } from '@/lib/cms-logs';
+import { cmsLogActions, cmsLogCategory, cmsLogEventSchema, cmsLogGroups, cmsLogPageSize, cmsLogSummary, type CmsLogActor, type CmsLogEvent, type CmsLogItem, type CmsLogPage, type CmsLogQuery } from '@/lib/cms-logs';
 import { resolveCmsRole } from '@/lib/cms-roles';
 import { escapeInboxSearch } from '@/lib/inbox-query';
 import { collections, ensureIndexes, getDb, type AuditDocument, type UserDocument } from './db';
@@ -50,9 +50,10 @@ function decodeCursor(raw: string | null, scope: string) {
 
 export function buildCmsLogPipeline(query: CmsLogQuery, now = new Date()): Document[] {
   const cursor = decodeCursor(query.cursor, cursorScope(query));
+  const group = cmsLogGroups.find(option => option.value === query.category);
   const filtered = {
     expiresAt: { $gt: now }, action: query.action === 'All' ? { $in: cmsLogActions } : query.action,
-    ...(query.category === 'All' ? {} : { category: query.category }),
+    ...(query.category === 'All' ? {} : { category: group ? { $in: group.categories } : query.category }),
     ...(query.q ? { $or: ['actor.username', 'target.label', 'target.id', 'action', 'category'].map(field => ({ [field]: { $regex: escapeInboxSearch(query.q), $options: 'i' } })) } : {}),
   };
   const page: Document[] = [];

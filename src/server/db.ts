@@ -16,7 +16,7 @@ type OperationDocument = { _id: string; fingerprint: string; result: ContentReco
 
 type IndexCache = { version: string; promise: Promise<void> };
 // Bump when index definitions change so development hot reload applies new indexes.
-const indexSchemaVersion = '2026-10-30-user-profiles-v1';
+const indexSchemaVersion = '2026-10-31-home-slides-v1';
 const globalDb = globalThis as typeof globalThis & { moeMongo?: Promise<MongoClient>; moeIndexes?: Promise<void>; moeIndexCache?: IndexCache };
 export async function getClient() {
   const uri = process.env.MONGODB_URI;
@@ -70,6 +70,7 @@ export async function ensureIndexes() {
       c.content.createIndex({ purgeAt: 1 }, { expireAfterSeconds: 0 }), c.content.createIndex({ status: 1, deletedAt: 1 }),
       c.content.createIndex({ type: 1, deletedAt: 1, updatedAt: -1, _id: 1 }),
       c.content.createIndex({ image: 1 }), c.content.createIndex({ mobileImage: 1 }), c.content.createIndex({ 'gallery.url': 1 }),
+      c.content.createIndex({ 'heroSlides.url': 1 }),
       c.media.createIndex({ url: 1 }, { unique: true, sparse: true }), c.media.createIndex({ state: 1, touchedAt: 1 }), c.media.createIndex({ state: 1, createdAt: -1, _id: -1 }),
       c.users.createIndex({ username: 1 }, { unique: true }), c.users.createIndex({ purgeAt: 1 }, { expireAfterSeconds: 0 }),
       c.users.createIndex({ avatar: 1 }),

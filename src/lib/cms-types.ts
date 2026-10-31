@@ -43,6 +43,8 @@ export type ContentRecord = {
   icon?: string;
   mobileImage?: string;
   gallery?: ContentImage[];
+  heroSlides?: ContentImage[];
+  heroSlideInterval?: number;
   bodyHeading?: string;
   bodyHeadingTh?: string;
   origin?: RoutePort;

@@ -21,6 +21,8 @@ async function openEnquiry(page: Page, locale: 'en' | 'th' = 'en') {
   await inbox.getByRole('button', { name: new RegExp(E2E_INBOX.oldThai.subject) }).click();
   const dialog = page.getByRole('dialog', { name: t('Enquiry details') });
   await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('button', { name: t('In progress'), exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(dialog.getByRole('button', { name: t('In progress'), exact: true })).toBeEnabled();
   return dialog;
 }
 
@@ -88,7 +90,7 @@ test('sending has a busy guard and a local retry deadline without polling or cha
   let statusReads = 0; let sends = 0;
   await page.route('**/api/cms/email/status', async route => { statusReads++; await route.fulfill({ json: configured }); });
   const saved = await page.request.get(`/api/cms/inbox?id=${E2E_INBOX.oldThai.id}`);
-  const enquiry = (await saved.json() as { enquiry: Enquiry }).enquiry;
+  let enquiry = (await saved.json() as { enquiry: Enquiry }).enquiry;
   let release!: () => void; const gate = new Promise<void>(resolve => { release = resolve; });
   await page.route('**/api/cms/inbox/notify', async route => {
     sends++;
@@ -100,7 +102,8 @@ test('sending has a busy guard and a local retry deadline without polling or cha
     } else await route.fulfill({ json: { enquiry: { ...enquiry, notification: { status: 'sent', attempts: 2, sentAt: new Date().toISOString() } } } });
   });
   const dialog = await openEnquiry(page);
-  const status = dialog.getByRole('combobox', { name: 'Status', exact: true });
+  enquiry = (await (await page.request.get(`/api/cms/inbox?id=${enquiry.id}`)).json() as { enquiry: Enquiry }).enquiry;
+  const status = dialog.getByRole('group', { name: 'Status', exact: true }).getByRole('button', { name: enquiry.status, exact: true });
   await expect(dialog.getByRole('button', { name: 'Send notification', exact: true })).toBeEnabled();
   await page.screenshot({ path: testInfo.outputPath('enquiry-send-enabled.png'), animations: 'disabled' });
   try {
@@ -113,7 +116,7 @@ test('sending has a busy guard and a local retry deadline without polling or cha
   await expect(retry).toBeDisabled();
   await expect(dialog.getByText(/You can retry after/)).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('enquiry-retry-cooldown.png'), animations: 'disabled' });
-  await expect(status).toHaveValue(enquiry.status);
+  await expect(status).toHaveAttribute('aria-pressed', 'true');
   expect(sends).toBe(1);
   await page.clock.fastForward(31_000);
   await expect(retry).toBeEnabled();
@@ -121,7 +124,7 @@ test('sending has a busy guard and a local retry deadline without polling or cha
   await retry.click();
   await expect(dialog.getByText('The email provider accepted the notification. Inbox delivery is not guaranteed.', { exact: true })).toBeVisible();
   await expect(retry).toHaveCount(0);
-  await expect(status).toHaveValue(enquiry.status);
+  await expect(status).toHaveAttribute('aria-pressed', 'true');
   expect(sends).toBe(2);
 });
 

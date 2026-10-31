@@ -264,17 +264,18 @@ export async function getMediaUsage(mediaId: string) {
   if (!media) throw new HttpError(404, 'This image is no longer in the library. Refresh the page.');
   const [documents, users] = await Promise.all([
     c.content.find(contentMediaReferenceFilter(media.url), {
-      projection: { type: 1, id: 1, title: 1, titleTh: 1, status: 1, parentId: 1, deletedAt: 1, updatedAt: 1, image: 1, mobileImage: 1, gallery: 1 },
+      projection: { type: 1, id: 1, title: 1, titleTh: 1, status: 1, parentId: 1, deletedAt: 1, updatedAt: 1, image: 1, mobileImage: 1, gallery: 1, heroSlides: 1 },
     }).sort({ deletedAt: 1, updatedAt: -1, _id: 1 }).toArray(),
     c.users.find(userMediaReferenceFilter(media.url), { projection: { _id: 1, username: 1, deletedAt: 1 } }).sort({ deletedAt: 1, username: 1, _id: 1 }).toArray(),
   ]);
   return {
     media: { id: media.id, title: media.title },
     usages: [...documents.map(record => {
-      const fields: Array<'image' | 'mobileImage' | 'gallery'> = [];
+      const fields: Array<'image' | 'mobileImage' | 'gallery' | 'heroSlides'> = [];
       if (record.image === media.url) fields.push('image');
       if (record.mobileImage === media.url) fields.push('mobileImage');
       if (record.gallery?.some(image => image.url === media.url)) fields.push('gallery');
+      if (record.heroSlides?.some(image => image.url === media.url)) fields.push('heroSlides');
       return {
         type: record.type, id: record.id, title: record.title, titleTh: record.titleTh,
         status: record.status, ...(record.parentId ? { parentId: record.parentId } : {}),

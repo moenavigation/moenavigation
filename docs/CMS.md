@@ -32,6 +32,29 @@ Preserve historical unpublished records until the user explicitly saves them.
 Keep publication labels, badges, filters, and metrics out of the CMS;
 show saved content counts and update dates instead. Enquiry statuses remain.
 
+Opening a New enquiry moves it to In progress after the update is saved.
+Preserve In progress and Resolved statuses when reopening, and offer status
+selection pills in enquiry details with clear save errors and conflict recovery.
+
+Keep the dashboard focused on work needing action: show the latest five New
+or In progress enquiries, a compact service-status summary with check times,
+and equal-width cards for New enquiries, Trash, Web settings, and Attention.
+Attention opens a larger searchable, filtered review of missing bilingual
+text used by each page or collection, main collection images, and absent
+vessel details. Treat these as
+suggestions; preserve optional fields and open the existing editor for changes.
+Keep counts exact across all matching saved content and paginate the review.
+Use actual connection checks for database and image storage; distinguish email
+configuration from verified delivery, and show unavailable or unknown honestly.
+
+Manage homepage banners at `/cms/slides`, using a single-column page with
+responsive rows of draggable image cards and keyboard reorder controls.
+Cards show the 3:1 banner thumbnail; open the homepage to review its centered
+16:9 mobile crop. Default rotation is three seconds; editors can
+adjust it from two to fifteen seconds. Keep slide images and their descriptions
+separate from the homepage introduction. Preserve unsaved slide edits across
+CMS navigation and protect saved slide images from cleanup.
+
 Organize page editing around recognizable website pages and their existing
 content areas. Let clients edit the copy and images those areas use without
 exposing technical identifiers or layout settings. Existing Page and Section
@@ -82,6 +105,12 @@ including addresses in the log.
 
 Keep a read-only activity log at `/cms/logs`. All CMS roles, including Dev,
 may read it but cannot add, edit, delete, move, or restore log entries. The
+dashboard shows the latest five entries from this same log and links to its
+full searchable history, keeping one consistent activity record. The dashboard
+filter dialog offers All activities, Data changes, User activity, and Enquiry
+activity. Selecting an option applies it immediately and closes the dialog;
+Escape preserves the current choice. Full Logs carries the selected group
+and retains detailed search and category filters. The
 server appends safe event records for CMS security and important administrative
 activity. Save changes and their audit records together in database transactions.
 Give each record a server-assigned expiry one calendar year after creation;

@@ -2,10 +2,11 @@ import type { Page } from '@playwright/test';
 import type { EnquiryPage } from '../../src/lib/inbox-query';
 import type { EnquiryDocument } from '../../src/server/db';
 import { test, expect, login, E2E_INBOX } from './fixtures';
+import { translateCms } from '../../src/lib/cms-locale';
 
 async function openInbox(page: Page) {
   await login(page);
-  await page.getByRole('button', { name: /New enquiries/ }).click();
+  await page.getByRole('link', { name: /^New enquiries/ }).click();
   const inbox = page.getByRole('region', { name: 'Enquiry inbox' });
   await expect(inbox.getByRole('status').filter({ hasText: /^Showing / })).toHaveText(`Showing 50 of ${E2E_INBOX.total} enquiries`);
   return inbox;
@@ -95,6 +96,85 @@ test('filtered cursor pages preserve timestamp ties, exact totals and unique row
   await expect(inbox.getByRole('button', { name: 'Load more enquiries' })).toHaveCount(0);
 });
 
+for (const screen of [{ locale: 'en', width: 1280 }, { locale: 'th', width: 320 }] as const) test(`opening new enquiries saves In progress and status pills preserve existing statuses · ${screen.locale}`, async ({ page, db }, testInfo) => {
+  const t = (value: string) => translateCms(screen.locale, value);
+  await page.setViewportSize({ width: screen.width, height: 900 });
+  await login(page);
+  await page.evaluate(locale => localStorage.setItem('moe-cms-language', locale), screen.locale);
+  await page.goto('/cms/enquiries');
+  const inbox = page.getByRole('region', { name: t('Enquiry inbox') });
+  await inbox.getByRole('searchbox').fill(E2E_INBOX.oldThai.query);
+  await inbox.getByRole('combobox', { name: t('Enquiry status') }).selectOption('New');
+  await inbox.getByRole('button', { name: new RegExp(E2E_INBOX.oldThai.subject) }).click();
+  const dialog = page.getByRole('dialog', { name: t('Enquiry details') });
+  const pills = dialog.getByRole('group', { name: t('Status'), exact: true });
+  const progress = pills.getByRole('button', { name: t('In progress'), exact: true });
+  await expect(progress).toHaveAttribute('aria-pressed', 'true');
+  await expect(progress).toBeEnabled();
+  expect(await db.collection<EnquiryDocument>('moe_enquiries').findOne({ _id: E2E_INBOX.oldThai.id })).toMatchObject({ status: 'In progress', revision: 2 });
+  await progress.focus();
+  await page.keyboard.press('Tab');
+  await expect(pills.getByRole('button', { name: t('Resolved'), exact: true })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(pills.getByRole('button', { name: t('Resolved'), exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(progress).toBeEnabled();
+  await pills.scrollIntoViewIfNeeded();
+  await expect.poll(() => dialog.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath(`enquiry-status-pills-${screen.locale}.png`) });
+  await dialog.getByRole('button', { name: t('Close {title}').replace('{title}', t('Enquiry details')), exact: true }).click();
+  await expect(inbox.getByRole('button', { name: new RegExp(E2E_INBOX.oldThai.subject) })).toHaveCount(0);
+  await inbox.getByRole('combobox', { name: t('Enquiry status') }).selectOption('All');
+  // Reopening either handled status does not reset it or create another revision.
+  for (const [status, revision] of [['Resolved', 3], ['In progress', 4]] as const) {
+    await inbox.getByRole('button', { name: new RegExp(E2E_INBOX.oldThai.subject) }).click();
+    await expect(pills.getByRole('button', { name: t(status), exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(progress).toBeEnabled();
+    expect(await db.collection<EnquiryDocument>('moe_enquiries').findOne({ _id: E2E_INBOX.oldThai.id })).toMatchObject({ status, revision });
+    if (status === 'Resolved') {
+      await progress.click();
+      await expect(progress).toHaveAttribute('aria-pressed', 'true');
+      await expect(progress).toBeEnabled();
+    }
+    await dialog.getByRole('button', { name: t('Close {title}').replace('{title}', t('Enquiry details')), exact: true }).click();
+  }
+});
+
+test('a failed automatic status update keeps New selected and can be retried using the pills', async ({ page, db }) => {
+  const inbox = await openInbox(page);
+  await inbox.getByRole('searchbox').fill(E2E_INBOX.oldThai.query);
+  let fail = true;
+  await page.route('**/api/cms/inbox', async route => {
+    if (route.request().method() === 'PATCH' && fail) {
+      fail = false;
+      return route.fulfill({ status: 503, json: { error: 'Synthetic status outage' } });
+    }
+    return route.continue();
+  });
+  await inbox.getByRole('button', { name: new RegExp(E2E_INBOX.oldThai.subject) }).click();
+  const dialog = page.getByRole('dialog', { name: 'Enquiry details' });
+  await expect(dialog.getByRole('alert')).toContainText('Synthetic status outage');
+  await expect(dialog.getByRole('button', { name: 'New', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  expect(await db.collection<EnquiryDocument>('moe_enquiries').findOne({ _id: E2E_INBOX.oldThai.id })).toMatchObject({ status: 'New', revision: 1 });
+  await dialog.getByRole('button', { name: 'In progress', exact: true }).click();
+  await expect(dialog.getByRole('button', { name: 'In progress', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(dialog.getByRole('alert')).toHaveCount(0);
+  expect(await db.collection<EnquiryDocument>('moe_enquiries').findOne({ _id: E2E_INBOX.oldThai.id })).toMatchObject({ status: 'In progress', revision: 2 });
+});
+
+test('opening a stale New row cannot overwrite an enquiry resolved by another user', async ({ page, db }) => {
+  const inbox = await openInbox(page);
+  await inbox.getByRole('searchbox').fill(E2E_INBOX.oldThai.query);
+  const row = inbox.getByRole('button', { name: new RegExp(E2E_INBOX.oldThai.subject) });
+  await expect(row).toBeVisible();
+  await db.collection<EnquiryDocument>('moe_enquiries').updateOne({ _id: E2E_INBOX.oldThai.id }, { $set: { status: 'Resolved' }, $inc: { revision: 1 } });
+  await row.click();
+  const dialog = page.getByRole('dialog', { name: 'Enquiry details' });
+  await expect(dialog.getByRole('alert')).toContainText('changed elsewhere');
+  await dialog.getByRole('button', { name: 'Refresh enquiry', exact: true }).click();
+  await expect(dialog.getByRole('button', { name: 'Resolved', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  expect(await db.collection<EnquiryDocument>('moe_enquiries').findOne({ _id: E2E_INBOX.oldThai.id })).toMatchObject({ status: 'Resolved', revision: 2 });
+});
+
 test('enquiry status conflicts require refresh and successful edits refresh filtered rows and global counts', async ({ page, db }) => {
   const inbox = await openInbox(page);
   await inbox.getByRole('searchbox').fill(E2E_INBOX.oldThai.query);
@@ -102,25 +182,27 @@ test('enquiry status conflicts require refresh and successful edits refresh filt
   await expect(inbox.getByRole('status').filter({ hasText: /^Showing / })).toHaveText('Showing 1 of 1 enquiries');
   await inbox.getByRole('button', { name: new RegExp(E2E_INBOX.oldThai.subject) }).click();
   const dialog = page.getByRole('dialog', { name: 'Enquiry details' });
+  await expect(dialog.getByRole('button', { name: 'In progress', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(dialog.getByRole('button', { name: 'Resolved', exact: true })).toBeEnabled();
   await db.collection<EnquiryDocument>('moe_enquiries').updateOne({ _id: E2E_INBOX.oldThai.id }, { $set: { status: 'In progress' }, $inc: { revision: 1 } });
-  await dialog.getByRole('combobox', { name: 'Status', exact: true }).selectOption('Resolved');
+  await dialog.getByRole('group', { name: 'Status', exact: true }).getByRole('button', { name: 'Resolved', exact: true }).click();
   await expect(dialog.getByRole('alert')).toContainText('changed elsewhere');
   expect((await db.collection<EnquiryDocument>('moe_enquiries').findOne({ _id: E2E_INBOX.oldThai.id }))?.status).toBe('In progress');
   await dialog.getByRole('button', { name: 'Refresh enquiry', exact: true }).click();
-  await expect(dialog.getByRole('combobox', { name: 'Status', exact: true })).toHaveValue('In progress');
+  await expect(dialog.getByRole('group', { name: 'Status', exact: true }).getByRole('button', { name: 'In progress', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(dialog.getByRole('alert')).toHaveCount(0);
-  await dialog.getByRole('combobox', { name: 'Status', exact: true }).selectOption('New');
-  await expect(dialog.getByRole('combobox', { name: 'Status', exact: true })).toHaveValue('New');
-  await expect(dialog.getByRole('combobox', { name: 'Status', exact: true })).toBeEnabled();
-  await dialog.getByRole('combobox', { name: 'Status', exact: true }).selectOption('Resolved');
-  await expect(dialog.getByRole('combobox', { name: 'Status', exact: true })).toHaveValue('Resolved');
+  await dialog.getByRole('group', { name: 'Status', exact: true }).getByRole('button', { name: 'New', exact: true }).click();
+  await expect(dialog.getByRole('group', { name: 'Status', exact: true }).getByRole('button', { name: 'New', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(dialog.getByRole('group', { name: 'Status', exact: true }).getByRole('button', { name: 'Resolved', exact: true })).toBeEnabled();
+  await dialog.getByRole('group', { name: 'Status', exact: true }).getByRole('button', { name: 'Resolved', exact: true }).click();
+  await expect(dialog.getByRole('group', { name: 'Status', exact: true }).getByRole('button', { name: 'Resolved', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await dialog.getByRole('button', { name: 'Close Enquiry details', exact: true }).click();
   await expect(inbox.getByRole('status').filter({ hasText: /^Showing / })).toHaveText('Showing 0 of 0 enquiries');
   await expect(inbox.getByText('130 enquiries in your inbox · 43 new. Search covers all saved enquiries.', { exact: true })).toBeVisible();
   await inbox.getByRole('combobox', { name: 'Enquiry status' }).selectOption('Resolved');
   await expect(inbox.getByRole('status').filter({ hasText: /^Showing / })).toHaveText('Showing 1 of 1 enquiries');
   const result = await page.request.get('/api/cms/inbox', { params: { q: E2E_INBOX.oldThai.query, status: 'Resolved' } });
-  expect(await result.json()).toMatchObject({ total: 1, totalAll: 130, newCount: 43, enquiries: [{ id: E2E_INBOX.oldThai.id, status: 'Resolved', revision: 4 }] });
+  expect(await result.json()).toMatchObject({ total: 1, totalAll: 130, newCount: 43, enquiries: [{ id: E2E_INBOX.oldThai.id, status: 'Resolved', revision: 5 }] });
 });
 
 test('updating an enquiry during workspace refresh preserves the independent content response', async ({ page, db }) => {
@@ -149,16 +231,16 @@ test('updating an enquiry during workspace refresh preserves the independent con
     await started;
     await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Refresh workspace', exact: true })).toBeDisabled();
-    await page.getByRole('button', { name: /New enquiries/ }).click();
+    await page.getByRole('link', { name: /^New enquiries/ }).click();
     const inbox = page.getByRole('region', { name: 'Enquiry inbox' });
     await expect(inbox.getByRole('status').filter({ hasText: /^Showing / })).toHaveText('Showing 50 of 130 enquiries');
     await inbox.getByRole('searchbox').fill(E2E_INBOX.oldThai.query);
     await expect(inbox.getByRole('status').filter({ hasText: /^Showing / })).toHaveText('Showing 1 of 1 enquiries');
     await inbox.getByRole('button', { name: new RegExp(E2E_INBOX.oldThai.subject) }).click();
     const dialog = page.getByRole('dialog', { name: 'Enquiry details' });
-    await dialog.getByRole('combobox', { name: 'Status', exact: true }).selectOption('Resolved');
-    await expect(dialog.getByRole('combobox', { name: 'Status', exact: true })).toHaveValue('Resolved');
-    await expect(dialog.getByRole('combobox', { name: 'Status', exact: true })).toBeEnabled();
+    await dialog.getByRole('group', { name: 'Status', exact: true }).getByRole('button', { name: 'Resolved', exact: true }).click();
+    await expect(dialog.getByRole('group', { name: 'Status', exact: true }).getByRole('button', { name: 'Resolved', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(dialog.getByRole('group', { name: 'Status', exact: true }).getByRole('button', { name: 'Resolved', exact: true })).toBeEnabled();
     await dialog.getByRole('button', { name: 'Close Enquiry details', exact: true }).click();
   } finally {
     releaseContent();
@@ -167,7 +249,7 @@ test('updating an enquiry during workspace refresh preserves the independent con
   await page.getByRole('button', { name: 'Open CMS navigation', exact: true }).click();
   await page.getByRole('dialog', { name: 'CMS navigation' }).getByRole('button', { name: 'Dashboard', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible();
-  await expect(page.getByText('Saved content', { exact: true }).locator('..').locator('strong')).toHaveText(String(contentCount));
+  await expect(page.getByRole('region', { name: 'Content at a glance', exact: true }).getByRole('button', { name: /^Pages\b/ }).locator('strong')).toHaveText(String(await db.collection('moe_content').countDocuments({ type: 'Page', deletedAt: { $exists: false } })));
   await expect(page.getByText('Saved unpublished content', { exact: true })).toHaveCount(0);
   await expect(page.getByRole('table')).toHaveCount(0);
   expect(contentRequests).toBe(1);

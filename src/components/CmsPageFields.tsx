@@ -13,7 +13,7 @@ type PageFields = { text: TextField[]; mainImage: boolean; mobileImage: boolean 
 /** Existing page layouts own their slots. Only expose fields those layouts read. */
 function editableFields(record: ContentRecord): PageFields {
   if (record.type === 'Page') {
-    const hasImage = !['services', 'fleet', 'routes', 'projects', 'news', 'privacy'].includes(record.id);
+    const hasImage = !['home', 'services', 'fleet', 'routes', 'projects', 'news', 'privacy'].includes(record.id);
     return {
       text: ['title', 'description', 'eyebrow', 'body', ...(record.id === 'home' ? ['caption' as const] : []), ...(hasImage ? ['imageAlt' as const] : [])],
       mainImage: hasImage,
@@ -64,6 +64,7 @@ export default function CmsPageFields({ record, disabled, onChange, imageField }
   }
 
   return <fieldset className={styles.fields} disabled={disabled}>
+    {record.type === 'Page' && record.id === 'home' && <p className={styles.hint}>{t('Manage the homepage banner images and their descriptions in Homepage slides.')}</p>}
     {([locale, locale === 'th' ? 'en' : 'th'] as const).map(language => <details key={language} className={styles.language} open={locale === language}>
       <summary><span className={styles.languageTitle}><Languages size={20} aria-hidden="true" />{languageName(language)}</span><span className={styles.hint}>{t('Website text')}</span></summary>
       <div className={styles.textFields}>{textFields.map(field => input(field, language))}</div>

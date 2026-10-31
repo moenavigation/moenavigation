@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createCipheriv, createDecipheriv, createHash, randomBytes, scryptSync } from 'node:crypto';
 import { gzipSync, gunzipSync } from 'node:zlib';
 import { BSON, type Document } from 'mongodb';
+import { isBundledHomeSlide } from '../../src/lib/home-slides';
 
 const MAGIC = Buffer.from('MOEBACKUP1\n');
 const MAX_ARCHIVE = 256 * 1024 * 1024;
@@ -69,6 +70,7 @@ export function validateBackup(backup: Backup) {
   const urls = new Set(backup.assets.map(asset => asset.url));
   for (const record of backup.collections.moe_content) {
     for (const url of [record.image, record.mobileImage, ...(record.gallery || []).map((image: Document) => image.url)]) if (url) assert(urls.has(url), 'Content references an image missing from the backup.');
+    for (const image of record.heroSlides || []) assert(urls.has(image.url) || (record.type === 'Page' && record.id === 'home' && isBundledHomeSlide(image.url)), 'Homepage slides reference an image missing from the backup.');
   }
   for (const user of backup.collections.moe_users) {
     if (user.avatar) assert(urls.has(user.avatar), 'A user profile references an image missing from the backup.');
@@ -90,6 +92,7 @@ export function remapImages(collections: Backup['collections'], mappings: Map<st
     if (record.image) record.image = mappings.get(record.image)?.url || record.image;
     if (record.mobileImage) record.mobileImage = mappings.get(record.mobileImage)?.url || record.mobileImage;
     for (const image of record.gallery || []) image.url = mappings.get(image.url)?.url || image.url;
+    for (const image of record.heroSlides || []) image.url = mappings.get(image.url)?.url || image.url;
   }
   for (const media of result.moe_media) {
     const mapping = mappings.get(media.url);

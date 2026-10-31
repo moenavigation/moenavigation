@@ -11,6 +11,8 @@ test('website settings and administrator accounts have separate destinations', (
   assert.deepEqual(cmsViewFromPathname('/cms/logs'), { section: 'logs', type: 'All' });
   assert.equal(cmsPathForView('usage'), '/cms/usage');
   assert.deepEqual(cmsViewFromPathname('/cms/usage'), { section: 'usage', type: 'All' });
+  assert.equal(cmsPathForView('slides'), '/cms/slides');
+  assert.deepEqual(cmsViewFromPathname('/cms/slides'), { section: 'slides', type: 'All' });
 });
 
 test('old section links resolve to the existing Pages manager', () => {

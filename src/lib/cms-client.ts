@@ -83,11 +83,11 @@ export type SubmissionResult = { status: 'committed' | 'pending' | 'aborted' | '
 export function resolveSubmission(submissionId: string, action: 'resolve' | 'abort' = 'abort') {
   return cmsRequest<SubmissionResult>('/api/cms/media/submission', { method: 'POST', body: JSON.stringify({ submissionId, action }) });
 }
-export function mapRecordImages<T extends Pick<ContentRecord, 'image' | 'mobileImage' | 'gallery'>>(record: T, transform: (url: string) => string): T {
-  return { ...record, image: transform(record.image), ...(record.mobileImage !== undefined ? { mobileImage: transform(record.mobileImage) } : {}), ...(record.gallery ? { gallery: record.gallery.map(item => ({ ...item, url: transform(item.url) })) } : {}) };
+export function mapRecordImages<T extends Pick<ContentRecord, 'image' | 'mobileImage' | 'gallery' | 'heroSlides'>>(record: T, transform: (url: string) => string): T {
+  return { ...record, image: transform(record.image), ...(record.mobileImage !== undefined ? { mobileImage: transform(record.mobileImage) } : {}), ...(record.gallery ? { gallery: record.gallery.map(item => ({ ...item, url: transform(item.url) })) } : {}), ...(record.heroSlides ? { heroSlides: record.heroSlides.map(item => ({ ...item, url: transform(item.url) })) } : {}) };
 }
-export function recordImageUrls(record: Pick<ContentRecord, 'image' | 'mobileImage' | 'gallery'>) {
-  return [...new Set([record.image, record.mobileImage, ...(record.gallery || []).map(item => item.url)].filter((url): url is string => Boolean(url)))];
+export function recordImageUrls(record: Pick<ContentRecord, 'image' | 'mobileImage' | 'gallery' | 'heroSlides'>) {
+  return [...new Set([record.image, record.mobileImage, ...(record.gallery || []).map(item => item.url), ...(record.heroSlides || []).map(item => item.url)].filter((url): url is string => Boolean(url)))];
 }
 export function parseRouteCoordinates(text: string): [number, number][] {
   if (!text.trim()) return [];

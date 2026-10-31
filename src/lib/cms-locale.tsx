@@ -4,10 +4,12 @@ import { createContext, useContext, useMemo, useSyncExternalStore, type ReactNod
 import { cmsMainThai } from './cms-main-th';
 import { cmsFieldsThai } from './cms-fields-th';
 import { cmsMessagesThai, translateCmsError } from './cms-messages-th';
+import { cmsSlidesThai } from './cms-slides-th';
+import { cmsDashboardThai } from './cms-dashboard-th';
 
 export type CmsLocale = 'th' | 'en';
 type Parameters = Record<string, string | number>;
-const translations: Record<string, string> = { ...cmsMessagesThai, ...cmsFieldsThai, ...cmsMainThai };
+const translations: Record<string, string> = { ...cmsMessagesThai, ...cmsFieldsThai, ...cmsMainThai, ...cmsSlidesThai, ...cmsDashboardThai };
 const recoverySuffixes = [
   ' Your browser copy is preserved. Retry continues with remaining items.',
   ' The save outcome is uncertain. Keep this editor open and check saved content.',

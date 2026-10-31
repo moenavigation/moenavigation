@@ -1,0 +1,29 @@
+.slider { position: relative; width: 100%; aspect-ratio: 3 / 1; overflow: hidden; isolation: isolate; background: var(--navy); touch-action: pan-y; }
+.images, .slide { position: absolute; inset: 0; }
+.slide { pointer-events: none; }
+.slide img { object-fit: cover; object-position: center; user-select: none; }
+.slider::after { content: ''; position: absolute; z-index: 1; inset: 45% 0 0; pointer-events: none; background: linear-gradient(transparent, rgb(4 23 40 / .48)); }
+.controls { position: absolute; z-index: 2; inset: auto var(--gutter) 1.5rem; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; color: #fff; }
+.count { display: inline-flex; align-items: center; gap: .7rem; font-size: var(--font-small); font-variant-numeric: tabular-nums; color: #ffffffc9; }
+.count strong { color: #fff; font-weight: 600; }
+.count>span { width: 2rem; height: 1px; background: #ffffff7a; }
+.dots { display: flex; align-items: center; max-width: 50vw; overflow-x: auto; padding-inline: .4rem; border: 1px solid #ffffff38; border-radius: 3rem; background: #06233e54; backdrop-filter: blur(12px); scrollbar-width: none; }
+.dot { display: grid; place-items: center; flex-shrink: 0; min-height: var(--target-size); width: var(--target-size); padding: .5rem; border: 0; border-radius: 50%; background: transparent; }
+.dot span { display: block; width: .4rem; height: .4rem; background: #ffffff8c; border-radius: 1rem; transition: width .25s, background .25s; }
+.dot[aria-current=true] span { width: 1.3rem; background: #fff; }
+.arrows { justify-self: end; display: flex; gap: .45rem; }
+.arrows button { display: grid; place-items: center; width: var(--target-size); height: var(--target-size); padding: .6rem; color: #fff; background: #06233e54; backdrop-filter: blur(12px); border: 1px solid #ffffff70; border-radius: 50%; transition: background .2s, border-color .2s; }
+.arrows svg { width: 1.15rem; height: 1.15rem; stroke-width: 1.7; }
+.controls button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; background: var(--navy); }
+@media(hover:hover) and (pointer:fine) { .arrows button:hover { background: #ffffff2e; border-color: #fff; } .dot:hover span { background: #fff; } }
+@media(max-width:700px) {
+  .slider { aspect-ratio: 16 / 9; }
+  /* Keep a 3:1 image canvas, revealing only its centered 16:9 slice. */
+  .slide { inset-inline: -34.375%; }
+  .controls { inset: auto .75rem .75rem; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; }
+  .count { display: none; }
+  .dots { justify-self: start; max-width: 100%; padding-inline: .2rem; }
+  .dot { width: 2.2rem; }
+  .arrows { gap: .35rem; }
+}
+@media(max-width:360px) { .dot { width: 1.8rem; padding-inline: .3rem; } .controls { inset-inline: .5rem; } .arrows { gap: .2rem; } }

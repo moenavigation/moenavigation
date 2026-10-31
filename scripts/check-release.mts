@@ -26,7 +26,7 @@ if (live) {
       const records = await db.collection('moe_content').find({ status: 'Published', deletedAt: { $exists: false } }, { projection: {
         _id: 0, type: 1, id: 1, vesselSpecs: 1, title: 1, titleTh: 1, description: 1, descriptionTh: 1, body: 1, bodyTh: 1,
         eyebrow: 1, eyebrowTh: 1, bodyHeading: 1, bodyHeadingTh: 1, category: 1, categoryTh: 1, caption: 1, captionTh: 1,
-        imageAlt: 1, imageAltTh: 1, image: 1, mobileImage: 1, gallery: 1,
+        imageAlt: 1, imageAltTh: 1, image: 1, mobileImage: 1, gallery: 1, heroSlides: 1,
       }, maxTimeMS: 10_000 }).toArray();
       const media = await db.collection('moe_media').find({}, { projection: { _id: 0, state: 1, url: 1, trashedAt: 1 }, maxTimeMS: 10_000 }).toArray();
       checks.push(...contentReadiness(records, media));

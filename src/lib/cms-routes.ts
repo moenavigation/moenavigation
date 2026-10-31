@@ -1,6 +1,6 @@
 import type { ContentRecord } from './cms-types';
 
-export type CmsSection = 'content' | 'inbox' | 'media' | 'trash' | 'setting' | 'users' | 'logs' | 'usage';
+export type CmsSection = 'content' | 'inbox' | 'media' | 'trash' | 'setting' | 'users' | 'logs' | 'usage' | 'slides';
 export type CmsView = { section: CmsSection; type: ContentRecord['type'] | 'All' };
 
 const contentPaths: Partial<Record<ContentRecord['type'], string>> = {
@@ -20,6 +20,7 @@ const sectionPaths: Record<Exclude<CmsSection, 'content'>, string> = {
   users: '/cms/users',
   logs: '/cms/logs',
   usage: '/cms/usage',
+  slides: '/cms/slides',
 };
 
 export function cmsPathForView(section: CmsSection, type: string = 'All') {

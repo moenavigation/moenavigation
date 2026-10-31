@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { decryptBackup, documentHash, encryptBackup, includedCollections, isMissingRecoveryAsset, remapImages, sha256, validateBackup, validateTarget, type Backup } from '../scripts/lib/recovery';
+import { defaultHomeSlides } from '../src/lib/home-slides';
 
 const secret = 'a-test-only-passphrase-at-least-20-characters';
 function fixture(): Backup {
@@ -37,6 +38,17 @@ test('integrity validation rejects missing images, changed bytes and unknown col
     const unknown = fixture(); unknown.collections[name] = []; assert.throws(() => validateBackup(unknown));
   }
   const external = fixture(); external.collections.moe_content[0].image = '/images/unbacked.webp'; assert.throws(() => validateBackup(external));
+});
+test('backup validates and remaps custom slides while retaining bundled homepage artwork', () => {
+  const backup = fixture();
+  const original = backup.assets[0].url;
+  backup.collections.moe_content[0] = { ...backup.collections.moe_content[0], type: 'Page', id: 'home', heroSlides: [{ url: original, alt: '', altTh: '' }, defaultHomeSlides[0]] };
+  assert.doesNotThrow(() => validateBackup(backup));
+  const mapped = remapImages(backup.collections, new Map([[original, { url: 'https://example.test/restored.webp', publicId: 'restored' }]]));
+  assert.equal(mapped.moe_content[0].heroSlides[0].url, 'https://example.test/restored.webp');
+  assert.equal(mapped.moe_content[0].heroSlides[1].url, defaultHomeSlides[0].url);
+  backup.collections.moe_content[0].heroSlides.push({ url: '/images/hero/unknown.webp' });
+  assert.throws(() => validateBackup(backup), /Homepage slides/);
 });
 test('restore target validation refuses main, active QA, malformed and unrelated databases', () => {
   validateTarget('moe', 'moe', 'moe_restore_rehearsal');

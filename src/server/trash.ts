@@ -97,8 +97,8 @@ export async function getCmsTrashPage(query: CmsTrashQuery, actor: UserDocument)
     pageIds.length ? c.content.distinct('parentId', { type: 'Section', parentId: { $in: pageIds } }) : [],
     parentIds.length ? c.content.distinct('id', { type: 'Page', id: { $in: parentIds }, deletedAt: { $exists: false }, ...retained }) : [],
     imageUrls.length ? c.content.aggregate<{ _id: string }>([
-      { $match: { $or: [{ image: { $in: imageUrls } }, { mobileImage: { $in: imageUrls } }, { 'gallery.url': { $in: imageUrls } }] } },
-      { $project: { urls: { $setIntersection: [imageUrls, { $concatArrays: [[{ $ifNull: ['$image', ''] }, { $ifNull: ['$mobileImage', ''] }], { $ifNull: ['$gallery.url', []] }] }] } } },
+      { $match: { $or: [{ image: { $in: imageUrls } }, { mobileImage: { $in: imageUrls } }, { 'gallery.url': { $in: imageUrls } }, { 'heroSlides.url': { $in: imageUrls } }] } },
+      { $project: { urls: { $setIntersection: [imageUrls, { $concatArrays: [[{ $ifNull: ['$image', ''] }, { $ifNull: ['$mobileImage', ''] }], { $ifNull: ['$gallery.url', []] }, { $ifNull: ['$heroSlides.url', []] }] }] } } },
       { $unwind: '$urls' }, { $group: { _id: '$urls' } },
     ]).toArray() : [],
     imageUrls.length ? c.users.distinct('avatar', { avatar: { $in: imageUrls } }) : [],

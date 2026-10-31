@@ -6,6 +6,7 @@ import { basename, resolve } from 'node:path';
 import { v2 as cloudinary } from 'cloudinary';
 import type { ContentRecord } from '../src/lib/cms-types';
 import { recordSchema } from '../src/lib/validation';
+import { isBundledHomeSlide } from '../src/lib/home-slides';
 import { websiteContentRecords } from './data/website-content';
 import { findReusableMedia, metadataMatches, type MigrationAsset, type MigrationProviderAsset } from './lib/migration-media';
 
@@ -32,14 +33,14 @@ const uploadedThisRun: Asset[] = [];
 const providers = new Map<string, ProviderAsset>();
 const deliveryHashes = new Map<string, string>();
 const sourcePaths = new Set(manifest.map(asset => asset.sourcePath));
-const imageUrls = (record: Partial<ContentRecord>) => [record.image, record.mobileImage, ...(record.gallery || []).map(image => image.url)].filter((url): url is string => Boolean(url));
+const imageUrls = (record: Partial<ContentRecord>) => [record.image, record.mobileImage, ...(record.gallery || []).map(image => image.url), ...(record.heroSlides || []).map(image => image.url).filter(url => !isBundledHomeSlide(url))].filter((url): url is string => Boolean(url));
 function replaceImages(record: ContentRecord, urls: Map<string, string>): ContentRecord {
   const replace = (url: string) => {
     if (!url.startsWith('/images/')) return url;
     assert(urls.has(url), `Unrecognized local image: ${url}`);
     return urls.get(url)!;
   };
-  return { ...record, image: replace(record.image), mobileImage: record.mobileImage ? replace(record.mobileImage) : '', gallery: (record.gallery || []).map(image => ({ ...image, url: replace(image.url) })) };
+  return { ...record, image: replace(record.image), mobileImage: record.mobileImage ? replace(record.mobileImage) : '', gallery: (record.gallery || []).map(image => ({ ...image, url: replace(image.url) })), ...(record.heroSlides ? { heroSlides: record.heroSlides.map(image => ({ ...image, url: isBundledHomeSlide(image.url) ? image.url : replace(image.url) })) } : {}) };
 }
 async function sourceBytes(asset: Asset) {
   const candidates = [resolve('public', asset.sourcePath.slice(1)), resolve('.local/migration-backup-2026-10-23/images', basename(asset.sourcePath))];

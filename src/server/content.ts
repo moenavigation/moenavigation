@@ -12,6 +12,7 @@ import { actionSchema, saveSchema } from './validation';
 import { lockMediaSubmission } from './media';
 import { contentMediaUrls } from './media-references';
 import { assertCmsContentAction, assertCmsContentEdit } from './cms-content-policy';
+import { isBundledHomeSlide } from '@/lib/home-slides';
 
 export const contentKey = (record: Pick<ContentRecord, 'type' | 'id'>) => `${record.type}:${record.id}`;
 function clean(record: ContentDocument): ContentRecord {
@@ -125,12 +126,12 @@ export async function saveCmsContent(input: z.infer<typeof saveSchema>, actor: U
 }
 
 /** Keep parent validation, revision checks, and media commits in the same transaction. */
-export async function saveContentInTransaction(input: z.infer<typeof saveSchema>, owner: string, db: Db, session: ClientSession, source: 'maintenance' | 'cms' = 'maintenance', actor?: UserDocument) {
+export async function saveContentInTransaction(input: z.infer<typeof saveSchema>, owner: string, db: Db, session: ClientSession, source: 'maintenance' | 'cms' = 'maintenance', actor?: UserDocument, operationFingerprint?: string) {
   // Every CMS Save makes that record available; historical states remain valid
   // for maintenance and untouched records. Normalize before idempotency checks.
   if (source === 'cms') input = { ...input, record: { ...input.record, status: 'Published' } };
   const key = contentKey(input.record);
-  const fingerprint = digest(JSON.stringify({ record: input.record, expectedRevision: input.expectedRevision }));
+  const fingerprint = operationFingerprint ?? digest(JSON.stringify({ record: input.record, expectedRevision: input.expectedRevision }));
   const c = collections(db);
   const operationId = `${owner}:${input.submissionId}`;
   const prior = await c.operations.findOne({ _id: operationId }, { session });
@@ -142,12 +143,25 @@ export async function saveContentInTransaction(input: z.infer<typeof saveSchema>
   const existing = await c.content.findOne({ _id: key }, { session });
   if ((existing?.revision ?? null) !== input.expectedRevision || existing?.deletedAt) throw new HttpError(409, 'This content changed elsewhere. Reload the latest version before saving.');
   if (source === 'cms') assertCmsContentEdit(input.record, existing);
+  // Older or ordinary page editors do not own the dedicated slider fields.
+  // Omitting them must preserve the saved carousel rather than erase it.
+  if (existing && input.record.type === 'Page' && input.record.id === 'home') {
+    input = { ...input, record: { ...input.record,
+      ...(input.record.heroSlides === undefined && existing.heroSlides !== undefined ? { heroSlides: existing.heroSlides } : {}),
+      ...(input.record.heroSlideInterval === undefined && existing.heroSlideInterval !== undefined ? { heroSlideInterval: existing.heroSlideInterval } : {}),
+    } };
+  }
   if (input.record.type === 'Section' && input.record.parentId !== 'shared') {
     const parent = await c.content.findOne({ _id: contentKey({ type: 'Page', id: input.record.parentId }) }, { session });
     if (!parent || parent.deletedAt || parent.purgeAt) throw new HttpError(400, 'Choose an existing page for this section. Restore pages in Trash before adding or editing their sections.');
   }
   const images = contentMediaUrls(input.record);
   for (const url of images) {
+    // These exact, versioned app assets need no Cloudinary upload. All other
+    // slide URLs still pass through the normal library/ownership validation.
+    if (input.record.type === 'Page' && input.record.id === 'home' && isBundledHomeSlide(url)
+      && input.record.heroSlides?.some(slide => slide.url === url)
+      && ![input.record.image, input.record.mobileImage, ...input.record.gallery.map(image => image.url)].includes(url)) continue;
     const media = await c.media.findOne({ url }, { session });
     if (!media || !['staged', 'committed'].includes(media.state)) throw new HttpError(400, 'Choose a library image or upload an image before saving.');
     if (media.state === 'staged' && (media.owner !== owner || media.submissionId !== input.submissionId)) throw new HttpError(403, 'This upload belongs to a different save. Please choose the image again.');

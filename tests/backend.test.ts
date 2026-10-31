@@ -130,7 +130,7 @@ test('image reference extraction covers mobile art direction and every gallery e
   assert.deepEqual(contentMediaUrls(record), ['https://cdn.test/main.webp', 'https://cdn.test/mobile.webp', 'https://cdn.test/gallery.webp']);
   assert.deepEqual(contentMediaUrls({ image: '' }), []);
   assert.deepEqual(contentMediaReferenceFilter(record.image), {
-    $or: [{ image: record.image }, { mobileImage: record.image }, { 'gallery.url': record.image }],
+    $or: [{ image: record.image }, { mobileImage: record.image }, { 'gallery.url': record.image }, { 'heroSlides.url': record.image }],
   });
   assert.equal('deletedAt' in contentMediaReferenceFilter(record.image), false, 'Trash must continue protecting media');
   assert.equal('type' in contentMediaReferenceFilter(record.image), false, 'Sections must protect media like other records');

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { contentTypes, corePageIds } from '@/lib/cms-types';
 import { contactFieldLimits } from '@/lib/contact-draft';
 import { isContactEmail } from '@/lib/contact-validation';
+import { MAX_HOME_SLIDES, MAX_HOME_SLIDE_INTERVAL, MIN_HOME_SLIDE_INTERVAL } from '@/lib/home-slides';
 
 export const submissionSchema = z.string().uuid();
 export const idSchema = z.string().min(1).max(100).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase letters, numbers and single hyphens.');
@@ -32,6 +33,16 @@ const dateSchema = z.string().refine(value => {
   const parsed = new Date(`${value}T00:00:00Z`);
   return /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }, 'Enter a valid date.').optional().default('');
+const homeSlidesSchema = z.array(z.object({
+  url: z.string().trim().min(1).max(1500), alt: z.string().trim().max(250), altTh: z.string().trim().max(250),
+})).min(1, 'Keep at least one slide.').max(MAX_HOME_SLIDES).refine(slides => new Set(slides.map(slide => slide.url)).size === slides.length, 'Choose each image only once.');
+const homeSlideIntervalSchema = z.number().int().min(MIN_HOME_SLIDE_INTERVAL).max(MAX_HOME_SLIDE_INTERVAL);
+export const saveHomeSlidesSchema = z.strictObject({
+  slides: homeSlidesSchema,
+  intervalSeconds: homeSlideIntervalSchema,
+  expectedRevision: z.number().int().positive(),
+  submissionId: submissionSchema,
+});
 export const recordSchema = z.object({
   id: idSchema, type: z.enum(contentTypes),
   title: z.string().trim().min(1).max(200), titleTh: z.string().trim().min(1).max(200),
@@ -43,11 +54,13 @@ export const recordSchema = z.object({
   eyebrow: optionalText(160), eyebrowTh: optionalText(160), icon: z.string().regex(/^[A-Za-z0-9]*$/).max(50).optional().default(''),
   caption: optionalText(200), captionTh: optionalText(200),
   mobileImage: optionalText(1500), gallery: z.array(z.object({ url: z.string().min(1).max(1500), alt: z.string().trim().max(250), altTh: z.string().trim().max(250) })).max(12).optional().default([]),
+  heroSlides: homeSlidesSchema.optional(), heroSlideInterval: homeSlideIntervalSchema.optional(),
   bodyHeading: optionalText(200), bodyHeadingTh: optionalText(200),
   origin: portSchema.optional(), destination: portSchema.optional(),
   waypoints: z.array(z.tuple([z.number().min(-90).max(90), z.number().min(-180).max(180)])).max(100).optional().default([]),
   vesselSpecs: vesselSpecsSchema.optional(),
 }).superRefine((record, context) => {
+  if ((record.heroSlides !== undefined || record.heroSlideInterval !== undefined) && (record.type !== 'Page' || record.id !== 'home')) context.addIssue({ code: 'custom', path: ['heroSlides'], message: 'Homepage slides belong to the home page only.' });
   if (record.type !== 'Vessel' && record.vesselSpecs && Object.values(record.vesselSpecs).some(value => value !== undefined)) context.addIssue({ code: 'custom', path: ['vesselSpecs'], message: 'Vessel specifications belong to fleet records only.' });
   if (record.type !== 'Section') {
     if (!record.description) context.addIssue({ code: 'custom', path: ['description'], message: 'Enter an English summary.' });

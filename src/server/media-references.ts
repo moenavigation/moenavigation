@@ -3,12 +3,12 @@ import type { ContentRecord } from '@/lib/cms-types';
 import type { ContentDocument, UserDocument } from './db';
 
 /** All persisted image fields, including those on sections and items in Trash. */
-export function contentMediaUrls(record: Pick<ContentRecord, 'image' | 'mobileImage' | 'gallery'>): string[] {
-  return [...new Set([record.image, record.mobileImage, ...(record.gallery || []).map(image => image.url)].filter((url): url is string => Boolean(url)))];
+export function contentMediaUrls(record: Pick<ContentRecord, 'image' | 'mobileImage' | 'gallery' | 'heroSlides'>): string[] {
+  return [...new Set([record.image, record.mobileImage, ...(record.gallery || []).map(image => image.url), ...(record.heroSlides || []).map(image => image.url)].filter((url): url is string => Boolean(url)))];
 }
 
 export function contentMediaReferenceFilter(url: string): Filter<ContentDocument> {
-  return { $or: [{ image: url }, { mobileImage: url }, { 'gallery.url': url }] };
+  return { $or: [{ image: url }, { mobileImage: url }, { 'gallery.url': url }, { 'heroSlides.url': url }] };
 }
 
 export function userMediaReferenceFilter(url: string): Filter<UserDocument> {

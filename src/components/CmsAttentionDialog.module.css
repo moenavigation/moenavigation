@@ -1,0 +1,36 @@
+.dialog[open] { width: min(76rem,calc(100% - 2rem)); max-width: calc(100% - 2rem); }
+.workspace { display: grid; align-content: start; gap: 1.1rem; min-height: min(65dvh,38rem); color: var(--navy); }
+.intro { display: flex; align-items: center; gap: .85rem; padding: 1rem 1.15rem; border: 1px solid #dae6ef; border-radius: .65rem; background: #f4f8fc; }
+.introIcon { display: grid; place-items: center; flex-shrink: 0; width: 2.8rem; height: 2.8rem; color: var(--blue); }
+.intro p { margin: 0; color: var(--muted); }
+.filters { display: flex; align-items: flex-end; flex-wrap: wrap; gap: .8rem; }
+.search { display: flex; align-items: center; gap: .6rem; flex: 1 1 20rem; min-width: 0; min-height: 3.25rem; padding: .7rem .85rem; border: 1px solid var(--line); border-radius: .45rem; }
+.search svg { flex-shrink: 0; color: var(--muted); }
+.search input[type='search'] { width: 100%; min-width: 0; min-height: 1.75rem; padding: 0; border: 0; outline: none; color: var(--navy); background: transparent; }
+.select { display: grid; gap: .35rem; flex: 1 1 12rem; min-width: 0; }
+.select label { font-weight: 600; }
+.select select { width: 100%; min-width: 0; min-height: 3.25rem; padding: .7rem .75rem; border: 1px solid var(--line); border-radius: .45rem; color: var(--navy); background: #fff; }
+.search:focus-within, .select select:focus-visible, .clear:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.results { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; min-height: 2.5rem; color: var(--muted); }
+.clear { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.75rem; padding: .35rem .2rem; border: 0; color: var(--navy); background: transparent; font-weight: 600; cursor: pointer; }
+.list, .loading { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; gap: 1rem; list-style: none; padding: 0; margin: 0; }
+.item { display: flex; flex-direction: column; align-items: start; gap: 1rem; min-width: 0; padding: 1.2rem; border: 1px solid var(--line); border-radius: .7rem; background: #fff; }
+.itemHeading { display: flex; gap: .8rem; align-items: start; min-width: 0; width: 100%; }
+.itemHeading > div { min-width: 0; overflow-wrap: anywhere; }
+.recordIcon { display: grid; place-items: center; flex: 0 0 2.6rem; height: 2.6rem; border-radius: .5rem; color: var(--blue); background: var(--pale); }
+.type { display: block; color: var(--muted); margin-bottom: .25rem; }
+.itemHeading h3 { margin: 0; font-size: var(--font-body); line-height: 1.6; }
+.itemHeading p { margin: .3rem 0 0; color: var(--muted); }
+.issues { display: flex; flex-wrap: wrap; gap: .45rem; list-style: none; padding: 0; margin: 0; }
+.issues li { display: inline-flex; align-items: center; gap: .4rem; max-width: 100%; padding: .35rem .55rem; border-radius: .35rem; color: #7c5d25; background: #fff7e7; overflow-wrap: anywhere; }
+.issues svg { flex-shrink: 0; }
+.edit { align-self: end; margin-top: auto; gap: .45rem; padding-inline: .9rem; }
+.more { justify-self: center; }
+.empty { display: grid; justify-items: center; align-content: center; gap: .7rem; min-height: 14rem; padding: 2rem 1rem; color: var(--muted); text-align: center; }
+.empty svg { color: #3b7d6a; }
+.empty h3 { font-size: var(--font-h3); color: var(--navy); }
+.empty p { max-width: 38rem; margin: 0; }
+.error { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .8rem; padding: 1rem; border: 1px solid #efc9bd; border-radius: .5rem; color: #953a29; background: #fff5f0; }
+.error p { margin: 0; }
+.loading > div { min-height: 11rem; border: 1px solid var(--line); border-radius: .7rem; background: linear-gradient(130deg,#f6f9fc,#edf3f8); }
+@media (max-width: 650px) { .dialog[open] { width: calc(100% - 1rem); max-width: calc(100% - 1rem); } .filters { align-items: stretch; } .search { flex-basis: 100%; } .select { flex-basis: 100%; } .list, .loading { grid-template-columns: minmax(0,1fr); } .intro { align-items: start; padding: .85rem; gap: .5rem; } .introIcon { width: 2rem; height: 2rem; } .item { padding: 1rem; } .recordIcon { flex-basis: 2.2rem; height: 2.2rem; } }

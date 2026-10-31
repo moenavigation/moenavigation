@@ -10,19 +10,26 @@ export const cmsLogActions = [
   'media.uploaded', 'media.trashed', 'media.restored', 'media.deleted', 'media.upload_discarded', 'media.cleanup', 'media.delete_failed',
 ] as const;
 export const cmsLogCategories = ['auth', 'content', 'user', 'settings', 'enquiry', 'media'] as const;
-export const cmsLogCategoryFilters = ['All', ...cmsLogCategories] as const;
+export const cmsLogCategoryFilters = ['All', ...cmsLogCategories, 'data_changes', 'user_activity', 'enquiry_activity'] as const;
+export const cmsLogGroups = [
+  { value: 'All', label: 'All activities', description: 'Every type of CMS activity', categories: cmsLogCategories },
+  { value: 'data_changes', label: 'Data changes', description: 'Content, images and website settings', categories: ['content', 'media', 'settings'] },
+  { value: 'user_activity', label: 'User activity', description: 'Sign-ins, security and account changes', categories: ['auth', 'user'] },
+  { value: 'enquiry_activity', label: 'Enquiry activity', description: 'Message status and email notifications', categories: ['enquiry'] },
+] as const satisfies readonly { value: string; label: string; description: string; categories: readonly CmsLogCategory[] }[];
 export const cmsLogTargetTypes = [...contentTypes, 'Image', 'User', 'Settings', 'Enquiry', 'Session', 'MediaLibrary'] as const;
 export const cmsLogOutcomes = ['success', 'denied', 'failed'] as const;
 export const cmsLogPageSize = 30;
 export type CmsLogAction = typeof cmsLogActions[number];
 export type CmsLogCategory = typeof cmsLogCategories[number];
+export type CmsLogCategoryFilter = typeof cmsLogCategoryFilters[number];
 export type CmsLogTargetType = typeof cmsLogTargetTypes[number];
 export type CmsLogActor = { id: string; username: string; role: CmsRole } | { system: true };
 export type CmsLogTarget = { type: CmsLogTargetType; id: string; label?: string };
 export type CmsLogEvent = { action: CmsLogAction; actor: CmsLogActor; target: CmsLogTarget; outcome?: typeof cmsLogOutcomes[number] };
 export type CmsLogItem = Omit<CmsLogEvent, 'outcome'> & { id: string; occurredAt: string; expiresAt: string; category: CmsLogCategory; outcome: typeof cmsLogOutcomes[number]; summary: string };
 export type CmsLogPage = { items: CmsLogItem[]; total: number; nextCursor: string | null };
-export type CmsLogQuery = { q: string; category: typeof cmsLogCategoryFilters[number]; action: CmsLogAction | 'All'; cursor: string | null };
+export type CmsLogQuery = { q: string; category: CmsLogCategoryFilter; action: CmsLogAction | 'All'; cursor: string | null };
 
 export const cmsLogActionLabels: Record<CmsLogAction, string> = {
   'auth.login': 'Signed in', 'auth.logout': 'Signed out', 'auth.password_changed': 'Changed own password',

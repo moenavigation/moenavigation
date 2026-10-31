@@ -1,13 +1,35 @@
+# Dependencies and build caches
 node_modules/
 .next/
-.next-qa/
-.next-ci/
-.next-e2e/
+.next-*/
+.cache/
+.eslintcache
+*.tsbuildinfo
+/.vercel/
+
+# Generated builds, test reports and local QA artifacts
 playwright-report/
 test-results/
 out/
-*.tsbuildinfo
-.env*
-!.env.example
+coverage/
+.nyc_output/
 artifacts/
 .local/
+/output/
+/docs/screenshots/
+
+# Local environment configuration
+.env*
+!.env.example
+
+# Runtime logs, temporary files and operating-system metadata
+*.log
+*.log.*
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini

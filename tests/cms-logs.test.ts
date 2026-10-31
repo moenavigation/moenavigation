@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import test from 'node:test';
 import type { ClientSession, Db, Document, MongoClient } from 'mongodb';
-import { cmsLogEventSchema, cmsLogPageSize, parseCmsLogQuery, type CmsLogEvent } from '../src/lib/cms-logs';
+import { cmsLogCategories, cmsLogEventSchema, cmsLogGroups, cmsLogPageSize, parseCmsLogQuery, type CmsLogEvent } from '../src/lib/cms-logs';
 import { appendAuditEvent, auditActor, auditExpiryDate, buildCmsLogPipeline, formatCmsLogPage } from '../src/server/audit';
 import { collections, ensureIndexes, type AuditDocument } from '../src/server/db';
 import { HttpError } from '../src/server/http';
@@ -107,6 +107,40 @@ test('log search is literal, expires exactly at cutoff, and totals do not use th
   assert.equal(facet.items[2].$project.actor, undefined);
   assert.equal(facet.items[2].$project['actor.username'], 1);
   assert.equal(facet.items[2].$project['target.label'], 1);
+});
+
+test('activity groups cover every stored category once without changing stored event categories', () => {
+  assert.deepEqual(cmsLogGroups[0].categories, cmsLogCategories);
+  const grouped = cmsLogGroups.slice(1).flatMap(group => [...group.categories]);
+  assert.deepEqual([...grouped].sort(), [...cmsLogCategories].sort());
+  assert.equal(new Set(grouped).size, grouped.length);
+  assert.equal(cmsLogEventSchema.safeParse({ ...event, category: 'data_changes' }).success, false);
+});
+
+test('group filters match all relevant categories before totals and bounded pagination', () => {
+  for (const group of cmsLogGroups.slice(1)) {
+    const query = parseCmsLogQuery(new URLSearchParams({ category: group.value }));
+    const pipeline = buildCmsLogPipeline(query);
+    assert.equal(query.category, group.value);
+    assert.deepEqual(pipeline[0].$match.category, { $in: [...group.categories] });
+    assert.deepEqual(pipeline[1].$facet.total, [{ $count: 'value' }]);
+    assert.deepEqual(pipeline[1].$facet.items[1], { $limit: cmsLogPageSize + 1 });
+  }
+  for (const category of cmsLogCategories) {
+    assert.equal(buildCmsLogPipeline(parseCmsLogQuery(new URLSearchParams({ category })))[0].$match.category, category);
+  }
+});
+
+test('group pagination cursors cannot be reused for another group or a legacy category', () => {
+  const dataQuery = parseCmsLogQuery(new URLSearchParams({ category: 'data_changes' }));
+  const rows = Array.from({ length: 31 }, () => document());
+  const first = formatCmsLogPage(rows, 91, dataQuery);
+  assert.ok(first.nextCursor);
+  const following = { ...dataQuery, cursor: first.nextCursor };
+  assert.deepEqual(buildCmsLogPipeline(following)[0].$match.category, { $in: ['content', 'media', 'settings'] });
+  for (const category of ['All', 'content', 'user_activity', 'enquiry_activity'] as const) {
+    assert.throws(() => buildCmsLogPipeline({ ...following, category }), (error: unknown) => error instanceof HttpError && error.status === 400);
+  }
 });
 
 test('pagination has a strict canonical cursor scoped to the filters and a stable date/id boundary', () => {

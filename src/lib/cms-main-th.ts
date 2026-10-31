@@ -1,5 +1,8 @@
 /** Thai translations for CMS navigation, workflows, and feedback. */
 export const cmsMainThai: Record<string, string> = {
+  "Recent activity": "กิจกรรมล่าสุด",
+  "Latest entries from Logs.": "กิจกรรมล่าสุดจากประวัติการใช้งาน",
+  "View all logs": "ดูประวัติทั้งหมด",
   "Complete the picture": "เลื่อนภาพให้สมบูรณ์",
   "Slide the picture piece into the matching shape to continue.": "เลื่อนชิ้นภาพไปยังช่องที่ตรงกันเพื่อเข้าสู่ระบบ",
   "Close verification": "ปิดหน้าต่างยืนยัน",

@@ -333,7 +333,7 @@ test('Dashboard presents management summaries without a duplicate content table 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Dashboard');
   await expect(page.getByRole('heading', { level: 2, name: 'Media library' })).toHaveCount(0);
   await expect(page.getByRole('region', { name: 'Content at a glance', exact: true })).toBeVisible();
-  await expect(page.getByRole('region', { name: 'Recently updated', exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Recent activity', exact: true })).toBeVisible();
   await expect(page.getByRole('table')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Create content', exact: true })).toHaveCount(0);
 });

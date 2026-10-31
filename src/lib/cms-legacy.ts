@@ -1,5 +1,5 @@
 import { contentTypes, type ContentRecord, type MediaItem } from './cms-types';
-import { mapRecordImages } from './cms-client';
+import { mapRecordImages, recordImageUrls } from './cms-client';
 
 export type LegacyRecord = Omit<ContentRecord, 'revision'> & { revision?: number };
 export type LegacyMedia = { id: string; title: string; image: string };
@@ -38,7 +38,7 @@ export async function legacyImageUrl(url: string, media: MediaItem[], snapshot: 
 }
 export async function translateLegacyRecord(record: LegacyRecord, media: MediaItem[], snapshot: LegacySnapshot): Promise<LegacyRecord> {
   const translations = new Map<string, string>();
-  for (const url of [record.image, record.mobileImage || '', ...(record.gallery || []).map(item => item.url)]) translations.set(url, await legacyImageUrl(url, media, snapshot));
+  for (const url of recordImageUrls(record)) translations.set(url, await legacyImageUrl(url, media, snapshot));
   return mapRecordImages(record, url => translations.get(url) || url);
 }
 export async function legacyRecordMatches(local: LegacyRecord, remote: ContentRecord | undefined, media: MediaItem[], snapshot: LegacySnapshot): Promise<boolean> {
