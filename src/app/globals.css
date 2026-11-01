@@ -58,6 +58,8 @@ textarea { resize: vertical; min-height: 8rem; }
 @media (min-width:4800px) { html { font-size:250%; } }
 @media (prefers-reduced-motion:reduce) { html { scroll-behavior: auto; } *,*::before,*::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 
-.leaflet-bottom { opacity: 0; }
-.leaflet-bottom { display: none; }
-/* .leaflet-bottom { display: none; } */
+.leaflet-bottom { opacity: 0 !important; }
+.leaflet-bottom { display: none !important; }
+/* .leaflet-bottom { opacity: 0 !important; }
+.leaflet-bottom { display: none !important; }
+ */

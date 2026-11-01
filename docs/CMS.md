@@ -108,7 +108,7 @@ route preview. Keep origin and destination markers visible; intermediate markers
 blend into the route line until hovered, focused by keyboard, or selected on touch.
 
 Offer an Edit points on map dialog in Map setup. Let users drag existing points,
-place missing points on the map, and edit the selected point's coordinates by
+place missing points or add intermediate points on the map, and edit the selected point's coordinates by
 keyboard. Keep changes local until Apply, preserve untouched coordinate text
 and point order, and discard dialog changes on Cancel, Escape, or outside click.
 Apply updates the route draft; the normal Save action persists it.
@@ -122,6 +122,8 @@ land-contact note and the normal preview/apply actions. Allow cancellation/retry
 preserve input on failures, and reject unsupported paths rather than inventing
 straight-line shortcuts. Label the result for website illustration and review,
 not navigation. Keep datasets and routing calculations on the server.
+Connect endpoints to positions on existing shipping-network segments rather than
+rejecting a nearby route solely because its stored graph vertices are far apart.
 
 Use one Trash list for removed content, saved images, user accounts, and enquiries,
 with search and a type-selection dialog. Read and filter the entire Trash

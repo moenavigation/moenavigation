@@ -28,6 +28,14 @@ export function moveMapRoutePoint(text: string, index: number, latitude: number,
   return updateRouteCoordinate(next, index, 'longitude', String(Number(lng.toFixed(6))));
 }
 
+/** Insert a placed intermediate point before the destination, preserving existing rows. */
+export function addMapRoutePoint(text: string, latitude: number, longitude: number): { text: string; index: number } | null {
+  const count = routeCoordinateRows(text).length;
+  if (!isMapRouteReady(text) || count >= MAX_ROUTE_POINTS || !Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+  const index = count - 1;
+  return { text: moveMapRoutePoint(addRouteCoordinate(text), index, latitude, longitude), index };
+}
+
 export function applyMapRouteChanges(source: string, current: string, draft: string): string {
   if (source !== current) throw new Error('The route points changed while this map was open. Close it and open the map again.');
   if (!isMapRouteReady(draft)) throw new Error('Set a valid location for every point before applying.');

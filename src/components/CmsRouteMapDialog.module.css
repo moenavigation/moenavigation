@@ -7,12 +7,15 @@
 .pointSelect svg { flex-shrink: 0; color: var(--blue); }
 .pointFields input, .pointFields select { width: 100%; min-width: 0; min-height: var(--target-size); }
 .fieldError { color: #962e3d; font-size: var(--font-small); font-weight: 400; line-height: 1.5; }
-.mapLink { display: inline-flex; align-items: center; justify-self: end; gap: .4rem; min-height: var(--target-size); max-width: 100%; color: var(--blue); font-size: var(--font-small); text-decoration: underline; text-underline-offset: .15rem; }
-.mapLink > svg { flex-shrink: 0; }
-.mapLink:focus-visible { outline: .15rem solid var(--blue); outline-offset: .2rem; border-radius: .2rem; }
+.mapTools { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem 1rem; min-width: 0; }
+.mapTools > button { gap: .5rem; max-width: 100%; white-space: normal; }
+.mapTools > .hint { flex: 1 1 14rem; }
+.mapTools > button[aria-pressed="true"] { background: #e9f3f9; }
 .error { margin: 0; padding: .9rem 1rem; border: 1px solid #e4ccd0; border-radius: .6rem; background: #fff5f5; color: #962e3d; overflow-wrap: anywhere; }
 .mapFrame { position: relative; isolation: isolate; min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: .65rem; background: #dcecf3; }
 .map { height: min(52rem, 55vh); min-height: 24rem; width: 100%; background: #dcecf3; }
+.mapFrame[data-placing="true"] .map { cursor: crosshair; }
+.mapFrame[data-placing="true"] .marker { cursor: pointer; }
 .mapFrame .marker { display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; cursor: grab; }
 .marker > span { display: grid; place-items: center; width: 1.85rem; height: 1.85rem; border: .15rem solid #fff; border-radius: 50%; background: #0b527f; color: #fff; font-size: var(--font-small); font-weight: 700; box-shadow: 0 .1rem .45rem #07273f55; }
 .marker[data-point-kind="origin"] > span { background: #082b50; }

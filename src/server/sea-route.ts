@@ -5,6 +5,7 @@ import { MAX_ROUTE_POINTS } from '@/lib/cms-route-fields';
 import type { GeneratedSeaRoute } from '@/lib/sea-route';
 import { HttpError } from './http';
 import { getSeaRouteLandMask } from './sea-route-land';
+import { connectSeaRouteEndpoints, seaRouteDistanceKm as distanceKm } from './sea-route-network';
 
 type Point = [number, number];
 const maxSnapKm = 100;
@@ -50,13 +51,6 @@ function excludeNetworkEdges(network: MarnetNetwork, blocked: Set<string>): Marn
   }
   return removed ? { type: 'FeatureCollection', features } : network;
 }
-function distanceKm(a: Point, b: Point) {
-  const radians = Math.PI / 180;
-  const halfLat = (b[0] - a[0]) * radians / 2, halfLon = (b[1] - a[1]) * radians / 2;
-  const value = Math.sin(halfLat) ** 2 + Math.cos(a[0] * radians) * Math.cos(b[0] * radians) * Math.sin(halfLon) ** 2;
-  return 6371.0088 * 2 * Math.atan2(Math.sqrt(Math.max(0, value)), Math.sqrt(Math.max(0, 1 - value)));
-}
-
 /** Generates a preview only. Applying and saving remain explicit CMS actions. */
 export async function generateSeaRoute(origin: Point, destination: Point): Promise<GeneratedSeaRoute> {
   if (!validPoint(origin) || !validPoint(destination)) throw new HttpError(422, messages.coordinates);
@@ -75,9 +69,13 @@ export async function generateSeaRoute(origin: Point, destination: Point): Promi
   // All graph work after the mask load is synchronous, including cache cleanup.
   try {
     for (let attempt = 0; attempt < maxRoutingAttempts; attempt++) {
+      const connection = connectSeaRouteEndpoints(routeNetwork, start, finish, maxSnapKm);
+      if (!connection) return fail(messages.snap);
+      if (connection.network !== routeNetwork) clearFinderCache();
+      routeNetwork = connection.network;
       let route: ReturnType<typeof seaRoute>;
       try {
-        route = seaRoute([start[1], start[0]], [finish[1], finish[0]], {
+        route = seaRoute(connection.origin.coordinates, connection.destination.coordinates, {
           network: routeNetwork, units: 'kilometers', maxSnapDistanceKm: maxSnapKm, allowArctic: false,
         });
       } catch (error) {
@@ -85,11 +83,13 @@ export async function generateSeaRoute(origin: Point, destination: Point): Promi
         if (error instanceof NoRouteError) return fail(messages.unavailable);
         throw error;
       }
-      // The library caps distance to the nearest line, not the chosen graph vertex.
-      if (route.properties.originSnapKm > maxSnapKm || route.properties.destinationSnapKm > maxSnapKm) return fail(messages.snap);
       if (route.geometry.type !== 'LineString') return fail(messages.unavailable);
       const networkPoints: Point[] = route.geometry.coordinates.map(coordinate => [coordinate[1], coordinate[0]]);
       if (networkPoints.length < 2 || networkPoints.some(point => !validPoint(point))) return fail(messages.unavailable);
+      // Path-finder may merge sub-metre coordinates. Never accept a faraway snap.
+      if (distanceKm(networkPoints[0], [connection.origin.coordinates[1], connection.origin.coordinates[0]]) > .002
+        || distanceKm(networkPoints.at(-1)!, [connection.destination.coordinates[1], connection.destination.coordinates[0]]) > .002) return fail(messages.unavailable);
+      if (distanceKm(start, networkPoints[0]) > maxSnapKm || distanceKm(finish, networkPoints.at(-1)!) > maxSnapKm) return fail(messages.snap);
       const waypoints: Point[] = [start];
       for (const point of networkPoints) if (!samePoint(waypoints[waypoints.length - 1], point)) waypoints.push(point);
       if (!samePoint(waypoints[waypoints.length - 1], finish)) waypoints.push(finish);

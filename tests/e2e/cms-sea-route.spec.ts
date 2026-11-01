@@ -163,15 +163,20 @@ test('a generated sea route is previewed before applying, preserves endpoint tex
   expect(saves).toBe(1);
 });
 
-test('unavoidable land contact returns a reviewable network route and only saves after applying and Save', async ({ page }, testInfo) => {
+test('the reported coastal endpoints generate a reviewable route and only save after applying and Save', async ({ page }, testInfo) => {
   await login(page);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const { editor, before, opener } = await openExisting(page);
-  await setEndpoints(editor);
-  const inlandOrigin: SeaRoutePoint = [13.75, 100.5];
-  const inlandText = ['13.750000000', '100.5000000000'];
-  await coordinate(editor, 'Origin point', 'Latitude').fill(inlandText[0]);
-  await coordinate(editor, 'Origin point', 'Longitude').fill(inlandText[1]);
+  // The destination is within 100 km of a maritime edge, but over 100 km
+  // from its nearest vertex. The former vertex guard rejected this exact pair.
+  const screenshotOrigin: SeaRoutePoint = [0.878983, 104.655717];
+  const screenshotDestination: SeaRoutePoint = [2.515278, 111.313529];
+  const screenshotOriginText = ['0.878983000', '104.6557170000'];
+  const screenshotDestinationText = ['2.515278000', '111.3135290000'];
+  for (const [label, values] of [['Origin point', screenshotOriginText], ['Destination point', screenshotDestinationText]] as const) {
+    await coordinate(editor, label, 'Latitude').fill(values[0]);
+    await coordinate(editor, label, 'Longitude').fill(values[1]);
+  }
   const portName = editor.getByRole('group', { name: 'Origin port', exact: true }).getByLabel('Port name · English', { exact: true });
   await portName.fill('Coastal route draft');
   const originalPoints = await pointValues(editor);
@@ -185,8 +190,10 @@ test('unavoidable land contact returns a reviewable network route and only saves
   const generated = await response.json() as GeneratedSeaRoute;
   expect(generated.touchesLand).toBe(true);
   expect(generated.waypoints.length).toBeGreaterThan(2);
-  expect(generated.waypoints[0]).toEqual(inlandOrigin);
-  expect(generated.waypoints.at(-1)).toEqual(destination);
+  expect(generated.waypoints.length).toBeLessThanOrEqual(100);
+  expect(Number.isFinite(generated.distanceKm) && generated.distanceKm > 0).toBe(true);
+  expect(generated.waypoints[0]).toEqual(screenshotOrigin);
+  expect(generated.waypoints.at(-1)).toEqual(screenshotDestination);
   const apply = preview.getByRole('button', { name: 'Use generated points', exact: true });
   await expect(apply).toBeEnabled();
   await expect(preview.getByText(landNote, { exact: true })).toBeVisible();
@@ -205,8 +212,8 @@ test('unavoidable land contact returns a reviewable network route and only saves
   await expect(preview).not.toBeVisible();
   await expect(opener).toBeFocused();
   const applied = await pointValues(editor);
-  expect(applied[0]).toEqual(inlandText);
-  expect(applied.at(-1)).toEqual(destinationText);
+  expect(applied[0]).toEqual(screenshotOriginText);
+  expect(applied.at(-1)).toEqual(screenshotDestinationText);
   expect(applied.map(point => point.map(Number))).toEqual(generated.waypoints);
   await expect(portName).toHaveValue('Coastal route draft');
   expect(saves).toBe(0);
@@ -218,6 +225,7 @@ test('unavoidable land contact returns a reviewable network route and only saves
   expect(saved.waypoints).toEqual(generated.waypoints);
   expect(saved.origin).toEqual({ ...before.origin, name: 'Coastal route draft' });
   expect(saved.destination).toEqual(before.destination);
+  expect(saved.revision).toBe(before.revision + 1);
   expect(saves).toBe(1);
 });
 

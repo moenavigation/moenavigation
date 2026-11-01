@@ -33,6 +33,8 @@ async function openMap(page: Page, editor: Locator, locale: CmsLocale = 'en') {
   const map = dialog.getByRole('region', { name: t('Route point editor map'), exact: true });
   await expect(map).toBeVisible();
   await expect(dialog.getByRole('button', { name: t('Zoom in'), exact: true })).toBeEnabled();
+  await expect(dialog.getByRole('link', { name: t('Open in Google Maps'), exact: true })).toHaveCount(0);
+  await expect(dialog.getByText(t('Apply these points, then save the route.'), { exact: true })).toHaveCount(0);
   return {
     dialog, map, opener,
     selected: dialog.getByRole('combobox', { name: t('Selected point'), exact: true }),
@@ -47,6 +49,21 @@ async function pointValues(editor: Locator, locale: CmsLocale = 'en') {
     .filter(input => input.getAttribute('aria-label')?.endsWith(` · ${suffix}`)).map(input => (input as HTMLInputElement).value), translateCms(locale, coordinate));
   const latitudes = await values('Latitude'), longitudes = await values('Longitude');
   return latitudes.map((latitude, index) => [latitude, longitudes[index]]);
+}
+
+async function blankMapSpot(map: Locator) {
+  await map.scrollIntoViewIfNeeded();
+  const spot = await map.evaluate(element => {
+    const bounds = element.getBoundingClientRect();
+    for (const fy of [.5, .35, .65, .25, .75]) for (const fx of [.3, .7, .5]) {
+      const x = bounds.x + bounds.width * fx, y = bounds.y + bounds.height * fy;
+      const target = document.elementFromPoint(x, y);
+      if (target && element.contains(target) && !target.closest('[data-route-point-index]')) return { x, y };
+    }
+    return null;
+  });
+  expect(spot).not.toBeNull();
+  return spot!;
 }
 
 async function dragMarker(page: Page, map: Locator, index: number) {
@@ -113,6 +130,73 @@ test('dragging origin, intermediate and destination updates only those points af
   expect(saves).toBe(1);
 });
 
+test('adding points on the map preserves the destination and only commits after Apply and Save', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await login(page);
+  const { editor, before } = await openExisting(page);
+  await editor.getByLabel('Origin point · Latitude', { exact: true }).fill('13.0833000000');
+  const portName = editor.getByRole('group', { name: 'Origin port', exact: true }).getByLabel('Port name · English', { exact: true });
+  await portName.fill('Map insertion draft');
+  const original = await pointValues(editor);
+  const expected = original.map(point => [...point]);
+  let saves = 0;
+  page.on('request', request => { if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/cms/content') saves++; });
+  const view = await openMap(page, editor);
+  const add = view.dialog.getByRole('button', { name: 'Add point on map', exact: true });
+  await add.focus();
+  await add.press('Enter');
+  await expect(view.apply).toBeDisabled();
+  await expect(view.dialog.getByText('Click the map to add an intermediate point.', { exact: true })).toBeVisible();
+  await view.dialog.getByRole('button', { name: 'Cancel adding point', exact: true }).click();
+  await expect(view.selected.locator('option')).toHaveCount(original.length);
+  await expect(view.apply).toBeEnabled();
+  for (let added = 0; added < 2; added++) {
+    await add.click();
+    const spot = await blankMapSpot(view.map);
+    await page.mouse.click(spot.x, spot.y);
+    const index = expected.length - 1;
+    await expect(view.selected.locator('option')).toHaveCount(expected.length + 1);
+    await expect(view.selected).toHaveValue(String(index));
+    const point = [await view.latitude.inputValue(), await view.longitude.inputValue()];
+    expect(point.map(Number).every(Number.isFinite)).toBe(true);
+    expected.splice(index, 0, point);
+    await expect(add).toBeVisible();
+    const insertedMarker = view.map.locator(`[data-route-point-index="${index}"]`);
+    await expect(insertedMarker).toHaveAttribute('data-point-kind', 'intermediate');
+    await expect(insertedMarker).toHaveAttribute('aria-label', `Select Intermediate point ${index}`);
+    const destinationMarker = view.map.locator(`[data-route-point-index="${expected.length - 1}"]`);
+    await expect(destinationMarker).toHaveAttribute('data-point-kind', 'destination');
+    await expect(destinationMarker).toHaveAttribute('aria-label', 'Select Destination point');
+    if (added === 0) {
+      await dragMarker(page, view.map, index);
+      await expect.poll(async () => [await view.latitude.inputValue(), await view.longitude.inputValue()]).not.toEqual(point);
+      expected[index] = [await view.latitude.inputValue(), await view.longitude.inputValue()];
+    }
+  }
+  await view.selected.selectOption(String(expected.length - 1));
+  await expect(view.latitude).toHaveValue(original.at(-1)![0]);
+  await expect(view.longitude).toHaveValue(original.at(-1)![1]);
+  expect(await pointValues(editor)).toEqual(original);
+  expect(saves).toBe(0);
+  expect((await records(page)).find(record => record.id === before.id)).toEqual(before);
+  await view.apply.click();
+  await expect(view.dialog).not.toBeVisible();
+  expect(await pointValues(editor)).toEqual(expected);
+  await expect(portName).toHaveValue('Map insertion draft');
+  expect(saves).toBe(0);
+  const pending = page.waitForResponse(response => new URL(response.url()).pathname === '/api/cms/content' && response.request().method() === 'POST');
+  await editor.getByRole('button', { name: 'Save', exact: true }).click();
+  const response = await pending;
+  expect(response.status(), await response.text()).toBe(200);
+  const saved = (await response.json()).record as ContentRecord;
+  expect(saved.waypoints).toEqual(expected.map(point => point.map(Number)));
+  expect(saved.origin).toEqual({ ...before.origin, name: 'Map insertion draft' });
+  expect(saved.destination).toEqual(before.destination);
+  expect(saved.revision).toBe(before.revision + 1);
+  expect(saves).toBe(1);
+});
+
 test('keyboard coordinates validate locally and Enter, Cancel and Escape never save or change the parent draft', async ({ page }) => {
   await login(page);
   const { editor } = await openExisting(page);
@@ -166,6 +250,7 @@ test('a new route can place both blank endpoints on the map without committing o
   await expand(editor, 'Map setup');
   const first = await openMap(page, editor);
   await expect(first.apply).toBeDisabled();
+  await expect(first.dialog.getByRole('button', { name: 'Add point on map', exact: true })).toBeDisabled();
   await expect(first.selected.locator('option')).toHaveCount(2);
   await first.dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
   expect(await pointValues(editor)).toEqual([]);
@@ -219,24 +304,18 @@ test.describe('touch map point editor', () => {
         await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
         await expect.poll(() => view.dialog.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
         if (width === 320) {
-          await view.map.scrollIntoViewIfNeeded();
-          // Choose actual exposed map space, excluding markers and sticky dialog controls.
-          const spot = await view.map.evaluate(element => {
-            const bounds = element.getBoundingClientRect();
-            for (const fy of [.5, .35, .65, .25, .75]) for (const fx of [.3, .7, .5]) {
-              const x = bounds.x + bounds.width * fx, y = bounds.y + bounds.height * fy;
-              const target = document.elementFromPoint(x, y);
-              if (target && element.contains(target) && !target.closest('[data-route-point-index]')) return { x, y };
-            }
-            return null;
-          });
-          expect(spot).not.toBeNull();
+          const spot = await blankMapSpot(view.map);
           const beforeTap = [await view.latitude.inputValue(), await view.longitude.inputValue()];
-          await page.touchscreen.tap(spot!.x, spot!.y);
+          await page.touchscreen.tap(spot.x, spot.y);
           await expect.poll(async () => [await view.latitude.inputValue(), await view.longitude.inputValue()]).not.toEqual(beforeTap);
-          const point = [Number(await view.latitude.inputValue()), Number(await view.longitude.inputValue())];
-          await expect(view.dialog.getByRole('link', { name: translateCms(locale, 'Open in Google Maps'), exact: true }))
-            .toHaveAttribute('href', `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(point.join(','))}`);
+          await view.dialog.getByRole('button', { name: translateCms(locale, 'Add point on map'), exact: true }).click();
+          await expect(view.apply).toBeDisabled();
+          const addSpot = await blankMapSpot(view.map);
+          await page.touchscreen.tap(addSpot.x, addSpot.y);
+          await expect(view.selected.locator('option')).toHaveCount(original.length + 1);
+          await expect(view.selected).toHaveValue(String(original.length - 1));
+          await expect(view.apply).toBeEnabled();
+          await expect(view.dialog.getByRole('link', { name: translateCms(locale, 'Open in Google Maps'), exact: true })).toHaveCount(0);
         }
         await view.dialog.screenshot({ path: testInfo.outputPath(`route-map-editor-${locale}-${width}.png`), animations: 'disabled' });
       }

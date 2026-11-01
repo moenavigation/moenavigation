@@ -3,13 +3,12 @@
 import 'leaflet/dist/leaflet.css';
 
 import { useCallback, useEffect, useId, useRef, useState, type RefObject } from 'react';
-import { Check, ExternalLink, MapPin, Minus, Plus, RotateCcw } from 'lucide-react';
+import { Check, MapPin, Minus, Plus, RotateCcw, X } from 'lucide-react';
 import type * as Leaflet from 'leaflet';
 import { useCmsLocale } from '@/lib/cms-locale';
 import { cmsContentPlaceholder } from '@/lib/cms-content-placeholders';
-import { routeCoordinateRows, updateRouteCoordinate } from '@/lib/cms-route-fields';
-import { googleMapsPointUrl } from '@/lib/google-maps';
-import { initialMapRouteText, isMapRouteReady, mapRoutePoints, moveMapRoutePoint } from '@/lib/cms-route-map';
+import { MAX_ROUTE_POINTS, routeCoordinateRows, updateRouteCoordinate } from '@/lib/cms-route-fields';
+import { addMapRoutePoint, initialMapRouteText, isMapRouteReady, mapRoutePoints, moveMapRoutePoint } from '@/lib/cms-route-map';
 import type { SeaRoutePoint } from '@/lib/sea-route';
 import Dialog from './Dialog';
 import styles from './CmsRouteMapDialog.module.css';
@@ -19,20 +18,23 @@ const osmAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright"
 const providerAttribution = process.env.NEXT_PUBLIC_MAP_TILE_ATTRIBUTION;
 const attribution = providerAttribution ? `${providerAttribution} · ${osmAttribution}` : osmAttribution;
 
-function PointMap({ text, selected, disabled, onSelect, onMove, onReady }: {
+function PointMap({ text, selected, disabled, placing, onSelect, onMove, onPlace, onReady }: {
   text: string;
   selected: number;
   disabled: boolean;
+  placing: boolean;
   onSelect: (index: number) => void;
   onMove: (index: number, latitude: number, longitude: number) => void;
+  onPlace: (latitude: number, longitude: number) => void;
   onReady: (ready: boolean) => void;
 }) {
   const { t } = useCmsLocale();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Leaflet.Map | null>(null);
-  const latest = useRef({ text, selected, disabled, onSelect, onMove });
+  const latest = useRef({ text, selected, disabled, placing, onSelect, onMove, onPlace });
   const syncRef = useRef<() => void>(() => {});
   const fitRef = useRef<() => void>(() => {});
+  const beginPlacementRef = useRef<() => void>(() => {});
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [tileError, setTileError] = useState(false);
@@ -40,11 +42,13 @@ function PointMap({ text, selected, disabled, onSelect, onMove, onReady }: {
 
   useEffect(() => {
     const selectionChanged = latest.current.selected !== selected;
-    latest.current = { text, selected, disabled, onSelect, onMove };
+    const beganPlacement = placing && !latest.current.placing;
+    latest.current = { text, selected, disabled, placing, onSelect, onMove, onPlace };
+    if (beganPlacement) beginPlacementRef.current();
     syncRef.current();
     const point = mapRoutePoints(text)[selected];
     if (selectionChanged && point) mapRef.current?.panInside(point, { padding: [45, 45], animate: false });
-  }, [text, selected, disabled, onSelect, onMove]);
+  }, [text, selected, disabled, placing, onSelect, onMove, onPlace]);
 
   useEffect(() => {
     let disposed = false;
@@ -53,6 +57,7 @@ function PointMap({ text, selected, disabled, onSelect, onMove, onReady }: {
     const markers = new Map<number, Leaflet.Marker>();
     let dragging: number | null = null;
     let suppressClickUntil = 0;
+    beginPlacementRef.current = () => { suppressClickUntil = 0; };
 
     async function initialize() {
       const leaflet = await import('leaflet');
@@ -108,7 +113,7 @@ function PointMap({ text, selected, disabled, onSelect, onMove, onReady }: {
             number.setAttribute('aria-hidden', 'true');
             marker = leaflet.marker(point, {
               icon: leaflet.divIcon({ className: styles.marker, html: number, iconSize: [44, 44], iconAnchor: [22, 22] }),
-              draggable: !state.disabled, autoPan: true, autoPanPadding: [45, 45],
+              draggable: !state.disabled && !state.placing, autoPan: true, autoPanPadding: [45, 45],
               keyboard: true, autoPanOnFocus: false, bubblingMouseEvents: false,
             }).addTo(currentMap);
             const currentMarker = marker;
@@ -119,22 +124,20 @@ function PointMap({ text, selected, disabled, onSelect, onMove, onReady }: {
             });
             marker.on('dragstart', () => { dragging = index; select(); });
             marker.on('drag', () => {
-              if (latest.current.disabled) return;
+              if (latest.current.disabled || latest.current.placing) return;
               const position = currentMarker.getLatLng();
               latest.current.onMove(index, position.lat, position.lng);
             });
             marker.on('dragend', () => {
               dragging = null;
               suppressClickUntil = Date.now() + 250;
-              if (!latest.current.disabled) {
+              if (!latest.current.disabled && !latest.current.placing) {
                 const position = currentMarker.getLatLng();
                 latest.current.onMove(index, position.lat, position.lng);
               }
             });
             const element = marker.getElement()!;
             element.dataset.routePointIndex = String(index);
-            element.dataset.pointKind = index === 0 ? 'origin' : index === points.length - 1 ? 'destination' : 'intermediate';
-            element.setAttribute('aria-label', t('Select {point}', { point: label(index, points.length) }));
             element.addEventListener('keydown', event => {
               if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); event.stopPropagation(); select(); }
             });
@@ -145,19 +148,21 @@ function PointMap({ text, selected, disabled, onSelect, onMove, onReady }: {
           } else if (dragging !== index) marker.setLatLng(point);
           const element = marker.getElement();
           if (element) {
+            element.dataset.pointKind = index === 0 ? 'origin' : index === points.length - 1 ? 'destination' : 'intermediate';
+            element.setAttribute('aria-label', t('Select {point}', { point: label(index, points.length) }));
             element.dataset.selected = String(index === state.selected);
             element.setAttribute('aria-pressed', String(index === state.selected));
             element.setAttribute('aria-disabled', String(state.disabled));
           }
           marker.setZIndexOffset(index === state.selected ? 2000 : index === 0 || index === points.length - 1 ? 1000 : 0);
-          if (state.disabled) marker.dragging?.disable(); else marker.dragging?.enable();
+          if (state.disabled || state.placing) marker.dragging?.disable(); else marker.dragging?.enable();
         });
       }
       syncRef.current = sync;
       sync();
       currentMap.on('click', event => {
         if (latest.current.disabled || dragging !== null || Date.now() < suppressClickUntil) return;
-        latest.current.onMove(latest.current.selected, event.latlng.lat, event.latlng.lng);
+        latest.current.onPlace(event.latlng.lat, event.latlng.lng);
       });
       currentMap.on('dragend', () => { suppressClickUntil = Date.now() + 250; });
       currentMap.on('zoomend', () => { if (!disposed) setZoom(currentMap.getZoom()); });
@@ -175,11 +180,12 @@ function PointMap({ text, selected, disabled, onSelect, onMove, onReady }: {
       mapRef.current = null;
       syncRef.current = () => {};
       fitRef.current = () => {};
+      beginPlacementRef.current = () => {};
       onReady(false);
     };
   }, [t, onReady]);
 
-  return <div className={styles.mapFrame}>
+  return <div className={styles.mapFrame} data-placing={placing}>
     <div ref={containerRef} className={styles.map} role="region" aria-label={t('Route point editor map')} />
     <div className={styles.mapControls} role="group" aria-label={t('Map controls')}>
       <button type="button" aria-label={t('Zoom in')} disabled={!ready || failed || zoom >= 18} onClick={() => mapRef.current?.zoomIn()}><Plus size={19} aria-hidden="true" /></button>
@@ -204,15 +210,27 @@ export default function CmsRouteMapDialog({ sourceText, currentText, triggerRef,
   const [selected, setSelected] = useState(0);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState('');
+  const [adding, setAdding] = useState(false);
   const appliedRef = useRef(false);
   const stale = sourceText !== currentText;
   const rows = routeCoordinateRows(draft);
   const row = rows[selected];
-  const selectedPoint = mapRoutePoints(draft)[selected];
   const valid = isMapRouteReady(draft);
   const move = useCallback((index: number, latitude: number, longitude: number) => {
     if (!stale) setDraft(previous => moveMapRoutePoint(previous, index, latitude, longitude));
   }, [stale]);
+  const select = useCallback((index: number) => { setSelected(index); setAdding(false); }, []);
+  const place = useCallback((latitude: number, longitude: number) => {
+    if (stale) return;
+    if (adding) {
+      const next = addMapRoutePoint(draft, latitude, longitude);
+      if (!next) return;
+      setDraft(next.text);
+      setSelected(next.index);
+      setAdding(false);
+      setError('');
+    } else setDraft(previous => moveMapRoutePoint(previous, selected, latitude, longitude));
+  }, [stale, adding, draft, selected]);
 
   function validation(field: 'latitude' | 'longitude', value: string) {
     if (!value.trim()) return '';
@@ -220,7 +238,7 @@ export default function CmsRouteMapDialog({ sourceText, currentText, triggerRef,
     return Number.isFinite(Number(value)) && Math.abs(Number(value)) <= limit ? '' : t(field === 'latitude' ? 'Enter a latitude from −90 to 90.' : 'Enter a longitude from −180 to 180.');
   }
   function apply() {
-    if (stale || !ready || !valid || appliedRef.current) return;
+    if (stale || adding || !ready || !valid || appliedRef.current) return;
     appliedRef.current = true;
     try { onApply(draft); }
     catch (cause) { appliedRef.current = false; setError(cause instanceof Error ? cause.message : 'The map points could not be applied. Please try again.'); }
@@ -233,9 +251,9 @@ export default function CmsRouteMapDialog({ sourceText, currentText, triggerRef,
       <p className={styles.hint} id={`${id}-hint`}>{t('Drag a point, or select a point and click the map to place it.')}</p>
       {stale && <p className={styles.error} role="alert">{t('The route points changed while this map was open. Close it and open the map again.')}</p>}
       {error && <p className={styles.error} role="alert">{t(error)}</p>}
-      <fieldset className={styles.pointFields} disabled={stale}>
+      <fieldset className={styles.pointFields} disabled={stale || adding}>
         <label className={styles.pointSelect} htmlFor={`${id}-point`}><span><MapPin size={18} aria-hidden="true" />{t('Selected point')}</span>
-          <select id={`${id}-point`} value={selected} onChange={event => setSelected(Number(event.target.value))} aria-describedby={`${id}-hint`}>
+          <select id={`${id}-point`} value={selected} onChange={event => select(Number(event.target.value))} aria-describedby={`${id}-hint`}>
             {rows.map((_, index) => <option key={index} value={index}>{index + 1}. {index === 0 ? t('Origin point') : index === rows.length - 1 ? t('Destination point') : t('Intermediate point {number}', { number: index })}</option>)}
           </select>
         </label>
@@ -251,11 +269,13 @@ export default function CmsRouteMapDialog({ sourceText, currentText, triggerRef,
           </label>;
         })}
       </fieldset>
-      {selectedPoint && <a className={styles.mapLink} href={googleMapsPointUrl(...selectedPoint)} target="_blank" rel="noopener noreferrer">{t('Open in Google Maps')}<ExternalLink size={17} aria-hidden="true" /></a>}
-      <PointMap text={draft} selected={selected} disabled={stale} onSelect={setSelected} onMove={move} onReady={setReady} />
+      <div className={styles.mapTools}>
+        <button type="button" className="button secondary" aria-pressed={adding} aria-describedby={adding ? `${id}-add-hint` : undefined} disabled={stale || !ready || (!adding && (!valid || rows.length >= MAX_ROUTE_POINTS))} onClick={() => { setError(''); setAdding(value => !value); }}>{adding ? <X size={18} aria-hidden="true" /> : <Plus size={18} aria-hidden="true" />}{t(adding ? 'Cancel adding point' : 'Add point on map')}</button>
+        {adding && <p className={styles.hint} id={`${id}-add-hint`} role="status">{t('Click the map to add an intermediate point.')}</p>}
+      </div>
+      <PointMap text={draft} selected={selected} disabled={stale} placing={adding} onSelect={select} onMove={move} onPlace={place} onReady={setReady} />
       {!valid && <p className={styles.hint}>{t('Set valid coordinates for every point before applying.')}</p>}
-      <p className={styles.hint}>{t('Apply these points, then save the route.')}</p>
-      <div className={styles.actions}><button type="button" className="button secondary" onClick={onClose}>{t('Cancel')}</button><button type="button" className="button" disabled={stale || !ready || !valid} onClick={apply}><Check size={18} aria-hidden="true" />{t('Use map points')}</button></div>
+      <div className={styles.actions}><button type="button" className="button secondary" onClick={onClose}>{t('Cancel')}</button><button type="button" className="button" disabled={stale || adding || !ready || !valid} onClick={apply}><Check size={18} aria-hidden="true" />{t('Use map points')}</button></div>
     </div>
   </Dialog>;
 }

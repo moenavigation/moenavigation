@@ -7,11 +7,26 @@ import { MAX_ROUTE_POINTS } from '../src/lib/cms-route-fields';
 import { HttpError } from '../src/server/http';
 import { generateSeaRoute } from '../src/server/sea-route';
 import { createLandMask, getSeaRouteLandMask } from '../src/server/sea-route-land';
+import { seaRouteDistanceKm } from '../src/server/sea-route-network';
 
 type Point = [number, number];
 const gulf: Point = [12.9, 100.7];
 const portKlang: Point = [3, 101];
 const rejection = (message: RegExp) => (error: unknown) => error instanceof HttpError && error.status === 422 && message.test(error.message);
+
+function onSourceSegment([latitude, longitude]: Point) {
+  const y = (lat: number) => Math.log(Math.tan(Math.PI / 4 + Math.max(-85.0511287798, Math.min(85.0511287798, lat)) * Math.PI / 360));
+  const p = [longitude * Math.PI / 180, y(latitude)];
+  return DEFAULT_MARNET.features.some(feature => feature.geometry.coordinates.some((end, index, coordinates) => {
+    if (!index) return false;
+    const start = coordinates[index - 1];
+    if (Math.abs(end[0] - start[0]) > 180) return false;
+    const a = [start[0] * Math.PI / 180, y(start[1])], b = [end[0] * Math.PI / 180, y(end[1])];
+    return Math.abs((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])) < 1e-10
+      && p[0] >= Math.min(a[0], b[0]) - 1e-10 && p[0] <= Math.max(a[0], b[0]) + 1e-10
+      && p[1] >= Math.min(a[1], b[1]) - 1e-10 && p[1] <= Math.max(a[1], b[1]) + 1e-10;
+  }));
+}
 
 const syntheticLand: FeatureCollection<Polygon | MultiPolygon> = {
   type: 'FeatureCollection',
@@ -55,7 +70,7 @@ test('land checks follow the displayed Web Mercator segment instead of a differe
   assert.equal(mask.intersectsPath([[0, 0], [80, 10]]), true);
 });
 
-test('a real Gulf-to-Malacca route detours around the Malay peninsula using original maritime vertices', async () => {
+test('a real Gulf-to-Malacca route detours around the Malay peninsula along source maritime segments', async () => {
   const origin: Point = [...gulf], destination: Point = [...portKlang];
   const originalNetwork = JSON.stringify(DEFAULT_MARNET);
   const mask = await getSeaRouteLandMask();
@@ -74,7 +89,7 @@ test('a real Gulf-to-Malacca route detours around the Malay peninsula using orig
   assert.equal(mask.intersectsPath(route.waypoints), false);
   assert.equal(route.touchesLand, false, 'A clear maritime path takes priority over a land-contact fallback.');
   const networkVertices = new Set(DEFAULT_MARNET.features.flatMap(feature => feature.geometry.coordinates.map(([longitude, latitude]) => `${latitude},${longitude}`)));
-  for (const point of route.waypoints.slice(1, -1)) assert.ok(networkVertices.has(`${point[0]},${point[1]}`));
+  for (const point of route.waypoints.slice(1, -1)) assert.ok(networkVertices.has(`${point[0]},${point[1]}`) || onSourceSegment(point));
   assert.equal(JSON.stringify(DEFAULT_MARNET), originalNetwork, 'Land exclusions must not mutate the packaged network.');
   assert.deepEqual(await generateSeaRoute(origin, destination), route, 'Cached graph results stay stable.');
 });
@@ -117,7 +132,7 @@ test('land contact returns a flagged maritime preview without moving inland or c
     assert.notEqual(route.waypoints.at(-1), destination);
     assert.ok(route.waypoints.length > 2 && route.waypoints.length <= MAX_ROUTE_POINTS);
     assert.ok(Number.isFinite(route.distanceKm) && route.distanceKm > 0);
-    for (const point of route.waypoints.slice(1, -1)) assert.ok(vertices.has(`${point[0]},${point[1]}`), 'Fallbacks retain actual maritime vertices.');
+    for (const point of route.waypoints.slice(1, -1)) assert.ok(vertices.has(`${point[0]},${point[1]}`) || onSourceSegment(point), 'Fallback points remain on source maritime geometry.');
     assert.equal(JSON.stringify([origin, destination]), original);
   }
 });
@@ -153,11 +168,32 @@ test('fallback results and clear routes are independent of earlier graph exclusi
   assert.equal(JSON.stringify(DEFAULT_MARNET), originalNetwork);
 });
 
-test('distant snaps and unavailable short hops never fall back to a straight line', async () => {
+test('distant endpoint connections remain rejected', async () => {
   await assert.rejects(generateSeaRoute([85, 0], gulf), rejection(/too far/));
-  // Penang is near a network line, but its chosen graph vertex exceeds the snap limit.
+  // The nearest available shipping segment is over 116 km from this Penang point.
   await assert.rejects(generateSeaRoute(gulf, [5.3, 100.1]), rejection(/too far/));
-  await assert.rejects(generateSeaRoute(gulf, [12.91, 100.71]), rejection(/No sea route/));
+  await assert.rejects(generateSeaRoute(gulf, [18.7883, 98.9853]), rejection(/too far/));
+});
+
+test('short hops at distinct positions on the same source segment retain network geometry', async () => {
+  const finish: Point = [12.91, 100.71];
+  const route = await generateSeaRoute(gulf, finish);
+  assert.deepEqual(route.waypoints[0], gulf);
+  assert.deepEqual(route.waypoints.at(-1), finish);
+  assert.ok(route.waypoints.length >= 4);
+  for (const point of route.waypoints.slice(1, -1)) assert.ok(onSourceSegment(point));
+});
+
+test('the screenshot route connects to nearby segment positions instead of distant sparse vertices', async () => {
+  const origin: Point = [.878983, 104.655717], destination: Point = [2.515278, 111.313529];
+  const route = await generateSeaRoute(origin, destination);
+  assert.deepEqual(route.waypoints[0], origin);
+  assert.deepEqual(route.waypoints.at(-1), destination);
+  assert.ok(route.waypoints.length > 4 && route.waypoints.length <= MAX_ROUTE_POINTS);
+  assert.ok(seaRouteDistanceKm(origin, route.waypoints[1]) < 100);
+  assert.ok(seaRouteDistanceKm(destination, route.waypoints.at(-2)!) < 100);
+  assert.ok(route.distanceKm > 700 && route.distanceKm < 1300);
+  for (const point of route.waypoints.slice(1, -1)) assert.ok(onSourceSegment(point));
 });
 
 test('long routes exceeding the CMS point budget are rejected without cutting corners', async () => {

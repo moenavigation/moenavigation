@@ -2,6 +2,9 @@
 // customer enquiries are never passed through a general translation service.
 export const cmsMessagesThai: Record<string, string> = {
   'Edit points on map': 'แก้ไขจุดบนแผนที่',
+  'Add point on map': 'เพิ่มจุดบนแผนที่',
+  'Cancel adding point': 'ยกเลิกการเพิ่มจุด',
+  'Click the map to add an intermediate point.': 'คลิกบนแผนที่เพื่อเพิ่มจุดระหว่างทาง',
   'The map points could not be applied. Please try again.': 'ไม่สามารถนำจุดบนแผนที่ไปใช้ได้ กรุณาลองอีกครั้ง',
   'Selected point': 'จุดที่เลือก',
   'Drag a point, or select a point and click the map to place it.': 'ลากจุดเพื่อย้ายตำแหน่ง หรือเลือกจุดแล้วคลิกบนแผนที่เพื่อกำหนดตำแหน่ง',
