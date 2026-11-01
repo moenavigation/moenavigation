@@ -1,5 +1,8 @@
 'use client';
 
+import useTimedNotice from './useTimedNotice';
+import useDialogBackdrop from './useDialogBackdrop';
+import CmsWorkingPanel from './CmsWorkingPanel';
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Activity, Cloud, Database, ExternalLink, Gauge, Info, Pencil, RefreshCw, Settings2, X } from 'lucide-react';
 import { CmsRequestError, cmsErrorText, cmsRequest } from '@/lib/cms-client';
@@ -82,7 +85,7 @@ export default function CmsUsageDashboard() {
   const [data, setData] = useState<UsageOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
+  const [notice, setNotice] = useTimedNotice();
   const [dialog, setDialog] = useState<DialogKind | null>(null);
   const [cooldownUntil, setCooldownUntil] = useState(0);
   const [now, setNow] = useState(() => Date.now());
@@ -108,7 +111,7 @@ export default function CmsUsageDashboard() {
       accept(result); if (manual) setNotice(result.refreshed ? 'Usage check completed. Provider reporting times may differ.' : 'Using recent readings.');
     } catch (cause) { if (!controller.signal.aborted && alive.current) setError(cmsErrorText(cause)); }
     finally { if (request.current === controller) { request.current = null; if (alive.current) setLoading(false); } }
-  }, [accept]);
+  }, [accept, setNotice]);
   useEffect(() => {
     alive.current = true;
     const timer = setTimeout(() => void load(), 0);
@@ -123,9 +126,9 @@ export default function CmsUsageDashboard() {
   return <section className={styles.dashboard} aria-label={t('Service usage')}>
     <div className={styles.toolbar}><div><span>{t('Checks are cached for 10 minutes. Dashboard readings stay as entered until you update them.')}</span></div><div className={styles.actions}><button type="button" className="button secondary" disabled={loading || !data} onClick={event => { event.currentTarget.focus({ preventScroll: true }); setDialog('limits'); }}><Settings2 size={18} aria-hidden="true" />{t('Monitoring limits')}</button><button type="button" className="button" disabled={loading || remaining > 0} onClick={() => void load(true)}><RefreshCw size={18} aria-hidden="true" className={loading ? styles.spinning : ''} />{t(loading ? 'Checking usage…' : 'Refresh usage')}</button></div></div>
     {remaining > 0 && <p className={styles.cooldown}>{t('Refresh available in {seconds}s', { seconds: remaining })}</p>}
+    <CmsWorkingPanel active={loading && !dialog} title={data ? 'Checking usage…' : 'Loading service usage…'} />
     {error && <div className={styles.error} role="alert"><p>{t(error)}</p>{data && <p>{t('Your last successful readings are still shown below.')}</p>}{!data && <button type="button" className="button secondary" disabled={loading || remaining > 0} onClick={() => void load(true)}>{t('Try again')}</button>}</div>}
     {notice && <p className={styles.notice} role="status">{t(notice)}</p>}
-    {!data && loading && <div className={styles.loading} role="status"><Gauge size={28} aria-hidden="true" /><p>{t('Loading service usage…')}</p></div>}
     {data && <div className={styles.providers}>{data.providers.map(provider => <ProviderPanel key={provider.id} provider={provider} disabled={loading} onReading={() => setDialog('reading')} />)}</div>}
     <p className={styles.footnote}><Info size={18} aria-hidden="true" /><span>{t('Unknown means the provider has not supplied a reading or allowance. It does not mean zero usage or unlimited capacity.')} {t('Storage and transfer sizes use decimal KB, MB and GB. Monitoring storage limits use MiB where labelled.')}</span></p>
     {dialog && data && <UsageSettingsDialog kind={dialog} initialSettings={data.settings} onOverview={accept} onClose={() => setDialog(null)} onSaved={result => { accept(result); setDialog(null); setNotice(dialog === 'reading' ? 'Vercel reading saved.' : 'Monitoring limits saved.'); }} />}
@@ -152,6 +155,8 @@ function UsageSettingsDialog({ kind, initialSettings, onClose, onSaved, onOvervi
   const [period, setPeriod] = useState(initialSettings.vercelReading?.periodLabel || t('Provider dashboard reporting window'));
   const [limits, setLimits] = useState(() => limitFields.map(field => { const value = initialSettings.allowances.find(item => item.provider === field.provider && item.metric === field.metric); return value ? String(value.limit / field.factor) : ''; }));
   const [saving, setSaving] = useState(false);
+  const [workingTitle, setWorkingTitle] = useState('Saving…');
+  const backdrop = useDialogBackdrop(onClose, saving);
   const [clearReading, setClearReading] = useState(false);
   const [error, setError] = useState('');
   const [conflict, setConflict] = useState<UsageSettings | 'unloaded' | null>(null);
@@ -188,7 +193,7 @@ function UsageSettingsDialog({ kind, initialSettings, onClose, onSaved, onOvervi
   }
   async function reviewLatest() {
     if (savingRef.current) return;
-    savingRef.current = true; setSaving(true);
+    savingRef.current = true; setSaving(true); setWorkingTitle('Loading latest settings…');
     try { const latest = await cmsRequest<UsageOverview>('/api/cms/usage'); if (alive.current) { setConflict(latest.settings); onOverview(latest); setError(''); } }
     catch (cause) { if (alive.current) setError(cmsErrorText(cause)); }
     finally { savingRef.current = false; if (alive.current) setSaving(false); }
@@ -198,10 +203,11 @@ function UsageSettingsDialog({ kind, initialSettings, onClose, onSaved, onOvervi
     if (savingRef.current || conflict) return;
     let desired: SettingsInput;
     try { desired = desiredInput(); } catch (cause) { setError(cmsErrorText(cause)); return; }
-    savingRef.current = true; setSaving(true); setError('');
+    savingRef.current = true; setSaving(true); setWorkingTitle('Saving…'); setError('');
     try { const result = await cmsRequest<UsageOverview>('/api/cms/usage', { method: 'PUT', body: JSON.stringify(desired) }); if (alive.current) onSaved(result); }
     catch (cause) {
       if (!(cause instanceof CmsRequestError) || cause.status === 0 || cause.status >= 500 || cause.status === 409) {
+        setWorkingTitle('Checking saved settings…');
         try {
           const latest = await cmsRequest<UsageOverview>('/api/cms/usage');
           if (sameSettings(latest.settings, desired, base)) { if (alive.current) onSaved(latest); return; }
@@ -211,8 +217,9 @@ function UsageSettingsDialog({ kind, initialSettings, onClose, onSaved, onOvervi
       if (alive.current) setError(cmsErrorText(cause));
     } finally { savingRef.current = false; if (alive.current) setSaving(false); }
   }
-  return <dialog ref={modal} className={styles.dialog} aria-labelledby={titleId} onKeyDown={containDialogFocus} onCancel={event => { event.preventDefault(); if (!saving) onClose(); }}>
+  return <dialog ref={modal} className={styles.dialog} aria-labelledby={titleId} onKeyDown={containDialogFocus} onCancel={event => { event.preventDefault(); if (!saving) onClose(); }} {...backdrop}>
     <header className={styles.dialogHeading}><h2 id={titleId}>{t(title)}</h2><button type="button" className={styles.close} autoFocus aria-label={t('Close usage settings')} disabled={saving} onClick={onClose}><X size={21} aria-hidden="true" /></button></header>
+    <CmsWorkingPanel active={saving} title={workingTitle} className={styles.working} />
     <form className={styles.form} onSubmit={save} aria-busy={saving}><div className={styles.dialogBody}>
       <p>{t(kind === 'reading' ? 'Copy the readings from your Vercel dashboard. Leave a number blank if it is unknown.' : 'These allowances are used only by this monitor. They do not change your provider plan or billing.')}</p>
       {kind === 'reading' && initialSettings.vercelReading && <label className={styles.clearReading}><input type="checkbox" checked={clearReading} disabled={saving} onChange={event => setClearReading(event.target.checked)} /><span>{t('Clear saved reading')}<small>{t('Automatic readings appear when the server connection is available.')}</small></span></label>}

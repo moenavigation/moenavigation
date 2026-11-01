@@ -7,6 +7,7 @@ import { attentionTypes, type AttentionPage, type AttentionQuery } from '@/lib/c
 import { useCmsLocale } from '@/lib/cms-locale';
 import type { ContentRecord } from '@/lib/cms-types';
 import Dialog from './Dialog';
+import CmsWorkingPanel from './CmsWorkingPanel';
 import styles from './CmsAttentionDialog.module.css';
 
 type Props = { open: boolean; onClose: () => void; onEdit: (record: ContentRecord) => void; revision: number };
@@ -76,6 +77,7 @@ export default function CmsAttentionDialog({ open, onClose, onEdit, revision }: 
       <div className={styles.results}><span role="status">{loadingInitial ? t('Checking content…') : current ? t('Showing {count} of {total} items needing attention', { count: current.items.length, total: current.total }) : t('Content review unavailable')}</span>{filtered && <button type="button" className={styles.clear} onClick={clear}><X size={17} aria-hidden="true" />{t('Clear filters')}</button>}</div>
       {currentError && <div className={styles.error} role="alert"><p>{t(currentError)}</p><button type="button" className="button secondary" disabled={loading} onClick={() => void load(current?.nextCursor && current.items.length ? current.nextCursor : null)}>{t('Try again')}</button></div>}
       {loadingInitial && <div className={styles.loading} aria-hidden="true">{[0, 1, 2, 3].map(index => <div key={index} />)}</div>}
+      <CmsWorkingPanel active={open && loading && !loadingInitial} title="Checking content…" />
       {!loadingInitial && !currentError && current?.items.length === 0 && <div className={styles.empty}><CheckCircle2 size={37} aria-hidden="true" /><h3>{t(filtered ? 'No matching items' : 'No missing details found')}</h3><p>{t(filtered ? 'Try another search or clear your filters.' : 'The checked content has English and Thai text, images and vessel details where needed.')}</p></div>}
       {Boolean(current?.items.length) && <ul className={styles.list}>{current!.items.map(({ record, issues }) => {
         const title = (locale === 'th' ? record.titleTh || record.title : record.title || record.titleTh) || t('Untitled content');

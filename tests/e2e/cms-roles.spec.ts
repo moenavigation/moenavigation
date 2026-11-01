@@ -343,8 +343,10 @@ test('role-aware user controls protect Dev accounts and fit narrow screens in bo
     const protectedDev = users.getByRole('listitem').filter({ hasText: otherDev.username });
     await expect(protectedDev).toContainText('Protected Dev account');
     await expect(protectedDev.getByRole('button')).toHaveCount(0);
-    const create = page.getByRole('region', { name: 'Add user', exact: true });
+    await page.getByRole('button', { name: 'Add user', exact: true }).click();
+    const create = page.getByRole('dialog', { name: 'Add user', exact: true });
     await expect(create.getByLabel('Role', { exact: true }).locator('option')).toHaveText(['Admin', 'Operator']);
+    await create.getByRole('button', { name: 'Cancel', exact: true }).click();
     await users.getByRole('button', { name: `Edit ${operator.username}`, exact: true }).click();
     const edit = page.getByRole('dialog', { name: 'Edit user', exact: true });
     await expect(edit.getByLabel('Username', { exact: true })).not.toBeEditable();
@@ -362,7 +364,7 @@ test('role-aware user controls protect Dev accounts and fit narrow screens in bo
     const restrictedSession = await signIn(restricted.username);
     try {
       await useSession(page, restrictedSession);
-      await expect(page.getByRole('region', { name: 'Add user', exact: true })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Add user', exact: true })).toHaveCount(0);
       await expect(users.getByRole('button', { name: /^(Edit |Move .* to Trash$|Reset password$)/ })).toHaveCount(0);
       await expect(users.getByRole('button', { name: 'User settings', exact: true })).toBeVisible();
       await page.goto('/cms/trash');
@@ -370,7 +372,9 @@ test('role-aware user controls protect Dev accounts and fit narrow screens in bo
     } finally { await restrictedSession.dispose(); }
 
     await useSession(page, dev);
+    await page.getByRole('button', { name: 'Add user', exact: true }).click();
     await expect(create.getByLabel('Role', { exact: true }).locator('option')).toHaveText(['Dev', 'Admin', 'Operator']);
+    await create.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(users.getByRole('button', { name: `Edit ${otherDev.username}`, exact: true })).toBeVisible();
     await expect(users.getByRole('button', { name: `Move ${developer.username} to Trash`, exact: true })).toHaveCount(0);
     for (const [width, language] of [[1280, 'en'], [360, 'th']] as const) {
@@ -379,11 +383,14 @@ test('role-aware user controls protect Dev accounts and fit narrow screens in bo
       const t = (value: string) => translateCms(language, value);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(t('Users'));
       await expect(page.getByRole('region', { name: t('Users'), exact: true })).toBeVisible();
-      const translatedCreate = page.getByRole('region', { name: t('Add user'), exact: true });
+      await page.screenshot({ path: `test-results/cms-user-cards-${language}-${width}.png`, fullPage: true });
+      await page.getByRole('button', { name: t('Add user'), exact: true }).click();
+      const translatedCreate = page.getByRole('dialog', { name: t('Add user'), exact: true });
       await expect(translatedCreate.getByLabel(t('Role'), { exact: true })).toBeVisible();
       await expect(translatedCreate.getByRole('button', { name: t('Add user'), exact: true })).toBeVisible();
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
       await page.screenshot({ path: `test-results/cms-roles-${language}-${width}.png`, fullPage: true });
+      await translatedCreate.getByRole('button', { name: t('Cancel'), exact: true }).click();
     }
   } finally { await admin.dispose(); await dev.dispose(); await op.dispose(); }
 });

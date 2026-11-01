@@ -12,6 +12,8 @@ import { blankContact, contactDraftKey as draftKey, contactTextFields as textFie
 import { contactApiFieldErrors, validateContactValues, type ContactFieldErrors } from "@/lib/contact-validation";
 import { AdditionalSections, ContentBody } from "./EditorialContent";
 import Dialog from "./Dialog";
+import useTimedNotice from "./useTimedNotice";
+import WorkingPanel from "./WorkingPanel";
 import styles from "./ContentPages.module.css";
 
 type ContactErrors = ContactFieldErrors & { submit?: string };
@@ -20,6 +22,10 @@ function subscribeContact(listener: () => void) {
   window.addEventListener("storage", listener);
   return () => window.removeEventListener("storage", listener);
 }
+
+const subscribeReady = () => () => {};
+const clientReady = () => true;
+const serverReady = () => false;
 
 function contactSnapshot() {
   try { return localStorage.getItem(draftKey) || ""; }
@@ -42,6 +48,7 @@ function savedSubmission(values: ContactValues, fallbackLocale: Locale): Submiss
 }
 
 export default function ContactPage({ locale }: { locale: Locale }) {
+  const ready = useSyncExternalStore(subscribeReady, clientReady, serverReady);
   const { settings, pages } = usePublicContent();
   const page = pages.find((entry) => entry.id === "contact");
   const companyName = local(locale, settings.companyName, settings.companyNameTh);
@@ -54,6 +61,7 @@ export default function ContactPage({ locale }: { locale: Locale }) {
   const [errors, setErrors] = useState<ContactErrors>({});
   const [pending, setPending] = useState(false);
   const [receipt, setReceipt] = useState<string | null>(null);
+  const [receiptNotice, setReceiptNotice] = useTimedNotice();
   const [confirmClear, setConfirmClear] = useState(false);
   const [website, setWebsite] = useState("");
   const submissionRef = useRef<SubmissionAttempt | null>(null);
@@ -84,7 +92,7 @@ export default function ContactPage({ locale }: { locale: Locale }) {
   function update(field: keyof ContactValues, value: string | boolean) {
     const next = { ...values, [field]: value };
     setValues(next);
-    setReceipt(null);
+    setReceipt(null); setReceiptNotice('');
     setErrors((current) => ({ ...current, [field]: undefined, submit: undefined }));
     submissionRef.current = field === "consent" ? submissionRef.current || savedSubmission(values, locale) : null;
     saveDraft(next, submissionRef.current || undefined);
@@ -92,7 +100,7 @@ export default function ContactPage({ locale }: { locale: Locale }) {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busyRef.current) return;
+    if (!ready || busyRef.current) return;
     const next = validateContactValues(values, locale);
     if (Object.keys(next).length) { invalidFocusRef.current = Object.keys(next)[0]; setErrors(next); return; }
 
@@ -105,7 +113,7 @@ export default function ContactPage({ locale }: { locale: Locale }) {
     busyRef.current = true;
     setPending(true);
     setErrors({});
-    setReceipt(null);
+    setReceipt(null); setReceiptNotice('');
     try {
       const response = await fetch("/api/contact", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -127,6 +135,7 @@ export default function ContactPage({ locale }: { locale: Locale }) {
         throw new Error(local(locale, "We could not confirm your enquiry. Please try again; your message is still here and retrying will not create a duplicate.", "ยังยืนยันไม่ได้ว่าระบบได้รับข้อความแล้ว กรุณาลองส่งอีกครั้ง ข้อความที่กรอกไว้ยังอยู่ และระบบจะไม่บันทึกข้อความซ้ำ"));
       }
       setReceipt(data.id);
+      setReceiptNotice(data.id);
       setValues({ ...blankContact });
       submissionRef.current = null;
       try {
@@ -148,7 +157,7 @@ export default function ContactPage({ locale }: { locale: Locale }) {
     setConfirmClear(false);
     setValues({ ...blankContact });
     setErrors({});
-    setReceipt(null);
+    setReceipt(null); setReceiptNotice('');
     submissionRef.current = null;
     saveDraft(blankContact);
   }
@@ -177,12 +186,13 @@ export default function ContactPage({ locale }: { locale: Locale }) {
         </div>
         <p className="notice">{local(locale, "Sending an enquiry does not confirm a booking, service availability or response time.", "การส่งข้อความสอบถามไม่ใช่การยืนยันการจอง ความพร้อมให้บริการ หรือระยะเวลาตอบกลับ")}</p>
       </div>
+      <div className={styles.contactFormArea}>
       <form ref={formRef} id="contact-form" tabIndex={-1} aria-labelledby="contact-form-title" className={styles.contactForm} onSubmit={submit} noValidate aria-busy={pending}>
         <h2 id="contact-form-title">{local(locale, "Send an enquiry", "ส่งข้อความสอบถาม")}</h2>
         <p className={styles.formNote}>{local(locale, "Fields marked * are required. Your unsent draft is kept in this browser when storage is available.", "กรุณากรอกช่องที่มีเครื่องหมาย * หากเบราว์เซอร์อนุญาตให้เก็บข้อมูล ระบบจะเก็บข้อความที่ยังไม่ได้ส่งไว้ให้")}</p>
         {requestedSubject && !receipt && <div className={styles.enquiryContext}><span>{local(locale, "Regarding", "เรื่องที่ต้องการสอบถาม")}</span><strong>{requestedSubject}</strong>{values.subject !== requestedSubject && <><span>{local(locale,"Your saved subject has been kept.","ระบบเก็บหัวข้อเดิมที่คุณกรอกไว้ให้แล้ว")}</span><button type="button" className={styles.clearDraft} disabled={pending} onClick={() => { update("subject", requestedSubject); document.getElementById("contact-subject")?.focus(); }}>{local(locale,"Use this subject","ใช้หัวข้อนี้")}</button></>}</div>}
         {Object.keys(errors).some((key) => key !== "submit" && errors[key as keyof ContactErrors]) && <p className={styles.error} role="alert">{local(locale, "Please correct the highlighted fields before sending.", "กรุณาตรวจสอบช่องที่แจ้งข้อผิดพลาดก่อนส่งข้อความ")}</p>}
-        <fieldset className={styles.contactFields} disabled={pending}>
+        <fieldset className={styles.contactFields} disabled={pending || !ready}>
           <legend className="sr-only">{local(locale, "Enquiry details", "รายละเอียดข้อความสอบถาม")}</legend>
           <div className={styles.formGrid}>
             {fields.map((field) => <div className={`field ${(field.id === "subject" || field.id === "company") ? styles.fullField : ""}`} key={field.id}>
@@ -200,11 +210,13 @@ export default function ContactPage({ locale }: { locale: Locale }) {
           <div className={styles.contactTrap} aria-hidden="true"><label htmlFor="contact-website">Website</label><input id="contact-website" name="website" value={website} onChange={(event) => setWebsite(event.target.value)} tabIndex={-1} autoComplete="off" /></div>
           <div className={styles.consent}><input id="contact-consent" type="checkbox" checked={values.consent} onChange={(event) => update("consent", event.target.checked)} aria-invalid={!!errors.consent} aria-describedby={errors.consent ? "error-consent" : undefined} /><div><label htmlFor="contact-consent">{local(locale, "I agree that my information may be used to review and respond to this enquiry.", "ยินยอมให้ใช้ข้อมูลเพื่อพิจารณาและตอบกลับข้อความสอบถามนี้")}</label> <Link href={href(locale, "privacy")}>{local(locale, "Privacy information", "ข้อมูลความเป็นส่วนตัว")}</Link></div></div>
           {errors.consent && <p className={styles.error} id="error-consent">{errors.consent}</p>}
-          <div className={styles.formActions}><button className="button" type="submit" disabled={pending}>{pending ? <><LoaderCircle className={styles.loadingIcon} size={19} aria-hidden="true" />{local(locale, "Sending…", "กำลังส่ง…")}</> : <>{local(locale, "Send enquiry", "ส่งข้อความสอบถาม")}<ArrowRight size={19} aria-hidden="true" /></>}</button><button ref={clearTriggerRef} className={styles.clearDraft} type="button" onClick={() => setConfirmClear(true)} disabled={pending || !textFields.some(field => values[field].length > 0)}>{local(locale, "Clear draft", "ลบฉบับร่าง")}</button></div>
+          <div className={styles.formActions}><button className="button" type="submit" disabled={pending || !ready}>{pending ? <><LoaderCircle className={styles.loadingIcon} size={19} aria-hidden="true" />{local(locale, "Sending…", "กำลังส่ง…")}</> : <>{local(locale, "Send enquiry", "ส่งข้อความสอบถาม")}<ArrowRight size={19} aria-hidden="true" /></>}</button><button ref={clearTriggerRef} className={styles.clearDraft} type="button" onClick={() => setConfirmClear(true)} disabled={pending || !textFields.some(field => values[field].length > 0)}>{local(locale, "Clear draft", "ลบฉบับร่าง")}</button></div>
         </fieldset>
         {errors.submit && <p className={styles.error} role="alert">{errors.submit}</p>}
-        {receipt && <div className={styles.success} role="status" tabIndex={-1} ref={successRef}><CheckCircle2 size={24} aria-hidden="true" /><div><strong>{local(locale, "Your enquiry has been received.", "ได้รับข้อความสอบถามของคุณแล้ว")}</strong><p>{local(locale, "The website team can now review your message.", "ทีมงานสามารถตรวจสอบข้อความของคุณได้แล้ว")}</p><p>{local(locale, "Reference", "หมายเลขอ้างอิง")}: <span className={styles.receipt}>{receipt}</span></p></div></div>}
+        {receipt && <div className={receiptNotice ? styles.success : styles.receiptSummary} role={receiptNotice ? "status" : undefined} tabIndex={-1} ref={successRef}>{receiptNotice && <CheckCircle2 size={24} aria-hidden="true" />}<div>{receiptNotice && <><strong>{local(locale, "Your enquiry has been received.", "ได้รับข้อความสอบถามของคุณแล้ว")}</strong><p>{local(locale, "The website team can now review your message.", "ทีมงานสามารถตรวจสอบข้อความของคุณได้แล้ว")}</p></>}<p>{local(locale, "Reference", "หมายเลขอ้างอิง")}: <span className={styles.receipt}>{receipt}</span></p></div></div>}
       </form>
+      <WorkingPanel floating className={styles.contactWorking} active={pending} locale={locale} title={local(locale, "Sending your enquiry…", "กำลังส่งข้อความสอบถาม…")} description={local(locale, "Please keep this page open while we save your message.", "กรุณาเปิดหน้านี้ไว้ระหว่างที่ระบบบันทึกข้อความของคุณ")} />
+      </div>
     </div>
     <Dialog open={confirmClear} triggerRef={clearTriggerRef} onClose={() => setConfirmClear(false)} onAfterClose={() => {
       if (!clearFocusRef.current) return;

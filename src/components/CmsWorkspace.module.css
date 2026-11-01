@@ -104,6 +104,12 @@
 .enquiryMeta { display: flex; align-items: end; flex-direction: column; gap: .6rem; }
 .enquiryMeta time { color: var(--muted); font-size: var(--font-small); }
 .enquiryDetails { display: grid; gap: 1.15rem; }
+.enquiryRetention { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .35rem 1rem; margin-top: .5rem; }
+.enquiryDates { display: grid; gap: .25rem; }
+.enquiryActions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; padding-top: .25rem; }
+.enquiryTrash { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: var(--target-size); padding: .65rem 1rem; color: #a42b34; background: #fff; border: 1px solid #e9c8cc; border-radius: .35rem; font-weight: 600; cursor: pointer; }
+.enquiryTrash:focus-visible { outline: 2px solid #a42b34; outline-offset: 3px; }
+.enquiryTrash:disabled { cursor: wait; opacity: .6; }
 .enquiryStatus { display: grid; gap: .6rem; }
 .enquiryStatusLabel { color: var(--navy); font-weight: 600; }
 .statusPills { display: flex; flex-wrap: wrap; gap: .5rem; }
@@ -268,6 +274,7 @@
 .drawerSignOut:disabled { opacity: .55; cursor: wait; }
 .drawerSignOut span { white-space: nowrap; }
 .editor { display: grid; gap: 1.05rem; }
+.actionDialog .workingPanel { flex-shrink: 0; width: auto; margin: 0 1.5rem .85rem; }
 .editorFields { display: grid; gap: 1.05rem; border: 0; margin: 0; padding: 0; min-width: 0; }
 .editorDetails { border: 1px solid var(--line); border-radius: .45rem; padding: 1rem; min-width: 0; }
 .editorDetails > summary { cursor: pointer; font-weight: 600; min-height: 2.75rem; padding: .5rem 0; }
@@ -291,10 +298,14 @@
 .editorImage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.25rem; align-items: center; border: 1px solid var(--line); border-radius: .5rem; padding: 1rem; }
 .editorImage > img { width: 100%; height: auto; aspect-ratio: 1.65; object-fit: cover; border-radius: .3rem; }
 .editorImage p { color: var(--muted); font-size: var(--font-small); line-height: 1.5; margin: .45rem 0 .8rem; }
-.fileButton { position: relative; display: inline-flex !important; align-items: center; justify-content: center; gap: .5rem; cursor: pointer; color: var(--navy); flex-direction: row !important; font-weight: 550; }
-.editorImage .fileButton { display: flex !important; justify-content: flex-start; margin-top: .85rem; min-height: 2.75rem; text-decoration: underline; text-underline-offset: .25rem; }
-.fileButton input { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
+.imageActions { display: flex; align-items: center; flex-wrap: wrap; gap: .65rem; }
+.imageActions > :global(.button) { gap: .5rem; }
+.fileButton { position: relative; display: inline-flex !important; align-items: center; justify-content: center; cursor: pointer; flex-direction: row !important; overflow: hidden; }
+.imageActions .fileButton { font-weight: 600; }
+.fileButton input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: inherit; }
+.fileButton:has(input:disabled) { opacity: .55; cursor: not-allowed; }
 .fileButton:focus-within { outline: 2px solid var(--blue); outline-offset: 3px; }
+@media (hover: hover) and (pointer: fine) { .fileButton:has(input:disabled):hover { background: #fff; transform: none; } }
 .imagePicker { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .8rem; padding: .9rem; background: #f3f7fc; border-radius: .4rem; }
 .imagePicker button { position: relative; padding: .3rem; border: 1px solid var(--line); background: white; border-radius: .35rem; color: var(--navy); text-align: left; cursor: pointer; }
 .imagePicker img { width: 100%; height: auto; aspect-ratio: 1.6; object-fit: cover; border-radius: .2rem; }
@@ -344,6 +355,7 @@
   .drawerLinks button[aria-current='page']:hover { background: #e4effb; }
   .drawerSignOut:hover { background: #e1edf8; }
   .textButton:hover { color: var(--blue); }
+  .enquiryTrash:hover { background: #fff3f4; border-color: #ce9299; }
   .mediaUsageList a:hover { border-color: var(--blue); background: #f2f7fd; }
   .deleteButton:hover { background: #fff0ed; color: #ac3a27; }
   .iconButton:hover { background: #edf4ff; }
@@ -390,6 +402,7 @@
   .actionDialog .dialogBody { max-height: calc(100dvh - 1rem - 2px); }
   .actionDialog .dialogHeading, .dialogActions { padding: .8rem 1.2rem; }
   .dialogScroll { padding: 1.2rem; }
+  .actionDialog .workingPanel { margin-inline: 1.2rem; }
   .drawer { width: min(25rem, 90vw); max-height: none; }
   .twoColumns { grid-template-columns: minmax(0, 1fr); }
   .editorImage { grid-template-columns: minmax(0, 1fr); }
@@ -404,6 +417,7 @@
   .inboxFilters { grid-template-columns: minmax(0, 1fr); }
   .importList li { flex-direction: column; gap: .2rem; }
   .enquiryDetails dl > div { grid-template-columns: minmax(0, 1fr); gap: .1rem; }
+  .enquiryActions > * { flex: 1 1 100%; }
   .header { padding: .8rem .625rem; gap: .35rem; min-height: 5.2rem; }
   .brandLogo { width: 6rem; }
   .cmsLabel { display: none; }

@@ -9,14 +9,14 @@ export type ContentDocument = ContentRecord & { _id: string; purgeAt?: Date };
 export type MediaDocument = Omit<MediaItem, 'state'> & { _id: string; state: 'uploading' | 'staged' | 'committed' | 'trashed' | 'deleting'; owner: string; submissionId: string; pinned: boolean; touchedAt: Date; bytes?: number; sourceSha256?: string; width?: number; height?: number };
 export type UserDocument = { _id: string; username: string; role?: CmsRole; passwordHash: string; createdAt: Date; passwordVersion: number; avatar?: string; profileRevision?: number; deletedAt?: Date; purgeAt?: Date };
 export type SessionDocument = { _id: string; userId: string; passwordVersion: number; expiresAt: Date };
-export type EnquiryDocument = Enquiry & { _id: string; submissionId: string; fingerprint: string; consentAt: string; notificationDelivery?: NotificationDelivery };
+export type EnquiryDocument = Omit<Enquiry, 'expiresAt' | 'purgeAt'> & { _id: string; submissionId: string; fingerprint: string; consentAt: string; expiresAt?: Date; purgeAt?: Date; notificationDelivery?: NotificationDelivery };
 export type AuditDocument = Omit<CmsLogItem, 'id' | 'summary' | 'occurredAt' | 'expiresAt'> & { _id: string; occurredAt: Date; expiresAt: Date };
 type StateDocument = { _id: string; value?: string; count?: number; expiresAt?: Date };
 type OperationDocument = { _id: string; fingerprint: string; result: ContentRecord; createdAt: Date };
 
 type IndexCache = { version: string; promise: Promise<void> };
 // Bump when index definitions change so development hot reload applies new indexes.
-const indexSchemaVersion = '2026-10-31-home-slides-v1';
+const indexSchemaVersion = '2026-11-01-enquiry-retention-v1';
 const globalDb = globalThis as typeof globalThis & { moeMongo?: Promise<MongoClient>; moeIndexes?: Promise<void>; moeIndexCache?: IndexCache };
 export async function getClient() {
   const uri = process.env.MONGODB_URI;
@@ -77,6 +77,8 @@ export async function ensureIndexes() {
       c.users.createIndex({ deletedAt: -1, _id: 1 }), c.sessions.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
       c.state.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }), c.enquiries.createIndex({ submissionId: 1 }, { unique: true }),
       c.enquiries.createIndex({ createdAt: -1 }),
+      c.enquiries.createIndex({ purgeAt: 1 }, { expireAfterSeconds: 0 }),
+      c.enquiries.createIndex({ deletedAt: -1, _id: 1 }),
       c.enquiries.createIndex({ createdAt: -1, _id: -1 }), c.enquiries.createIndex({ status: 1, createdAt: -1, _id: -1 }),
       c.operations.createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 7 }),
       logIndexes.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),

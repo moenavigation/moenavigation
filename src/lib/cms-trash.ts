@@ -3,7 +3,7 @@ import { contentTypes, type ContentType } from './cms-types';
 import type { CmsRole } from './cms-roles';
 import { idSchema } from './validation';
 
-export const cmsTrashKinds = [...contentTypes, 'Image', 'User'] as const;
+export const cmsTrashKinds = [...contentTypes, 'Image', 'User', 'Enquiry'] as const;
 export const cmsTrashFilters = ['All', ...cmsTrashKinds] as const;
 export const cmsTrashPageSize = 30;
 export type CmsTrashKind = typeof cmsTrashKinds[number];
@@ -24,6 +24,7 @@ type TrashItemBase = {
 };
 export type CmsTrashItem =
   | (TrashItemBase & { kind: ContentType; revision: number; parentId?: string })
+  | (TrashItemBase & { kind: 'Enquiry'; revision: number })
   | (TrashItemBase & { kind: 'Image' })
   | (TrashItemBase & { kind: 'User'; role: CmsRole });
 export type CmsTrashPage = {
@@ -37,7 +38,7 @@ export type CmsTrashQuery = { kind: CmsTrashFilter; q: string; item: string | nu
 const targetSchema = z.string().max(120).refine(value => {
   const [kind, id, extra] = value.split(':');
   if (extra !== undefined || !cmsTrashKinds.includes(kind as CmsTrashKind) || !id) return false;
-  if (kind === 'User') return z.uuid().safeParse(id).success;
+  if (kind === 'User' || kind === 'Enquiry') return z.uuid().safeParse(id).success;
   if (kind === 'Image') return /^[A-Za-z0-9_-]{1,100}$/.test(id);
   return idSchema.safeParse(id).success;
 }, 'Choose a valid Trash item.');

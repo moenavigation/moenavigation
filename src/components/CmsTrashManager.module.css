@@ -40,12 +40,14 @@
 .error { color: #a33320; background: #fff0ed; }
 .success { color: #155c49; background: #ecf8f2; }
 .more { display: flex; margin: 1rem auto 0; }
-.dialog { width: min(36rem, calc(100% - 2rem)); max-width: calc(100% - 2rem); max-height: calc(100dvh - 2rem); margin: auto; padding: 0; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: .7rem; color: var(--navy); background: #fff; box-shadow: 0 1rem 4rem #082b5033; }
+.dialog { width: min(36rem, calc(100% - 2rem)); max-width: calc(100% - 2rem); max-height: calc(100dvh - 2rem); margin: auto; padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: .7rem; color: var(--navy); background: #fff; box-shadow: 0 1rem 4rem #082b5033; }
+.dialog[open] { display: flex; flex-direction: column; }
 .dialog::backdrop { background: #071d4390; backdrop-filter: blur(4px); }
-.dialogHeading { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--line); background: #fff; }
+.dialogHeading { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--line); background: #fff; }
 .dialogHeading h2 { min-width: 0; margin: 0; font-size: var(--font-h3); overflow-wrap: anywhere; }
 .close { flex-shrink: 0; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border: 1px solid var(--line); border-radius: .35rem; background: var(--pale); color: var(--navy); cursor: pointer; }
-.dialogBody { padding: 1.25rem; }
+.dialog > .working { width: auto; flex-shrink: 0; margin: 1rem 1.25rem 0; }
+.dialogBody { padding: 1.25rem; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .filterForm { display: flex; flex-direction: column; max-height: calc(100dvh - 10rem); }
 .filterScroller { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 2px; scrollbar-width: thin; scrollbar-color: #9dafc3 transparent; }
 .filterForm .dialogActions { flex-shrink: 0; }

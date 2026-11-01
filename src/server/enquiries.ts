@@ -11,11 +11,13 @@ import { enquirySchema, inboxSchema } from './validation';
 import { nextCursor, readCursor } from './pagination';
 import { initialNotification, notificationView } from './enquiry-notifications';
 import { appendAuditEvent, auditActor } from './audit';
+import { activeEnquiryFilter, enquiryExpiryDate, enquiryPurgeDate, enquiryRetainedFilter } from './enquiry-retention';
 
 export function cleanEnquiry(record: EnquiryDocument): Enquiry {
-  const { _id, submissionId, fingerprint, consentAt, notificationDelivery, ...value } = record;
+  const { _id, submissionId, fingerprint, consentAt, notificationDelivery, expiresAt, purgeAt, ...value } = record;
   void _id; void submissionId; void fingerprint; void consentAt; void notificationDelivery;
-  return { ...value, notification: notificationView(record) };
+  void expiresAt; void purgeAt;
+  return { ...value, expiresAt: enquiryPurgeDate({ ...record, purgeAt: undefined, deletedAt: undefined }).toISOString(), purgeAt: enquiryPurgeDate(record).toISOString(), notification: notificationView(record) };
 }
 export async function submitEnquiry(input: z.infer<typeof enquirySchema>) {
   await ensureIndexes();
@@ -31,8 +33,9 @@ export async function submitEnquiry(input: z.infer<typeof enquirySchema>) {
   await rateLimit(`contact:${fields.email}`, 5, 60 * 60);
   await rateLimit('contact:global', 100, 60 * 60);
   const now = new Date().toISOString();
+  const expiresAt = enquiryExpiryDate(now);
   const id = randomUUID();
-  try { await c.enquiries.insertOne({ _id: id, id, ...fields, submissionId, fingerprint, status: 'New', createdAt: now, updatedAt: now, revision: 1, consentAt: now, notification: initialNotification() }); }
+  try { await c.enquiries.insertOne({ _id: id, id, ...fields, submissionId, fingerprint, status: 'New', createdAt: now, updatedAt: now, revision: 1, consentAt: now, expiresAt, purgeAt: expiresAt, notification: initialNotification() }); }
   catch (error) {
     if ((error as { code?: number }).code !== 11000) throw error;
     const existing = await c.enquiries.findOne({ submissionId });
@@ -42,10 +45,10 @@ export async function submitEnquiry(input: z.infer<typeof enquirySchema>) {
   return { id };
 }
 export async function getEnquiries() {
-  return (await collections(await getDb()).enquiries.find().sort({ createdAt: -1 }).toArray()).map(cleanEnquiry);
+  return (await collections(await getDb()).enquiries.find(enquiryRetainedFilter()).sort({ createdAt: -1 }).toArray()).map(cleanEnquiry);
 }
 export async function getEnquiry(id: string) {
-  const record = await collections(await getDb()).enquiries.findOne({ _id: id });
+  const record = await collections(await getDb()).enquiries.findOne({ $and: [{ _id: id }, activeEnquiryFilter()] });
   if (!record) throw new HttpError(404, 'This enquiry is no longer available. Refresh the inbox.');
   return cleanEnquiry(record);
 }
@@ -69,12 +72,14 @@ export function buildEnquiryFilter(filters: InboxFilters, cursor: ReturnType<typ
 
 export async function getEnquiryPage(query: InboxQuery): Promise<EnquiryPage> {
   const cursor = readEnquiryCursor(query.cursor);
-  const match = buildEnquiryFilter(query);
-  const pageFilter = buildEnquiryFilter(query, cursor);
+  const now = new Date();
+  const active = activeEnquiryFilter(now);
+  const match = { $and: [active, buildEnquiryFilter(query)] };
+  const pageFilter = { $and: [active, buildEnquiryFilter(query, cursor)] };
   await ensureIndexes();
   const enquiries = collections(await getDb()).enquiries;
-  const totalAllResult = enquiries.countDocuments({}, { hint: '_id_' });
-  const newCountResult = enquiries.countDocuments({ status: 'New' });
+  const totalAllResult = enquiries.countDocuments(active);
+  const newCountResult = enquiries.countDocuments({ $and: [active, { status: 'New' }] });
   const totalResult = !query.q && query.status === 'All' ? totalAllResult
     : !query.q && query.status === 'New' ? newCountResult : enquiries.countDocuments(match);
   const [items, total, totalAll, newCount] = await Promise.all([
@@ -85,7 +90,7 @@ export async function getEnquiryPage(query: InboxQuery): Promise<EnquiryPage> {
 }
 export async function updateEnquiry(input: z.infer<typeof inboxSchema>, actor?: UserDocument) {
   return transaction(async (db, session) => {
-    const result = await collections(db).enquiries.findOneAndUpdate({ _id: input.id, revision: input.expectedRevision }, { $set: { status: input.status, updatedAt: new Date().toISOString() }, $inc: { revision: 1 } }, { returnDocument: 'after', session });
+    const result = await collections(db).enquiries.findOneAndUpdate({ $and: [{ _id: input.id, revision: input.expectedRevision }, activeEnquiryFilter()] }, { $set: { status: input.status, updatedAt: new Date().toISOString() }, $inc: { revision: 1 } }, { returnDocument: 'after', session });
     if (!result) throw new HttpError(409, 'This enquiry changed elsewhere. Refresh and try again.');
     if (actor) await appendAuditEvent(db, session, { action: 'enquiry.status_changed', actor: auditActor(actor), target: { type: 'Enquiry', id: input.id } });
     return cleanEnquiry(result);
@@ -94,7 +99,7 @@ export async function updateEnquiry(input: z.infer<typeof inboxSchema>, actor?: 
 
 export async function recordNotificationRequest(id: string, actor: UserDocument) {
   await transaction(async (db, session) => {
-    const exists = await collections(db).enquiries.findOne({ _id: id }, { projection: { _id: 1 }, session });
+    const exists = await collections(db).enquiries.findOne({ $and: [{ _id: id }, activeEnquiryFilter()] }, { projection: { _id: 1 }, session });
     if (!exists) throw new HttpError(404, 'This enquiry is no longer available.');
     // This records the user's request, never a claim that the external email was delivered.
     await appendAuditEvent(db, session, { action: 'enquiry.notification_requested', actor: auditActor(actor), target: { type: 'Enquiry', id } });

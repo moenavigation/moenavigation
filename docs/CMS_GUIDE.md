@@ -47,7 +47,7 @@ At `/cms/trash`, content, images, and permitted user accounts share one list. Se
 
 **Restore** returns content or an image to its original list. Restoring an account asks for your current password. **Delete permanently** asks for confirmation and is available only to Dev/Admin, subject to account-role and image-reference protections. Canceling preserves the item. If an image deletion fails, it remains in Trash so deletion can be retried.
 
-Content and user accounts can be recovered for 30 days. Images remain until explicitly deleted permanently. Restore a page before restoring its content areas; shared areas can be restored independently. Images used by other content or content still in Trash remain protected. Enquiries use **New**, **In progress**, and **Resolved** statuses and have no delete action; Settings has no deletable item.
+Content and user accounts can be recovered for 30 days. Enquiries in Trash can be recovered for up to 30 days, before their original one-year expiry. Images remain until explicitly deleted permanently. Restore a page before restoring its content areas; shared areas can be restored independently. Images used by other content or content still in Trash remain protected. Settings has no deletable item.
 
 ## Activity history
 
@@ -79,16 +79,19 @@ Fleet, Services, Routes, Projects, and News use separate collection lists. These
 
 The editor labels unsaved changes. Closing it asks whether to discard them; **Cancel** keeps the editor and prepared images intact. Closing or refreshing the whole browser may also show the browser's standard unsaved-change warning.
 
+Longer actions show a working panel with the current step, including preparing images, uploading, saving, and checking saved results. It remains visible until the step finishes. Brief actions may finish before a panel appears. Save controls prevent repeated submissions; any error keeps the existing recovery options and your unsaved input.
+
 **Download unsaved text** saves a recovery copy of the current text and image references, including unfinished route coordinates. Prepared device-image files are not included. The CMS brand and **View website** links open a new tab so the editor stays open.
 
 ## Add or edit collection items
 
-Open the appropriate list, then choose **Add vessel**, **Add route**, **Add project**, **Add service**, or **Add news**. Editing a saved item opens its corresponding **Edit** dialog. The CMS sets a new item's website address automatically when you first save it. Existing addresses stay unchanged. Item type, address identifiers, display order, and icon settings are managed by the website and are not editing controls.
+Open the appropriate list, then choose **Add vessel**, **Add route**, **Add project**, **Add service**, or **Add news**. Editing a saved item opens its corresponding **Edit** dialog. The CMS sets a new item's website address automatically when you first save it. Existing addresses stay unchanged. Item type, address identifiers, and display order are managed by the website and are not editing controls.
 
 The text card for your current CMS language opens first. Expand the other language card to enter its translation. Both languages need a title and summary. Collapsing a card keeps your unsaved text.
 
 - Fleet items include **Vessel type**; Projects and News include **Category**. Suggestions come from existing items, and you can also type a new value. Choosing or typing in one language does not overwrite the other language.
 - **Pictures** appears below the main text, with the main image and its descriptions in both languages.
+- Services include **Service icon** above Pictures. Select a symbol, then Save to update it on the homepage, service list, and service details. Cancel keeps the saved icon. Existing icons remain unchanged until you select a replacement.
 - Open **Detailed content** inside either language card for longer copy. Services, Projects, and News also have an optional content heading.
 - Projects and News include a **Publication date** field.
 - **Vessel specifications**, **More photos**, and **Route map and ports** start collapsed. Open them when you need those details. Saved values remain intact while these panels are closed.
@@ -119,6 +122,12 @@ Open **Map setup** to edit the route's points. **Set up map points** provides or
 
 Existing points keep their saved values and order unless you edit, add, or remove them. Updating a route's text or images does not replace its intermediate points. Closing the map panels preserves unfinished coordinate edits along with the rest of the editor.
 
+To suggest intermediate points automatically, enter distinct, valid **Origin point** and **Destination point** coordinates, then choose **Generate sea route**. Review the map and choose **Use generated points** to replace the intermediate points in your draft. The origin, destination, port details, and other edits stay unchanged. Cancel, Escape, or clicking outside the preview leaves the draft as it was; a failed calculation can be retried. Save the route normally to publish the result.
+
+Generated routes are approximate website illustrations based on a maritime network and mapped coastlines. Review coastal areas before saving; these are not navigational routes or verified vessel tracks. The generator may decline inland endpoints, land-crossing connections, uncovered areas, dateline crossings, or routes too detailed for the 100-point limit. You can still edit those routes manually.
+
+For any point, choose **Use Google Maps link** and paste a link to a pin. Coordinates are extracted automatically; review them with **Open in Google Maps**, then choose **Use coordinates** to update just that point. Cancel or Escape leaves it unchanged. Full coordinate/pin links and supported Google Maps short share links work; if a named place does not include its pin coordinates or a link contains directions for several points, copy the pin's full link or enter its coordinates manually. A plain map-view link uses its center coordinates, so review the location before applying. Save the route normally when finished. Only valid **Origin point** and **Destination point** rows in the editor and their public map markers link to Google Maps. Intermediate points remain visible as part of the route without map links.
+
 ## Images
 
 1. Select a library image or choose a device image.
@@ -135,6 +144,8 @@ The Media library's **Clean unused images** action moves saved images with no co
 ## Enquiries
 
 Open **Enquiries** to read a message, reply through your email application, and update its status to **New**, **In progress**, or **Resolved**.
+
+Enquiries expire automatically one year after receipt. Each message shows its expiry date; changing its status does not extend that date. Choose **Move to Trash** in Enquiry details to remove a message from the inbox. Confirm the move, or cancel to keep it. **View enquiry Trash** opens the removed messages. Restore a message before its displayed recovery deadline to return it with its previous status. Trash recovery lasts up to 30 days and never extends the original one-year expiry. Only Dev and Admin can delete an enquiry permanently from Trash.
 
 Dev and Admin can choose **Notification recipients** to add, edit or remove the people who receive enquiry emails. Each address has its own field; use **Add email** for another person, then **Save changes**. Up to 50 distinct addresses are supported. Cancel leaves the saved list unchanged. Saving an empty list pauses email notifications while enquiries continue saving in the inbox. Everyone on the list receives the same message and can see the other addresses. Changes apply to new notification attempts; a retry keeps its original recipients. Saving this list does not send an email. Operator can use the inbox and eligible notifications but cannot manage the recipient list.
 

@@ -6,6 +6,7 @@ import { attentionIssueCodes, attentionTypes, getContentAttentionIssues, type At
 import type { ContentRecord } from '@/lib/cms-types';
 import { collections, ensureIndexes, getDb, type ContentDocument } from './db';
 import { cleanEnquiry } from './enquiries';
+import { activeEnquiryFilter } from './enquiry-retention';
 import { readEnquiryRecipients } from './enquiry-recipients';
 import { emailSetupStatus } from './enquiry-notifications';
 import { HttpError } from './http';
@@ -144,7 +145,7 @@ async function serviceStatuses(db: Db): Promise<DashboardServiceStatus[]> {
 export async function getDashboardData(): Promise<DashboardData> {
   await ensureIndexes();
   const db = await getDb(), enquiries = collections(db).enquiries;
-  const awaitingReply = { status: { $in: ['New', 'In progress'] as const } };
+  const awaitingReply = { $and: [activeEnquiryFilter(), { status: { $in: ['New', 'In progress'] as const } }] };
   const [records, rows, enquiriesTotal, services] = await Promise.all([
     attentionRecords(db), enquiries.find(awaitingReply).sort({ createdAt: -1, _id: -1 }).limit(5).toArray(),
     enquiries.countDocuments(awaitingReply), serviceStatuses(db),

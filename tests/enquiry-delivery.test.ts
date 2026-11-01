@@ -21,9 +21,53 @@ function deliverEnquiryNotification(id: string, options: Parameters<typeof deliv
 function memoryDatabase(document: EnquiryDocument | null = initial, recipients?: string[]) {
   const stored: Record<string, unknown> | null = structuredClone(document);
   const read = (object: Record<string, unknown> | null, key: string): unknown => key.split('.').reduce<unknown>((value, part) => value && typeof value === 'object' ? (value as Record<string, unknown>)[part] : undefined, object);
-  const matches = (filter: Record<string, unknown>) => stored && Object.entries(filter).every(([key, value]) => {
-    if (value && typeof value === 'object' && '$exists' in value) return (read(stored, key) !== undefined) === value.$exists;
-    return read(stored, key) === value;
+  const expression = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(expression);
+    if (typeof value === 'string' && value.startsWith('$')) return read(stored, value.slice(1));
+    if (!value || typeof value !== 'object' || value instanceof Date) return value;
+    if ('$convert' in value) {
+      const converted = new Date(expression((value.$convert as { input: unknown }).input) as string);
+      return Number.isFinite(converted.getTime()) ? converted : null;
+    }
+    if ('$dateToString' in value) {
+      const operation = value.$dateToString as { date: unknown; format: string };
+      const date = expression(operation.date);
+      return date instanceof Date ? operation.format === '%Y-%m-%d' ? date.toISOString().slice(0, 10) : date.toISOString() : null;
+    }
+    if ('$and' in value) return (value.$and as unknown[]).every(item => expression(item) === true);
+    if ('$in' in value) {
+      const [candidate, options] = (value.$in as unknown[]).map(expression);
+      return (options as unknown[]).includes(candidate);
+    }
+    if ('$dateAdd' in value) {
+      const operation = value.$dateAdd as { startDate: unknown; unit: string; amount: number };
+      const start = expression(operation.startDate);
+      if (!(start instanceof Date)) return null;
+      const result = new Date(start);
+      if (operation.unit === 'year') {
+        const month = result.getUTCMonth(); result.setUTCFullYear(result.getUTCFullYear() + operation.amount);
+        if (result.getUTCMonth() !== month) result.setUTCDate(0);
+      } else result.setUTCDate(result.getUTCDate() + operation.amount);
+      return result;
+    }
+    if ('$gt' in value) {
+      const [left, right] = (value.$gt as unknown[]).map(expression);
+      return left instanceof Date && right instanceof Date && left.getTime() > right.getTime();
+    }
+    throw new Error('Unsupported test expression.');
+  };
+  const matches = (filter: Record<string, unknown>): boolean => !!stored && Object.entries(filter).every(([key, value]) => {
+    if (key === '$and') return (value as Record<string, unknown>[]).every(matches);
+    if (key === '$or') return (value as Record<string, unknown>[]).some(matches);
+    if (key === '$expr') return expression(value) === true;
+    const actual = read(stored, key);
+    if (value && typeof value === 'object' && !(value instanceof Date)) return Object.entries(value).every(([operator, operand]) => {
+      if (operator === '$exists') return (actual !== undefined) === operand;
+      if (operator === '$type') return operand === 'date' && actual instanceof Date;
+      if (operator === '$gt') return actual instanceof Date && operand instanceof Date && actual > operand;
+      throw new Error(`Unsupported test operator: ${operator}`);
+    });
+    return actual instanceof Date && value instanceof Date ? actual.getTime() === value.getTime() : actual === value;
   });
   const set = (key: string, value: unknown) => {
     assert(stored);
@@ -82,6 +126,33 @@ test('delivery requires an already saved enquiry and never sends for a missing r
   const database = memoryDatabase(null); let sends = 0;
   await assert.rejects(() => deliverEnquiryNotification(initial.id, { db: database.db, now, send: async () => { sends++; return 'unexpected'; } }), error => error instanceof HttpError && error.status === 404);
   assert.equal(sends, 0);
+});
+
+test('expired, malformed and trashed enquiries never claim or send a notification', async () => {
+  const cases: EnquiryDocument[] = [
+    { ...initial, expiresAt: new Date(now) },
+    { ...initial, purgeAt: new Date(now) },
+    { ...initial, createdAt: '2025-10-31T00:00:00.000Z' },
+    { ...initial, createdAt: 'not-a-date' },
+    { ...initial, createdAt: '2026-02-30T00:00:00.000Z' },
+    { ...initial, createdAt: '2026-06-01T10:00:00' },
+    { ...initial, deletedAt: new Date(now).toISOString() },
+  ];
+  for (const record of cases) {
+    const database = memoryDatabase(record); let sends = 0;
+    await assert.rejects(() => deliverEnquiryNotification(initial.id, { db: database.db, now, send: async () => { sends++; return 'unexpected'; } }), error => error instanceof HttpError && error.status === 404);
+    assert.equal(sends, 0); assert.equal(database.current()?.notification?.attempts, 0);
+  }
+});
+
+test('an in-flight provider result cannot update or return an enquiry moved to Trash', async () => {
+  const database = memoryDatabase();
+  await assert.rejects(() => deliverEnquiryNotification(initial.id, { db: database.db, now, send: async () => {
+    database.set('deletedAt', new Date(now).toISOString());
+    return 'accepted-before-trash-finished';
+  } }), error => error instanceof HttpError && error.status === 404);
+  assert.equal(database.current()?.notification?.status, 'sending');
+  assert.equal(database.current()?.notificationDelivery?.providerId, undefined);
 });
 
 test('concurrent delivery claims and accepted retries call the provider only once', async () => {

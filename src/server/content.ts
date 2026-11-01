@@ -13,6 +13,7 @@ import { lockMediaSubmission } from './media';
 import { contentMediaUrls } from './media-references';
 import { assertCmsContentAction, assertCmsContentEdit } from './cms-content-policy';
 import { isBundledHomeSlide } from '@/lib/home-slides';
+import { enquiryRetainedFilter } from './enquiry-retention';
 
 export const contentKey = (record: Pick<ContentRecord, 'type' | 'id'>) => `${record.type}:${record.id}`;
 function clean(record: ContentDocument): ContentRecord {
@@ -48,10 +49,10 @@ export async function getCmsTrashRecords() {
 
 export async function getCmsContentOverview(role: CmsRole = 'Operator') {
   await ensureIndexes();
-  const { content, media, users } = collections(await getDb());
+  const { content, media, users, enquiries } = collections(await getDb());
   const retained = { $or: [{ purgeAt: { $exists: false } }, { purgeAt: { $gt: new Date() } }] };
   const active = { ...retained, deletedAt: { $exists: false } };
-  const [core, grouped, categoriesRaw, recent, contentTrashCount, mediaTrashCount, userTrashCount] = await Promise.all([
+  const [core, grouped, categoriesRaw, recent, contentTrashCount, mediaTrashCount, userTrashCount, enquiryTrashCount] = await Promise.all([
     content.find({ ...retained, type: { $in: ['Page', 'Section'] } }).sort({ updatedAt: -1, _id: 1 }).toArray(),
     content.aggregate<{ _id: { type: ContentRecord['type']; status: ContentRecord['status'] }; count: number }>([
       { $match: active }, { $group: { _id: { type: '$type', status: '$status' }, count: { $sum: 1 } } },
@@ -63,6 +64,7 @@ export async function getCmsContentOverview(role: CmsRole = 'Operator') {
     content.countDocuments({ ...retained, deletedAt: { $exists: true } }),
     media.countDocuments({ $or: [{ state: 'trashed' }, { state: 'deleting', trashedAt: { $exists: true } }] }),
     canManageUser(role, 'Operator') ? users.countDocuments({ ...retained, deletedAt: { $exists: true } }) : 0,
+    enquiries.countDocuments({ $and: [enquiryRetainedFilter(), { deletedAt: { $exists: true } }] }),
   ]);
   const counts = Object.fromEntries(contentTypes.map(type => [type, { total: 0, published: 0, draft: 0 }])) as Record<ContentRecord['type'], { total: number; published: number; draft: number }>;
   for (const group of grouped) {
@@ -82,7 +84,7 @@ export async function getCmsContentOverview(role: CmsRole = 'Operator') {
     };
     nextOrder[group._id] = Math.min(10000, Math.max(-1, group.maxOrder) + 1);
   }
-  return { records: core.map(clean), summary: { counts, categories, nextOrder, recent: recent.map(clean), trashCount: contentTrashCount + mediaTrashCount + userTrashCount } };
+  return { records: core.map(clean), summary: { counts, categories, nextOrder, recent: recent.map(clean), trashCount: contentTrashCount + mediaTrashCount + userTrashCount + enquiryTrashCount } };
 }
 
 export type CmsCollectionType = Exclude<ContentRecord['type'], 'Page' | 'Section'>;

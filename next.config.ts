@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 const config: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
   poweredByHeader: false,
+  serverExternalPackages: ['searoute-ts'],
+  outputFileTracingIncludes: {
+    '/api/cms/routes/generate': ['./src/server/data/ne-10m-land.geojson'],
+  },
   images: {
     loader: 'custom',
     loaderFile: './src/lib/cloudinary-loader.ts',

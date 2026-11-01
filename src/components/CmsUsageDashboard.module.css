@@ -62,6 +62,7 @@
 .dialogHeading h2 { font-size: var(--font-h3); }
 .close { display: grid; place-items: center; flex: 0 0 2.75rem; width: 2.75rem; height: 2.75rem; border: 1px solid var(--line); border-radius: .4rem; color: var(--navy); background: var(--pale); }
 .form { display: flex; flex-direction: column; min-height: 0; }
+.dialog > .working { width: auto; flex-shrink: 0; margin: 1rem 1.25rem 0; }
 .dialogBody { display: grid; gap: 1.1rem; padding: 1.25rem; overflow-y: auto; min-height: 0; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #9dafc3 transparent; }
 .field { display: grid; gap: .45rem; font-weight: 600; }
 .clearReading { display: flex; align-items: flex-start; gap: .65rem; padding: .85rem; border: 1px solid var(--line); border-radius: .4rem; }

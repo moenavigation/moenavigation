@@ -1,7 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type ReactNode, type RefObject } from 'react';
-import { Check, Eye, EyeOff, LockKeyhole, Pencil, Plus, RefreshCw, Settings, ShieldCheck, Trash2, Camera, X } from 'lucide-react';
+import useTimedNotice from './useTimedNotice';
+import useDialogBackdrop from './useDialogBackdrop';
+import CmsWorkingPanel from './CmsWorkingPanel';
+import { useCallback, useEffect, useId, useImperativeHandle, useRef, useState, type FormEvent, type ReactNode, type Ref, type RefObject } from 'react';
+import { CalendarDays, Check, Eye, EyeOff, LockKeyhole, Pencil, Plus, Settings, ShieldCheck, Trash2, Camera, X } from 'lucide-react';
 import { cmsErrorText, cmsRequest } from '@/lib/cms-client';
 import { useCmsLocale } from '@/lib/cms-locale';
 import { containDialogFocus } from '@/lib/dialog-focus';
@@ -13,6 +16,7 @@ import styles from './CmsUsersManager.module.css';
 type CmsUser = { id: string; username: string; role: CmsRole; createdAt: string; current: boolean; avatar?: string; profileRevision?: number };
 type Action = { mode: 'edit' | 'remove'; user: CmsUser } | null;
 type CurrentUser = { id: string; username: string; role: CmsRole; avatar?: string; profileRevision?: number };
+export type CmsUsersHandle = { refresh: () => void };
 const roleDescriptions: Record<CmsRole, string> = {
   Dev: 'Dev can manage every user and permanently delete Trash items.',
   Admin: 'Admin can manage Admin and Operator users and permanently delete Trash items.',
@@ -56,7 +60,6 @@ function UserSettingsDialog({ username, avatar, onPhoto, open, onOpenChange, onU
   const { t } = useCmsLocale();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
-  const backdropPointerRef = useRef(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const captureLifetime = useUserViewLifetime();
@@ -87,6 +90,7 @@ function UserSettingsDialog({ username, avatar, onPhoto, open, onOpenChange, onU
     setError('');
     onOpenChange(false);
   }
+  const backdrop = useDialogBackdrop(close, busy);
   async function changePassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const currentLifetime = captureLifetime();
@@ -108,18 +112,19 @@ function UserSettingsDialog({ username, avatar, onPhoto, open, onOpenChange, onU
     finally { mutationRef.current = false; if (currentLifetime.active) setBusy(false); }
   }
 
-  return <dialog ref={dialogRef} className={styles.settingsDialog} aria-labelledby={titleId} onKeyDown={containDialogFocus} onCancel={event => { event.preventDefault(); close(); }} onPointerDown={event => { backdropPointerRef.current = event.target === event.currentTarget; }} onClick={event => { if (event.target === event.currentTarget && backdropPointerRef.current) close(); backdropPointerRef.current = false; }}>
+  return <dialog ref={dialogRef} className={styles.settingsDialog} aria-labelledby={titleId} onKeyDown={containDialogFocus} onCancel={event => { event.preventDefault(); close(); }} {...backdrop}>
     <div className={styles.settingsHeading}><h2 id={titleId}>{t('User settings')}</h2><button type="button" className={styles.close} aria-label={t('Close user settings')} disabled={busy} autoFocus onClick={close}><X size={20} aria-hidden="true" /></button></div>
+    <CmsWorkingPanel active={open && busy} title="Updating password…" className={styles.working} />
     {open && <div className={styles.settingsBody}><p className={styles.signedIn}>{t('Signed in as')} <strong>{username}</strong></p><section className={styles.photoSettings} aria-label={t('Profile photo')}><span className={styles.settingsAvatar}><CmsAvatar username={username} avatar={avatar} /></span><div><h3>{t('Profile photo')}</h3><button type="button" className="button secondary" disabled={pending} onClick={event => { event.currentTarget.focus({ preventScroll: true }); onPhoto(); }}><Camera size={18} aria-hidden="true" />{t('Change profile photo')}</button></div></section><h3 className={styles.passwordHeading}><LockKeyhole size={20} aria-hidden="true" />{t('Change password')}</h3><p className={styles.hint}>{t('Use at least 14 characters for your new password.')}</p><form className={styles.form} onSubmit={changePassword} aria-busy={pending}><label>{t('Current password')}<input name="currentPassword" type="password" autoComplete="current-password" required maxLength={200} disabled={pending} /></label><label>{t('New password')}<input name="newPassword" type="password" autoComplete="new-password" required minLength={14} maxLength={200} disabled={pending} /></label><label>{t('Confirm new password')}<input name="confirmPassword" type="password" autoComplete="new-password" required minLength={14} maxLength={200} disabled={pending} /></label>{error && <p className={styles.error} role="alert">{t(error)}</p>}<div className={styles.settingsActions}><button type="button" className="button secondary" onClick={close} disabled={busy}>{t('Cancel')}</button><button type="submit" className="button" disabled={pending}>{busy ? t('Updating password…') : t('Update password')}</button></div></form></div>}
   </dialog>;
 }
 
-function UserManagementDialog({ title, closeLabel, busy, nested = false, onClose, children }: {
-  title: string; closeLabel: string; busy: boolean; nested?: boolean; onClose: () => void; children: ReactNode;
+function UserManagementDialog({ title, closeLabel, busy, working = busy, workingTitle, nested = false, onClose, children }: {
+  title: string; closeLabel: string; busy: boolean; working?: boolean; workingTitle?: string; nested?: boolean; onClose: () => void; children: ReactNode;
 }) {
   const { t } = useCmsLocale();
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const backdropPointerRef = useRef(false);
+  const backdrop = useDialogBackdrop(onClose, busy);
   const titleId = useId();
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -149,14 +154,15 @@ function UserManagementDialog({ title, closeLabel, busy, nested = false, onClose
       });
     }}
     onCancel={event => { event.preventDefault(); event.stopPropagation(); if (!busy) onClose(); }}
-    onPointerDown={event => { backdropPointerRef.current = event.target === event.currentTarget; }}
-    onClick={event => { if (event.target === event.currentTarget && backdropPointerRef.current && !busy) onClose(); backdropPointerRef.current = false; }}>
+    {...backdrop}>
     <div className={styles.settingsHeading}><h2 id={titleId}>{t(title)}</h2><button type="button" className={styles.close} autoFocus disabled={busy} aria-label={t(closeLabel)} onClick={onClose}><X size={20} aria-hidden="true" /></button></div>
+    <CmsWorkingPanel active={working} title={workingTitle} className={styles.working} />
     <div className={styles.settingsBody}>{children}</div>
   </dialog>;
 }
 
-export default function CmsUsersManager({ username, role, settingsOpen, onSettingsOpenChange, onCurrentUserChange, onUserTrashed, targetUserId, onPhotoLinkClosed }: {
+export default function CmsUsersManager({ ref, onPendingChange, username, role, settingsOpen, onSettingsOpenChange, onCurrentUserChange, onUserTrashed, targetUserId, onPhotoLinkClosed }: {
+  ref?: Ref<CmsUsersHandle>; onPendingChange: (pending: boolean) => void;
   username: string; role: CmsRole; settingsOpen: boolean;
   onSettingsOpenChange: (open: boolean) => void;
   onCurrentUserChange: (user: CurrentUser) => void;
@@ -168,9 +174,11 @@ export default function CmsUsersManager({ username, role, settingsOpen, onSettin
   const [rosterRole, setRosterRole] = useState<CmsRole | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [refreshCoolingDown, setRefreshCoolingDown] = useState(false);
+  const [workingTitle, setWorkingTitle] = useState('Saving user…');
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createError, setCreateError] = useState('');
   const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
+  const [notice, setNotice] = useTimedNotice();
   const [action, setAction] = useState<Action>(null);
   const [resetOpen, setResetOpen] = useState(false);
   const [editError, setEditError] = useState('');
@@ -182,11 +190,8 @@ export default function CmsUsersManager({ username, role, settingsOpen, onSettin
   const createRoleId = useId();
   const editRoleId = useId();
   const settingsTriggerRef = useRef<HTMLButtonElement>(null);
-  const formHeadingRef = useRef<HTMLHeadingElement>(null);
   const requestRef = useRef<AbortController | null>(null);
   const mutationRef = useRef(false);
-  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastRefreshRef = useRef(0);
   const captureLifetime = useUserViewLifetime();
   const actorRole = rosterRole ?? resolveCmsRole(role);
   const canManage = canAssignRole(actorRole, 'Operator');
@@ -199,16 +204,9 @@ export default function CmsUsersManager({ username, role, settingsOpen, onSettin
   const lastDev = selectedUser?.role === 'Dev' && users.filter(user => user.role === 'Dev').length === 1;
   const lastManager = selectedUser?.role === 'Admin' && !users.some(user => user.role === 'Dev') && users.filter(user => user.role === 'Admin').length === 1;
 
-  const load = useCallback(async (manual = false) => {
+  const load = useCallback(async () => {
     const currentLifetime = captureLifetime();
     if (!currentLifetime.active || requestRef.current) return;
-    if (manual) {
-      if (mutationRef.current || Date.now() - lastRefreshRef.current < 3000) return;
-      lastRefreshRef.current = Date.now();
-      setRefreshCoolingDown(true);
-      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
-      refreshTimerRef.current = setTimeout(() => { if (currentLifetime.active) setRefreshCoolingDown(false); }, 3000);
-    }
     const controller = new AbortController();
     requestRef.current = controller;
     setLoading(true);
@@ -225,14 +223,15 @@ export default function CmsUsersManager({ username, role, settingsOpen, onSettin
       if (requestRef.current === controller) { requestRef.current = null; if (currentLifetime.active) setLoading(false); }
     }
   }, [onCurrentUserChange, captureLifetime]);
+  useImperativeHandle(ref, () => ({ refresh: () => { if (!mutationRef.current) void load(); } }), [load]);
+  useEffect(() => { onPendingChange(pending); }, [pending, onPendingChange]);
+  useEffect(() => () => onPendingChange(false), [onPendingChange]);
   useEffect(() => {
     const timer = setTimeout(() => void load(), 0);
     return () => {
       clearTimeout(timer); requestRef.current?.abort(); requestRef.current = null;
-      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
     };
   }, [load]);
-  useEffect(() => { if (action?.mode === 'remove') formHeadingRef.current?.focus(); }, [action]);
 
   useEffect(() => {
     if (!targetUserId) { handledPhotoTarget.current = null; return; }
@@ -246,7 +245,7 @@ export default function CmsUsersManager({ username, role, settingsOpen, onSettin
       else setNotice(target?.role === 'Dev' ? 'Only Dev can manage Dev accounts.' : 'User not found. Refresh the list.');
     }, 0);
     return () => clearTimeout(timer);
-  }, [targetUserId, loading, users, actorRole, captureLifetime]);
+  }, [targetUserId, loading, users, actorRole, captureLifetime, setNotice]);
   function acceptPhoto(saved: CurrentUser) {
     if (!captureLifetime().active) return;
     const target = users.find(item => item.id === saved.id);
@@ -267,6 +266,10 @@ export default function CmsUsersManager({ username, role, settingsOpen, onSettin
     if (busy || mutationRef.current) return;
     setResetOpen(false); setResetError('');
   }
+  function closeCreate() {
+    if (busy || mutationRef.current) return;
+    setCreateOpen(false); setCreateError(''); setCreateRole('Operator');
+  }
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const currentLifetime = captureLifetime();
@@ -274,13 +277,19 @@ export default function CmsUsersManager({ username, role, settingsOpen, onSettin
     const form = event.currentTarget;
     const data = new FormData(form);
     const password = String(data.get('password') || '');
-    if (password !== data.get('confirmPassword')) { setError('Passwords do not match.'); return; }
-    mutationRef.current = true; setBusy(true); setError(''); setNotice('');
+    if (password !== data.get('confirmPassword')) {
+      setCreateError('Passwords do not match.');
+      const confirmation = form.elements.namedItem('confirmPassword');
+      if (confirmation instanceof HTMLInputElement) confirmation.focus();
+      return;
+    }
+    mutationRef.current = true; setBusy(true); setWorkingTitle('Adding user…'); setCreateError(''); setNotice('');
     try {
       await cmsRequest('/api/cms/users', { method: 'POST', body: JSON.stringify({ username: data.get('username'), password, role: createRole, currentPassword: data.get('currentPassword') }) });
       if (!currentLifetime.active) return;
-      form.reset(); setCreateRole('Operator'); setNotice('User added. Share the password privately.'); await load();
-    } catch (cause) { if (currentLifetime.active) setError(cmsErrorText(cause)); }
+      form.reset(); setCreateRole('Operator'); await load();
+      if (currentLifetime.active) { setCreateOpen(false); setNotice('User added. Share the password privately.'); }
+    } catch (cause) { if (currentLifetime.active) setCreateError(cmsErrorText(cause)); }
     finally { mutationRef.current = false; if (currentLifetime.active) setBusy(false); }
   }
   async function manage(event: FormEvent<HTMLFormElement>, mode: 'edit' | 'reset' | 'remove') {
@@ -300,7 +309,7 @@ export default function CmsUsersManager({ username, role, settingsOpen, onSettin
       if (confirmation instanceof HTMLInputElement) confirmation.focus();
       return;
     }
-    mutationRef.current = true; setBusy(true); showError(''); setNotice('');
+    mutationRef.current = true; setBusy(true); setWorkingTitle(mode === 'reset' ? 'Updating password…' : mode === 'remove' ? 'Moving user to Trash…' : 'Saving user…'); showError(''); setNotice('');
     try {
       const result = await cmsRequest<{ ok: true; user?: CurrentUser }>('/api/cms/users', {
         method: mode === 'remove' ? 'DELETE' : 'PATCH',
@@ -312,9 +321,9 @@ export default function CmsUsersManager({ username, role, settingsOpen, onSettin
       if (!currentLifetime.active) return;
       if (result.user) { setRosterRole(result.user.role); onCurrentUserChange(result.user); }
       if (mode === 'remove') onUserTrashed();
-      setNotice(mode === 'reset' ? 'Password updated. Existing sessions for this user were signed out.' : mode === 'edit' ? 'User updated.' : 'User moved to Trash. Access is disabled until restored.');
       await load();
       if (!currentLifetime.active) return;
+      setNotice(mode === 'reset' ? 'Password updated. Existing sessions for this user were signed out.' : mode === 'edit' ? 'User updated.' : 'User moved to Trash. Access is disabled until restored.');
       // Restore focus only after the roster read has finished and the trigger
       // becomes enabled in the same commit as this dialog's successful close.
       if (mode === 'reset') setResetOpen(false);
@@ -322,41 +331,43 @@ export default function CmsUsersManager({ username, role, settingsOpen, onSettin
     } catch (cause) { if (currentLifetime.active) showError(cmsErrorText(cause)); }
     finally { mutationRef.current = false; if (currentLifetime.active) setBusy(false); }
   }
-  return <div className={styles.grid + (!canManage ? ' ' + styles.readOnly : '')}>
+  return <div className={styles.grid}>
     <section className={styles.panel} aria-labelledby="users-list-heading">
       <div className={styles.heading}>
         <div><h2 id="users-list-heading" tabIndex={-1}>{t('Users')}</h2><p>{t(roleDescriptions[actorRole])}</p></div>
-        <button type="button" className={'button secondary ' + styles.refresh} onClick={() => void load(true)} disabled={pending || refreshCoolingDown} aria-label={t('Refresh users')}><RefreshCw size={18} /><span>{t('Refresh')}</span></button>
+        {canManage && <button type="button" className="button" aria-haspopup="dialog" disabled={pending} onClick={event => { event.currentTarget.focus({ preventScroll: true }); setCreateError(''); setNotice(''); setCreateRole('Operator'); setCreateOpen(true); }}><Plus size={19} aria-hidden="true" />{t('Add user')}</button>}
       </div>
-      {loading && !users.length ? <p role="status">{t('Loading users…')}</p> : <ul className={styles.list}>{users.map(user => {
+      <CmsWorkingPanel active={loading && !busy && !photoUser && !settingsOpen && !selectedAction && !createOpen} title="Loading users…" />
+      {notice && !selectedAction && !createOpen && <p className={styles.success} role="status"><Check size={18} aria-hidden="true" />{t(notice)}</p>}
+      {error && selectedAction?.mode !== 'remove' && <p className={styles.error} role="alert">{t(error)}</p>}
+      {(!loading || users.length > 0) && <ul className={styles.list}>{users.map(user => {
         const manageable = canManageUser(actorRole, user.role);
-        return <li key={user.id}>
-          <div className={styles.identity}><span className={styles.avatar}><CmsAvatar username={user.username} avatar={user.avatar} /></span><span><strong>{user.username}</strong><span className={styles.userMeta}><span className={styles.role + ' ' + styles['role' + user.role]}>{user.role}</span><small>{user.current ? t('You') : t('Added {date}', { date: new Date(user.createdAt).toLocaleDateString(locale === 'th' ? 'th-TH' : 'en-GB') })}</small></span></span></div>
+        return <li key={user.id} className={styles.card + (user.current ? ' ' + styles.currentCard : '')} aria-label={user.username}>
+          <div className={styles.identity}><span className={styles.avatar}><CmsAvatar username={user.username} avatar={user.avatar} /></span><div className={styles.identityText}><h3>{user.username}</h3><div className={styles.userMeta}><span className={styles.role + ' ' + styles['role' + user.role]}>{user.role}</span>{user.current && <span className={styles.you}>{t('You')}</span>}</div></div></div>
+          <p className={styles.joined}><CalendarDays size={16} aria-hidden="true" /><span>{t('Added {date}', { date: new Date(user.createdAt).toLocaleDateString(locale === 'th' ? 'th-TH' : 'en-GB') })}</span></p>
           <div className={styles.actions}>
             {user.current && <button ref={settingsTriggerRef} type="button" className="button secondary" disabled={pending} onClick={event => { event.currentTarget.focus({ preventScroll: true }); setNotice(''); onSettingsOpenChange(true); }}><Settings size={18} aria-hidden="true" />{t('User settings')}</button>}
             {(manageable || user.current) && <button type="button" className="button secondary" disabled={pending} aria-label={t('Change profile photo for {name}', { name: user.username })} onClick={event => { event.currentTarget.focus({ preventScroll: true }); setPhotoUser(user); }}><Camera size={17} aria-hidden="true" />{t('Photo')}</button>}
             {manageable && <button type="button" className="button secondary" disabled={pending} aria-label={t('Edit {name}', { name: user.username })} onClick={event => { event.currentTarget.focus({ preventScroll: true }); selectAction('edit', user); }}><Pencil size={17} aria-hidden="true" />{t('Edit')}</button>}
             {manageable && !user.current && <>
-              <button type="button" className={styles.remove} disabled={pending} onClick={() => selectAction('remove', user)} aria-label={t('Move {name} to Trash', { name: user.username })}><Trash2 size={18} /></button>
+              <button type="button" className={styles.remove} disabled={pending} onClick={event => { event.currentTarget.focus({ preventScroll: true }); selectAction('remove', user); }} aria-label={t('Move {name} to Trash', { name: user.username })}><Trash2 size={18} aria-hidden="true" /></button>
             </>}
             {!manageable && user.role === 'Dev' && <span className={styles.protected}><ShieldCheck size={17} aria-hidden="true" />{t('Protected Dev account')}</span>}
           </div>
         </li>;
       })}</ul>}
-      {notice && selectedAction?.mode !== 'edit' && <p className={styles.success} role="status"><Check size={18} />{t(notice)}</p>}
-      {!canManage && error && <p className={styles.error} role="alert">{t(error)}</p>}
     </section>
-    {canManage && <section className={styles.panel} aria-labelledby="users-form-heading">
-      {error && <p className={styles.error} role="alert">{t(error)}</p>}
-      {selectedAction?.mode === 'remove' && selectedUser ? <>
-        <div className={styles.heading}><div><h2 id="users-form-heading" tabIndex={-1} ref={formHeadingRef}>{t('Move user to Trash')}</h2><p>{selectedUser.username}</p></div><button type="button" className={styles.close} disabled={busy} onClick={() => { setAction(null); setError(''); }} aria-label={t('Cancel')}><X size={20} /></button></div>
+    {selectedAction?.mode === 'remove' && selectedUser && <UserManagementDialog title="Move user to Trash" closeLabel="Close move user to Trash" busy={busy} workingTitle={workingTitle} onClose={() => { if (!busy && !mutationRef.current) { setAction(null); setError(''); } }}>
+        <p className={styles.dialogTarget}>{selectedUser.username}</p>
         <form key={selectedUser.id + ':remove'} className={styles.form} onSubmit={event => void manage(event, 'remove')} autoComplete="off" aria-busy={busy}>
           <label>{t('Your current password')}<input name="currentPassword" type="password" autoComplete="current-password" required maxLength={200} disabled={pending} /></label>
           <p className={styles.hint}>{t('This user will lose CMS access immediately and can be restored from Trash within 30 days.')}</p>
+          {error && <p className={styles.error} role="alert">{t(error)}</p>}
           <div className={styles.formActions}><button type="button" className="button secondary" disabled={pending} onClick={() => { setAction(null); setError(''); }}>{t('Cancel')}</button><button type="submit" className="button" disabled={pending}>{busy ? t('Saving…') : t('Move to Trash')}</button></div>
         </form>
-      </> : <>
-        <div className={styles.heading}><div><h2 id="users-form-heading">{t('Add user')}</h2><p>{t('Use a unique username and a password of at least 14 characters.')}</p></div><Plus size={22} /></div>
+    </UserManagementDialog>}
+    {canManage && createOpen && <UserManagementDialog title="Add user" closeLabel="Close add user" busy={busy} workingTitle={workingTitle} onClose={closeCreate}>
+        <p className={styles.hint}>{t('Use a unique username and a password of at least 14 characters.')}</p>
         <form className={styles.form} onSubmit={create} autoComplete="off" aria-busy={busy}>
           <label>{t('Username')}<input name="username" autoComplete="off" required minLength={3} maxLength={40} pattern="[a-zA-Z0-9][a-zA-Z0-9._-]{2,39}" disabled={pending} /></label>
           <div className={styles.field}><label htmlFor={createRoleId}>{t('Role')}</label><select id={createRoleId} name="role" value={createRole} onChange={event => setCreateRole(event.target.value as CmsRole)} disabled={pending}>{allowedRoles.map(value => <option key={value} value={value}>{value}</option>)}</select></div>
@@ -364,12 +375,12 @@ export default function CmsUsersManager({ username, role, settingsOpen, onSettin
           <label>{t('Password')}<input name="password" type="password" autoComplete="new-password" required minLength={14} maxLength={200} disabled={pending} /></label>
           <label>{t('Confirm password')}<input name="confirmPassword" type="password" autoComplete="new-password" required minLength={14} maxLength={200} disabled={pending} /></label>
           <label>{t('Your current password')}<input name="currentPassword" type="password" autoComplete="current-password" required maxLength={200} disabled={pending} /></label>
-          <button type="submit" className="button" disabled={pending}><Plus size={18} />{busy ? t('Saving…') : t('Add user')}</button>
+          {createError && <p className={styles.error} role="alert">{t(createError)}</p>}
+          <div className={styles.formActions}><button type="button" className="button secondary" disabled={busy} onClick={closeCreate}>{t('Cancel')}</button><button type="submit" className="button" disabled={pending}><Plus size={18} aria-hidden="true" />{busy ? t('Saving…') : t('Add user')}</button></div>
         </form>
-      </>}
-    </section>}
+    </UserManagementDialog>}
     {selectedAction?.mode === 'edit' && selectedUser && <>
-      <UserManagementDialog key={'edit:' + selectedUser.id} title="Edit user" closeLabel="Close edit user" busy={busy} onClose={closeEdit}>
+      <UserManagementDialog key={'edit:' + selectedUser.id} title="Edit user" closeLabel="Close edit user" busy={busy} working={busy && !resetOpen} workingTitle={workingTitle} onClose={closeEdit}>
         <p className={styles.dialogTarget}>{selectedUser.username}</p>
         {notice && <p className={styles.success} role="status"><Check size={18} />{t(notice)}</p>}
         <form className={styles.form} onSubmit={event => void manage(event, 'edit')} autoComplete="off" aria-busy={busy}>
@@ -386,7 +397,7 @@ export default function CmsUsersManager({ username, role, settingsOpen, onSettin
         </form>
         {!selectedUser.current && <section className={styles.passwordReset}><div><h3>{t('Password')}</h3><p className={styles.hint}>{t('Change the password for this user without saving role changes.')}</p></div><button type="button" className="button secondary" disabled={pending} onClick={event => { event.currentTarget.focus({ preventScroll: true }); setResetError(''); setResetOpen(true); }}><LockKeyhole size={18} aria-hidden="true" />{t('Reset password')}</button></section>}
       </UserManagementDialog>
-      {resetOpen && !selectedUser.current && <UserManagementDialog key={'reset:' + selectedUser.id} title="Reset password" closeLabel="Close reset password" busy={busy} nested onClose={closeReset}>
+      {resetOpen && !selectedUser.current && <UserManagementDialog key={'reset:' + selectedUser.id} title="Reset password" closeLabel="Close reset password" busy={busy} workingTitle={workingTitle} nested onClose={closeReset}>
         <p className={styles.dialogTarget}>{t('Reset password for {name}', { name: selectedUser.username })}</p>
         <p className={styles.hint}>{t('Use at least 14 characters for your new password.')}</p>
         <form className={styles.form} onSubmit={event => void manage(event, 'reset')} autoComplete="off" aria-busy={busy}>

@@ -9,6 +9,7 @@ import { collections, ensureIndexes, getDb, type UserDocument } from './db';
 import { digest } from './auth';
 import { HttpError } from './http';
 import { mediaFolder } from './media';
+import { enquiryRetainedFilter } from './enquiry-retention';
 
 type TrashRow = {
   kind: CmsTrashKind; id: string; key: string; title: string; titleTh?: string;
@@ -35,6 +36,11 @@ function readCursor(raw: string | null, scope: string) {
 
 const dateString = (input: unknown) => ({ $dateToString: { date: { $convert: { input, to: 'date', onError: null, onNull: null } }, format: '%Y-%m-%dT%H:%M:%S.%LZ', timezone: 'UTC', onNull: null } });
 const searchFields = (...fields: string[]) => fields.map(field => ({ $ifNull: [`$${field}`, ''] }));
+const enquiryYearExpiry = { $dateAdd: { startDate: { $convert: { input: '$createdAt', to: 'date', onError: null, onNull: null } }, unit: 'year', amount: 1, timezone: 'UTC' } };
+const enquiryPurgeAt = { $min: [
+  enquiryYearExpiry, { $ifNull: ['$expiresAt', enquiryYearExpiry] }, { $ifNull: ['$purgeAt', enquiryYearExpiry] },
+  { $dateAdd: { startDate: { $convert: { input: '$deletedAt', to: 'date', onError: null, onNull: null } }, unit: 'day', amount: 30, timezone: 'UTC' } },
+] };
 
 /** One read combines safe projections; the database limits the merged result before returning it. */
 export async function getCmsTrashPage(query: CmsTrashQuery, actor: UserDocument): Promise<CmsTrashPage> {
@@ -60,6 +66,14 @@ export async function getCmsTrashPage(query: CmsTrashQuery, actor: UserDocument)
         deletedAt: dateString({ $ifNull: ['$trashedAt', '$createdAt'] }),
         managed: { $regexMatch: { input: { $ifNull: ['$publicId', ''] }, regex: `^${escapeInboxSearch(mediaFolder())}/` } },
         searchFields: searchFields('title', 'id'),
+      } },
+    ] } },
+    { $unionWith: { coll: 'moe_enquiries', pipeline: [
+      { $match: { $and: [{ deletedAt: { $exists: true } }, enquiryRetainedFilter(now)] } },
+      // Enquiry addresses, messages and notification envelopes never enter Trash results or search.
+      { $project: {
+        _id: 0, kind: { $literal: 'Enquiry' }, id: 1, key: { $concat: ['Enquiry:', '$id'] }, title: '$subject', revision: 1,
+        deletedAt: dateString('$deletedAt'), purgeAt: dateString(enquiryPurgeAt), searchFields: searchFields('subject', 'id'),
       } },
     ] } },
   ];

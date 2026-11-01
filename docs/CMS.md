@@ -17,6 +17,9 @@ renaming in the API. Edit existing accounts' roles in a dialog. Offer another
 account's password reset inside that workflow, using a separate dialog that
 preserves the unsaved role when it closes. Keep personal password changes in
 User settings. Retain current-password confirmation and existing role protections.
+Present users as responsive cards with profile photos, roles, and account actions.
+Use dialogs for Add user and Move to Trash, and one page-level Refresh button
+that reloads the user list. Preserve failed input and clear passwords on closing.
 
 Let every role change its own profile photo without changing credentials or
 ending sessions. Dev can change any account photo; Admin can change Admin and
@@ -32,6 +35,11 @@ changes recoverable and report success only after data and media are saved.
 Preserve historical unpublished records until the user explicitly saves them.
 Keep publication labels, badges, filters, and metrics out of the CMS;
 show saved content counts and update dates instead. Enquiry statuses remain.
+
+Dismiss temporary confirmation and information notifications after five seconds.
+Each new notification starts a fresh timer, including repeated messages. Retain
+manual dismissal and keep task progress, validation, and recovery information
+visible while it is needed.
 
 Opening a New enquiry moves it to In progress after the update is saved.
 Preserve In progress and Resolved statuses when reopening, and offer status
@@ -69,7 +77,9 @@ Give each collection its own Add/Edit dialog with fields relevant to that
 item type. Generate new website identifiers automatically on the first save;
 preserve existing identifiers and addresses. Keep type, identifier, display
 order, and raw icon controls out of these forms while retaining their saved
-values. Show the current CMS language first in expandable bilingual text
+values. Services offer a visual icon selector using the same icons shown on
+the website; preserve existing icon values until the editor chooses a replacement.
+Show the current CMS language first in expandable bilingual text
 cards, followed by Pictures. Suggest existing vessel types or categories
 without restricting clients to those suggestions or overwriting the other
 language. Projects and News support dates displayed with the content.
@@ -81,7 +91,22 @@ each known point, retaining existing intermediate points, their precision,
 and their order unless explicitly edited. These form changes do not replace
 the existing save, validation, upload, or recovery rules.
 
-Use one Trash list for removed content, saved images, and user accounts,
+Each route point can import coordinates from a Google Maps pin link in a
+separate dialog. Extract automatically, preview before applying, and retain
+the rest of the unsaved route. Accept supported full and short share links;
+ask for a precise pin or manual coordinates when a link is ambiguous. Provide
+Google Maps links only for valid origin and destination points in the editor
+and on the public map. Intermediate points retain the route shape without links.
+
+Offer Generate sea route in Map setup when both endpoints are valid. Generate
+an approximate maritime-network path, check it against mapped land, and preview
+it before replacing intermediate points. Keep endpoint values and the rest of
+the draft unchanged; only normal Save publishes it. Allow cancellation/retry,
+preserve input on failures, and reject unsupported paths rather than inventing
+straight-line shortcuts. Label the result for website illustration and review,
+not navigation. Keep datasets and routing calculations on the server.
+
+Use one Trash list for removed content, saved images, user accounts, and enquiries,
 with search and a type-selection dialog. Read and filter the entire Trash
 on the server, returning bounded pages. Keep action permissions on the server.
 
@@ -92,8 +117,14 @@ restoration and permanent deletion require the actor's password and the same
 target-role permissions as account management. Saved images remain recoverable
 until explicitly deleted permanently. Keep failed image deletions visible for
 retry and protect referenced images. Restore a page before its content areas;
-shared content areas do not require a parent page. Enquiries use statuses and
-Settings edits a fixed record; neither currently exposes a delete action.
+shared content areas do not require a parent page. Enquiries expire one UTC
+calendar year after receipt, including historical records; clamp February 29
+to February 28. Enquiry details offers Move to Trash. Trashed enquiries remain
+recoverable for up to 30 days, capped by their original one-year deadline;
+restoration preserves their status and original expiry. Apply revision checks,
+transactional audit events, and the usual Dev/Admin-only permanent deletion.
+Exclude expired enquiries from reads and writes immediately, without waiting
+for MongoDB TTL cleanup. Settings edits a fixed record and has no delete action.
 
 Let Dev and Admin manage enquiry-notification recipients from a dialog on
 Enquiries, with simple add/edit/remove fields and one Save action. Keep the

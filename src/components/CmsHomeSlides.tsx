@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
+import useTimedNotice from './useTimedNotice';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Reorder, useDragControls, useReducedMotion } from 'motion/react';
 import { ArrowDown, ArrowUp, Check, GripVertical, ImagePlus, Images, Plus, RefreshCw, Save, Search, Trash2 } from 'lucide-react';
@@ -9,6 +10,7 @@ import type { ContentImage, ContentRecord, MediaItem } from '@/lib/cms-types';
 import { defaultHomeSlides, getHomeSlides, getHomeSlideInterval } from '@/lib/home-slides';
 import { useCmsLocale } from '@/lib/cms-locale';
 import Dialog from './Dialog';
+import CmsWorkingPanel from './CmsWorkingPanel';
 import useCmsMediaSearch from './useCmsMediaSearch';
 import styles from './CmsHomeSlides.module.css';
 
@@ -57,7 +59,7 @@ export default function CmsHomeSlides({ active, ownerId, store, onDirtyChange, o
   const [preparing, setPreparing] = useState(false);
   const [progress, setProgress] = useState('');
   const [error, setError] = useState(initial?.error ?? '');
-  const [notice, setNotice] = useState('');
+  const [notice, setNotice] = useTimedNotice();
   const [conflict, setConflict] = useState<ContentRecord | null>(initial?.conflict ?? null);
   const [uncertain, setUncertain] = useState(Boolean(initial?.uncertain || initial?.lastDesired));
   const [picker, setPicker] = useState(false);
@@ -106,7 +108,7 @@ export default function CmsHomeSlides({ active, ownerId, store, onDirtyChange, o
     try { const result = await cmsRequest<{ record: ContentRecord }>('/api/cms/home-slides'); if (mounted.current) accept(result.record); }
     catch (cause) { if (mounted.current) setError(cmsErrorText(cause)); }
     finally { loadRequest.current = false; if (mounted.current) setLoading(false); }
-  }, [accept]);
+  }, [accept, setNotice]);
   useEffect(() => { if (active && !initialRequest.current) { initialRequest.current = true; void load(); } }, [active, load]);
   useEffect(() => { onDirtyChange(dirty); }, [dirty, onDirtyChange]);
   useEffect(() => { onBusyChange(busy); }, [busy, onBusyChange]);
@@ -231,7 +233,7 @@ export default function CmsHomeSlides({ active, ownerId, store, onDirtyChange, o
   }
   async function checkSaved() {
     if (busyRef.current || busy) return;
-    busyRef.current = true; setLoading(true);
+    busyRef.current = true; setLoading(true); setProgress('Checking saved slides…');
     try {
       if (await reconcile(true)) return;
       if (submission.current) {
@@ -242,10 +244,19 @@ export default function CmsHomeSlides({ active, ownerId, store, onDirtyChange, o
       }
       setAttempts(0); setError(''); setUncertain(false);
     } catch (cause) { setError(cmsErrorText(cause)); }
-    finally { busyRef.current = false; if (mounted.current) setLoading(false); }
+    finally { busyRef.current = false; if (mounted.current) { setLoading(false); setProgress(''); } }
+  }
+  async function keepMyVersion() {
+    if (busyRef.current || busy) return;
+    busyRef.current = true; setLoading(true); setProgress('Checking saved slides…');
+    try {
+      if (await reconcile(true)) return;
+      setSaved(conflict); setConflict(null); setAttempts(0); setError('');
+    } catch (cause) { setError(cmsErrorText(cause)); }
+    finally { busyRef.current = false; if (mounted.current) { setLoading(false); setProgress(''); } }
   }
   return <section hidden={!active} className={styles.manager} aria-label={t('Homepage slides')}>
-    {loading && <p role="status" className={styles.loading}>{t('Loading homepage slides…')}</p>}
+    <CmsWorkingPanel active={active && busy && !picker && !confirmReload} title={progress || (preparing ? 'Preparing image…' : saving ? 'Saving slides…' : 'Loading homepage slides…')} />
     {!saved && !loading && <div className={styles.empty}><p>{t(error || 'Homepage slides could not be loaded.')}</p><button type="button" className="button secondary" onClick={() => void load()}><RefreshCw size={18} />{t('Try again')}</button></div>}
     {saved && <>
       <div className={styles.toolbar}><div><span className={styles.count}>{t('{count} slides', { count: slides.length })}</span><span className={styles.draft}>{t(dirty ? 'Unsaved changes' : 'All changes saved')}</span></div><div className={styles.toolbarActions}><button type="button" className="button secondary" disabled={busy} onClick={() => dirty ? setConfirmReload(true) : void load()}><RefreshCw size={17} />{t('Reload saved slides')}</button><button type="button" className="button" disabled={busy || !dirty || Boolean(conflict) || attempts >= 3} onClick={() => void save()}><Save size={18} />{t(saving ? 'Saving slides…' : 'Save slides')}</button></div></div>
@@ -256,22 +267,22 @@ export default function CmsHomeSlides({ active, ownerId, store, onDirtyChange, o
             {slides.map((slide, index) => <SlideCard key={slide.key} slide={slide} index={index} total={slides.length} busy={locked} onChange={(field, value) => updateSlides(slides.map(item => item.key === slide.key ? { ...item, [field]: value } : item))} onMove={offset => move(index, offset)} onRemove={() => remove(slide)} />)}
           </Reorder.Group>
           <div className={styles.addPanel}>
-            <div className={styles.addContent}><div className={styles.addHeading}><Plus size={21} aria-hidden="true" /><strong>{t('Add a banner')}</strong><p>{t('Use a wide image with the main subject near the center.')}</p></div><div className={styles.addActions}><label className={`button secondary ${styles.fileButton}`} aria-disabled={locked || slides.length >= 12}><ImagePlus size={18} />{t('Choose device image')}<input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={locked || slides.length >= 12} aria-label={t('Upload banner images')} onChange={event => { void chooseFiles(Array.from(event.target.files || [])); event.target.value = ''; }} /></label><button type="button" className="button secondary" disabled={locked || slides.length >= 12} onClick={openLibrary}><Images size={18} />{t('Browse library')}</button></div><p>{t('Device images upload only when you save. Up to 12 slides.')}</p></div>
+            <div className={styles.addContent}><div className={styles.addHeading}><Plus size={21} aria-hidden="true" /><strong>{t('Add a banner')}</strong><p>{t('Recommended: 3:1. The sides are cropped to 16:9 on mobile.')}</p></div><div className={styles.addActions}><label className={`button secondary ${styles.fileButton}`} aria-disabled={locked || slides.length >= 12}><ImagePlus size={18} />{t('Device image')}<input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={locked || slides.length >= 12} aria-label={t('Upload banner images')} onChange={event => { void chooseFiles(Array.from(event.target.files || [])); event.target.value = ''; }} /></label><button type="button" className="button secondary" disabled={locked || slides.length >= 12} onClick={openLibrary}><Images size={18} />{t('Browse library')}</button></div><p>{t('Device images upload only when you save. Up to 12 slides.')}</p></div>
             <div className={styles.timing}><label htmlFor="hero-slide-interval">{t('Time between slides')}</label><div><input id="hero-slide-interval" type="range" min={2} max={15} step={1} value={intervalSeconds} disabled={locked} onChange={event => { changed(); setIntervalSeconds(Number(event.target.value)); }} /><output htmlFor="hero-slide-interval">{t('{seconds} sec', { seconds: intervalSeconds })}</output></div><p>{t('The homepage advances automatically. Visitors can pause it at any time.')}</p></div>
           </div>
         </div>
       </div>
-      {(preparing || progress) && <p className={styles.status} role="status">{progress || t('Preparing image…')}</p>}
       {error && <div className={styles.error} role="alert"><p>{t(error)}</p><p>{t('Your changes and prepared images are kept here.')}</p></div>}
       {(uncertain || attempts >= 3) && !conflict && <div className={styles.error}><p>{t(attempts >= 3 ? 'Saving has failed three times. Check the saved version before trying again.' : 'The previous save needs checking. Retry Save with the same changes, or check the saved version before editing.')}</p><button type="button" className="button secondary" disabled={busy} onClick={() => void checkSaved()}>{t('Check saved slides')}</button></div>}
-      {conflict && <div className={styles.conflict}><h3>{t('Another change was saved first')}</h3><p>{t('Your slide order and images are kept. Reload the saved slides, or keep your version after reviewing the latest change.')}</p><div><button type="button" className="button secondary" onClick={() => setConfirmReload(true)}>{t('Reload saved slides')}</button><button type="button" className="button secondary" disabled={busy} onClick={async () => { try { if (await reconcile(true)) return; setSaved(conflict); setConflict(null); setAttempts(0); setError(''); } catch (cause) { setError(cmsErrorText(cause)); } }}>{t('Keep my version')}</button></div></div>}
+      {conflict && <div className={styles.conflict}><h3>{t('Another change was saved first')}</h3><p>{t('Your slide order and images are kept. Reload the saved slides, or keep your version after reviewing the latest change.')}</p><div><button type="button" className="button secondary" onClick={() => setConfirmReload(true)}>{t('Reload saved slides')}</button><button type="button" className="button secondary" disabled={busy} onClick={() => void keepMyVersion()}>{t('Keep my version')}</button></div></div>}
       {notice && <p className={styles.success} role="status"><Check size={18} />{t(notice)}</p>}
     </>}
     <Dialog open={active && picker} onClose={() => setPicker(false)} title={t('Choose a banner image')} closeLabel={t('Close image library')}><div className={styles.library}><label className={styles.search}><Search size={18} /><input type="search" maxLength={160} value={query} aria-label={t('Search banner images')} placeholder={t('Search image names…')} onChange={event => { setQuery(event.target.value); setPage(0); }} /></label>
       {includedBanners.length > 0 && <section className={styles.included} aria-label={t('Included banners')}><h3>{t('Included banners')}</h3><div className={styles.libraryGrid}>{includedBanners.map(item => <button type="button" key={item.url} disabled={locked || slides.some(slide => slide.url === item.url)} onClick={() => addIncluded(item)}><img src={item.url} alt="" width={300} height={100} loading="lazy" /><span>{locale === 'th' ? item.altTh : item.alt}</span>{slides.some(slide => slide.url === item.url) && <Check size={16} />}</button>)}</div></section>}
       <h3>{t('Media library')}</h3>
-      {(searching ? search.loading : libraryLoading && !images.length) ? <p role="status">{t('Loading your images')}</p> : <><div className={styles.libraryGrid}>{visibleImages.map(item => <button type="button" key={item.id} disabled={slides.some(slide => slide.url === item.url)} onClick={() => addLibrary(item)}><img src={item.url} alt="" width={300} height={100} loading="lazy" /><span>{item.title}</span>{slides.some(slide => slide.url === item.url) && <Check size={16} />}</button>)}</div>{!images.length && <p>{t('No matching images. Try another name or clear your search.')}</p>}</>}
+      {(searching ? search.loading : libraryLoading && !images.length) ? <CmsWorkingPanel active={active && picker} title="Loading your images" /> : <><div className={styles.libraryGrid}>{visibleImages.map(item => <button type="button" key={item.id} disabled={slides.some(slide => slide.url === item.url)} onClick={() => addLibrary(item)}><img src={item.url} alt="" width={300} height={100} loading="lazy" /><span>{item.title}</span>{slides.some(slide => slide.url === item.url) && <Check size={16} />}</button>)}</div>{!images.length && <p>{t('No matching images. Try another name or clear your search.')}</p>}</>}
       {(searching ? search.error : libraryError) && <div className={styles.error} role="alert">{t(searching ? search.error : libraryError)}<button type="button" className="button secondary" onClick={() => searching ? search.retry() : void loadLibrary()}>{t('Try again')}</button></div>}
+      <CmsWorkingPanel active={active && picker && (searching ? search.loadingMore : libraryLoading && images.length > 0)} title="Loading more images…" />
       {pageCount > 1 && <div className={styles.pagination}><button type="button" className="button secondary" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>{t('Previous images')}</button><span>{t('Page {page} of {total}', { page: currentPage + 1, total: pageCount })}</span><button type="button" className="button secondary" disabled={currentPage === pageCount - 1} onClick={() => setPage(currentPage + 1)}>{t('Next images')}</button></div>}{hasMore && currentPage === pageCount - 1 && <button type="button" className="button secondary" disabled={libraryLoading || search.loadingMore} onClick={() => searching ? void search.loadMore() : void loadLibrary(cursor)}>{t('Load more images')}</button>}
     </div></Dialog>
     <Dialog open={active && confirmReload} onClose={() => setConfirmReload(false)} title={t('Reload saved slides?')} closeLabel={t('Cancel')}><p>{t('This replaces your unsaved slide changes with the latest saved version.')}</p><div className={styles.confirmActions}><button type="button" className="button secondary" onClick={() => setConfirmReload(false)}>{t('Cancel')}</button><button type="button" className="button" onClick={() => void reload()}>{t('Reload saved slides')}</button></div></Dialog>

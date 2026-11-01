@@ -2,13 +2,14 @@
 
 import "leaflet/dist/leaflet.css";
 
-import { Minus, Plus, RotateCcw } from "lucide-react";
+import { ExternalLink, Minus, Plus, RotateCcw } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { local, type Locale } from "@/lib/content";
 import styles from "./InteractiveRouteMap.module.css";
 import type * as Leaflet from "leaflet";
 import type { MappedRoute } from "@/lib/route-explorer";
 import { contentText } from "@/lib/public-content";
+import { googleMapsPointUrl } from "@/lib/google-maps";
 
 const tileUrl = process.env.NEXT_PUBLIC_MAP_TILE_URL || "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const osmAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>';
@@ -37,21 +38,21 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
   const [zoom, setZoom] = useState(5);
   const [tileError, setTileError] = useState(false);
   const [mapFailed, setMapFailed] = useState(false);
-  const [portChoices, setPortChoices] = useState<{ portKey: string; routeIds: string[]; title: string; availableKey: string } | null>(null);
+  const [portChoices, setPortChoices] = useState<{ pointKey: string; coordinates: [number, number]; routeIds: string[]; title: string; availableKey: string } | null>(null);
   const choicesRef = useRef<HTMLDivElement>(null);
 
-  const restorePortFocus = (portKey: string) => {
-    const marker = Array.from(containerRef.current?.querySelectorAll<HTMLElement>("[data-port-key]") || []).find(element => element.dataset.portKey === portKey);
+  const restorePortFocus = (pointKey: string) => {
+    const marker = Array.from(containerRef.current?.querySelectorAll<HTMLElement>("[data-map-point-key]") || []).find(element => element.dataset.mapPointKey === pointKey);
     marker?.focus({ preventScroll: true });
   };
   const closePortChoices = () => {
-    if (portChoices) restorePortFocus(portChoices.portKey);
+    if (portChoices) restorePortFocus(portChoices.pointKey);
     setPortChoices(null);
   };
 
   useEffect(() => {
     if (!portChoices) return;
-    choicesRef.current?.querySelector("button")?.focus({ preventScroll: true });
+    choicesRef.current?.querySelector<HTMLElement>("button, a")?.focus({ preventScroll: true });
     const dismissOutside = (event: Event) => {
       if (event.target instanceof Node && !choicesRef.current?.contains(event.target)) setPortChoices(null);
     };
@@ -156,12 +157,12 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
     const leaflet = leafletRef.current;
     if (!map || !leaflet) return;
 
-    const focusedPortKey = (document.activeElement as HTMLElement | null)?.dataset.portKey;
+    const focusedPointKey = (document.activeElement as HTMLElement | null)?.dataset.mapPointKey;
     overlaysRef.current?.remove();
     const overlays = leaflet.layerGroup().addTo(map);
     overlaysRef.current = overlays;
-    const createIcon = (kind: "origin" | "destination" | "active") => leaflet.divIcon({
-      className: `${styles.portMarker} ${kind === "origin" ? styles.originMarker : kind === "active" ? styles.activeMarker : styles.destinationMarker}`,
+    const createIcon = (kind: "origin" | "destination" | "active" | "waypoint") => leaflet.divIcon({
+      className: `${styles.portMarker} ${kind === "origin" ? styles.originMarker : kind === "active" ? styles.activeMarker : kind === "waypoint" ? styles.waypointMarker : styles.destinationMarker}`,
       html: `<span class="${styles.markerCenter}"></span>`,
       iconSize: [44, 44],
       iconAnchor: [22, 22],
@@ -200,32 +201,67 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
         marker.getElement()?.focus({ preventScroll: true });
         if (id === selectedId) fitRoute(id, true); else onSelect(id);
       };
-      const openChoices = connections.length > 1 ? () => setPortChoices({ portKey, routeIds: connections.map(connection => connection.id), title: action, availableKey }) : undefined;
-      marker.on("click", () => { if (openChoices) openChoices(); else choose(route.id); });
+      const pointKey = `destination:${portKey}`;
+      const openChoices = () => {
+        if (connections.length === 1) choose(route.id);
+        setPortChoices({ pointKey, coordinates: destination, routeIds: connections.length > 1 ? connections.map(connection => connection.id) : [], title: connections.length > 1 ? action : label, availableKey });
+      };
+      marker.on("click", openChoices);
       const element = marker.getElement();
       if (element) {
         element.dataset.portKey = portKey;
+        element.dataset.mapPointKey = pointKey;
         element.setAttribute("role", "button");
         element.setAttribute("aria-label", action);
         element.setAttribute("aria-pressed", String(Boolean(active)));
-        if (connections.length > 1) element.setAttribute("aria-haspopup", "dialog");
+        element.setAttribute("aria-haspopup", "dialog");
         element.addEventListener("keydown", (event) => {
           if (event.key === " " || event.key === "Enter") {
             event.preventDefault();
             event.stopPropagation();
-            if (openChoices) openChoices(); else choose(route.id);
+            openChoices();
           }
         });
-        if (focusedPortKey === portKey) element.focus({ preventScroll: true });
+        if (focusedPointKey === pointKey) element.focus({ preventScroll: true });
       }
     }
 
     const selected = visibleRoutes.find((route) => route.id === selectedId);
     if (selected) {
       const originName = local(locale, selected.origin.name, selected.origin.nameTh);
-      const originMarker = leaflet.marker(selected.waypoints[0], { icon: createIcon("origin"), interactive: false, keyboard: false, title: originName, zIndexOffset: 100 }).addTo(overlays);
-      originMarker.bindTooltip(tooltip(originName), { permanent: true, direction: "right", offset: [8, 0], className: styles.portTooltip });
       const points = selected.waypoints;
+      points.slice(0, -1).forEach((point, index) => {
+        const isOrigin = index === 0;
+        const label = isOrigin ? originName : local(locale, `Intermediate point ${index}`, `จุดระหว่างทางที่ ${index}`);
+        const action = local(locale, `View map point: ${label}`, `ดูจุดบนแผนที่: ${label}`);
+        const pointKey = `${selected.id}:${index}`;
+        const marker = leaflet.marker(point, { icon: createIcon(isOrigin ? "origin" : "waypoint"), interactive: isOrigin, keyboard: isOrigin, title: isOrigin ? action : label, zIndexOffset: isOrigin ? 100 : 50 }).addTo(overlays);
+        marker.bindTooltip(tooltip(label), isOrigin
+          ? { permanent: true, direction: "right", offset: [8, 0], className: styles.portTooltip }
+          : { direction: "top", offset: [0, -8], className: styles.hoverTooltip });
+        const element = marker.getElement();
+        if (!isOrigin) {
+          element?.setAttribute("role", "img");
+          element?.setAttribute("aria-label", label);
+          return;
+        }
+        const openPoint = () => setPortChoices({ pointKey, coordinates: point, routeIds: [], title: label, availableKey });
+        marker.on("click", openPoint);
+        if (element) {
+          element.dataset.mapPointKey = pointKey;
+          element.setAttribute("role", "button");
+          element.setAttribute("aria-label", action);
+          element.setAttribute("aria-haspopup", "dialog");
+          element.addEventListener("keydown", event => {
+            if (event.key === " " || event.key === "Enter") {
+              event.preventDefault();
+              event.stopPropagation();
+              openPoint();
+            }
+          });
+          if (focusedPointKey === pointKey) element.focus({ preventScroll: true });
+        }
+      });
       leaflet.polyline(points, { color: "#fff", weight: 10, opacity: 0.92, interactive: false, lineCap: "round", lineJoin: "round" }).addTo(overlays);
       leaflet.polyline(points, { color: "#0b527f", weight: 4, opacity: 0.96, interactive: false, lineCap: "round", lineJoin: "round" }).addTo(overlays);
       const lastFitted = lastFittedRef.current;
@@ -267,10 +303,12 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
           closePortChoices();
           if (route.id === selectedId) fitRoute(route.id, true); else onSelect(route.id);
         }}>{contentText(route, "title", locale)}</button>)}
-        <button className={styles.popupClose} type="button" onClick={closePortChoices} aria-label={local(locale, "Close route choices", "ปิดตัวเลือกเส้นทาง")}>{local(locale, "Close", "ปิด")}</button>
+        <span className={styles.pointCoordinates} aria-label={local(locale, "Latitude, longitude", "ละติจูด ลองจิจูด")} lang="en">{portChoices.coordinates.join(", ")}</span>
+        <a className={styles.googleMapsLink} href={googleMapsPointUrl(...portChoices.coordinates)} target="_blank" rel="noopener noreferrer">{local(locale, "Open in Google Maps", "เปิดใน Google Maps")}<ExternalLink size={17} aria-hidden="true" /><span className={styles.srOnly}>{local(locale, " (opens in a new tab)", " (เปิดในแท็บใหม่)")}</span></a>
+        <button className={styles.popupClose} type="button" onClick={closePortChoices} aria-label={portChoices.routeIds.length ? local(locale, "Close route choices", "ปิดตัวเลือกเส้นทาง") : local(locale, "Close map point", "ปิดจุดบนแผนที่")}>{local(locale, "Close", "ปิด")}</button>
       </div>}
       {(tileError || mapFailed) && <p className={styles.tileError} role="status">{mapFailed ? local(locale, "The map is unavailable. You can still choose a route from the list.", "ไม่สามารถโหลดแผนที่ได้ คุณยังเลือกเส้นทางจากรายการได้") : local(locale, "The map background is unavailable. Route markers and controls still work.", "ไม่สามารถโหลดพื้นหลังแผนที่ได้ จุดท่าเรือและปุ่มควบคุมยังใช้งานได้")}</p>}
-      <span id={descriptionId} className={styles.srOnly}>{local(locale, "Use the arrow keys to move the map and plus or minus to zoom. Choose a destination marker or a connection in the list. The map shows approximate connections for enquiry planning. It is not a navigational chart and does not confirm sailing routes, timing or service availability.", "ใช้แป้นลูกศรเลื่อนแผนที่ และปุ่มบวกหรือลบเพื่อขยายหรือย่อ เลือกท่าเรือปลายทางบนแผนที่หรือเลือกเส้นทางจากรายการ แผนที่แสดงการเชื่อมต่อโดยประมาณเพื่อประกอบการสอบถาม ไม่ใช่แผนที่สำหรับเดินเรือ และไม่ได้ยืนยันเส้นทางเดินเรือ ช่วงเวลา หรือความพร้อมให้บริการ")}</span>
+      <span id={descriptionId} className={styles.srOnly}>{local(locale, "Use the arrow keys to move the map and plus or minus to zoom. Choose a destination marker or a connection in the list. Select the origin or destination marker to open its location in Google Maps. The map shows approximate connections for enquiry planning. It is not a navigational chart and does not confirm sailing routes, timing or service availability.", "ใช้แป้นลูกศรเลื่อนแผนที่ และปุ่มบวกหรือลบเพื่อขยายหรือย่อ เลือกท่าเรือปลายทางบนแผนที่หรือเลือกเส้นทางจากรายการ เลือกจุดต้นทางหรือปลายทางเพื่อเปิดตำแหน่งใน Google Maps แผนที่แสดงการเชื่อมต่อโดยประมาณเพื่อประกอบการสอบถาม ไม่ใช่แผนที่สำหรับเดินเรือ และไม่ได้ยืนยันเส้นทางเดินเรือ ช่วงเวลา หรือความพร้อมให้บริการ")}</span>
     </div>
   </div>;
 }

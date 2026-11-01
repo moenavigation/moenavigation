@@ -67,6 +67,16 @@ dismissible drawers, support Escape to close and manage initial focus and
 focus restoration appropriately. For modal drawers, contain focus and
 prevent background scrolling while keeping drawer content scrollable.
 
+Let dialogs close when clicking outside their panel, using the same cancellation
+and unsaved-change behavior as Close or Cancel. Preserve protection while a save
+is in progress.
+
+Give longer actions a consistent working panel near their controls or inside
+the active dialog. Show the actual step and keep feedback visible until it
+finishes, with no invented percentages. Avoid flashing panels for fast actions,
+duplicate indicators, focus changes, or obstructing useful cancellation.
+Keep progress announcements accessible and respect reduced motion.
+
 Use a responsive edge drawer for frontend mobile navigation, entering and
 exiting from a screen edge rather than opening as a centered dialog.
 

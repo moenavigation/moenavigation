@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, ImagePlus, Languages, MapPin, Plus, Ship, Trash2 } 
 import type { CmsCategorySuggestions, ContentImage, ContentRecord, VesselSpecs } from '@/lib/cms-types';
 import { useCmsLocale } from '@/lib/cms-locale';
 import CmsRouteFields from './CmsRouteFields';
+import CmsServiceIconPicker from './CmsServiceIconPicker';
 import styles from './CmsCollectionFields.module.css';
 import workspace from './CmsWorkspace.module.css';
 
@@ -72,6 +73,7 @@ export default function CmsCollectionFields({ record, records = [], categories, 
       <div className={styles.cardBody}>{textField('title', language)}{textField('description', language)}{hasCategory && categoryField(language)}<details className={styles.moreText}><summary>{t('Detailed content')}</summary><div>{hasHeading && textField('bodyHeading', language)}{textField('body', language)}</div></details></div>
     </details>)}
     {(record.type === 'News' || record.type === 'Project') && <div className={styles.standaloneField}><label className={styles.field}>{t('Date')}<input type="date" value={record.date || ''} onChange={event => onChange({ date: event.target.value })} /></label></div>}
+    {record.type === 'Service' && <CmsServiceIconPicker value={record.icon} disabled={disabled} onChange={icon => onChange({ icon })} />}
     <section className={styles.pictures} aria-label={t('Pictures')}><div className={styles.cardTitle}><ImagePlus size={21} aria-hidden="true" /><h3>{t('Pictures')}</h3></div>
       {imageField(t('Main image'), 'image', record.image, record.type === 'Vessel')}
       <div className={styles.twoColumns}>{languages.map(language => <div key={language}>{textField('imageAlt', language)}</div>)}</div>

@@ -13,6 +13,7 @@ import RouteExplorer, { isMappedRoute } from "./RouteExplorer";
 import VesselPhotoPlaceholder from "./VesselPhotoPlaceholder";
 import HeroSlider from "./HeroSlider";
 import { getHomeSlides, getHomeSlideInterval } from "@/lib/home-slides";
+import { ServiceIcon } from "@/lib/service-icons";
 import styles from "./Home.module.css";
 const icons = { Ship, Fuel, Container, Anchor, ShieldCheck, Compass, MessagesSquare, LifeBuoy, MapPin };
 const placed = ["home-expertise", "home-trust", "home-trust-safety", "home-trust-practical", "home-trust-partnerships", "home-fleet", "home-connections", "home-news", "home-cta"];
@@ -41,7 +42,7 @@ export default function Home({ locale }: { locale: Locale }) {
       </div>
     </section>
     {text(home,"body") && <section className={`container ${styles.homeBody}`}><ContentBody text={text(home,"body")} /></section>}
-    {expertise && <section className={`container section ${styles.expertise}`}><div className={styles.sectionHeading}><div>{copy(expertise)}</div><Link className="text-link" href={href(locale,"services")}>{local(locale,"View all services","บริการทั้งหมด")}<ChevronRight /></Link></div><div className={styles.expertiseGrid}>{services.slice(0,4).map((service) => { const Icon=icons[service.icon as keyof typeof icons] || Ship; return <Link href={href(locale,`services/${service.id}`)} key={service.id} className={styles.expertiseCard}><Icon className={styles.serviceIcon} /><div><h3>{service.title[locale]}</h3><p>{service.description[locale]}</p></div></Link>; })}</div></section>}
+    {expertise && <section className={`container section ${styles.expertise}`}><div className={styles.sectionHeading}><div>{copy(expertise)}</div><Link className="text-link" href={href(locale,"services")}>{local(locale,"View all services","บริการทั้งหมด")}<ChevronRight /></Link></div><div className={styles.expertiseGrid}>{services.slice(0,4).map((service) => { return <Link href={href(locale,`services/${service.id}`)} key={service.id} className={styles.expertiseCard}><ServiceIcon name={service.icon} className={styles.serviceIcon} /><div><h3>{service.title[locale]}</h3><p>{service.description[locale]}</p></div></Link>; })}</div></section>}
     {trust && <section className={styles.trust}>{trust.image && <Image src={trust.image} alt="" fill sizes="100vw" />}<div className={`container ${styles.trustInner}`}><div>{copy(trust)}<Link href={href(locale,"about")} className="text-link">{local(locale,"Get to know us","รู้จักเราให้มากขึ้น")}<ArrowRight /></Link></div><div className={styles.trustValues}>{sections.filter((entry) => entry.parentId === "home" && ["home-trust-safety","home-trust-practical","home-trust-partnerships"].includes(entry.id)).map((value) => { const Icon=icons[value.icon as keyof typeof icons] || Compass; return <div key={value.id}><Icon /><span><h3>{text(value,"title")}</h3><p>{text(value,"description")}</p><ContentBody text={text(value,"body")} /></span></div>; })}</div></div></section>}
     {fleet && <section className="container section">
       <div className={styles.sectionHeading}><div>{copy(fleet)}</div></div>

@@ -96,6 +96,9 @@ export type Enquiry = {
   updatedAt: string;
   revision: number;
   notification?: EnquiryNotification;
+  expiresAt?: string;
+  deletedAt?: string;
+  purgeAt?: string;
 };
 
 export type SiteSettings = {

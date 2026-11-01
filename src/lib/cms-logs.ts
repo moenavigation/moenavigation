@@ -7,6 +7,7 @@ export const cmsLogActions = [
   'content.created', 'content.updated', 'content.trashed', 'content.restored', 'content.deleted',
   'user.created', 'user.updated', 'user.profile_updated', 'user.password_reset', 'user.trashed', 'user.restored', 'user.deleted',
   'settings.updated', 'settings.exported', 'settings.usage_updated', 'settings.email_recipients_updated', 'enquiry.status_changed', 'enquiry.notification_requested',
+  'enquiry.trashed', 'enquiry.restored', 'enquiry.deleted',
   'media.uploaded', 'media.trashed', 'media.restored', 'media.deleted', 'media.upload_discarded', 'media.cleanup', 'media.delete_failed',
 ] as const;
 export const cmsLogCategories = ['auth', 'content', 'user', 'settings', 'enquiry', 'media'] as const;
@@ -15,7 +16,7 @@ export const cmsLogGroups = [
   { value: 'All', label: 'All activities', description: 'Every type of CMS activity', categories: cmsLogCategories },
   { value: 'data_changes', label: 'Data changes', description: 'Content, images and website settings', categories: ['content', 'media', 'settings'] },
   { value: 'user_activity', label: 'User activity', description: 'Sign-ins, security and account changes', categories: ['auth', 'user'] },
-  { value: 'enquiry_activity', label: 'Enquiry activity', description: 'Message status and email notifications', categories: ['enquiry'] },
+  { value: 'enquiry_activity', label: 'Enquiry activity', description: 'Message status, Trash and email notifications', categories: ['enquiry'] },
 ] as const satisfies readonly { value: string; label: string; description: string; categories: readonly CmsLogCategory[] }[];
 export const cmsLogTargetTypes = [...contentTypes, 'Image', 'User', 'Settings', 'Enquiry', 'Session', 'MediaLibrary'] as const;
 export const cmsLogOutcomes = ['success', 'denied', 'failed'] as const;
@@ -38,6 +39,7 @@ export const cmsLogActionLabels: Record<CmsLogAction, string> = {
   'user.created': 'Added user', 'user.updated': 'Updated user', 'user.profile_updated': 'Updated profile photo', 'user.password_reset': 'Reset user password',
   'user.trashed': 'Moved user to Trash', 'user.restored': 'Restored user', 'user.deleted': 'Permanently deleted user',
   'settings.updated': 'Updated settings', 'settings.exported': 'Exported CMS data', 'settings.usage_updated': 'Updated monitoring settings', 'settings.email_recipients_updated': 'Updated notification recipients', 'enquiry.status_changed': 'Updated enquiry status', 'enquiry.notification_requested': 'Requested enquiry notification',
+  'enquiry.trashed': 'Moved enquiry to Trash', 'enquiry.restored': 'Restored enquiry', 'enquiry.deleted': 'Permanently deleted enquiry',
   'media.uploaded': 'Added image', 'media.trashed': 'Moved image to Trash', 'media.restored': 'Restored image',
   'media.deleted': 'Permanently deleted image', 'media.upload_discarded': 'Discarded unfinished upload',
   'media.cleanup': 'Cleaned unused images', 'media.delete_failed': 'Image deletion failed',

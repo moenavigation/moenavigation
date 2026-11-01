@@ -57,6 +57,7 @@ test('many routes stay paginated and shared destinations use one map control', a
   const routeChoices = page.getByRole('dialog', { name: '2 connections to Port 004', exact: true });
   await expect(routeChoices).toBeVisible();
   await expect(routeChoices.getByRole('button', { name: connectionName(7), exact: true })).toBeFocused();
+  await expect(routeChoices.getByRole('link', { name: /Open in Google Maps/ })).toHaveAttribute('href', 'https://www.google.com/maps/search/?api=1&query=10.06%2C104');
   await page.getByRole('button', { name: connectionName(8), exact: true }).click();
   await expect(page).toHaveURL(/route=connection-008/);
   await expect(details.getByRole('heading')).toHaveText(connectionName(8));
@@ -78,6 +79,46 @@ test('many routes stay paginated and shared destinations use one map control', a
   await expect(routeChoices).not.toBeVisible();
   await expect(groupedPort).toBeFocused();
 });
+
+for (const locale of ['en', 'th'] as const) {
+  test(`only origin and destination map points link to Google Maps · ${locale}`, async ({ page, db }, testInfo) => {
+    await manyRoutes(db);
+    await db.collection('moe_content').deleteMany({ type: 'Route', id: { $ne: 'connection-001' } });
+    await db.collection('moe_content').updateOne({ id: 'connection-001' }, { $set: { waypoints: [[13, 100], [11.5, 102.25], [10, 104]] } });
+    await refreshPublicCache();
+    await page.setViewportSize({ width: locale === 'en' ? 1280 : 320, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto(locale === 'en' ? '/routes' : '/th/routes');
+    const map = page.getByRole('region', { name: locale === 'en' ? 'Interactive map of a connection between Laem Chabang and Port 001' : 'แผนที่แสดงการเชื่อมต่อระหว่างแหลมฉบังกับท่าเรือ 001', exact: true });
+    await map.scrollIntoViewIfNeeded();
+    await expect(page.locator('.leaflet-marker-icon')).toHaveCount(3);
+    await expect(map.locator('.leaflet-marker-icon[role="button"]')).toHaveCount(2);
+    await expect(map.getByRole('button', { name: locale === 'en' ? 'View map point: Intermediate point 1' : 'ดูจุดบนแผนที่: จุดระหว่างทางที่ 1', exact: true })).toHaveCount(0);
+    const points = [
+      { action: locale === 'en' ? 'View map point: Laem Chabang' : 'ดูจุดบนแผนที่: แหลมฉบัง', title: locale === 'en' ? 'Laem Chabang' : 'แหลมฉบัง', query: '13,100' },
+      { action: locale === 'en' ? 'Select connection to Port 001' : 'เลือกเส้นทางเชื่อมต่อไปท่าเรือ 001', title: locale === 'en' ? 'Port 001' : 'ท่าเรือ 001', query: '10,104' },
+    ];
+    for (const [index, point] of points.entries()) {
+      const marker = map.getByRole('button', { name: point.action, exact: true });
+      if (locale === 'en') await marker.press(index === 1 ? 'Space' : 'Enter');
+      else await marker.click();
+      const popup = page.getByRole('dialog', { name: point.title, exact: true });
+      const link = popup.getByRole('link', { name: locale === 'en' ? /Open in Google Maps/ : /เปิดใน Google Maps/ });
+      await expect(popup).toBeVisible();
+      await expect(link).toBeFocused();
+      await expect(link).toHaveAttribute('href', `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(point.query)}`);
+      await expect(link).toHaveAttribute('target', '_blank');
+      await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+      await expect.poll(() => popup.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+      if (index === 1) await map.locator('..').screenshot({ path: testInfo.outputPath(`google-maps-point-${locale}.png`) });
+      await link.press('Escape');
+      await expect(popup).not.toBeVisible();
+      await expect(marker).toBeFocused();
+    }
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await expect(page.getByRole('link', { name: 'OpenStreetMap contributors', exact: true })).toBeVisible();
+  });
+}
 
 test('bilingual search and port filters preserve selection through reload and language changes', async ({ page, db }) => {
   await manyRoutes(db);

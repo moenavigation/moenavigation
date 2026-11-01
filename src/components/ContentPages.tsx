@@ -12,6 +12,7 @@ import { contentText } from "@/lib/public-content";
 import { usePublicContent } from "@/lib/use-public-content";
 import { listingHref, listingQueryLimit, matchesListingSearch, readListingFilters } from "@/lib/listing-filters";
 import { useListingFilters } from "@/lib/use-listing-filters";
+import { ServiceIcon } from "@/lib/service-icons";
 import { AdditionalSections, ContentBody } from "./EditorialContent";
 import Dialog from "./Dialog";
 import RoutesPage from "./RoutesPage";
@@ -63,7 +64,6 @@ function Services({ locale, slug }: { locale: Locale; slug?: string }) {
   if (slug) {
     const service = services.find((item) => item.id === slug);
     if (!service) return <MissingEntry locale={locale} page="services" />;
-    const Icon = serviceIcons[service.icon as keyof typeof serviceIcons] || Ship;
     const related = services.filter((item) => item.id !== service.id).slice(0, 3);
     return <div className="container section">
       <BackLink locale={locale} page="services" />
@@ -75,7 +75,7 @@ function Services({ locale, slug }: { locale: Locale; slug?: string }) {
       <section className={styles.serviceDetail} aria-label={local(locale, "Discuss this service", "พูดคุยเกี่ยวกับบริการนี้")}>
         <div className={styles.detailPhoto}><Image src={service.image} alt={service.imageAlt[locale] || service.title[locale]} fill priority sizes="(max-width: 760px) 100vw, 55vw" /></div>
         <div className={styles.serviceDetailCopy}>
-          <span className={styles.detailIcon}><Icon size={34} aria-hidden="true" /></span>
+          <span className={styles.detailIcon}><ServiceIcon name={service.icon} size={34} aria-hidden="true" /></span>
           {planning && <><p className="eyebrow">{contentText(planning,"eyebrow",locale)}</p><h2>{contentText(planning,"title",locale)}</h2><p>{contentText(planning,"description",locale)}</p><ContentBody text={contentText(planning,"body",locale)} /></>}
           <ul className={styles.enquiryList}>
             <li><span>01</span>{local(locale, "Operational requirements", "รายละเอียดงานที่ต้องการ")}</li>
@@ -101,9 +101,9 @@ function Services({ locale, slug }: { locale: Locale; slug?: string }) {
     {featured ? <>
       <Link className={styles.serviceFeature} href={href(locale, `services/${featured.id}`)}>
         <div className={styles.serviceFeaturePhoto}><Image src={featured.image} alt={featured.imageAlt[locale] || featured.title[locale]} fill priority sizes="(max-width: 760px) 100vw, 55vw" /></div>
-        <div className={styles.serviceFeatureCopy}><h2>{featured.title[locale]}</h2><p>{featured.description[locale]}</p><span className={styles.cardAction}>{local(locale, "Explore service", "ดูรายละเอียดบริการ")}<ChevronRight aria-hidden="true" size={19} /></span></div>
+        <div className={styles.serviceFeatureCopy}><div className={styles.capabilityHeading}><ServiceIcon name={featured.icon} size={28} aria-hidden="true" /><h2>{featured.title[locale]}</h2></div><p>{featured.description[locale]}</p><span className={styles.cardAction}>{local(locale, "Explore service", "ดูรายละเอียดบริการ")}<ChevronRight aria-hidden="true" size={19} /></span></div>
       </Link>
-      {more.length > 0 && <div className={styles.capabilityGrid}>{more.map((item) => { const Icon = serviceIcons[item.icon as keyof typeof serviceIcons] || Ship; return <Link className={styles.capabilityCard} key={item.id} href={href(locale, `services/${item.id}`)}><div className={styles.capabilityImage}><Image src={item.image} alt={item.imageAlt[locale] || item.title[locale]} fill sizes="(max-width: 650px) 100vw, (max-width: 850px) 25vw, 15vw" /></div><div className={styles.capabilityCopy}><div className={styles.capabilityHeading}><Icon size={24} aria-hidden="true" /><h2>{item.title[locale]}</h2></div><p>{item.description[locale]}</p><span className={styles.cardAction}>{local(locale, "View service", "ดูบริการ")}<ChevronRight aria-hidden="true" size={18} /></span></div></Link>; })}</div>}
+      {more.length > 0 && <div className={styles.capabilityGrid}>{more.map((item) => { return <Link className={styles.capabilityCard} key={item.id} href={href(locale, `services/${item.id}`)}><div className={styles.capabilityImage}><Image src={item.image} alt={item.imageAlt[locale] || item.title[locale]} fill sizes="(max-width: 650px) 100vw, (max-width: 850px) 25vw, 15vw" /></div><div className={styles.capabilityCopy}><div className={styles.capabilityHeading}><ServiceIcon name={item.icon} size={24} aria-hidden="true" /><h2>{item.title[locale]}</h2></div><p>{item.description[locale]}</p><span className={styles.cardAction}>{local(locale, "View service", "ดูบริการ")}<ChevronRight aria-hidden="true" size={18} /></span></div></Link>; })}</div>}
     </> : <div className={styles.empty}><Ship size={35} aria-hidden="true" /><h2>{local(locale, "No services published yet", "ยังไม่มีบริการที่เผยแพร่")}</h2><p>{local(locale, "Published services will appear here.", "บริการที่เผยแพร่จะแสดงที่นี่")}</p></div>}
     <ContentBody text={contentText(page,"body",locale)} /><AdditionalSections pageId="services" locale={locale} exclude={["service-planning"]} />
   </div>;

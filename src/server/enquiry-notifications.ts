@@ -9,6 +9,7 @@ import { HttpError } from './http';
 import { readEnquiryRecipients } from './enquiry-recipients';
 import { enquiryRecipientList } from '@/lib/enquiry-email';
 import { enquiryEmailTemplate } from './enquiry-email-template';
+import { activeEnquiryFilter } from './enquiry-retention';
 
 export const notificationAttemptLimit = 3;
 const leaseMs = 120_000;
@@ -74,7 +75,7 @@ function receivedTime(value: string, thai: boolean): string {
   return `${formatted} (${thai ? 'เวลาประเทศไทย' : 'Bangkok time'})`;
 }
 
-export function emailEnvelope(enquiry: Enquiry, config: Pick<EmailConfiguration, 'from' | 'to'>, env: Environment = process.env): EmailEnvelope {
+export function emailEnvelope(enquiry: Omit<Enquiry, 'expiresAt' | 'purgeAt'>, config: Pick<EmailConfiguration, 'from' | 'to'>, env: Environment = process.env): EmailEnvelope {
   return enquiryEmailTemplate(enquiry, config, receivedTime(enquiry.createdAt, enquiry.locale === 'th'), inboxLink(env));
 }
 
@@ -187,25 +188,31 @@ export async function deliverEnquiryNotification(id: string, options: {
   const db = options.db ?? await getDb();
   const c = collections(db);
   const now = options.now ?? Date.now();
-  const record = await c.enquiries.findOne({ _id: id });
-  if (!record) throw new HttpError(404, 'This enquiry is no longer available.');
+  const availability = () => activeEnquiryFilter(new Date(options.now ?? Date.now()));
+  const readAvailable = async () => {
+    const record = await c.enquiries.findOne({ _id: id, ...availability() });
+    if (!record) throw new HttpError(404, 'This enquiry is no longer available.');
+    return record;
+  };
+  const record = await readAvailable();
   const current = notificationView(record, now);
   if (['sent', 'sending'].includes(current.status)) return record;
-  const match = {
+  const match = () => ({
     _id: id,
+    ...availability(),
     ...(record.notification ? { 'notification.status': record.notification.status, 'notification.attempts': record.notification.attempts } : { notification: { $exists: false } }),
     ...(record.notificationDelivery ? { 'notificationDelivery.leaseToken': record.notificationDelivery.leaseToken } : {}),
-  };
+  });
   if (current.status === 'review') {
     if (record.notification?.status === 'review') return record;
-    return await c.enquiries.findOneAndUpdate(match, { $set: { notification: current } }, { returnDocument: 'after' }) ?? record;
+    return await c.enquiries.findOneAndUpdate(match(), { $set: { notification: current } }, { returnDocument: 'after' }) ?? await readAvailable();
   }
   if (current.retryAt && Date.parse(current.retryAt) > now) return record;
   const env = options.env ?? process.env;
   const recipients = await readEnquiryRecipients(db, env);
   const config = emailConfiguration(env, recipients.recipients);
   if (!config) {
-    return await c.enquiries.findOneAndUpdate(match, { $set: { notification: { ...current, status: 'not_configured', message: 'Configure the email provider and verified sender before retrying. The enquiry remains saved.' } } }, { returnDocument: 'after' }) ?? record;
+    return await c.enquiries.findOneAndUpdate(match(), { $set: { notification: { ...current, status: 'not_configured', message: 'Configure the email provider and verified sender before retrying. The enquiry remains saved.' } } }, { returnDocument: 'after' }) ?? await readAvailable();
   }
   const timestamp = new Date(now).toISOString();
   const leaseToken = randomUUID();
@@ -216,8 +223,10 @@ export async function deliverEnquiryNotification(id: string, options: {
     envelope: record.notificationDelivery?.envelope ?? emailEnvelope(record, config, env),
   };
   const notification: EnquiryNotification = { status: 'sending', attempts: current.attempts + 1, lastAttemptAt: timestamp, message: 'Sending an email notification.' };
-  const claimed = await c.enquiries.findOneAndUpdate(match, { $set: { notification, notificationDelivery: delivery } }, { returnDocument: 'after' });
-  if (!claimed) return await c.enquiries.findOne({ _id: id }) ?? record;
+  const claimed = await c.enquiries.findOneAndUpdate(match(), { $set: { notification, notificationDelivery: delivery } }, { returnDocument: 'after' });
+  if (!claimed) return readAvailable();
+  // Recheck after claiming, before crossing the external-provider boundary.
+  await readAvailable();
   let finalState: EnquiryNotification;
   let providerId: string | undefined;
   try {
@@ -232,10 +241,10 @@ export async function deliverEnquiryNotification(id: string, options: {
       ? 'The email provider rejected this request. Check the API key, recipient and verified sender before retrying.'
       : 'Email acceptance could not be confirmed. Retry uses the same request to avoid duplicate notifications.' };
   }
-  const finalized = await c.enquiries.findOneAndUpdate({ _id: id, 'notificationDelivery.leaseToken': leaseToken }, {
+  const finalized = await c.enquiries.findOneAndUpdate({ _id: id, ...availability(), 'notificationDelivery.leaseToken': leaseToken }, {
     $set: { notification: finalState, ...(providerId ? { 'notificationDelivery.providerId': providerId } : {}) },
   }, { returnDocument: 'after' });
   // An expired worker must report the newer claim's result, not its own stale
   // sending state, after losing the compare-and-swap above.
-  return finalized ?? await c.enquiries.findOne({ _id: id }) ?? claimed;
+  return finalized ?? await readAvailable();
 }

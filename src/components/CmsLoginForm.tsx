@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Eye, EyeOff, LoaderCircle, RefreshCw, X } from 'lucide-react';
 import { cmsErrorText, cmsRequest } from '@/lib/cms-client';
 import { useCmsLocale } from '@/lib/cms-locale';
+import useDialogBackdrop from './useDialogBackdrop';
 import styles from './CmsWorkspace.module.css';
 
 const usernameKey = 'moe-cms-remembered-username';
@@ -66,6 +67,7 @@ export default function CmsLoginForm({ busy, error, onSignIn }: {
     if (busy || submitting.current) return;
     dialogRef.current?.close();
   }
+  const backdrop = useDialogBackdrop(closeChallenge, busy);
 
   function onDialogClose() {
     challengeGeneration.current++;
@@ -146,7 +148,7 @@ export default function CmsLoginForm({ busy, error, onSignIn }: {
       {error && <div className={styles.error} role="alert">{t(error)}</div>}
       <button ref={signInRef} type="submit" className="button" disabled={busy}>{t('Sign in')}</button>
     </form>
-    <dialog ref={dialogRef} className={styles.loginPuzzleDialog} aria-labelledby="cms-puzzle-title" aria-describedby="cms-puzzle-instructions" aria-busy={busy || challengeLoading} onClose={onDialogClose} onCancel={event => { if (busy || submitting.current) event.preventDefault(); }} onClick={event => { if (event.target === dialogRef.current) closeChallenge(); }}>
+    <dialog ref={dialogRef} className={styles.loginPuzzleDialog} aria-labelledby="cms-puzzle-title" aria-describedby="cms-puzzle-instructions" aria-busy={busy || challengeLoading} onClose={onDialogClose} onCancel={event => { if (busy || submitting.current) event.preventDefault(); }} {...backdrop}>
       <div className={styles.loginPuzzleHeader}>
         <div><span className="eyebrow">MOE NAVIGATION</span><h2 id="cms-puzzle-title">{t('Complete the picture')}</h2></div>
         <button type="button" className={styles.loginPuzzleIconButton} onClick={closeChallenge} disabled={busy} aria-label={t('Close verification')}><X size={21} aria-hidden="true" /></button>

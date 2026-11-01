@@ -8,6 +8,14 @@ availability follow the saved CMS content.
 The project uses the `mongodb` and `cloudinary` server SDKs. `next-cloudinary`
 is not required by this implementation.
 
+Sea-route suggestions at `POST /api/cms/routes/generate` run locally with pinned
+`searoute-ts` data and a bundled Natural Earth coastline guard. No routing API
+key is needed. The endpoint requires a same-origin authenticated CMS session,
+validates coordinates, and limits requests per user and across the application.
+It returns a preview without writing content. Next.js traces the coastline
+file into this server route; neither geographic dataset is sent to the browser.
+See [Sea-route data](SEA_ROUTE_DATA.md) for provenance and precision limits.
+
 ## Local configuration
 
 Keep these values in the repository-root `.env.local`:
@@ -253,6 +261,27 @@ Submitting the public contact form saves the enquiry in MongoDB after
 validation and consent. The CMS inbox shows its name, email, company,
 subject, message, language, and received time. Administrators can mark it
 New, In progress, or Resolved.
+
+Enquiries expire one UTC calendar year after `createdAt`, with February 29
+clamped to February 28. New records store BSON Date `expiresAt` and `purgeAt`;
+the latter has a zero-second TTL index. Reads, counts, dashboard, exports and
+notification attempts enforce expiry immediately, including legacy records
+without stored deadlines. Status changes never extend retention.
+`POST /api/cms/inbox/action` accepts `trash` or `restore`, the enquiry ID and
+expected revision. Trash uses the earlier of the original expiry and 30 days
+after removal. Restore preserves the status and original expiry. The unified
+Trash list includes enquiries; `POST /api/cms/inbox/remove` permanently deletes
+retained Trash only for Dev/Admin. Lifecycle changes and safe ID-only audit
+events share a transaction. See [DATA_RETENTION_AUDIT.md](DATA_RETENTION_AUDIT.md)
+for the wider retention review and legacy deadline migration.
+
+`npm run enquiries:retention` performs a metadata-only dry-run against the
+configured database. Review its counts and hash, then apply with
+`npm run enquiries:retention -- --apply --review-hash=<reviewed hash>`.
+The bounded transaction updates only future deadlines after checking the
+reviewed metadata has not changed. Invalid and already-expired legacy records
+are reported for separate review; the tool does not delete records or create
+indexes. Indexes are established by normal application initialization.
 
 The authenticated inbox list searches all stored messages using a literal,
 case-insensitive query across name, email, company, subject, message and ID.

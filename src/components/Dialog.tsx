@@ -2,11 +2,12 @@
 import { useEffect, useId, useRef, type ReactNode, type RefObject } from "react";
 import { X } from "lucide-react";
 import { containDialogFocus } from "@/lib/dialog-focus";
+import useDialogBackdrop from "./useDialogBackdrop";
 import styles from "./Dialog.module.css";
 export default function Dialog({open,onClose,onAfterClose,triggerRef,title,children,closeLabel="Close dialog",className=""}: {open:boolean;onClose:()=>void;onAfterClose?:()=>void;triggerRef?:RefObject<HTMLElement|null>;title:string;children:ReactNode;closeLabel?:string;className?:string}) {
   const ref=useRef<HTMLDialogElement>(null);
   const returnFocusRef=useRef<HTMLElement|null>(null);
-  const backdropPointerRef=useRef(false);
+  const backdrop=useDialogBackdrop(onClose);
   const id=useId();
   useEffect(()=>{
     const dialog=ref.current;
@@ -32,7 +33,7 @@ export default function Dialog({open,onClose,onAfterClose,triggerRef,title,child
     if(event.key === "Escape" && !event.nativeEvent.isComposing && event.target instanceof Element && event.target.closest("dialog") === event.currentTarget) {
       event.preventDefault(); event.stopPropagation(); onClose();
     }
-  }} onKeyDown={containDialogFocus} onCancel={e=>{e.preventDefault();onClose();}} onPointerDown={e=>{backdropPointerRef.current=e.target===e.currentTarget;}} onClick={e=>{if(e.target===e.currentTarget && backdropPointerRef.current)onClose();backdropPointerRef.current=false;}}>
+  }} onKeyDown={containDialogFocus} onCancel={e=>{e.preventDefault();onClose();}} {...backdrop}>
     <div className={styles.panel}><div className={styles.heading}><h2 id={id}>{title}</h2><button autoFocus className={styles.close} type="button" onClick={onClose} aria-label={closeLabel}><X aria-hidden="true"/></button></div><div className={styles.content}>{children}</div></div>
   </dialog>;
 }

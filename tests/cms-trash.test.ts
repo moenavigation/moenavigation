@@ -18,8 +18,8 @@ test('Trash queries reject ambiguous, unknown and oversized query parameters', (
 
 test('Trash item links override other filters and validate each identifier type', () => {
   assert.deepEqual(parseCmsTrashQuery(new URLSearchParams({ kind: 'Image', q: 'ignored', item: 'News:harbour-update' })), { kind: 'All', q: '', item: 'News:harbour-update', cursor: null });
-  for (const item of ['Section:shared-footer', 'News:' + 'x'.repeat(100), 'Image:upload_ID-2026', 'User:123e4567-e89b-42d3-a456-426614174000']) assert.equal(parseCmsTrashQuery(new URLSearchParams({ item })).item, item);
-  for (const item of ['News:', 'News:Bad_ID', 'News:one:two', 'User:not-a-uuid', 'Admin:one', 'Image:../file', 'Page:' + 'x'.repeat(101)]) assert.throws(() => parseCmsTrashQuery(new URLSearchParams({ item })), item);
+  for (const item of ['Section:shared-footer', 'News:' + 'x'.repeat(100), 'Image:upload_ID-2026', 'User:123e4567-e89b-42d3-a456-426614174000', 'Enquiry:123e4567-e89b-42d3-a456-426614174000']) assert.equal(parseCmsTrashQuery(new URLSearchParams({ item })).item, item);
+  for (const item of ['News:', 'News:Bad_ID', 'News:one:two', 'User:not-a-uuid', 'Enquiry:not-a-uuid', 'Admin:one', 'Image:../file', 'Page:' + 'x'.repeat(101)]) assert.throws(() => parseCmsTrashQuery(new URLSearchParams({ item })), item);
 });
 
 test('Trash counts expose stable zero values for every supported kind', () => {

@@ -157,7 +157,7 @@ test('an unsaved Media library image and title survive CMS route navigation and 
   const upload = page.getByRole('dialog', { name: 'Add an image', exact: true });
   await expect(upload).not.toBeVisible();
   await addImage.click();
-  await expect(upload.getByText('Choose device image', { exact: true })).toBeVisible();
+  await expect(upload.getByText('Device image', { exact: true })).toBeVisible();
   const before = await db.collection('moe_media').countDocuments();
   await upload.getByLabel('Choose media library image', { exact: true }).setInputFiles({
     name: 'media-draft.png',

@@ -17,6 +17,10 @@
 .map[open] > summary { border-bottom: 1px solid var(--line); }
 .map > summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: .4rem; }
 .mapBody { display: grid; gap: 1rem; padding: 1rem; }
+.generator { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid #c9dceb; border-radius: .6rem; background: #f1f7fc; }
+.generator > div { flex: 1 1 17rem; min-width: 0; }
+.generator strong { display: block; margin-bottom: .3rem; color: var(--navy); }
+.generator > button { flex: 0 1 auto; gap: .6rem; white-space: normal; }
 .mapBody > button { justify-self: start; max-width: 100%; white-space: normal; }
 .points { display: grid; gap: .8rem; list-style: none; padding: 0; margin: 0; }
 .point { min-width: 0; padding: 1rem; background: #f8fbff; border: 1px solid var(--line); border-radius: .5rem; }
@@ -27,6 +31,12 @@
 .remove:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 .remove:disabled { opacity: .5; cursor: not-allowed; }
 .coordinates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; }
+.pointActions { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem 1rem; margin-top: .85rem; }
+.linkButton, .mapLink { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; min-height: var(--target-size); max-width: 100%; color: var(--blue); font-size: var(--font-small); line-height: 1.5; }
+.linkButton { padding: .5rem .75rem; border: 1px solid var(--line); border-radius: .4rem; background: #fff; font-weight: 600; }
+.mapLink { padding-block: .5rem; text-decoration: underline; text-underline-offset: .2rem; }
+@media (hover: hover) and (pointer: fine) { .linkButton:not(:disabled):hover { border-color: var(--blue); background: #edf4fb; } .mapLink:hover { color: var(--navy); } }
 @media (hover: hover) and (pointer: fine) { .map > summary:hover { background: #f8fbff; } .remove:not(:disabled):hover { background: #fff3f4; border-color: #c8929c; } }
 @media (max-width: 600px) { .ports { grid-template-columns: minmax(0, 1fr); } .portFields { grid-template-columns: repeat(2, minmax(0, 1fr)); } .remove span { display: none; } .point { padding: .85rem; } }
 @media (max-width: 380px) { .portFields, .coordinates { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 520px) { .generator > button { width: 100%; } }

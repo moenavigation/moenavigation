@@ -1,0 +1,31 @@
+.dialog { width: min(36rem, calc(100% - 2rem)); }
+.body { display: grid; gap: 1.1rem; min-width: 0; }
+.point { display: flex; align-items: center; gap: .5rem; color: var(--navy); font-weight: 600; }
+.point svg { color: var(--blue); }
+.hint { color: var(--muted); font-size: var(--font-small); line-height: 1.6; }
+.field { display: grid; gap: .5rem; min-width: 0; color: var(--navy); font-weight: 600; }
+.field > span { display: flex; align-items: center; gap: .5rem; }
+.field input { min-width: 0; width: 100%; font-weight: 400; }
+.loading { display: flex; align-items: center; gap: .65rem; min-height: var(--target-size); color: var(--blue); }
+.loading svg { animation: spin 1s linear infinite; }
+.error { padding: .9rem 1rem; border: 1px solid #e4ccd0; border-radius: .6rem; background: #fff5f5; }
+.error p { color: #962e3d; overflow-wrap: anywhere; }
+.retry { min-height: var(--target-size); padding: .5rem 0 0; border: 0; background: none; color: var(--navy); text-decoration: underline; text-underline-offset: .2rem; font-weight: 600; }
+.preview { display: grid; gap: .8rem; padding: 1rem; border: 1px solid var(--line); border-radius: .6rem; background: #f4f8fc; }
+.found { display: flex; align-items: center; gap: .5rem; color: var(--navy); font-weight: 600; }
+.found svg { color: #1f7454; }
+.coordinates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin: 0; }
+.coordinates dt { color: var(--muted); font-size: var(--font-small); }
+.coordinates dd { margin: .2rem 0 0; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.mapLink { display: inline-flex; align-items: center; gap: .5rem; justify-self: start; min-height: var(--target-size); color: var(--blue); text-decoration: underline; text-underline-offset: .2rem; }
+.actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .6rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+.actions > button { gap: .6rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 400px) {
+  .body { gap: .85rem; }
+  .coordinates { grid-template-columns: minmax(0, 1fr); }
+  .actions { position: sticky; bottom: -1rem; padding-block: .75rem 1rem; margin-bottom: -1rem; background: var(--white); }
+  .actions > button { flex: 1 1 100%; }
+  .actions > button:first-child { order: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .loading svg { animation: none; } }

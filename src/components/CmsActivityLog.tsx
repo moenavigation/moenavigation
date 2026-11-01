@@ -8,6 +8,7 @@ import { cmsErrorText, cmsRequest } from '@/lib/cms-client';
 import { useCmsLocale } from '@/lib/cms-locale';
 import { cmsLogGroups, type CmsLogCategoryFilter, type CmsLogItem, type CmsLogPage } from '@/lib/cms-logs';
 import Dialog from './Dialog';
+import CmsWorkingPanel from './CmsWorkingPanel';
 import styles from './CmsActivityLog.module.css';
 
 const categories: { value: CmsLogCategoryFilter; label: string }[] = [
@@ -71,7 +72,7 @@ function ActivityLogContent({ revision, compact, initialSearch, initialCategory 
   if (compact) return <section className={styles.compact} aria-labelledby="dashboard-activity">
     <div className={styles.compactHeader}><div className={styles.heading}><span className={styles.icon}><History size={21} aria-hidden="true" /></span><div><h2 id="dashboard-activity">{t('Recent activity')}</h2><p>{t('Latest entries from Logs.')}</p></div></div><button ref={filterTrigger} type="button" className={styles.filterButton} aria-label={t('Filter activity')} aria-haspopup="dialog" aria-expanded={filterOpen} onClick={event => { event.currentTarget.focus({ preventScroll: true }); setFilterOpen(true); }}><SlidersHorizontal size={18} aria-hidden="true" /><span>{t('Filter')}</span>{activeFilters > 0 && <span className={styles.filterCount} aria-hidden="true">{activeFilters}</span>}</button></div>
     {activeFilters > 0 && <div className={styles.filterChips}>{search.trim() && <span><Search size={15} aria-hidden="true" />{search.trim()}</span>}{category !== 'All' && <span>{t(categories.find(option => option.value === category)!.label)}</span>}<button type="button" className={styles.textButton} onClick={clear}>{t('Clear filters')}</button></div>}
-    {loadingInitial && <p className={styles.results} role="status">{t('Loading logs…')}</p>}
+    <CmsWorkingPanel active={loadingInitial || loading} title="Loading logs…" />
     {error && <div className={styles.error} role="alert">{t(error)}<button type="button" className="button secondary" disabled={loading} onClick={() => void load()}>{t('Try again')}</button></div>}
     {!loadingInitial && !error && !current?.items.length && <p className={styles.previewEmpty}>{t(activeFilters ? 'No matching activity' : 'No activity yet')}</p>}
     {Boolean(current?.items.length) && <ul className={styles.previewList}>{current!.items.slice(0, 5).map(item => <li key={item.id} data-log-id={item.id}>
@@ -91,7 +92,8 @@ function ActivityLogContent({ revision, compact, initialSearch, initialCategory 
     <div className={styles.heading}><span className={styles.icon}><History size={23} aria-hidden="true" /></span><div><h2 id="activity-log-heading">{t('Activity log')}</h2><p>{t('See who changed your website and when.')}</p></div></div>
     <p className={styles.retention}><LockKeyhole size={18} aria-hidden="true" /><span>{t('Logs are read-only for every role, including Dev. Each entry expires permanently after one year.')}</span></p>
     <div className={styles.filters}><label className={styles.search}><Search size={20} aria-hidden="true" /><input ref={searchRef} type="search" maxLength={160} aria-label={t('Search logs')} placeholder={t('Search users or item names…')} value={search} onChange={event => setSearch(event.target.value)} /></label><div className={styles.category}><label htmlFor={selectId}>{t('Activity type')}</label><select id={selectId} value={category} onChange={event => setCategory(event.target.value as typeof category)}>{categories.map(option => <option key={option.value} value={option.value}>{t(option.label)}</option>)}</select></div></div>
-    <div className={styles.results}><span role="status">{loadingInitial ? t('Loading logs…') : t('Showing {count} of {total} log entries', { count: current?.items.length ?? 0, total: current?.total ?? 0 })}</span>{(search || category !== 'All') && <button type="button" className={styles.textButton} onClick={clear}><X size={16} aria-hidden="true" />{t('Clear filters')}</button>}</div>
+    <div className={styles.results}><span role={loadingInitial ? undefined : 'status'}>{!loadingInitial && t('Showing {count} of {total} log entries', { count: current?.items.length ?? 0, total: current?.total ?? 0 })}</span>{(search || category !== 'All') && <button type="button" className={styles.textButton} onClick={clear}><X size={16} aria-hidden="true" />{t('Clear filters')}</button>}</div>
+    <CmsWorkingPanel active={loadingInitial || loading} title="Loading logs…" />
     {error && <div className={styles.error} role="alert">{t(error)}<button type="button" className="button secondary" disabled={loading} onClick={() => void load()}>{t('Try again')}</button></div>}
     {!loadingInitial && !error && !current?.items.length && <div className={styles.empty}><History size={34} aria-hidden="true" /><h3>{t(search || category !== 'All' ? 'No matching activity' : 'No activity yet')}</h3><p>{t(search || category !== 'All' ? 'Try another search or clear your filters.' : 'New CMS activity will appear here automatically.')}</p></div>}
     {Boolean(current?.items.length) && <table className={styles.table}><thead><tr><th scope="col">{t('When')}</th><th scope="col">{t('User')}</th><th scope="col">{t('Activity')}</th><th scope="col">{t('Item')}</th></tr></thead><tbody>{current!.items.map(item => <tr key={item.id} data-log-id={item.id}>

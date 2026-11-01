@@ -10,6 +10,7 @@ import styles from './CmsWorkspace.module.css';
 import CmsPageFields from './CmsPageFields';
 import CmsCollectionFields from './CmsCollectionFields';
 import useCmsMediaSearch from './useCmsMediaSearch';
+import CmsWorkingPanel from './CmsWorkingPanel';
 
 export type ImageTarget = 'image' | 'mobileImage' | number;
 const PICKER_PAGE_SIZE = 12;
@@ -44,8 +45,11 @@ export default function CmsContentFields({ record, existing, records, categories
     return <div className={styles.assetField} key={String(target)}><h4>{label}</h4><div className={styles.editorImage}>
       {url ? <img src={url} alt={t('{label} preview', { label })} width={320} height={200} /> : <div className={styles.imageEmpty}><ImagePlus size={30} /><span>{t('No image selected')}</span></div>}
       <div><strong>{t(prepared ? 'Ready to upload' : url ? 'Saved image' : optional ? 'Optional image' : 'Choose an image')}</strong><p>{prepared ? t('{width} × {height} · {size} KB. Upload starts when you save.', { width: prepared.width, height: prepared.height, size: (prepared.blob.size / 1024).toFixed(0) }) : t('Choose from the library or prepare a device image.')}</p>
-        <button type="button" className="button secondary" disabled={preparing} aria-expanded={picker === target} aria-label={t('Browse library for {label}', { label: label.toLocaleLowerCase(locale) })} onClick={() => { setPicker(picker === target ? null : target); setPickerSearch(''); setPickerPage(0); }}><ImagePlus size={18} />{t(picker === target ? 'Close library' : 'Browse library')}</button>
-        <label className={styles.fileButton}>{t('Choose device image')}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={preparing || disabled} aria-label={t('Choose {label}', { label: label.toLocaleLowerCase(locale) })} onChange={event => { const file = event.target.files?.[0]; if (file) onImage(file, target); event.target.value = ''; }} /></label>
+        <p className={styles.fieldHint}>{t('Recommended: 16:9 (landscape). Keep the main subject centered.')}</p>
+        <div className={styles.imageActions}>
+          <label className={`button secondary ${styles.fileButton}`}><ImagePlus size={18} aria-hidden="true" />{t('Device image')}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={preparing || disabled} aria-label={t('Choose {label}', { label: label.toLocaleLowerCase(locale) })} onChange={event => { const file = event.target.files?.[0]; if (file) onImage(file, target); event.target.value = ''; }} /></label>
+          <button type="button" className="button secondary" disabled={preparing} aria-expanded={picker === target} aria-label={t('Browse library for {label}', { label: label.toLocaleLowerCase(locale) })} onClick={() => { setPicker(picker === target ? null : target); setPickerSearch(''); setPickerPage(0); }}><ImagePlus size={18} aria-hidden="true" />{t(picker === target ? 'Close library' : 'Browse library')}</button>
+        </div>
         {optional && url && <button type="button" className={styles.textButton} disabled={preparing} onClick={() => selectImage('', target)}>{t('Remove image')}</button>}
       </div></div>
       {picker === target && <div className={styles.pickerPanel}>
@@ -54,7 +58,8 @@ export default function CmsContentFields({ record, existing, records, categories
           {pickerSearch && <button type="button" className={styles.textButton} onClick={() => { setPickerSearch(''); setPickerPage(0); pickerSearchRef.current?.focus({ preventScroll: true }); }}><X size={16} />{t('Clear search')}</button>}
         </div>
         {!search.loading && pickerMedia.length > 0 && <span className={styles.fieldHint} role="status">{t(pickerHasMore ? 'Showing {start}–{end} of {total} loaded images' : 'Showing {start}–{end} of {total} images', { start: pageStart + 1, end: pageStart + visibleMedia.length, total: pickerMedia.length })}</span>}
-        {search.loading ? <p className={styles.fieldHint} role="status">{t('Searching image library…')}</p> : search.error ? <div className={styles.error} role="alert">{t(search.error)} <button type="button" className="button secondary" onClick={search.retry}>{t('Try search again')}</button></div> : pickerMedia.length > 0 ? <div className={styles.imagePicker}>{visibleMedia.map(item => <button type="button" key={item.id} disabled={preparing} aria-pressed={url === item.url} onClick={() => selectImage(item.url, target)}><img src={item.url} alt="" width={180} height={110} loading="lazy" /><span>{item.title}</span>{url === item.url && <Check size={18} />}</button>)}</div> : <p className={styles.fieldHint}>{t(searching ? 'No matching images. Try another name or clear your search.' : 'No saved library images yet. Choose a device image to add one.')}</p>}
+        <CmsWorkingPanel key={pickerSearch.trim()} active={!disabled && !preparing && !loadingMore && (search.loading || search.loadingMore)} title={search.loadingMore ? 'Loading more images…' : 'Searching image library…'} />
+        {!search.loading && (search.error ? <div className={styles.error} role="alert">{t(search.error)} <button type="button" className="button secondary" onClick={search.retry}>{t('Try search again')}</button></div> : pickerMedia.length > 0 ? <div className={styles.imagePicker}>{visibleMedia.map(item => <button type="button" key={item.id} disabled={preparing} aria-pressed={url === item.url} onClick={() => selectImage(item.url, target)}><img src={item.url} alt="" width={180} height={110} loading="lazy" /><span>{item.title}</span>{url === item.url && <Check size={18} />}</button>)}</div> : <p className={styles.fieldHint}>{t(searching ? 'No matching images. Try another name or clear your search.' : 'No saved library images yet. Choose a device image to add one.')}</p>)}
         {pageCount > 1 && <div className={styles.pickerPagination}>
           <button type="button" className="button secondary" disabled={currentPage === 0} onClick={() => setPickerPage(currentPage - 1)}>{t('Previous images')}</button>
           <span aria-live="polite">{t('Page {page} of {total}', { page: currentPage + 1, total: pageCount })}</span>

@@ -24,6 +24,9 @@
 .capabilityCopy { display: flex; flex-direction: column; align-items: flex-start; padding: 1.25rem 1.4rem; min-width: 0; }
 .capabilityHeading { display: flex; align-items: center; gap: .65rem; margin-bottom: .35rem; min-width: 0; }
 .capabilityHeading > svg { color: var(--blue); flex-shrink: 0; }
+.capabilityHeading h2 { min-width: 0; overflow-wrap: anywhere; }
+.serviceFeatureCopy .capabilityHeading { margin: .2rem 0 .9rem; }
+.serviceFeatureCopy .capabilityHeading h2 { margin: 0; }
 .capabilityCopy h2 { font-size: var(--font-h3); margin: 0; min-width: 0; overflow-wrap: anywhere; }
 .capabilityCopy p { color: var(--muted); line-height: 1.5; font-size: var(--font-small); }
 .capabilityCopy .cardAction { margin-top: auto; padding-top: .75rem; }
@@ -221,6 +224,8 @@
 .editorialPhoto { position: relative; aspect-ratio: 16 / 9; overflow: hidden; margin-bottom: 1.5rem; border-radius: var(--radius); }
 .editorialPhoto img { object-fit: cover; }
 .contactInfo svg { color: var(--navy); flex-shrink: 0; margin-top: .1rem; }
+.contactFormArea { display: grid; gap: 1rem; min-width: 0; }
+.contactFormArea .contactWorking { bottom: calc(6rem + env(safe-area-inset-bottom)); }
 .contactForm { padding: 2.2rem; border: 1px solid var(--line); border-radius: var(--radius); background: white; box-shadow: 0 .4rem 2.8rem rgb(12 44 76 / .035); }
 .contactForm > h2 { font-size: var(--font-h3); margin: 0 0 .45rem; }
 .draftConfirmCopy { max-width: 40rem; line-height: 1.75; }
@@ -230,6 +235,7 @@
 .contactFields button:disabled { cursor: wait; }
 .contactTrap { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .receipt { overflow-wrap: anywhere; }
+.receiptSummary { margin-top: 1.5rem; color: var(--muted); font-size: var(--font-small); overflow-wrap: anywhere; }
 .loadingIcon { animation: contact-spin 1s linear infinite; }
 @keyframes contact-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .loadingIcon { animation: none; } }
@@ -306,7 +312,7 @@
   .vesselPlanning { gap: 2rem; }
   .routesLayout { grid-template-columns: 1fr; }
   .contactLayout { grid-template-columns: 1fr; gap: 2rem; }
-  .contactForm { order: -1; }
+  .contactFormArea { order: -1; }
   .contactIntro { max-width: 100%; }
   .contactPhoto { aspect-ratio: 2.4; }
   .formGrid { grid-template-columns: 1fr 1fr; }
