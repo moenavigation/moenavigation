@@ -143,6 +143,8 @@ export const cmsMainThai: Record<string, string> = {
   "You": "คุณ",
   "Added {date}": "เพิ่มเมื่อ {date}",
   "Reset password": "ตั้งรหัสผ่านใหม่",
+  "Usernames cannot be changed.": "ไม่สามารถเปลี่ยนชื่อผู้ใช้ได้",
+  "Change the password for this user without saving role changes.": "เปลี่ยนรหัสผ่านของผู้ใช้นี้โดยไม่บันทึกการเปลี่ยนบทบาท",
   "Remove {name}": "ลบ {name}",
   "Remove administrator": "ลบผู้ดูแลระบบ",
   "Add administrator": "เพิ่มผู้ดูแลระบบ",

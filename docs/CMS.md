@@ -12,10 +12,11 @@ Only Dev and Admin may permanently delete retained Trash items, including accoun
 keep core pages and referenced images protected. Enforce permissions against
 the current stored account, and revoke sessions when account access changes.
 
-Edit existing accounts in a dialog. Offer another account's password reset
-inside that edit workflow, using a separate dialog that preserves the unsaved
-username and role when it closes. Keep personal password changes in User
-settings. Retain current-password confirmation and existing role protections.
+Usernames are fixed after account creation; show them read-only and reject
+renaming in the API. Edit existing accounts' roles in a dialog. Offer another
+account's password reset inside that workflow, using a separate dialog that
+preserves the unsaved role when it closes. Keep personal password changes in
+User settings. Retain current-password confirmation and existing role protections.
 
 Let every role change its own profile photo without changing credentials or
 ending sessions. Dev can change any account photo; Admin can change Admin and

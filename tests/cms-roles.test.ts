@@ -14,6 +14,8 @@ const trashed = (user: UserDocument, daysRemaining = 30): UserDocument => ({ ...
 function harness(...accounts: UserDocument[]) {
   const users = new Map(accounts.map(user => [user._id, structuredClone(user)]));
   const revoked: string[] = [];
+  const auditEvents: { action: string }[] = [];
+  const updates: Partial<UserDocument>[] = [];
   let locks = 0;
   const matches = (user: UserDocument, filter: Filter): boolean => {
     if (filter._id !== undefined && user._id !== filter._id || filter.passwordVersion !== undefined && user.passwordVersion !== filter.passwordVersion) return false;
@@ -35,6 +37,7 @@ function harness(...accounts: UserDocument[]) {
       updateOne: async (filter: Filter, update: { $set?: Partial<UserDocument>; $unset?: { deletedAt?: string; purgeAt?: string }; $inc: { passwordVersion: number } }) => {
         const user = [...users.values()].find(item => matches(item, filter));
         if (!user) return { matchedCount: 0 };
+        if (update.$set) updates.push(structuredClone(update.$set));
         Object.assign(user, update.$set, { passwordVersion: user.passwordVersion + update.$inc.passwordVersion });
         if (update.$unset?.deletedAt !== undefined) delete user.deletedAt;
         if (update.$unset?.purgeAt !== undefined) delete user.purgeAt;
@@ -45,12 +48,12 @@ function harness(...accounts: UserDocument[]) {
         return { deletedCount: user && users.delete(user._id) ? 1 : 0 };
       },
     };
-    if (name === 'moe_logs') return { insertOne: async () => ({ acknowledged: true }) };
+    if (name === 'moe_logs') return { insertOne: async (event: { action: string }) => { auditEvents.push(structuredClone(event)); return { acknowledged: true }; } };
     if (name === 'moe_state') return { updateOne: async () => { locks++; } };
     if (name === 'moe_sessions') return { deleteMany: async ({ userId }: { userId: string }) => { revoked.push(userId); } };
     return {};
   } } as unknown as Db;
-  return { db, users, revoked, locks: () => locks };
+  return { db, users, revoked, auditEvents, updates, locks: () => locks };
 }
 const rejects = (status: number) => (error: unknown) => error instanceof HttpError && error.status === status;
 
@@ -103,12 +106,13 @@ test('Dev and Admin can edit permitted users and changes revoke all target sessi
     const actor = account('actor', actorRole);
     const target = account('target', targetRole);
     const state = harness(actor, target);
-    const result = await editUserInTransaction(actor, target._id, { username: 'renamed', passwordHash: 'reset-hash' }, state.db, session);
+    const result = await editUserInTransaction(actor, target._id, { username: target.username, passwordHash: 'reset-hash' }, state.db, session);
     assert.equal(result.changed, true);
     assert.equal(result.user.role, targetRole);
-    assert.equal(result.user.username, 'renamed');
+    assert.equal(result.user.username, target.username);
     assert.equal(result.user.passwordVersion, 2);
     assert.equal(state.users.get(target._id)?.passwordHash, 'reset-hash');
+    assert.equal(Object.hasOwn(state.updates[0], 'username'), false);
     assert.deepEqual(state.revoked, [target._id]);
     const removed = harness(actor, target);
     await removeUserInTransaction(actor, target._id, removed.db, session);
@@ -135,13 +139,15 @@ test('all roles are prevented from removing themselves and Operators cannot edit
   await assert.rejects(removeUserInTransaction(operator, 'target', state.db, session), rejects(403));
 });
 
-test('last Dev and last manager cannot be demoted, while valid self profile edits remain possible', async () => {
+test('last Dev and last manager cannot be demoted, and unchanged self edits remain no-ops', async () => {
   const dev = account('dev', 'Dev');
   const state = harness(dev, account('admin', 'Admin'));
   await assert.rejects(editUserInTransaction(dev, dev._id, { role: 'Admin' }, state.db, session), rejects(409));
-  const renamed = await editUserInTransaction(dev, dev._id, { username: 'renamed-dev' }, state.db, session);
-  assert.equal(renamed.user.role, 'Dev');
-  assert.equal(renamed.user.username, 'renamed-dev');
+  const unchanged = await editUserInTransaction(dev, dev._id, { username: dev.username, role: 'Dev' }, state.db, session);
+  assert.equal(unchanged.user.role, 'Dev');
+  assert.equal(unchanged.user.username, dev.username);
+  assert.equal(unchanged.changed, false);
+  assert.deepEqual(state.revoked, []);
   const admin = account('legacy-admin');
   const legacy = harness(admin, account('operator', 'Operator'));
   await assert.rejects(editUserInTransaction(admin, admin._id, { role: 'Operator' }, legacy.db, session), rejects(409));
@@ -171,6 +177,38 @@ test('unchanged edits keep sessions, and password self-service cannot be bypasse
   assert.equal(result.user.passwordVersion, 1);
   assert.deepEqual(state.revoked, []);
   await assert.rejects(editUserInTransaction(actor, actor._id, { passwordHash: 'new-hash' }, state.db, session), rejects(400));
+});
+
+test('existing usernames cannot change, including self edits and combined role or password changes', async () => {
+  for (const actorRole of ['Dev', 'Admin'] as const) for (const targetRole of cmsRoles) {
+    if (!canManageUser(actorRole, targetRole)) continue;
+    const actor = account('actor', actorRole);
+    const other = account('target', targetRole);
+    for (const target of [actor, other]) for (const changes of [
+      { username: 'renamed' },
+      { username: 'renamed', role: 'Operator' as const },
+      ...(target._id === actor._id ? [] : [{ username: 'renamed', passwordHash: 'reset-hash' }]),
+    ]) {
+      const state = harness(actor, other);
+      await assert.rejects(editUserInTransaction(actor, target._id, changes, state.db, session), error =>
+        rejects(400)(error) && error instanceof Error && error.message === 'Usernames cannot be changed.');
+      assert.deepEqual(state.users.get(target._id), target);
+      assert.deepEqual(state.revoked, []);
+      assert.deepEqual(state.updates, []);
+      assert.deepEqual(state.auditEvents, []);
+    }
+  }
+});
+
+test('role and password changes preserve the username and audit both actions when combined', async () => {
+  const actor = account('actor', 'Dev');
+  const target = account('target', 'Operator');
+  const state = harness(actor, target);
+  const result = await editUserInTransaction(actor, target._id, { username: target.username, role: 'Admin', passwordHash: 'reset-hash' }, state.db, session);
+  assert.deepEqual(result.user, { ...target, role: 'Admin', passwordHash: 'reset-hash', passwordVersion: 2 });
+  assert.deepEqual(state.updates, [{ role: 'Admin', passwordHash: 'reset-hash' }]);
+  assert.deepEqual(state.revoked, [target._id]);
+  assert.deepEqual(state.auditEvents.map(event => event.action), ['user.password_reset', 'user.updated']);
 });
 
 test('a removed account restores its identity and password without reviving prior sessions', async () => {
@@ -266,7 +304,7 @@ test('active and trashed accounts reserve their username until permanent deletio
     const expected = reserved.deletedAt ? 'This username belongs to a user in Trash. Choose another username.' : 'This username is already in use. Choose another username.';
     const conflict = (error: unknown) => rejects(409)(error) && error instanceof Error && error.message === expected;
     await assert.rejects(createUserInTransaction(actor, { username: reserved.username, role: 'Operator', passwordHash: 'new-hash' }, state.db, session), conflict);
-    await assert.rejects(editUserInTransaction(actor, target._id, { username: reserved.username }, state.db, session), conflict);
+    await assert.rejects(editUserInTransaction(actor, target._id, { username: reserved.username }, state.db, session), rejects(400));
     assert.deepEqual(state.revoked, []);
   }
   const removed = trashed(account('reserved', 'Admin'));

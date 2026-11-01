@@ -2,7 +2,7 @@
 
 import { useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import Image from 'next/image';
-import { Eye, EyeOff, RefreshCw, X } from 'lucide-react';
+import { Eye, EyeOff, LoaderCircle, RefreshCw, X } from 'lucide-react';
 import { cmsErrorText, cmsRequest } from '@/lib/cms-client';
 import { useCmsLocale } from '@/lib/cms-locale';
 import styles from './CmsWorkspace.module.css';
@@ -146,17 +146,21 @@ export default function CmsLoginForm({ busy, error, onSignIn }: {
       {error && <div className={styles.error} role="alert">{t(error)}</div>}
       <button ref={signInRef} type="submit" className="button" disabled={busy}>{t('Sign in')}</button>
     </form>
-    <dialog ref={dialogRef} className={styles.loginPuzzleDialog} aria-labelledby="cms-puzzle-title" aria-describedby="cms-puzzle-instructions" aria-busy={busy} onClose={onDialogClose} onCancel={event => { if (busy || submitting.current) event.preventDefault(); }} onClick={event => { if (event.target === dialogRef.current) closeChallenge(); }}>
+    <dialog ref={dialogRef} className={styles.loginPuzzleDialog} aria-labelledby="cms-puzzle-title" aria-describedby="cms-puzzle-instructions" aria-busy={busy || challengeLoading} onClose={onDialogClose} onCancel={event => { if (busy || submitting.current) event.preventDefault(); }} onClick={event => { if (event.target === dialogRef.current) closeChallenge(); }}>
       <div className={styles.loginPuzzleHeader}>
         <div><span className="eyebrow">MOE NAVIGATION</span><h2 id="cms-puzzle-title">{t('Complete the picture')}</h2></div>
         <button type="button" className={styles.loginPuzzleIconButton} onClick={closeChallenge} disabled={busy} aria-label={t('Close verification')}><X size={21} aria-hidden="true" /></button>
       </div>
       <p id="cms-puzzle-instructions" className={styles.loginPuzzleInstructions}>{t('Slide the picture piece into the matching shape to continue.')}</p>
-      <div className={styles.loginPuzzleBoard} aria-hidden="true">
+      <div className={styles.loginPuzzleBoard}>
         <Image src={puzzleImage} alt="" fill unoptimized loading="eager" />
+        {(challengeLoading || busy) && <div className={styles.loginPuzzleLoading} role="status" aria-atomic="true">
+          <LoaderCircle className={styles.spinner} aria-hidden="true" />
+          <strong>{busy ? t('Signing in…') : t('Loading slide…')}</strong>
+        </div>}
         {challenge && <>
-          <span className={styles.loginPuzzleTarget} style={{ left: `${challenge.target * .8}%` }} />
-          <span key={challenge.id} ref={pieceRef} className={styles.loginPuzzlePiece} style={{ backgroundPosition: `${challenge.target}% 50%` }}>
+          <span className={styles.loginPuzzleTarget} style={{ left: `${challenge.target * .8}%` }} aria-hidden="true" />
+          <span key={challenge.id} ref={pieceRef} className={styles.loginPuzzlePiece} style={{ backgroundPosition: `${challenge.target}% 50%` }} aria-hidden="true">
             <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M50 1 62 29 94 34 69 56 77 90 50 72 23 90 31 56 6 34 38 29Z" fill="none" stroke="white" strokeWidth="4" /></svg>
           </span>
         </>}
@@ -166,7 +170,7 @@ export default function CmsLoginForm({ busy, error, onSignIn }: {
           <input key={challenge?.id ?? 'loading'} type="range" min="0" max="100" step="0.1" defaultValue="0" onInput={event => movePiece(event.currentTarget)} onPointerUp={event => void verifyAndSignIn(Number(event.currentTarget.value))} onKeyDown={onSlideKeyDown} disabled={busy || !challenge} aria-label={t('Slide verification')} aria-valuetext={aligned ? t('Aligned with marker') : t('Move to marker')} />
         </div>
         <div className={styles.loginPuzzleFeedback}>
-          <span role="status">{busy ? t('Signing in…') : challengeError ? t(challengeError) : challengeLoading ? t('Loading slide…') : t('Release to sign in, or press Enter.')}</span>
+          <span role={busy || challengeLoading ? undefined : 'status'}>{busy || challengeLoading ? null : challengeError ? t(challengeError) : t('Release to sign in, or press Enter.')}</span>
           <button type="button" className={styles.loginPuzzleIconButton} onClick={() => void refreshChallenge()} disabled={busy || challengeLoading} aria-label={t('New slide challenge')} title={t('New slide challenge')}><RefreshCw size={19} aria-hidden="true" /></button>
         </div>
       </div>

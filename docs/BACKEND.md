@@ -341,11 +341,13 @@ permissions. Session reads resolve the current stored role, not a client claim.
 
 Only Dev manages Dev accounts or grants the Dev role. Admin manages Admin and
 Operator accounts; Operator only changes its own password. User creation,
-username/role edits, password resets, removals, and password changes serialize
+role edits, password resets, removals, and password changes serialize
 through the same transaction lock. Mutations recheck the actor's current
 password version and the target's current role. Account edits revoke target
 sessions; self-edits renew only the current session. Self-deletion, last-Dev
 removal/demotion, and removal of the last active management account are blocked.
+Usernames are fixed after creation. PATCH rejects a different username without
+saving other changes; an unchanged username remains accepted for compatibility.
 
 `DELETE /api/cms/users` moves the permitted target to 30-day Trash using
 `deletedAt` and `purgeAt` dates, increments its password version, and revokes

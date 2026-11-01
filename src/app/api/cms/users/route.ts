@@ -11,6 +11,7 @@ const username = z.string().trim().toLowerCase().regex(/^[a-z0-9][a-z0-9._-]{2,3
 const password = z.string().min(14).max(200);
 const currentPassword = z.string().min(1).max(200);
 const createInput = z.strictObject({ username, password, role: z.enum(cmsRoles).default('Admin'), currentPassword });
+// Retain unchanged usernames from older clients; the transaction rejects renames.
 const editInput = z.strictObject({ id: z.string().uuid(), username: username.optional(), role: z.enum(cmsRoles).optional(), password: password.optional(), currentPassword })
   .refine(input => input.username !== undefined || input.role !== undefined || input.password !== undefined, 'Choose a user detail to update.');
 const removeInput = z.strictObject({ id: z.string().uuid(), currentPassword });

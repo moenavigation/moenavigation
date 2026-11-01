@@ -272,7 +272,7 @@ test('user, settings, and security events preserve actor identity without passwo
     const target = await db.collection<Account>('moe_users').findOne({ username });
     expect(target).not.toBeNull();
     const mutation = { id: target!._id, currentPassword: E2E_ADMIN.password };
-    await expectStatus(await admin.patch('/api/cms/users', { data: { ...mutation, username: `${username}-edited`, role: 'Admin' } }), 200);
+    await expectStatus(await admin.patch('/api/cms/users', { data: { ...mutation, role: 'Admin' } }), 200);
     await expectStatus(await admin.patch('/api/cms/users', { data: { ...mutation, password: `${sensitivePassword}-reset` } }), 200);
     await expectStatus(await admin.delete('/api/cms/users', { data: mutation }), 200);
     await expectStatus(await admin.post('/api/cms/users/restore', { data: mutation }), 200);

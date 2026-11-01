@@ -31,6 +31,8 @@
 .loginPuzzleIconButton:focus-visible, .loginPuzzleSliderRow input:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 .loginPuzzleBoard { position: relative; width: 100%; aspect-ratio: 3 / 2; overflow: hidden; border-radius: .5rem; background: #10385d; }
 .loginPuzzleBoard > img { object-fit: cover; }
+.loginPuzzleLoading { position: absolute; z-index: 2; inset: 0; display: grid; place-content: center; justify-items: center; gap: .9rem; padding: 1.25rem; color: var(--navy); background: linear-gradient(135deg, #f5f9fd, #eaf1f8); text-align: center; }
+.loginPuzzleLoading > svg { width: 2rem; height: 2rem; color: var(--blue); }
 .loginPuzzleTarget, .loginPuzzlePiece { position: absolute; top: 33%; width: 20%; height: 34%; clip-path: polygon(50% 1%, 62% 29%, 94% 34%, 69% 56%, 77% 90%, 50% 72%, 23% 90%, 31% 56%, 6% 34%, 38% 29%); }
 .loginPuzzleTarget { background: #07182acc; outline: 3px solid #fff; }
 .loginPuzzlePiece { left: 0; overflow: hidden; background-image: url('/images/cms-login-maritime-puzzle.webp'); background-size: 500% 294.117%; transform: translate3d(0, 0, 0); will-change: transform; }
@@ -105,8 +107,8 @@
 .enquiryStatus { display: grid; gap: .6rem; }
 .enquiryStatusLabel { color: var(--navy); font-weight: 600; }
 .statusPills { display: flex; flex-wrap: wrap; gap: .5rem; }
-.statusPill { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: var(--target-size); padding: .55rem .9rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--navy); font-size: var(--font-small); font-weight: 600; }
-.statusPill svg { flex-shrink: 0; visibility: hidden; }
+.statusPill { position: relative; display: inline-flex; align-items: center; justify-content: center; min-height: var(--target-size); padding: .55rem 2rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--navy); font-size: var(--font-small); font-weight: 600; text-align: center; }
+.statusPill svg { position: absolute; inset-inline-start: .6rem; top: 50%; transform: translateY(-50%); width: 1rem; height: 1rem; visibility: hidden; }
 .statusPill[aria-pressed='true'] { border-color: var(--blue); background: var(--pale); color: var(--blue); }
 .statusPill[aria-pressed='true'] svg { visibility: visible; }
 .statusPill:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }

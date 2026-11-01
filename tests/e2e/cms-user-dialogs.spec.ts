@@ -39,7 +39,7 @@ test('Edit and nested Reset cancellation preserve the edit draft without writing
     if (route.request().method() === 'PATCH') writes++;
     return route.continue();
   });
-  await edit.getByLabel('Username', { exact: true }).fill('unsaved-dialog-name');
+  await expect(edit.getByLabel('Username', { exact: true })).not.toBeEditable();
   await edit.getByLabel('Role', { exact: true }).selectOption('Admin');
   await edit.getByLabel('Your current password', { exact: true }).fill('unsaved-actor-password');
   const resetTrigger = edit.getByRole('button', { name: 'Reset password', exact: true });
@@ -49,7 +49,7 @@ test('Edit and nested Reset cancellation preserve the edit draft without writing
   await reset.getByRole('button', { name: 'Cancel', exact: true }).click();
   await expect(reset).not.toBeVisible();
   await expect(resetTrigger).toBeFocused();
-  await expect(edit.getByLabel('Username', { exact: true })).toHaveValue('unsaved-dialog-name');
+  await expect(edit.getByLabel('Username', { exact: true })).toHaveValue(target.username);
   await expect(edit.getByLabel('Role', { exact: true })).toHaveValue('Admin');
   await expect(edit.getByLabel('Your current password', { exact: true })).toHaveValue('unsaved-actor-password');
   await edit.getByRole('button', { name: 'Cancel', exact: true }).click();
@@ -62,15 +62,18 @@ test('Edit and nested Reset cancellation preserve the edit draft without writing
   await opener.click();
   await expect(edit.getByLabel('Username', { exact: true })).toHaveValue(target.username);
   await expect(edit.getByLabel('Your current password', { exact: true })).toHaveValue('');
-  await edit.getByLabel('Username', { exact: true }).fill('saved-dialog-name');
+  await expect(edit.getByLabel('Role', { exact: true })).toHaveValue('Operator');
+  await edit.getByLabel('Role', { exact: true }).selectOption('Admin');
   await edit.getByLabel('Your current password', { exact: true }).fill('incorrect-actor-password');
   await edit.getByRole('button', { name: 'Save changes', exact: true }).click();
   await expect(edit.getByRole('alert')).toContainText('Your current password is incorrect.');
-  await expect(edit.getByLabel('Username', { exact: true })).toHaveValue('saved-dialog-name');
+  await expect(edit.getByLabel('Username', { exact: true })).toHaveValue(target.username);
+  await expect(edit.getByLabel('Role', { exact: true })).toHaveValue('Admin');
   await edit.getByLabel('Your current password', { exact: true }).fill(E2E_ADMIN.password);
   await edit.getByRole('button', { name: 'Save changes', exact: true }).click();
   await expect(edit).not.toBeVisible();
-  await expect(users.getByRole('button', { name: 'Edit saved-dialog-name', exact: true })).toBeFocused();
+  await expect(users.getByRole('button', { name: `Edit ${target.username}`, exact: true })).toBeFocused();
+  expect(await db.collection<Account>('moe_users').findOne({ _id: target._id })).toMatchObject({ username: target.username, role: 'Admin' });
   expect(writes).toBe(2);
   await users.getByRole('button', { name: `Edit ${E2E_ADMIN.username}`, exact: true }).click();
   await expect(edit.getByRole('button', { name: 'Reset password', exact: true })).toHaveCount(0);
@@ -89,7 +92,7 @@ test('nested Reset validates and preserves failed input, blocks duplicate submis
   try {
     await login(page);
     const { dialog: edit } = await openEdit(page, target.username);
-    await edit.getByLabel('Username', { exact: true }).fill('edit-draft-stays-unsaved');
+    await expect(edit.getByLabel('Username', { exact: true })).not.toBeEditable();
     await edit.getByLabel('Role', { exact: true }).selectOption('Admin');
     const resetTrigger = edit.getByRole('button', { name: 'Reset password', exact: true });
     await resetTrigger.click();
@@ -138,7 +141,7 @@ test('nested Reset validates and preserves failed input, blocks duplicate submis
     release();
     await expect(reset).not.toBeVisible();
     await expect(resetTrigger).toBeFocused();
-    await expect(edit.getByLabel('Username', { exact: true })).toHaveValue('edit-draft-stays-unsaved');
+    await expect(edit.getByLabel('Username', { exact: true })).toHaveValue(target.username);
     await expect(edit.getByLabel('Role', { exact: true })).toHaveValue('Admin');
     expect(await db.collection<Account>('moe_users').findOne({ _id: target._id })).toMatchObject({ username: target.username, role: 'Operator', passwordVersion: target.passwordVersion + 1 });
     expect((await oldSession.get('/api/cms/users')).status()).toBe(401);
@@ -233,6 +236,8 @@ for (const screen of [
     await opener.tap();
     const edit = page.getByRole('dialog', { name: t('Edit user'), exact: true });
     await expect(edit).toBeVisible(); await checkDialog(page, edit);
+    await expect(edit.getByLabel(t('Username'), { exact: true })).not.toBeEditable();
+    await expect(edit.getByLabel(t('Username'), { exact: true })).toHaveValue(target.username);
     await expect(edit.locator('[data-cms-language-switch]')).toHaveCount(0);
     await page.screenshot({ path: testInfo.outputPath('edit-user.png'), animations: 'disabled' });
     await edit.getByRole('button', { name: t('Save changes'), exact: true }).click();

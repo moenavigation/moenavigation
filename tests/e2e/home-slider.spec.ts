@@ -43,6 +43,8 @@ test('desktop banner is 3:1 with centered copy and actions underneath', async ({
   const carousel = await expectHeroLayout(page, 3);
   await expect(carousel.locator('img')).toHaveCount(5);
   await expect(carousel.getByRole('group')).toHaveCount(1);
+  await expect(carousel.getByRole('button')).toHaveCount(5);
+  await expect(carousel.getByRole('button', { name: /Previous|Next|slideshow/ })).toHaveCount(0);
   await saveScreenshot(page, `hero-en-desktop-${testInfo.project.name}`);
 });
 
@@ -54,9 +56,9 @@ test('390px mobile crops both sides to 16:9 and localizes the complete hero', as
   await saveScreenshot(page, `hero-en-mobile-390-${testInfo.project.name}`);
   await page.goto('/th');
   const carousel = await expectHeroLayout(page, 16 / 9, true);
-  await expect(carousel.getByRole('button', { name: 'สไลด์ถัดไป', exact: true })).toBeVisible();
+  await expect(carousel.getByRole('button', { name: 'แสดงสไลด์ 2', exact: true })).toBeVisible();
   await expect(carousel.getByRole('img')).toHaveAttribute('alt', defaultHomeSlides[0].altTh);
-  await carousel.getByRole('button', { name: 'สไลด์ถัดไป', exact: true }).click();
+  await carousel.getByRole('button', { name: 'แสดงสไลด์ 2', exact: true }).click();
   await expect(carousel).toHaveAttribute('data-slide-index', '1');
   await expect(carousel.getByRole('img')).toHaveAttribute('alt', defaultHomeSlides[1].altTh);
   await saveScreenshot(page, `hero-th-mobile-390-${testInfo.project.name}`);
@@ -66,18 +68,17 @@ test('320px mobile keeps all five-slide controls usable', async ({ page }, testI
   await page.setViewportSize({ width: 320, height: 1050 });
   await page.goto('/');
   const carousel = await expectHeroLayout(page, 16 / 9);
-  await carousel.getByRole('button', { name: 'Next slide', exact: true }).click();
+  await carousel.getByRole('button', { name: 'Show slide 2', exact: true }).click();
   await expect(carousel).toHaveAttribute('data-slide-index', '1');
-  await carousel.getByRole('button', { name: 'Previous slide', exact: true }).click();
+  await carousel.getByRole('button', { name: 'Show slide 1', exact: true }).click();
   await expect(carousel).toHaveAttribute('data-slide-index', '0');
-  await expect(carousel.getByRole('button', { name: 'Play slideshow', exact: true })).toBeVisible();
+  await expect(carousel.getByRole('button')).toHaveCount(5);
   await saveScreenshot(page, `hero-en-mobile-320-${testInfo.project.name}`);
 });
 
 test('default autoplay advances at three seconds and pauses while hovered', async ({ page }) => {
   await page.goto('/');
   const carousel = slider(page);
-  await expect(carousel).toHaveAttribute('data-autoplay', 'true');
   await carousel.hover();
   await expect(carousel).toHaveAttribute('data-autoplay', 'false');
   const start = Number(await carousel.getAttribute('data-slide-index'));
@@ -97,33 +98,96 @@ test('default autoplay advances at three seconds and pauses while hovered', asyn
   await expect(carousel).toHaveAttribute('data-slide-index', String((start + 2) % 5), { timeout: 4500 });
 });
 
-test('pause persists after the first pointer click and navigation supports keyboard wrapping', async ({ page }) => {
+test('autoplay resumes after manual selection and keyboard focus pauses it', async ({ page }) => {
   await page.goto('/');
   const carousel = slider(page);
-  await expect(carousel).toHaveAttribute('data-autoplay', 'true');
-  await carousel.getByRole('button', { name: 'Pause slideshow', exact: true }).click();
+  await carousel.hover();
   await page.getByRole('banner').hover();
-  await expect(carousel.getByRole('button', { name: 'Play slideshow', exact: true })).toBeVisible();
-  await expect(carousel).toHaveAttribute('data-autoplay', 'false');
-  const pausedIndex = await carousel.getAttribute('data-slide-index');
-  await page.waitForTimeout(3200);
-  await expect(carousel).toHaveAttribute('data-slide-index', pausedIndex!);
+  await expect(carousel).toHaveAttribute('data-autoplay', 'true');
   await carousel.getByRole('button', { name: 'Show slide 1', exact: true }).click();
-  const previous = carousel.getByRole('button', { name: 'Previous slide', exact: true });
+  await expect(carousel).toHaveAttribute('data-autoplay', 'false');
+  await page.getByRole('banner').hover();
+  await expect(carousel).toHaveAttribute('data-autoplay', 'true');
+  await expect(carousel).toHaveAttribute('data-slide-index', '1', { timeout: 4500 });
+  await carousel.getByRole('button', { name: 'Show slide 1', exact: true }).focus();
+  const previous = carousel.getByRole('button', { name: 'Show slide 1', exact: true });
+  await previous.press('Enter');
   await previous.press('ArrowLeft');
   await expect(carousel).toHaveAttribute('data-slide-index', '4');
   await previous.press('ArrowRight');
   await expect(carousel).toHaveAttribute('data-slide-index', '0');
+  await expect(carousel).toHaveAttribute('data-autoplay', 'false');
+  await page.waitForTimeout(3200);
+  await expect(carousel).toHaveAttribute('data-slide-index', '0');
+  await page.getByRole('link', { name: 'Explore services', exact: true }).focus();
+  await expect(carousel).toHaveAttribute('data-autoplay', 'true');
   await carousel.getByRole('button', { name: 'Show slide 3', exact: true }).click();
   await expect(carousel).toHaveAttribute('data-slide-index', '2');
   await expect(carousel.getByRole('button', { name: 'Show slide 3', exact: true })).toHaveAttribute('aria-current', 'true');
-  await carousel.getByRole('button', { name: 'Play slideshow', exact: true }).click();
+  await expect(carousel).toHaveAttribute('data-autoplay', 'false');
+});
+
+test('clicking the banner pauses while hovered and resumes after the pointer leaves', async ({ page }) => {
+  await page.goto('/');
+  const carousel = slider(page);
+  await carousel.hover();
   await page.getByRole('banner').hover();
   await expect(carousel).toHaveAttribute('data-autoplay', 'true');
-  await expect(carousel).toHaveAttribute('data-slide-index', '3', { timeout: 4500 });
-  await page.keyboard.press('Tab');
-  await carousel.getByRole('button', { name: 'Next slide', exact: true }).focus();
+  const start = Number(await carousel.getAttribute('data-slide-index'));
+  await carousel.click({ position: { x: 150, y: 80 } });
   await expect(carousel).toHaveAttribute('data-autoplay', 'false');
+  await page.waitForTimeout(3200);
+  await expect(carousel).toHaveAttribute('data-slide-index', String(start));
+  await page.getByRole('banner').hover();
+  await expect(carousel).toHaveAttribute('data-autoplay', 'true');
+  await expect(carousel).toHaveAttribute('data-slide-index', String((start + 1) % 5), { timeout: 4500 });
+});
+
+test('mouse dragging changes slides in both directions, wraps, and resumes autoplay on leave', async ({ page }) => {
+  await page.goto('/');
+  const carousel = slider(page);
+  await expect(carousel).toHaveAttribute('data-slide-index', '0');
+  const bounds = (await carousel.boundingBox())!;
+  const left = bounds.x + bounds.width * 0.25;
+  const right = bounds.x + bounds.width * 0.75;
+  const y = bounds.y + bounds.height / 3;
+  async function drag(startX: number, endX: number, endY = y) {
+    await page.mouse.move(startX, y);
+    await page.mouse.down();
+    await page.mouse.move(endX, endY, { steps: 8 });
+    await page.mouse.up();
+  }
+
+  await drag(right, left);
+  await expect(carousel).toHaveAttribute('data-slide-index', '1');
+  await drag(left, right);
+  await expect(carousel).toHaveAttribute('data-slide-index', '0');
+  await drag(left, right);
+  await expect(carousel).toHaveAttribute('data-slide-index', '4');
+  await drag(right, right - 15);
+  await expect(carousel).toHaveAttribute('data-slide-index', '4');
+  await drag(left, left + 10, y + 90);
+  await expect(carousel).toHaveAttribute('data-slide-index', '4');
+  await page.getByRole('banner').hover();
+  await expect(carousel).toHaveAttribute('data-autoplay', 'true');
+  await expect(carousel).toHaveAttribute('data-slide-index', '0', { timeout: 4500 });
+});
+
+test('mouse drag can finish outside the banner without leaving a stuck gesture', async ({ page }) => {
+  await page.goto('/');
+  const carousel = slider(page);
+  await expect(carousel).toHaveAttribute('data-slide-index', '0');
+  const bounds = (await carousel.boundingBox())!;
+  const y = bounds.y + bounds.height / 3;
+  await page.mouse.move(bounds.x + bounds.width * 0.2, y);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x + bounds.width * 0.85, bounds.y + bounds.height + 40, { steps: 10 });
+  await page.mouse.up();
+  await expect(carousel).toHaveAttribute('data-slide-index', '4');
+  await carousel.hover();
+  await page.getByRole('banner').hover();
+  await expect(carousel).toHaveAttribute('data-slide-index', '4');
+  await expect(carousel).toHaveAttribute('data-autoplay', 'true');
 });
 
 test('reduced motion disables rotation while preserving manual controls', async ({ page }) => {
@@ -135,7 +199,11 @@ test('reduced motion disables rotation while preserving manual controls', async 
   await page.clock.install();
   await page.clock.fastForward(9000);
   await expect(carousel).toHaveAttribute('data-slide-index', '0');
-  await carousel.getByRole('button', { name: 'Next slide', exact: true }).click();
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await expect(carousel).toHaveAttribute('data-autoplay', 'true');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(carousel).toHaveAttribute('data-autoplay', 'false');
+  await carousel.getByRole('button', { name: 'Show slide 2', exact: true }).click();
   await expect(carousel).toHaveAttribute('data-slide-index', '1');
   await expect(carousel.getByRole('group')).toHaveAttribute('aria-label', '2 of 5');
 });
@@ -180,14 +248,17 @@ for (const width of [320, 390, 768]) {
       await expectHeroLayout(page, width <= 700 ? 16 / 9 : 3);
       await carousel.getByRole('button', { name: 'Show slide 12', exact: true }).click();
       await expect(carousel).toHaveAttribute('data-slide-index', '11');
-      for (const name of ['Previous slide', 'Next slide']) {
+      for (const [name, index] of [['Show slide 1', '0'], ['Show slide 12', '11']]) {
         const control = carousel.getByRole('button', { name, exact: true });
+        await control.click();
+        await expect(carousel).toHaveAttribute('data-slide-index', index);
+        await expect(control).toBeInViewport();
         const bounds = (await control.boundingBox())!;
         expect(bounds.x, name).toBeGreaterThanOrEqual(0);
         expect(bounds.x + bounds.width, name).toBeLessThanOrEqual(width);
         await expect(control).toBeInViewport();
       }
-      await carousel.getByRole('button', { name: 'Next slide', exact: true }).click();
+      await carousel.getByRole('button', { name: 'Show slide 1', exact: true }).click();
       await expect(carousel).toHaveAttribute('data-slide-index', '0');
     });
   });
@@ -212,5 +283,17 @@ test.describe('touch pointer navigation', () => {
     await carousel.dispatchEvent('pointerdown', { ...pointer, clientX: 90, clientY: y });
     await carousel.dispatchEvent('pointerup', { ...pointer, clientX: 290, clientY: y + 5 });
     await expect(carousel).toHaveAttribute('data-slide-index', '0');
+  });
+
+  test('tapping the banner lets autoplay continue after release', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto('/');
+    const carousel = slider(page);
+    await expect(carousel).toHaveAttribute('data-slide-index', '0');
+    const bounds = (await carousel.boundingBox())!;
+    await page.touchscreen.tap(bounds.x + bounds.width / 2, bounds.y + bounds.height / 3);
+    await expect(carousel).toHaveAttribute('data-slide-index', '0');
+    await expect(carousel).toHaveAttribute('data-autoplay', 'true');
+    await expect(carousel).toHaveAttribute('data-slide-index', '1', { timeout: 4500 });
   });
 });

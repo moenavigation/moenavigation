@@ -1,6 +1,11 @@
+import { randomUUID } from 'node:crypto';
 import { test, expect, login, E2E_ADMIN } from './fixtures';
 
-test('a late successful self-rename cannot revive the expired workspace or start another roster read', async ({ page, db }) => {
+test('a late successful self-role change cannot revive the expired workspace or start another roster read', async ({ page, db }) => {
+  const accounts = db.collection<{ _id: string; username: string; role?: string } & Record<string, unknown>>('moe_users');
+  const original = await accounts.findOne({ _id: E2E_ADMIN.id });
+  expect(original).not.toBeNull();
+  await accounts.insertOne({ ...original!, _id: randomUUID(), username: 'remaining-session-admin', role: 'Admin' });
   await login(page);
   await page.goto('/cms/users');
   const users = page.getByRole('region', { name: 'Users', exact: true });
@@ -27,7 +32,8 @@ test('a late successful self-rename cannot revive the expired workspace or start
   try {
     await users.getByRole('button', { name: `Edit ${E2E_ADMIN.username}`, exact: true }).click();
     const edit = page.getByRole('dialog', { name: 'Edit user', exact: true });
-    await edit.getByLabel('Username', { exact: true }).fill('audit-self-renamed');
+    await expect(edit.getByLabel('Username', { exact: true })).not.toBeEditable();
+    await edit.getByLabel('Role', { exact: true }).selectOption('Operator');
     await edit.getByLabel('Your current password', { exact: true }).fill(E2E_ADMIN.password);
     await edit.getByRole('button', { name: 'Save changes', exact: true }).click();
     await committed;
@@ -43,7 +49,7 @@ test('a late successful self-rename cannot revive the expired workspace or start
     await expect(page.getByRole('button', { name: 'Open user settings', exact: true })).toHaveCount(0);
     expect(writes).toBe(1);
     expect(lateRosterReads).toBe(0);
-    expect(await db.collection('moe_users').findOne({ username: 'audit-self-renamed' })).not.toBeNull();
+    expect(await accounts.findOne({ _id: E2E_ADMIN.id })).toMatchObject({ username: E2E_ADMIN.username, role: 'Operator' });
   } finally { releaseResponse(); }
 });
 test('user settings dismiss during a held roster read and restore scrolling through the nested photo dialog', async ({ page }) => {

@@ -70,10 +70,10 @@ test('Admin can manage Admin and Operator accounts but cannot alter, reset, dele
     await expectStatus(await admin.delete('/api/cms/users', { data: mutation(developer._id) }), 403);
     await expectStatus(await admin.patch('/api/cms/users', { data: mutation(operator._id, { role: 'Dev' }) }), 403);
     for (const [index, target] of [otherAdmin, operator].entries()) {
-      await expectStatus(await admin.patch('/api/cms/users', { data: mutation(target._id, { username: `${target.username}-edited`, role: target.role }) }), 200);
+      await expectStatus(await admin.patch('/api/cms/users', { data: mutation(target._id, { role: target.role === 'Admin' ? 'Operator' : 'Admin' }) }), 200);
       await expectStatus(await previousSessions[index].get('/api/cms/content'), 401);
       await expectStatus(await admin.patch('/api/cms/users', { data: mutation(target._id, { password: resetPassword }) }), 200);
-      const newSession = await signIn(`${target.username}-edited`, resetPassword);
+      const newSession = await signIn(target.username, resetPassword);
       try {
         await expectStatus(await admin.delete('/api/cms/users', { data: mutation(target._id) }), 200);
         await expectStatus(await newSession.get('/api/cms/content'), 401);
@@ -84,16 +84,47 @@ test('Admin can manage Admin and Operator accounts but cannot alter, reset, dele
   } finally { await admin.dispose(); await Promise.all(previousSessions.map(session => session.dispose())); }
 });
 
+test('existing usernames cannot be renamed and rejected changes preserve credentials, roles, sessions and audit history', async ({ db }) => {
+  const [developer, target] = await seedAccounts(db, [['immutable-dev', 'Dev'], ['immutable-target', 'Operator']]);
+  const clients = await Promise.all([signIn(E2E_ADMIN.username), signIn(developer.username)]);
+  const targetSession = await signIn(target.username);
+  const accounts = db.collection<Account>('moe_users');
+  const original = await accounts.findOne({ _id: target._id });
+  const logFilter = { 'target.type': 'User', 'target.id': target._id };
+  const logCount = await db.collection('moe_logs').countDocuments(logFilter);
+  try {
+    for (const client of clients) {
+      for (const changes of [
+        { username: 'renamed-target' },
+        { username: 'renamed-target', role: 'Admin', password: resetPassword },
+      ]) {
+        const response = await client.patch('/api/cms/users', { data: mutation(target._id, changes) });
+        await expectStatus(response, 400);
+        expect(await response.json()).toEqual({ error: 'Usernames cannot be changed.' });
+        expect(await accounts.findOne({ _id: target._id })).toEqual(original);
+        expect(await accounts.countDocuments({ username: 'renamed-target' })).toBe(0);
+        expect(await db.collection('moe_logs').countDocuments(logFilter)).toBe(logCount);
+        await expectStatus(await targetSession.get('/api/cms/content'), 200);
+      }
+      // An unchanged username from an older client remains a harmless no-op.
+      await expectStatus(await client.patch('/api/cms/users', { data: mutation(target._id, { username: target.username }) }), 200);
+      expect(await accounts.findOne({ _id: target._id })).toEqual(original);
+      expect(await db.collection('moe_logs').countDocuments(logFilter)).toBe(logCount);
+    }
+  } finally { await targetSession.dispose(); await Promise.all(clients.map(client => client.dispose())); }
+});
+
 test('Dev can edit, reset and remove every role and promote lower roles without leaving stale access', async ({ db }) => {
   const [developer, targetDev, otherAdmin, operator, removableAdmin] = await seedAccounts(db, [['acting-dev', 'Dev'], ['target-dev', 'Dev'], ['promoted-admin', 'Admin'], ['dev-manages-operator', 'Operator'], ['dev-removes-admin', 'Admin']]);
   const dev = await signIn(developer.username);
   const oldDev = await signIn(targetDev.username);
   const oldAdmin = await signIn(otherAdmin.username);
   try {
-    await expectStatus(await dev.patch('/api/cms/users', { data: mutation(targetDev._id, { username: 'edited-dev', role: 'Dev' }) }), 200);
-    await expectStatus(await oldDev.get('/api/cms/content'), 401);
+    await expectStatus(await dev.patch('/api/cms/users', { data: mutation(targetDev._id, { role: 'Dev' }) }), 200);
+    await expectStatus(await oldDev.get('/api/cms/content'), 200);
     await expectStatus(await dev.patch('/api/cms/users', { data: mutation(targetDev._id, { password: resetPassword }) }), 200);
-    const recoveredDev = await signIn('edited-dev', resetPassword);
+    await expectStatus(await oldDev.get('/api/cms/content'), 401);
+    const recoveredDev = await signIn(targetDev.username, resetPassword);
     try {
       await expectStatus(await dev.delete('/api/cms/users', { data: mutation(targetDev._id) }), 200);
       await expectStatus(await recoveredDev.get('/api/cms/content'), 401);
@@ -104,7 +135,7 @@ test('Dev can edit, reset and remove every role and promote lower roles without 
     try { expect((await (await promoted.get('/api/cms/session')).json()).user?.role).toBe('Dev'); }
     finally { await promoted.dispose(); }
     for (const target of [operator, removableAdmin]) {
-      await expectStatus(await dev.patch('/api/cms/users', { data: mutation(target._id, { username: `${target.username}-edited`, role: target.role }) }), 200);
+      await expectStatus(await dev.patch('/api/cms/users', { data: mutation(target._id, { role: target.role === 'Admin' ? 'Operator' : 'Admin' }) }), 200);
       await expectStatus(await dev.patch('/api/cms/users', { data: mutation(target._id, { password: resetPassword }) }), 200);
       await expectStatus(await dev.delete('/api/cms/users', { data: mutation(target._id) }), 200);
       expect(await db.collection<Account>('moe_users').findOne({ _id: target._id })).toMatchObject({ deletedAt: expect.any(Date), purgeAt: expect.any(Date) });
@@ -121,8 +152,8 @@ test('the last privileged account cannot demote itself and unknown roles never r
     expect((await (await invalid.get('/api/cms/session')).json()).user?.role).toBe('Operator');
     await expectStatus(await invalid.post('/api/cms/users', { data: { username: 'invalid-role-create', role: 'Admin', password: resetPassword, currentPassword: E2E_ADMIN.password } }), 403);
     await expectStatus(await admin.patch('/api/cms/users', { data: mutation(E2E_ADMIN.id, { role: 'Operator' }) }), 409);
-    await expectStatus(await admin.patch('/api/cms/users', { data: mutation(E2E_ADMIN.id, { username: 'renamed-current-admin', role: 'Admin' }) }), 200);
-    expect((await (await admin.get('/api/cms/session')).json()).user).toMatchObject({ username: 'renamed-current-admin', role: 'Admin' });
+    await expectStatus(await admin.patch('/api/cms/users', { data: mutation(E2E_ADMIN.id, { username: 'renamed-current-admin', role: 'Admin' }) }), 400);
+    expect((await (await admin.get('/api/cms/session')).json()).user).toMatchObject({ username: E2E_ADMIN.username, role: 'Admin' });
   } finally { await admin.dispose(); await invalid.dispose(); }
 });
 
@@ -316,12 +347,14 @@ test('role-aware user controls protect Dev accounts and fit narrow screens in bo
     await expect(create.getByLabel('Role', { exact: true }).locator('option')).toHaveText(['Admin', 'Operator']);
     await users.getByRole('button', { name: `Edit ${operator.username}`, exact: true }).click();
     const edit = page.getByRole('dialog', { name: 'Edit user', exact: true });
-    await edit.getByLabel('Username', { exact: true }).fill('ui-operator-edited');
+    await expect(edit.getByLabel('Username', { exact: true })).not.toBeEditable();
+    await expect(edit.getByLabel('Username', { exact: true })).toHaveValue(operator.username);
     await edit.getByLabel('Role', { exact: true }).selectOption('Admin');
     await edit.getByLabel('Your current password', { exact: true }).fill(E2E_ADMIN.password);
     await edit.getByRole('button', { name: 'Save changes', exact: true }).click();
-    await expect(users).toContainText('ui-operator-edited');
-    expect(await db.collection<Account>('moe_users').findOne({ _id: operator._id } as never)).toMatchObject({ role: 'Admin' });
+    await expect(edit).not.toBeVisible();
+    await expect(users).toContainText(operator.username);
+    expect(await db.collection<Account>('moe_users').findOne({ _id: operator._id } as never)).toMatchObject({ username: operator.username, role: 'Admin' });
     await expectStatus(await op.get('/api/cms/users'), 401);
 
     // The stale Operator session was revoked by the role edit; use a fresh Operator account for the restricted view.

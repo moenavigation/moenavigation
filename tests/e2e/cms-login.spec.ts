@@ -45,7 +45,12 @@ test('password visibility is keyboard accessible, preserves input, and submits o
     await page.getByRole('dialog').locator('input[type="range"]').press('Enter');
     await expect.poll(() => loginRequests).toBe(1);
     await expect(password).toHaveAttribute('type', 'password');
-    await expect(page.getByRole('dialog').locator('input[type="range"]')).toBeDisabled();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toHaveAttribute('aria-busy', 'true');
+    await expect(dialog.locator('[class*="loginPuzzleLoading"]')).toContainText('Signing in…');
+    await expect(dialog.locator('[class*="loginPuzzleLoading"]')).toBeVisible();
+    await expect(dialog.locator('input[type="range"]')).toBeDisabled();
+    await expect(dialog.getByRole('button', { name: 'Close verification', exact: true })).toBeDisabled();
     // Even repeated submit events while the request is in flight must not send more credentials.
     await password.evaluate(input => input.closest('form')!.requestSubmit());
     await expect.poll(() => loginRequests).toBe(1);
@@ -64,6 +69,126 @@ test('password visibility is keyboard accessible, preserves input, and submits o
   expect(storage.remembered).toBeNull();
   expect(JSON.stringify(storage)).not.toContain('Synthetic-password-not-for-storage');
   expect(loginRequests).toBe(1);
+});
+
+test('captcha loading stays inside the dialog until the challenge is ready', async ({ page }, testInfo) => {
+  let releaseChallenge!: () => void;
+  const challengeGate = new Promise<void>(resolve => { releaseChallenge = resolve; });
+  await page.route('**/api/cms/login/challenge', async route => {
+    await challengeGate;
+    await route.fulfill({ json: { id: 'a'.repeat(48), target: 60 } });
+  });
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto('/cms');
+  await page.getByLabel('Username', { exact: true }).fill('unverified-user');
+  await page.getByLabel('Password', { exact: true }).fill('Synthetic-password-not-for-storage');
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  const loading = dialog.locator('[class*="loginPuzzleLoading"]');
+  try {
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveAttribute('aria-busy', 'true');
+    await expect(loading).toBeVisible();
+    await expect(loading).toHaveAttribute('role', 'status');
+    await expect(loading).toContainText('Loading slide…');
+    await expect(dialog.locator('input[type="range"]')).toBeDisabled();
+    await expect(dialog.getByRole('button', { name: 'New slide challenge', exact: true })).toBeDisabled();
+    await expect(dialog.getByRole('button', { name: 'Close verification', exact: true })).toBeEnabled();
+    const panelBounds = (await loading.boundingBox())!;
+    const dialogBounds = (await dialog.boundingBox())!;
+    expect(panelBounds.x).toBeGreaterThanOrEqual(dialogBounds.x);
+    expect(panelBounds.y).toBeGreaterThanOrEqual(dialogBounds.y);
+    expect(panelBounds.x + panelBounds.width).toBeLessThanOrEqual(dialogBounds.x + dialogBounds.width);
+    expect(panelBounds.y + panelBounds.height).toBeLessThanOrEqual(dialogBounds.y + dialogBounds.height);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('cms-login-captcha-loading-320.png'), animations: 'disabled' });
+  } finally {
+    releaseChallenge();
+  }
+  await expect(dialog).toHaveAttribute('aria-busy', 'false');
+  await expect(loading).not.toBeVisible();
+  await expect(dialog.locator('input[type="range"]')).toBeEnabled();
+  await expect(dialog.locator('[class*="loginPuzzleTarget"]')).toBeVisible();
+});
+
+for (const dismissal of ['Escape', 'Close verification']) {
+  test(`captcha loading can be dismissed with ${dismissal} and reopened`, async ({ page }) => {
+    let releaseChallenge!: () => void;
+    const challengeGate = new Promise<void>(resolve => { releaseChallenge = resolve; });
+    let challengeRequests = 0;
+    await page.route('**/api/cms/login/challenge', async route => {
+      const first = ++challengeRequests === 1;
+      if (first) await challengeGate;
+      await route.fulfill({ json: { id: (first ? 'a' : 'b').repeat(48), target: first ? 80 : 40 } });
+    });
+    await page.goto('/cms');
+    await page.getByLabel('Username', { exact: true }).fill('unverified-user');
+    await page.getByLabel('Password', { exact: true }).fill('Synthetic-password-not-for-storage');
+    const signIn = page.getByRole('button', { name: 'Sign in', exact: true });
+    await signIn.click();
+    const dialog = page.getByRole('dialog');
+    try {
+      await expect(dialog.locator('[class*="loginPuzzleLoading"]')).toBeVisible();
+      await expect.poll(() => challengeRequests).toBe(1);
+      if (dismissal === 'Escape') await page.keyboard.press('Escape');
+      else await dialog.getByRole('button', { name: dismissal, exact: true }).click();
+      await expect(dialog).not.toBeVisible();
+      await expect(signIn).toBeFocused();
+      await signIn.click();
+      await expect(dialog.locator('input[type="range"]')).toBeEnabled();
+      expect(await dialog.locator('[class*="loginPuzzleTarget"]').evaluate(element => (element as HTMLElement).style.left)).toBe('32%');
+      const lateResponse = page.waitForResponse('**/api/cms/login/challenge');
+      releaseChallenge();
+      await (await lateResponse).finished();
+      await expect(dialog).toHaveAttribute('aria-busy', 'false');
+      expect(await dialog.locator('[class*="loginPuzzleTarget"]').evaluate(element => (element as HTMLElement).style.left)).toBe('32%');
+    } finally {
+      releaseChallenge();
+    }
+  });
+}
+
+test('refreshing a captcha shows in-dialog loading and recovers from a failed challenge', async ({ page }) => {
+  let releaseChallenge!: () => void;
+  const challengeGate = new Promise<void>(resolve => { releaseChallenge = resolve; });
+  let challengeRequests = 0;
+  const failure = 'This request could not be completed. Please try again.';
+  await page.route('**/api/cms/login/challenge', async route => {
+    const request = ++challengeRequests;
+    if (request === 2) {
+      await challengeGate;
+      await route.fulfill({ status: 503, json: { error: failure } });
+    } else {
+      await route.fulfill({ json: { id: String(request).repeat(48), target: request === 1 ? 60 : 40 } });
+    }
+  });
+  await page.goto('/cms');
+  await page.getByLabel('Username', { exact: true }).fill('unverified-user');
+  await page.getByLabel('Password', { exact: true }).fill('Synthetic-password-not-for-storage');
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  const slider = dialog.locator('input[type="range"]');
+  const refresh = dialog.getByRole('button', { name: 'New slide challenge', exact: true });
+  await expect(slider).toBeEnabled();
+  await refresh.click();
+  try {
+    await expect(dialog).toHaveAttribute('aria-busy', 'true');
+    await expect(dialog.locator('[class*="loginPuzzleLoading"]')).toContainText('Loading slide…');
+    await expect(dialog.locator('[class*="loginPuzzleLoading"]')).toBeVisible();
+    await expect(slider).toBeDisabled();
+    await expect(refresh).toBeDisabled();
+  } finally {
+    releaseChallenge();
+  }
+  await expect(dialog).toHaveAttribute('aria-busy', 'false');
+  await expect(dialog.locator('[class*="loginPuzzleLoading"]')).not.toBeVisible();
+  await expect(dialog).toContainText(failure);
+  await expect(slider).toBeDisabled();
+  await expect(refresh).toBeEnabled();
+  await refresh.click();
+  await expect(slider).toBeEnabled();
+  await expect(dialog).not.toContainText(failure);
+  expect(await dialog.locator('[class*="loginPuzzleTarget"]').evaluate(element => (element as HTMLElement).style.left)).toBe('32%');
 });
 
 test('releasing the slider submits only when the puzzle matches', async ({ page }) => {

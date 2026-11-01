@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type ReactNode, type RefObject } from 'react';
-import { Check, LockKeyhole, Pencil, Plus, RefreshCw, Settings, ShieldCheck, Trash2, Camera, X } from 'lucide-react';
+import { Check, Eye, EyeOff, LockKeyhole, Pencil, Plus, RefreshCw, Settings, ShieldCheck, Trash2, Camera, X } from 'lucide-react';
 import { cmsErrorText, cmsRequest } from '@/lib/cms-client';
 import { useCmsLocale } from '@/lib/cms-locale';
 import { containDialogFocus } from '@/lib/dialog-focus';
@@ -18,6 +18,24 @@ const roleDescriptions: Record<CmsRole, string> = {
   Admin: 'Admin can manage Admin and Operator users and permanently delete Trash items.',
   Operator: 'Operator can manage website content and change their own password.',
 };
+
+function ResetPasswordField({ label, name, autoComplete, minLength, disabled }: {
+  label: string; name: string; autoComplete: 'new-password' | 'current-password'; minLength?: number; disabled: boolean;
+}) {
+  const { t } = useCmsLocale();
+  const id = useId();
+  const [visible, setVisible] = useState(false);
+  const toggleLabel = `${t(visible ? 'Hide password' : 'Show password')}: ${t(label)}`;
+  return <div className={styles.field}>
+    <label htmlFor={id}>{t(label)}</label>
+    <div className={styles.passwordInput}>
+      <input id={id} name={name} type={visible ? 'text' : 'password'} autoComplete={autoComplete} required minLength={minLength} maxLength={200} disabled={disabled} />
+      <button type="button" className={styles.passwordToggle} onClick={() => setVisible(value => !value)} disabled={disabled} aria-controls={id} aria-label={toggleLabel} title={toggleLabel}>
+        {visible ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
+      </button>
+    </div>
+  </div>;
+}
 
 // An expired session invalidates pending callbacks immediately, before React
 // unmounts this view. Each mounted lifetime gets a distinct object so an old
@@ -288,7 +306,7 @@ export default function CmsUsersManager({ username, role, settingsOpen, onSettin
         method: mode === 'remove' ? 'DELETE' : 'PATCH',
         body: JSON.stringify({
           id: selectedUser.id, currentPassword: data.get('currentPassword'),
-          ...(mode === 'reset' ? { password } : mode === 'edit' ? { username: data.get('username'), role: editRole } : {}),
+          ...(mode === 'reset' ? { password } : mode === 'edit' ? { role: editRole } : {}),
         }),
       });
       if (!currentLifetime.active) return;
@@ -355,7 +373,8 @@ export default function CmsUsersManager({ username, role, settingsOpen, onSettin
         <p className={styles.dialogTarget}>{selectedUser.username}</p>
         {notice && <p className={styles.success} role="status"><Check size={18} />{t(notice)}</p>}
         <form className={styles.form} onSubmit={event => void manage(event, 'edit')} autoComplete="off" aria-busy={busy}>
-          <label>{t('Username')}<input name="username" autoComplete="off" defaultValue={selectedUser.username} required minLength={3} maxLength={40} pattern="[a-zA-Z0-9][a-zA-Z0-9._-]{2,39}" disabled={pending} /></label>
+          <label>{t('Username')}<input name="username" autoComplete="off" value={selectedUser.username} readOnly disabled={pending} /></label>
+          <p className={styles.hint}>{t('Usernames cannot be changed.')}</p>
           <div className={styles.field}><label htmlFor={editRoleId}>{t('Role')}</label><select id={editRoleId} name="role" value={editRole} onChange={event => setEditRole(event.target.value as CmsRole)} disabled={pending}>{allowedRoles.map(value => <option key={value} value={value} disabled={lastDev && value !== 'Dev' || lastManager && value === 'Operator'}>{value}</option>)}</select></div>
           <p className={styles.hint}>{t(roleDescriptions[editRole])}</p>
           {lastDev && <p className={styles.hint}>{t('Keep at least one Dev account.')}</p>}
@@ -365,15 +384,15 @@ export default function CmsUsersManager({ username, role, settingsOpen, onSettin
           {editError && <p className={styles.error} role="alert">{t(editError)}</p>}
           <div className={styles.formActions}><button type="button" className="button secondary" disabled={busy} onClick={closeEdit}>{t('Cancel')}</button><button type="submit" className="button" disabled={pending}>{busy ? t('Saving…') : t('Save changes')}</button></div>
         </form>
-        {!selectedUser.current && <section className={styles.passwordReset}><div><h3>{t('Password')}</h3><p className={styles.hint}>{t('Change the password for this user without saving changes to their username or role.')}</p></div><button type="button" className="button secondary" disabled={pending} onClick={event => { event.currentTarget.focus({ preventScroll: true }); setResetError(''); setResetOpen(true); }}><LockKeyhole size={18} aria-hidden="true" />{t('Reset password')}</button></section>}
+        {!selectedUser.current && <section className={styles.passwordReset}><div><h3>{t('Password')}</h3><p className={styles.hint}>{t('Change the password for this user without saving role changes.')}</p></div><button type="button" className="button secondary" disabled={pending} onClick={event => { event.currentTarget.focus({ preventScroll: true }); setResetError(''); setResetOpen(true); }}><LockKeyhole size={18} aria-hidden="true" />{t('Reset password')}</button></section>}
       </UserManagementDialog>
       {resetOpen && !selectedUser.current && <UserManagementDialog key={'reset:' + selectedUser.id} title="Reset password" closeLabel="Close reset password" busy={busy} nested onClose={closeReset}>
         <p className={styles.dialogTarget}>{t('Reset password for {name}', { name: selectedUser.username })}</p>
         <p className={styles.hint}>{t('Use at least 14 characters for your new password.')}</p>
         <form className={styles.form} onSubmit={event => void manage(event, 'reset')} autoComplete="off" aria-busy={busy}>
-          <label>{t('New password')}<input name="password" type="password" autoComplete="new-password" required minLength={14} maxLength={200} disabled={pending} /></label>
-          <label>{t('Confirm new password')}<input name="confirmPassword" type="password" autoComplete="new-password" required minLength={14} maxLength={200} disabled={pending} /></label>
-          <label>{t('Your current password')}<input name="currentPassword" type="password" autoComplete="current-password" required maxLength={200} disabled={pending} /></label>
+          <ResetPasswordField label="New password" name="password" autoComplete="new-password" minLength={14} disabled={pending} />
+          <ResetPasswordField label="Confirm new password" name="confirmPassword" autoComplete="new-password" minLength={14} disabled={pending} />
+          <ResetPasswordField label="Your current password" name="currentPassword" autoComplete="current-password" disabled={pending} />
           <p className={styles.hint}>{t('Existing sessions for this user will be signed out.')}</p>
           {resetError && <p className={styles.error} role="alert">{t(resetError)}</p>}
           <div className={styles.formActions}><button type="button" className="button secondary" disabled={busy} onClick={closeReset}>{t('Cancel')}</button><button type="submit" className="button" disabled={pending}>{busy ? t('Saving…') : t('Save new password')}</button></div>

@@ -132,16 +132,20 @@ export async function editUserInTransaction(actor: Actor, id: string, changes: U
   if (target.deletedAt || target.purgeAt) throw new HttpError(409, 'Restore this user from Trash before editing the account.');
   if (changes.role !== undefined && !canAssignRole(current.role, changes.role)) throw new HttpError(403, 'Only Dev can assign the Dev role.');
   if (id === current._id && changes.passwordHash !== undefined) throw new HttpError(400, 'Change your own password in User settings.');
+  if (changes.username !== undefined && changes.username !== target.username) throw new HttpError(400, 'Usernames cannot be changed.');
   await preserveAccess(target, changes.role ?? targetRole, db, session);
-  if (changes.username !== undefined) await assertUsernameAvailable(changes.username, target._id, db, session);
-  const changed = changes.passwordHash !== undefined || changes.username !== undefined && changes.username !== target.username || changes.role !== undefined && changes.role !== targetRole;
+  const changed = changes.passwordHash !== undefined || changes.role !== undefined && changes.role !== targetRole;
   if (!changed) return { user: target, changed: false };
-  const user = { ...target, ...changes, passwordVersion: target.passwordVersion + 1 };
-  const updated = await c.users.updateOne({ _id: id, passwordVersion: target.passwordVersion, deletedAt: { $exists: false }, purgeAt: { $exists: false } }, { $set: changes, $inc: { passwordVersion: 1 } }, { session });
+  const updates = {
+    ...(changes.role !== undefined ? { role: changes.role } : {}),
+    ...(changes.passwordHash !== undefined ? { passwordHash: changes.passwordHash } : {}),
+  };
+  const user = { ...target, ...updates, passwordVersion: target.passwordVersion + 1 };
+  const updated = await c.users.updateOne({ _id: id, passwordVersion: target.passwordVersion, deletedAt: { $exists: false }, purgeAt: { $exists: false } }, { $set: updates, $inc: { passwordVersion: 1 } }, { session });
   if (!updated.matchedCount) throw new HttpError(409, 'This user changed elsewhere. Refresh the list.');
   await c.sessions.deleteMany({ userId: id }, { session });
   await appendAuditEvent(db, session, { action: changes.passwordHash !== undefined ? 'user.password_reset' : 'user.updated', actor: auditActor(current), target: { type: 'User', id: user._id, label: user.username } });
-  if (changes.passwordHash !== undefined && (changes.username !== undefined && changes.username !== target.username || changes.role !== undefined && changes.role !== targetRole)) {
+  if (changes.passwordHash !== undefined && changes.role !== undefined && changes.role !== targetRole) {
     await appendAuditEvent(db, session, { action: 'user.updated', actor: auditActor(current), target: { type: 'User', id: user._id, label: user.username } });
   }
   return { user, changed: true };
