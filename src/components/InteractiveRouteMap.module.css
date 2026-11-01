@@ -19,12 +19,13 @@
 .googleMapsLink:focus-visible, .portChoices button:focus-visible { outline: .2rem solid var(--blue); outline-offset: .15rem; }
 .portChoices .popupClose { justify-self: end; min-width: 4rem; padding-inline: .8rem; border: 0; text-align: center; color: var(--blue); text-decoration: underline; text-underline-offset: .2rem; }
 .portMarker { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border: 0; background: transparent; }
-.markerCenter { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border: .2rem solid #fff; border-radius: 50%; background: #668ba2; box-shadow: 0 .15rem .6rem rgb(7 35 57 / .3); transition: transform .2s ease; }
+.markerCenter { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border: .2rem solid #fff; border-radius: 50%; background: #668ba2; box-shadow: 0 .15rem .6rem rgb(7 35 57 / .3); transition: transform .2s ease, opacity .2s ease; }
 .markerCenter::after { content: ""; width: .45rem; height: .45rem; border-radius: 50%; background: #fff; }
 .originMarker .markerCenter { background: #082b50; }
 .destinationMarker .markerCenter { background: #668ba2; }
-.waypointMarker .markerCenter { width: 1.05rem; height: 1.05rem; border-width: .15rem; background: #0b527f; }
+.waypointMarker .markerCenter { width: 1.05rem; height: 1.05rem; border-width: .15rem; background: #0b527f; opacity: 0; }
 .waypointMarker .markerCenter::after { width: .25rem; height: .25rem; }
+.waypointMarker:focus-visible .markerCenter, .waypointMarker[data-active="true"] .markerCenter { opacity: 1; }
 .activeMarker .markerCenter { background: #087a9c; box-shadow: 0 0 0 .35rem rgb(8 122 156 / .2), 0 .15rem .6rem rgb(7 35 57 / .3); }
 .shell :global(.leaflet-marker-icon[role="button"]) { cursor: pointer; }
 .shell :global(.leaflet-marker-icon[role="button"]:focus-visible) { outline: .2rem solid #082b50; outline-offset: .3rem; }
@@ -37,11 +38,13 @@
 .controls button:focus-visible { position: relative; z-index: 1; outline: .2rem solid #0b527f; outline-offset: -.2rem; }
 .loading, .tileError { position: absolute; z-index: 550; left: 1rem; right: 1rem; bottom: 2.25rem; width: fit-content; max-width: calc(100% - 2rem); margin: 0; padding: .6rem .85rem; border-radius: .4rem; background: rgb(255 255 255 / .94); color: var(--navy); font-size: var(--font-small); line-height: 1.45; box-shadow: 0 .25rem 1rem rgb(7 39 63 / .1); }
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.interactionHint { margin: 0; padding: .7rem 1rem; border-top: 1px solid #c4dbe9; background: #f1f7fc; color: #365b74; font-size: var(--font-small); line-height: 1.5; }
 @media (hover: hover) and (pointer: fine) {
   .controls button:not(:disabled):hover { background: #e9f3f9; }
   .googleMapsLink:hover { background: #deedf7; border-color: #8fb8d3; }
-  .shell :global(.leaflet-marker-icon[role="button"]:hover) .markerCenter { transform: scale(1.12); }
+  .shell :global(.leaflet-marker-icon[role="button"]:not([data-route-point="intermediate"]):hover) .markerCenter { transform: scale(1.12); }
 }
+@media (any-hover: hover) and (any-pointer: fine) { .waypointMarker[data-hovered="true"] .markerCenter { opacity: 1; transform: scale(1.12); } }
 @media (max-width: 850px) { .viewport { height: 24rem; } }
 @media (max-width: 520px) {
   .viewport { height: 26rem; }

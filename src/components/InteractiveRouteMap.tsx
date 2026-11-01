@@ -192,7 +192,9 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
         icon: createIcon(active ? "active" : "destination"),
         title: action,
         keyboard: true,
+        autoPanOnFocus: false,
         riseOnHover: true,
+        zIndexOffset: 1000,
       }).addTo(overlays);
       marker.bindTooltip(tooltip(label), active
         ? { permanent: true, direction: labelOnLeft ? "left" : "right", offset: [labelOnLeft ? -8 : 8, 0], className: styles.portTooltip }
@@ -207,14 +209,20 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
         setPortChoices({ pointKey, coordinates: destination, routeIds: connections.length > 1 ? connections.map(connection => connection.id) : [], title: connections.length > 1 ? action : label, availableKey });
       };
       marker.on("click", openChoices);
+      // Two quick touch selections must not become the map's double-tap zoom.
+      marker.on("dblclick", event => leaflet.DomEvent.stopPropagation(event.originalEvent));
       const element = marker.getElement();
       if (element) {
         element.dataset.portKey = portKey;
         element.dataset.mapPointKey = pointKey;
+        element.dataset.routePoint = "destination";
         element.setAttribute("role", "button");
         element.setAttribute("aria-label", action);
         element.setAttribute("aria-pressed", String(Boolean(active)));
         element.setAttribute("aria-haspopup", "dialog");
+        element.addEventListener("focus", () => {
+          if (element.matches(":focus-visible")) map.panInside(destination, { padding: [32, 32], animate: false });
+        });
         element.addEventListener("keydown", (event) => {
           if (event.key === " " || event.key === "Enter") {
             event.preventDefault();
@@ -235,23 +243,34 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
         const label = isOrigin ? originName : local(locale, `Intermediate point ${index}`, `จุดระหว่างทางที่ ${index}`);
         const action = local(locale, `View map point: ${label}`, `ดูจุดบนแผนที่: ${label}`);
         const pointKey = `${selected.id}:${index}`;
-        const marker = leaflet.marker(point, { icon: createIcon(isOrigin ? "origin" : "waypoint"), interactive: isOrigin, keyboard: isOrigin, title: isOrigin ? action : label, zIndexOffset: isOrigin ? 100 : 50 }).addTo(overlays);
+        const marker = leaflet.marker(point, { icon: createIcon(isOrigin ? "origin" : "waypoint"), interactive: true, keyboard: true, autoPanOnFocus: false, title: action, zIndexOffset: isOrigin ? 1000 : 0 }).addTo(overlays);
         marker.bindTooltip(tooltip(label), isOrigin
           ? { permanent: true, direction: "right", offset: [8, 0], className: styles.portTooltip }
           : { direction: "top", offset: [0, -8], className: styles.hoverTooltip });
         const element = marker.getElement();
-        if (!isOrigin) {
-          element?.setAttribute("role", "img");
-          element?.setAttribute("aria-label", label);
-          return;
-        }
         const openPoint = () => setPortChoices({ pointKey, coordinates: point, routeIds: [], title: label, availableKey });
         marker.on("click", openPoint);
+        marker.on("dblclick", event => leaflet.DomEvent.stopPropagation(event.originalEvent));
         if (element) {
           element.dataset.mapPointKey = pointKey;
+          element.dataset.routePoint = isOrigin ? "origin" : "intermediate";
           element.setAttribute("role", "button");
           element.setAttribute("aria-label", action);
           element.setAttribute("aria-haspopup", "dialog");
+          element.addEventListener("focus", () => {
+            if (element.matches(":focus-visible")) map.panInside(point, { padding: [32, 32], animate: false });
+          });
+          if (!isOrigin) {
+            // Actual pointer events avoid touch's emulated/sticky :hover, including on hybrid devices.
+            const revealOnHover = (event: PointerEvent) => {
+              element.dataset.hovered = String((event.pointerType === "mouse" || event.pointerType === "pen" && event.buttons === 0)
+                && window.matchMedia("(any-hover: hover) and (any-pointer: fine)").matches);
+            };
+            element.addEventListener("pointerenter", revealOnHover);
+            element.addEventListener("pointermove", revealOnHover);
+            element.addEventListener("pointerleave", () => { element.dataset.hovered = "false"; });
+            element.addEventListener("pointerdown", event => { if (event.pointerType !== "mouse") element.dataset.hovered = "false"; });
+          }
           element.addEventListener("keydown", event => {
             if (event.key === " " || event.key === "Enter") {
               event.preventDefault();
@@ -272,6 +291,15 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
       }
     }
   }, [availableKey, locale, mapVersion, onSelect, selectedId]);
+
+  useEffect(() => {
+    const openPointKey = portChoices?.availableKey === availableKey ? portChoices.pointKey : null;
+    containerRef.current?.querySelectorAll<HTMLElement>("[data-map-point-key]").forEach(element => {
+      const active = element.dataset.mapPointKey === openPointKey;
+      element.dataset.active = String(active);
+      element.setAttribute("aria-expanded", String(active));
+    });
+  }, [availableKey, locale, mapVersion, onSelect, portChoices, selectedId]);
 
   const selected = routes.find((route) => route.id === selectedId) || routes[0];
   const selectedName = local(locale, selected.destination.name, selected.destination.nameTh);
@@ -308,7 +336,8 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
         <button className={styles.popupClose} type="button" onClick={closePortChoices} aria-label={portChoices.routeIds.length ? local(locale, "Close route choices", "ปิดตัวเลือกเส้นทาง") : local(locale, "Close map point", "ปิดจุดบนแผนที่")}>{local(locale, "Close", "ปิด")}</button>
       </div>}
       {(tileError || mapFailed) && <p className={styles.tileError} role="status">{mapFailed ? local(locale, "The map is unavailable. You can still choose a route from the list.", "ไม่สามารถโหลดแผนที่ได้ คุณยังเลือกเส้นทางจากรายการได้") : local(locale, "The map background is unavailable. Route markers and controls still work.", "ไม่สามารถโหลดพื้นหลังแผนที่ได้ จุดท่าเรือและปุ่มควบคุมยังใช้งานได้")}</p>}
-      <span id={descriptionId} className={styles.srOnly}>{local(locale, "Use the arrow keys to move the map and plus or minus to zoom. Choose a destination marker or a connection in the list. Select the origin or destination marker to open its location in Google Maps. The map shows approximate connections for enquiry planning. It is not a navigational chart and does not confirm sailing routes, timing or service availability.", "ใช้แป้นลูกศรเลื่อนแผนที่ และปุ่มบวกหรือลบเพื่อขยายหรือย่อ เลือกท่าเรือปลายทางบนแผนที่หรือเลือกเส้นทางจากรายการ เลือกจุดต้นทางหรือปลายทางเพื่อเปิดตำแหน่งใน Google Maps แผนที่แสดงการเชื่อมต่อโดยประมาณเพื่อประกอบการสอบถาม ไม่ใช่แผนที่สำหรับเดินเรือ และไม่ได้ยืนยันเส้นทางเดินเรือ ช่วงเวลา หรือความพร้อมให้บริการ")}</span>
+      <span id={descriptionId} className={styles.srOnly}>{local(locale, "Use the arrow keys to move the map and plus or minus to zoom. Choose a destination marker or a connection in the list. Intermediate points appear when hovered, focused with Tab, or selected by touch. Tap a point, or press Enter or Space when focused, to view its coordinates and Google Maps link. Press Escape to close the point details. The map shows approximate connections for enquiry planning. It is not a navigational chart and does not confirm sailing routes, timing or service availability.", "ใช้แป้นลูกศรเลื่อนแผนที่ และปุ่มบวกหรือลบเพื่อขยายหรือย่อ เลือกท่าเรือปลายทางบนแผนที่หรือเลือกเส้นทางจากรายการ จุดระหว่างทางจะแสดงเมื่อนำเมาส์ไปชี้ ใช้ Tab เลื่อนไปยังจุด หรือแตะเลือก แตะจุด หรือกด Enter หรือ Space เมื่อโฟกัสอยู่ที่จุด เพื่อดูพิกัดและลิงก์ Google Maps กด Escape เพื่อปิดรายละเอียดจุด แผนที่แสดงการเชื่อมต่อโดยประมาณเพื่อประกอบการสอบถาม ไม่ใช่แผนที่สำหรับเดินเรือ และไม่ได้ยืนยันเส้นทางเดินเรือ ช่วงเวลา หรือความพร้อมให้บริการ")}</span>
     </div>
+    <p className={styles.interactionHint}>{local(locale, "Hover or focus to reveal intermediate points. Tap or select any point for its Google Maps link.", "ชี้เมาส์หรือเลื่อนโฟกัสเพื่อแสดงจุดระหว่างทาง แตะหรือเลือกจุดใดก็ได้เพื่อดูลิงก์ Google Maps")}</p>
   </div>;
 }

@@ -3,18 +3,24 @@ import { appendAuditEvent, auditActor } from './audit';
 import { randomUUID } from 'node:crypto';
 import type { ClientSession, Db } from 'mongodb';
 import { z } from 'zod';
-import { canAssignRole, canManageUser, resolveCmsRole, type CmsRole } from '@/lib/cms-roles';
+import { canAssignRole, canManageUser, cmsRoles, resolveCmsRole, type CmsRole } from '@/lib/cms-roles';
 import { collections, type UserDocument } from './db';
 import { digest, rateLimit, requireUser, verifyPassword } from './auth';
 import { HttpError, sameOrigin } from './http';
 import { lockMediaSubmission } from './media';
 
 type Actor = Pick<UserDocument, '_id' | 'passwordVersion'>;
-type NewUser = { username: string; role: CmsRole; passwordHash: string };
+type NewUser = { username: string; role: CmsRole; passwordHash: string; avatar?: string; submissionId?: string; passwordForReplay?: string };
 type UserChanges = { username?: string; role?: CmsRole; passwordHash?: string };
+const avatarUrl = z.url().max(2048).refine(value => value.startsWith('https://'), 'Choose an image from the library or upload a photo.');
+export const userCreateInput = z.strictObject({
+  username: z.string().trim().toLowerCase().regex(/^[a-z0-9][a-z0-9._-]{2,39}$/, 'Use 3–40 lowercase letters, numbers, dots, underscores or hyphens.'),
+  password: z.string().min(14).max(200), role: z.enum(cmsRoles).default('Admin'), currentPassword: z.string().min(1).max(200),
+  avatar: avatarUrl.optional(), submissionId: z.uuid().optional(),
+}).refine(input => !input.avatar || Boolean(input.submissionId), 'Choose a new save identifier before saving a profile photo.');
 export const userTrashInput = z.strictObject({ id: z.string().uuid(), currentPassword: z.string().min(1).max(200) });
 export const userProfileInput = z.strictObject({
-  id: z.uuid(), avatar: z.union([z.literal(''), z.url().max(2048).refine(value => value.startsWith('https://'), 'Choose an image from the library or upload a photo.')]),
+  id: z.uuid(), avatar: z.union([z.literal(''), avatarUrl]),
   submissionId: z.uuid(), expectedProfileRevision: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   currentPassword: z.string().min(1).max(200).optional(),
 });
@@ -65,11 +71,52 @@ function assertRetainedUser(target: UserDocument | null): asserts target is User
 export async function createUserInTransaction(actor: Actor, input: NewUser, db: Db, session: ClientSession) {
   const current = await lockActor(actor, db, session);
   if (!canAssignRole(current.role, input.role)) throw new HttpError(403, input.role === 'Dev' ? 'Only Dev can create Dev accounts.' : 'Your role cannot manage users.');
+  const c = collections(db);
+  if (input.avatar && !input.submissionId || input.submissionId && !input.passwordForReplay) throw new HttpError(400, 'Choose a new save identifier before saving a profile photo.');
+  const operationId = input.submissionId ? `user-create:${current._id}:${input.submissionId}` : undefined;
+  // Never persist a plaintext password or a fast password fingerprint. On replay,
+  // verify it against the created account's existing salted scrypt hash instead.
+  const fingerprint = digest(JSON.stringify({ username: input.username, role: input.role, avatar: input.avatar ?? '' }));
+  if (operationId) {
+    const prior = await c.state.findOne({ _id: operationId }, { session });
+    if (prior) {
+      let stored: unknown;
+      try { stored = JSON.parse(prior.value ?? 'null'); } catch { stored = null; }
+      const recorded = z.strictObject({ userId: z.uuid(), fingerprint: z.string().regex(/^[a-f0-9]{64}$/) }).safeParse(stored);
+      if (!recorded.success || recorded.data.fingerprint !== fingerprint) throw new HttpError(409, 'This save identifier was already used. Start a new save after refreshing.');
+      const user = await c.users.findOne({ _id: recorded.data.userId }, { session });
+      if (!user || user.deletedAt || user.purgeAt) throw new HttpError(409, 'This user changed after it was created. Refresh the user list before trying again.');
+      assertManager(current.role, resolveCmsRole(user.role));
+      if (!await verifyPassword(input.passwordForReplay!, user.passwordHash)) throw new HttpError(409, 'This user changed after it was created. Refresh the user list before trying again.');
+      return { user, replayed: true };
+    }
+  }
   await assertUsernameAvailable(input.username, null, db, session);
-  const user: UserDocument = { _id: randomUUID(), ...input, passwordVersion: 1, createdAt: new Date() };
-  await collections(db).users.insertOne(user, { session });
+  if (input.avatar) {
+    await lockMediaSubmission(db, session, current._id, input.submissionId!);
+    await commitUserPhoto(current, input.avatar, input.submissionId!, db, session);
+  }
+  const user: UserDocument = {
+    _id: randomUUID(), username: input.username, role: input.role, passwordHash: input.passwordHash, passwordVersion: 1, createdAt: new Date(),
+    ...(input.avatar ? { avatar: input.avatar, profileRevision: 1 } : {}),
+  };
+  await c.users.insertOne(user, { session });
   await appendAuditEvent(db, session, { action: 'user.created', actor: auditActor(current), target: { type: 'User', id: user._id, label: user.username } });
-  return user;
+  if (operationId) await c.state.insertOne({ _id: operationId, value: JSON.stringify({ userId: user._id, fingerprint }), expiresAt: new Date(Date.now() + 7 * 86400000) }, { session });
+  return { user, replayed: false };
+}
+
+/** Call inside the same transaction after locking the actor and upload submission. */
+async function commitUserPhoto(actor: UserDocument, avatar: string, submissionId: string, db: Db, session: ClientSession) {
+  const c = collections(db);
+  const media = await c.media.findOne({ url: avatar }, { session });
+  if (!media || !['staged', 'committed'].includes(media.state)) throw new HttpError(400, 'Choose a library image or upload a photo before saving.');
+  if (media.state === 'staged' && (media.owner !== actor._id || media.submissionId !== submissionId)) throw new HttpError(403, 'This upload belongs to a different save. Please choose the image again.');
+  // Touch existing library images too: save and cleanup must conflict on this row.
+  const touchedAt = new Date(Math.max(Date.now(), media.touchedAt.getTime() + 1));
+  const saved = await c.media.updateOne({ _id: media._id, state: media.state, touchedAt: media.touchedAt }, { $set: { state: 'committed', touchedAt } }, { session });
+  if (!saved.matchedCount) throw new HttpError(409, 'This image changed elsewhere. Choose it again before saving.');
+  if (media.state === 'staged') await appendAuditEvent(db, session, { action: 'media.uploaded', actor: auditActor(actor), target: { type: 'Image', id: media.id, label: media.title } });
 }
 
 /** Profile photos have their own revision and never change credentials or revoke sessions. */
@@ -92,16 +139,7 @@ export async function updateUserProfileInTransaction(actor: Actor, input: Profil
   if (revision !== input.expectedProfileRevision) throw new HttpError(409, 'This profile photo changed elsewhere. Refresh the user and try again.');
   await lockMediaSubmission(db, session, current._id, input.submissionId);
   const changed = (target.avatar ?? '') !== input.avatar;
-  if (changed && input.avatar) {
-    const media = await c.media.findOne({ url: input.avatar }, { session });
-    if (!media || !['staged', 'committed'].includes(media.state)) throw new HttpError(400, 'Choose a library image or upload a photo before saving.');
-    if (media.state === 'staged' && (media.owner !== current._id || media.submissionId !== input.submissionId)) throw new HttpError(403, 'This upload belongs to a different save. Please choose the image again.');
-    // Touch even existing library images: save and cleanup must conflict on the media document.
-    const touchedAt = new Date(Math.max(Date.now(), media.touchedAt.getTime() + 1));
-    const saved = await c.media.updateOne({ _id: media._id, state: media.state, touchedAt: media.touchedAt }, { $set: { state: 'committed', touchedAt } }, { session });
-    if (!saved.matchedCount) throw new HttpError(409, 'This image changed elsewhere. Choose it again before saving.');
-    if (media.state === 'staged') await appendAuditEvent(db, session, { action: 'media.uploaded', actor: auditActor(current), target: { type: 'Image', id: media.id, label: media.title } });
-  }
+  if (changed && input.avatar) await commitUserPhoto(current, input.avatar, input.submissionId, db, session);
   let user = target;
   if (changed) {
     const profileRevision = revision + 1;

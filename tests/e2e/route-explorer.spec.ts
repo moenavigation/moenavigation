@@ -1,6 +1,7 @@
 import type { Db } from 'mongodb';
 import type { ContentRecord } from '../../src/lib/cms-types';
 import { test, expect, assertOwnedDatabase, E2E_IMAGE_URL, refreshPublicCache } from './fixtures';
+import { clickClippedMapPoint } from './map-point-helpers';
 
 const routeCount = 126;
 const connectionName = (number: number) => `Connection ${String(number).padStart(3, '0')}`;
@@ -81,7 +82,9 @@ test('many routes stay paginated and shared destinations use one map control', a
 });
 
 for (const locale of ['en', 'th'] as const) {
-  test(`only origin and destination map points link to Google Maps · ${locale}`, async ({ page, db }, testInfo) => {
+  test.describe(`route point interactions · ${locale}`, () => {
+  test.use({ hasTouch: locale === 'th' });
+  test(`intermediate points reveal on interaction and every point links to its exact Google Maps location`, async ({ page, db }, testInfo) => {
     await manyRoutes(db);
     await db.collection('moe_content').deleteMany({ type: 'Route', id: { $ne: 'connection-001' } });
     await db.collection('moe_content').updateOne({ id: 'connection-001' }, { $set: { waypoints: [[13, 100], [11.5, 102.25], [10, 104]] } });
@@ -92,16 +95,48 @@ for (const locale of ['en', 'th'] as const) {
     const map = page.getByRole('region', { name: locale === 'en' ? 'Interactive map of a connection between Laem Chabang and Port 001' : 'แผนที่แสดงการเชื่อมต่อระหว่างแหลมฉบังกับท่าเรือ 001', exact: true });
     await map.scrollIntoViewIfNeeded();
     await expect(page.locator('.leaflet-marker-icon')).toHaveCount(3);
-    await expect(map.locator('.leaflet-marker-icon[role="button"]')).toHaveCount(2);
-    await expect(map.getByRole('button', { name: locale === 'en' ? 'View map point: Intermediate point 1' : 'ดูจุดบนแผนที่: จุดระหว่างทางที่ 1', exact: true })).toHaveCount(0);
+    await expect(map.locator('.leaflet-marker-icon[role="button"]')).toHaveCount(3);
+    const intermediate = map.getByRole('button', { name: locale === 'en' ? 'View map point: Intermediate point 1' : 'ดูจุดบนแผนที่: จุดระหว่างทางที่ 1', exact: true });
+    const dot = intermediate.locator(':scope > span');
+    await expect(dot).toHaveCSS('opacity', '0');
+    const target = await intermediate.boundingBox();
+    expect(target!.width).toBeGreaterThanOrEqual(43.99);
+    expect(target!.height).toBeGreaterThanOrEqual(43.99);
+    await map.locator('..').screenshot({ path: testInfo.outputPath(`route-map-resting-${locale}.png`), animations: 'disabled' });
+    // Read both rectangles in the same browser task; separate protocol reads
+    // can straddle a viewport scroll or the map's intentional Fit reset.
+    const markerSpacing = () => map.evaluate(element => {
+      const origin = element.querySelector('[data-route-point="origin"]')!.getBoundingClientRect();
+      const destination = element.querySelector('[data-route-point="destination"]')!.getBoundingClientRect();
+      return Math.hypot(origin.x - destination.x, origin.y - destination.y);
+    });
+    const originalSpacing = await markerSpacing();
+    if (locale === 'en') {
+      await intermediate.hover();
+      await expect(dot).toHaveCSS('opacity', '1');
+      await page.mouse.move(0, 0);
+      await expect(dot).toHaveCSS('opacity', '0');
+      await page.keyboard.press('Tab');
+      await intermediate.focus();
+      await expect(dot).toHaveCSS('opacity', '1');
+      await page.getByRole('button', { name: 'Fit selected route', exact: true }).focus();
+      await expect(dot).toHaveCSS('opacity', '0');
+      await clickClippedMapPoint(page, map, intermediate);
+      const edgePopup = page.getByRole('dialog', { name: 'Intermediate point 1', exact: true });
+      await expect(edgePopup.getByRole('link', { name: /Open in Google Maps/ })).toHaveAttribute('href', 'https://www.google.com/maps/search/?api=1&query=11.5%2C102.25');
+      await edgePopup.getByRole('link').press('Escape');
+      await page.getByRole('button', { name: 'Fit selected route', exact: true }).click();
+      await expect.poll(markerSpacing).toBeCloseTo(originalSpacing, 1);
+    }
     const points = [
       { action: locale === 'en' ? 'View map point: Laem Chabang' : 'ดูจุดบนแผนที่: แหลมฉบัง', title: locale === 'en' ? 'Laem Chabang' : 'แหลมฉบัง', query: '13,100' },
+      { action: locale === 'en' ? 'View map point: Intermediate point 1' : 'ดูจุดบนแผนที่: จุดระหว่างทางที่ 1', title: locale === 'en' ? 'Intermediate point 1' : 'จุดระหว่างทางที่ 1', query: '11.5,102.25' },
       { action: locale === 'en' ? 'Select connection to Port 001' : 'เลือกเส้นทางเชื่อมต่อไปท่าเรือ 001', title: locale === 'en' ? 'Port 001' : 'ท่าเรือ 001', query: '10,104' },
     ];
     for (const [index, point] of points.entries()) {
       const marker = map.getByRole('button', { name: point.action, exact: true });
       if (locale === 'en') await marker.press(index === 1 ? 'Space' : 'Enter');
-      else await marker.click();
+      else await marker.tap();
       const popup = page.getByRole('dialog', { name: point.title, exact: true });
       const link = popup.getByRole('link', { name: locale === 'en' ? /Open in Google Maps/ : /เปิดใน Google Maps/ });
       await expect(popup).toBeVisible();
@@ -109,14 +144,20 @@ for (const locale of ['en', 'th'] as const) {
       await expect(link).toHaveAttribute('href', `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(point.query)}`);
       await expect(link).toHaveAttribute('target', '_blank');
       await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+      // Rapid taps on separate points must not become a map double-tap zoom.
+      expect(await markerSpacing()).toBeCloseTo(originalSpacing, 1);
+      if (index === 1) await expect(dot).toHaveCSS('opacity', '1');
       await expect.poll(() => popup.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
       if (index === 1) await map.locator('..').screenshot({ path: testInfo.outputPath(`google-maps-point-${locale}.png`) });
       await link.press('Escape');
       await expect(popup).not.toBeVisible();
       await expect(marker).toBeFocused();
     }
+    await page.getByRole('button', { name: locale === 'en' ? 'Fit selected route' : 'แสดงเส้นทางที่เลือกให้ครบ', exact: true }).focus();
+    await expect(dot).toHaveCSS('opacity', '0');
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await expect(page.getByRole('link', { name: 'OpenStreetMap contributors', exact: true })).toBeVisible();
+  });
   });
 }
 

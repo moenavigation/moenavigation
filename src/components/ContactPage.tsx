@@ -163,10 +163,10 @@ export default function ContactPage({ locale }: { locale: Locale }) {
   }
 
   const fields = [
-    { id: "name", label: local(locale, "Name", "ชื่อ"), auto: "name", required: true },
-    { id: "email", label: local(locale, "Email", "อีเมล"), auto: "email", required: true },
-    { id: "company", label: local(locale, "Company (optional)", "บริษัท (ไม่บังคับ)"), auto: "organization", required: false },
-    { id: "subject", label: local(locale, "Subject", "หัวข้อ"), auto: "off", required: true },
+    { id: "name", label: local(locale, "Name", "ชื่อ"), hint: local(locale, "Your full name", "ชื่อและนามสกุลของคุณ"), auto: "name", required: true },
+    { id: "email", label: local(locale, "Email", "อีเมล"), hint: local(locale, "you@example.com", "เช่น name@example.com"), auto: "email", required: true },
+    { id: "company", label: local(locale, "Company (optional)", "บริษัท (ไม่บังคับ)"), hint: local(locale, "Company or organization", "ชื่อบริษัทหรือองค์กร"), auto: "organization", required: false },
+    { id: "subject", label: local(locale, "Subject", "หัวข้อ"), hint: local(locale, "Service or route you need", "บริการหรือเส้นทางที่ต้องการ"), auto: "off", required: true },
   ] as const;
 
   return <div className="container section">
@@ -197,12 +197,12 @@ export default function ContactPage({ locale }: { locale: Locale }) {
           <div className={styles.formGrid}>
             {fields.map((field) => <div className={`field ${(field.id === "subject" || field.id === "company") ? styles.fullField : ""}`} key={field.id}>
               <label htmlFor={`contact-${field.id}`}>{field.label}{field.required && <span aria-hidden="true"> *</span>}</label>
-              <input id={`contact-${field.id}`} name={field.id} type={field.id === "email" ? "email" : "text"} autoComplete={field.auto} autoCapitalize={field.id === "email" ? "none" : undefined} spellCheck={field.id === "email" ? false : undefined} value={values[field.id]} onChange={(event) => update(field.id, event.target.value)} maxLength={fieldLimits[field.id]} required={field.required} aria-invalid={!!errors[field.id]} aria-describedby={errors[field.id] ? `error-${field.id}` : undefined} />
+              <input id={`contact-${field.id}`} name={field.id} type={field.id === "email" ? "email" : "text"} placeholder={field.hint} autoComplete={field.auto} autoCapitalize={field.id === "email" ? "none" : undefined} spellCheck={field.id === "email" ? false : undefined} value={values[field.id]} onChange={(event) => update(field.id, event.target.value)} maxLength={fieldLimits[field.id]} required={field.required} aria-invalid={!!errors[field.id]} aria-describedby={errors[field.id] ? `error-${field.id}` : undefined} />
               {errors[field.id] && <p className={styles.error} id={`error-${field.id}`}>{errors[field.id]}</p>}
             </div>)}
             <div className={`field ${styles.fullField}`}>
               <label htmlFor="contact-message">{local(locale, "Message", "ข้อความ")} <span aria-hidden="true">*</span></label>
-              <textarea id="contact-message" name="message" rows={6} value={values.message} onChange={(event) => update("message", event.target.value)} maxLength={5000} required aria-invalid={!!errors.message} aria-describedby={`contact-message-hint${errors.message ? " error-message" : ""}`} placeholder={local(locale, "Tell us about the scope, location and preferred timing…", "ระบุขอบเขตงาน พื้นที่ และช่วงเวลาที่ต้องการ…")} />
+              <textarea id="contact-message" name="message" rows={6} value={values.message} onChange={(event) => update("message", event.target.value)} maxLength={5000} required aria-invalid={!!errors.message} aria-describedby={`contact-message-hint${errors.message ? " error-message" : ""}`} placeholder={local(locale, "Scope, location and preferred timing…", "ขอบเขตงาน พื้นที่ และช่วงเวลาที่ต้องการ…")} />
               <div className={styles.messageGuide}><span id="contact-message-hint">{local(locale, "Include your operating area and preferred dates. At least 10 characters.", "ระบุพื้นที่ดำเนินงานและวันที่ต้องการ โดยกรอกข้อความอย่างน้อย 10 ตัวอักษร")}</span><span aria-label={local(locale, `${values.message.length} of 5000 characters`, `${values.message.length} จาก 5000 ตัวอักษร`)}>{values.message.length.toLocaleString(locale)} / 5,000</span></div>
               {errors.message && <p className={styles.error} id="error-message">{errors.message}</p>}
             </div>

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { FeatureCollection, MultiPolygon, Polygon } from 'geojson';
+import { seaRoute } from 'searoute-ts';
 import { DEFAULT_MARNET } from 'searoute-ts/marnet-20km';
 import { MAX_ROUTE_POINTS } from '../src/lib/cms-route-fields';
 import { HttpError } from '../src/server/http';
@@ -71,6 +72,7 @@ test('a real Gulf-to-Malacca route detours around the Malay peninsula using orig
   assert.ok(Math.max(...route.waypoints.map(point => point[1])) > 104, 'The path must go around the east coast.');
   assert.ok(route.distanceKm > 1700 && route.distanceKm < 2300);
   assert.equal(mask.intersectsPath(route.waypoints), false);
+  assert.equal(route.touchesLand, false, 'A clear maritime path takes priority over a land-contact fallback.');
   const networkVertices = new Set(DEFAULT_MARNET.features.flatMap(feature => feature.geometry.coordinates.map(([longitude, latitude]) => `${latitude},${longitude}`)));
   for (const point of route.waypoints.slice(1, -1)) assert.ok(networkVertices.has(`${point[0]},${point[1]}`));
   assert.equal(JSON.stringify(DEFAULT_MARNET), originalNetwork, 'Land exclusions must not mutate the packaged network.');
@@ -97,12 +99,58 @@ test('invalid, identical and date-line endpoints fail with actionable errors', a
   await assert.rejects(generateSeaRoute([0, 179], [0, -179]), rejection(/date line/));
 });
 
-test('inland endpoints and water endpoints whose connectors cross land are both rejected', async () => {
-  await assert.rejects(generateSeaRoute([13.75, 100.5], portKlang), rejection(/touches land/));
+test('land contact returns a flagged maritime preview without moving inland or coastal endpoints', async () => {
+  const mask = await getSeaRouteLandMask();
+  const vertices = new Set(DEFAULT_MARNET.features.flatMap(feature => feature.geometry.coordinates.map(([longitude, latitude]) => `${latitude},${longitude}`)));
+  for (const [origin, destination] of [
+    [[13.75, 100.5], portKlang],
+    [[1.43, 103.9], [7.3, 100.65]],
+    [[13.0833, 100.8833], [11.048254, 103.223807]],
+  ] as [Point, Point][]) {
+    const original = JSON.stringify([origin, destination]);
+    const route = await generateSeaRoute(origin, destination);
+    assert.equal(route.touchesLand, true);
+    assert.equal(mask.intersectsPath(route.waypoints), true);
+    assert.deepEqual(route.waypoints[0], origin);
+    assert.deepEqual(route.waypoints.at(-1), destination);
+    assert.notEqual(route.waypoints[0], origin);
+    assert.notEqual(route.waypoints.at(-1), destination);
+    assert.ok(route.waypoints.length > 2 && route.waypoints.length <= MAX_ROUTE_POINTS);
+    assert.ok(Number.isFinite(route.distanceKm) && route.distanceKm > 0);
+    for (const point of route.waypoints.slice(1, -1)) assert.ok(vertices.has(`${point[0]},${point[1]}`), 'Fallbacks retain actual maritime vertices.');
+    assert.equal(JSON.stringify([origin, destination]), original);
+  }
+});
+
+test('a touching endpoint connector does not skip attempts to avoid interior land crossings', async () => {
+  const mask = await getSeaRouteLandMask();
   const waterPoint: Point = [1.43, 103.9];
-  assert.equal((await getSeaRouteLandMask()).contains(waterPoint), false);
-  await assert.rejects(generateSeaRoute(waterPoint, [7.3, 100.65]), rejection(/touches land/));
+  const destination: Point = [7.3, 100.65];
+  assert.equal(mask.contains(waterPoint), false);
+  const initial = seaRoute([waterPoint[1], waterPoint[0]], [destination[1], destination[0]], {
+    network: DEFAULT_MARNET, units: 'kilometers', maxSnapDistanceKm: 100, allowArctic: false,
+  });
+  assert.equal(initial.geometry.type, 'LineString');
+  const initialPoints: Point[] = initial.geometry.coordinates.map(point => [point[1], point[0]]);
+  assert.equal(mask.intersectsPath(initialPoints), true, 'The first network route contains a land crossing.');
+  const route = await generateSeaRoute(waterPoint, destination);
+  assert.equal(route.touchesLand, true);
+  assert.equal(mask.intersectsPath(route.waypoints.slice(1, -1)), false, 'Rerouting removes the avoidable network crossing.');
+  assert.equal(mask.intersectsPath(route.waypoints.slice(0, 2)), true, 'The fixed endpoint connector still touches land.');
   assert.deepEqual(waterPoint, [1.43, 103.9]);
+});
+
+test('fallback results and clear routes are independent of earlier graph exclusions', async () => {
+  const origin: Point = [13.75, 100.5];
+  const originalNetwork = JSON.stringify(DEFAULT_MARNET);
+  const first = await generateSeaRoute(origin, portKlang);
+  const clear = await generateSeaRoute(gulf, portKlang);
+  const repeated = await generateSeaRoute(origin, portKlang);
+  assert.equal(first.touchesLand, true);
+  assert.equal(clear.touchesLand, false);
+  assert.deepEqual(repeated, first);
+  assert.deepEqual(await generateSeaRoute(gulf, portKlang), clear);
+  assert.equal(JSON.stringify(DEFAULT_MARNET), originalNetwork);
 });
 
 test('distant snaps and unavailable short hops never fall back to a straight line', async () => {

@@ -10,13 +10,22 @@ import type { MediaItem } from '@/lib/cms-types';
 import useCmsMediaSearch from './useCmsMediaSearch';
 import useDialogBackdrop from './useDialogBackdrop';
 import CmsWorkingPanel from './CmsWorkingPanel';
+import CmsPasswordField from './CmsPasswordField';
 import styles from './CmsUserPhotoDialog.module.css';
 
 type ProfileUser = CmsUser & { current: boolean; profileRevision?: number };
-export default function CmsUserPhotoDialog({ user, onClose, onSaved }: { user: ProfileUser; onClose: () => void; onSaved: (user: CmsUser) => void }) {
+export type UserPhotoDraft = { avatar: string; prepared?: PreparedImage };
+type PhotoDialogProps = { onClose: () => void } & (
+  { user: ProfileUser; onSaved: (user: CmsUser) => void; draft?: never; username?: never; onSelected?: never }
+  | { draft: UserPhotoDraft; username: string; onSelected: (draft: UserPhotoDraft) => boolean; user?: never; onSaved?: never }
+);
+export default function CmsUserPhotoDialog(props: PhotoDialogProps) {
+  const { onClose, onSaved, onSelected } = props;
+  const user: ProfileUser = props.user || { id: '', username: props.username, role: 'Operator', current: true, avatar: props.draft.avatar };
+  const draftMode = Boolean(onSelected);
   const { t } = useCmsLocale();
   const [avatar, setAvatar] = useState(user.avatar || '');
-  const [prepared, setPrepared] = useState<PreparedImage | null>(null);
+  const [prepared, setPrepared] = useState<PreparedImage | null>(props.draft?.prepared || null);
   const [preparing, setPreparing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [workingTitle, setWorkingTitle] = useState('Saving photo…');
@@ -32,7 +41,9 @@ export default function CmsUserPhotoDialog({ user, onClose, onSaved }: { user: P
   const [page, setPage] = useState(0);
   const dialog = useRef<HTMLDialogElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
-  const preparedRef = useRef<PreparedImage | null>(null);
+  const preparedRef = useRef<PreparedImage | null>(props.draft?.prepared || null);
+  // A reopened draft borrows its preview. Only new selections belong to this dialog.
+  const ownsPrepared = useRef(false);
   const staged = useRef<MediaItem | null>(null);
   const submission = useRef('');
   const savingRef = useRef(false);
@@ -43,7 +54,7 @@ export default function CmsUserPhotoDialog({ user, onClose, onSaved }: { user: P
   const titleId = useId();
   const busy = preparing || saving;
   const backdrop = useDialogBackdrop(onClose, busy);
-  const dirty = Boolean(prepared || avatar !== (user.avatar || ''));
+  const dirty = draftMode ? prepared !== (props.draft?.prepared || null) || avatar !== (props.draft?.avatar || '') : Boolean(prepared || avatar !== (user.avatar || ''));
   const search = useCmsMediaSearch(query, picker);
   const searching = Boolean(query.trim());
   const images = searching ? search.items : library;
@@ -62,7 +73,7 @@ export default function CmsUserPhotoDialog({ user, onClose, onSaved }: { user: P
     return () => {
       alive.current = false; modal?.close(); document.body.style.overflow = overflow;
       libraryRequest.current?.abort();
-      if (preparedRef.current) URL.revokeObjectURL(preparedRef.current.preview);
+      if (ownsPrepared.current && preparedRef.current) URL.revokeObjectURL(preparedRef.current.preview);
       if (!accepted.current && uploadAttempted.current && submission.current) void resolveSubmission(submission.current, 'abort').catch(() => {});
       if (previous?.isConnected) previous.focus({ preventScroll: true });
     };
@@ -92,7 +103,8 @@ export default function CmsUserPhotoDialog({ user, onClose, onSaved }: { user: P
     finally { if (libraryRequest.current === controller) { libraryRequest.current = null; setLibraryLoading(false); } }
   }
   function clearPrepared() {
-    if (preparedRef.current) URL.revokeObjectURL(preparedRef.current.preview);
+    if (ownsPrepared.current && preparedRef.current) URL.revokeObjectURL(preparedRef.current.preview);
+    ownsPrepared.current = false;
     preparedRef.current = null; setPrepared(null);
   }
   function resetSubmission() {
@@ -105,7 +117,7 @@ export default function CmsUserPhotoDialog({ user, onClose, onSaved }: { user: P
     try {
       const image = await prepareCmsImage(file);
       if (!alive.current) { URL.revokeObjectURL(image.preview); return; }
-      clearPrepared(); resetSubmission(); preparedRef.current = image; setPrepared(image); setPicker(false);
+      clearPrepared(); resetSubmission(); ownsPrepared.current = true; preparedRef.current = image; setPrepared(image); setPicker(false);
     } catch (cause) { if (alive.current) setError(cmsErrorText(cause)); }
     finally { if (alive.current) setPreparing(false); }
   }
@@ -113,6 +125,14 @@ export default function CmsUserPhotoDialog({ user, onClose, onSaved }: { user: P
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (savingRef.current || busy || !dirty || conflict) return;
+    if (onSelected) {
+      const selection = { avatar, ...(preparedRef.current ? { prepared: preparedRef.current } : {}) };
+      // The parent owns a selected device preview until Add user or cancellation.
+      if (!onSelected(selection)) return;
+      ownsPrepared.current = false;
+      onClose();
+      return;
+    }
     const fields = new FormData(event.currentTarget);
     savingRef.current = true; setSaving(true); setWorkingTitle('Saving photo…'); setError('');
     if (!submission.current) submission.current = crypto.randomUUID();
@@ -132,7 +152,7 @@ export default function CmsUserPhotoDialog({ user, onClose, onSaved }: { user: P
       profileWriteAttempted = true;
       setWorkingTitle('Saving photo…');
       const result = await cmsRequest<{ user: CmsUser }>('/api/cms/users/profile', { method: 'POST', body: JSON.stringify({ id: user.id, avatar: desiredAvatar, submissionId: submission.current, expectedProfileRevision: baseRevision, ...(!user.current ? { currentPassword: String(fields.get('currentPassword') || '') } : {}) }) });
-      accepted.current = true; if (alive.current) onSaved(result.user);
+      accepted.current = true; if (alive.current) onSaved?.(result.user);
     } catch (cause) {
       // A lost successful response must not create a second profile change or
       // discard an image the account already references.
@@ -141,7 +161,7 @@ export default function CmsUserPhotoDialog({ user, onClose, onSaved }: { user: P
         try {
           const latest = await cmsRequest<{ users: (CmsUser & { profileRevision?: number })[] }>('/api/cms/users');
           const saved = latest.users.find(item => item.id === user.id);
-          if (saved && (saved.avatar || '') === desiredAvatar && (saved.profileRevision ?? 0) > baseRevision) { accepted.current = true; if (alive.current) onSaved(saved); return; }
+          if (saved && (saved.avatar || '') === desiredAvatar && (saved.profileRevision ?? 0) > baseRevision) { accepted.current = true; if (alive.current) onSaved?.(saved); return; }
           if (alive.current && saved && (saved.profileRevision ?? 0) !== baseRevision) setConflict(saved);
         } catch { /* Keep the prepared image and the original error available. */ }
       }
@@ -150,10 +170,10 @@ export default function CmsUserPhotoDialog({ user, onClose, onSaved }: { user: P
   }
 
   return <dialog ref={dialog} className={styles.dialog} aria-labelledby={titleId} onKeyDown={containDialogFocus} onCancel={event => { event.preventDefault(); if (!busy) onClose(); }} {...backdrop}>
-    <div className={styles.heading}><div><h2 id={titleId}>{t('Profile photo')}</h2><p>{user.username}</p></div><button type="button" autoFocus disabled={busy} className={styles.close} aria-label={t('Close profile photo')} onClick={onClose}><X size={21} aria-hidden="true" /></button></div>
+    <div className={styles.heading}><div><h2 id={titleId}>{t('Profile photo')}</h2><p>{user.username || t('New user')}</p></div><button type="button" autoFocus disabled={busy} className={styles.close} aria-label={t('Close profile photo')} onClick={onClose}><X size={21} aria-hidden="true" /></button></div>
     <CmsWorkingPanel active={busy} title={preparing ? 'Preparing image…' : workingTitle} className={styles.working} />
     <form onSubmit={save} className={styles.form} aria-busy={busy}><div className={styles.body}>
-      <div className={styles.preview}>{selectedPreview ? <img src={selectedPreview} alt={t('Profile photo preview')} width={104} height={104} /> : <span aria-label={t('No profile photo')}>{user.username.slice(0, 1).toUpperCase()}</span>}<p>{t(prepared ? 'Ready to upload. Your image uploads when you save.' : 'Choose a photo from your device or the image library.')}</p></div>
+      <div className={styles.preview}>{selectedPreview ? <img src={selectedPreview} alt={t('Profile photo preview')} width={104} height={104} /> : <span aria-label={t('No profile photo')}>{user.username.slice(0, 1).toUpperCase()}</span>}<p>{t(draftMode ? 'Choose a photo for the new user. It is saved when you add the user.' : prepared ? 'Ready to upload. Your image uploads when you save.' : 'Choose a photo from your device or the image library.')}</p></div>
       <p className={styles.ratioHint}>{t('Recommended: 1:1 (square). Keep the face centered.')}</p>
       <div className={styles.choices}><label className={`button secondary ${styles.fileButton}`}><ImagePlus size={18} aria-hidden="true" />{t('Device image')}<input type="file" accept="image/jpeg,image/png,image/webp" aria-label={t('Choose profile photo')} disabled={busy} onChange={event => { const file = event.target.files?.[0]; if (file) void chooseFile(file); event.target.value = ''; }} /></label><button type="button" className="button secondary" disabled={busy} aria-expanded={picker} onClick={() => { setPicker(value => !value); setQuery(''); setPage(0); }}>{t('Browse library')}</button>{selectedPreview && <button type="button" className={styles.textButton} disabled={busy} onClick={() => { clearPrepared(); resetSubmission(); setAvatar(''); }}><Trash2 size={16} />{t('Remove photo')}</button>}</div>
       {picker && <section className={styles.library} aria-label={t('Profile image library')}><label className={styles.search}><Search size={18} aria-hidden="true" /><input ref={searchRef} type="search" maxLength={160} aria-label={t('Search profile images')} placeholder={t('Search image names…')} value={query} disabled={busy} onChange={event => { setQuery(event.target.value); setPage(0); }} /></label>
@@ -161,9 +181,9 @@ export default function CmsUserPhotoDialog({ user, onClose, onSaved }: { user: P
         {(searching ? search.loading : libraryLoading && !images.length) ? null : (searching ? search.error : libraryError) ? <div className={styles.error} role="alert">{t(searching ? search.error : libraryError)}<button type="button" className="button secondary" onClick={() => { if (searching) search.retry(); else void loadLibrary(); }}>{t('Try again')}</button></div> : <><div className={styles.images}>{visible.map(item => <button type="button" data-profile-image key={item.id} disabled={busy} aria-pressed={!prepared && avatar === item.url} onClick={() => chooseLibrary(item.url)}><img src={item.url} alt="" width={150} height={100} loading="lazy" /><span>{item.title}</span>{!prepared && avatar === item.url && <Check size={16} aria-hidden="true" />}</button>)}</div>{!images.length && <p>{t('No matching images. Try another name or clear your search.')}</p>}
           {pageCount > 1 && <div className={styles.pagination}><button type="button" className="button secondary" disabled={busy || currentPage === 0} onClick={() => setPage(currentPage - 1)}>{t('Previous images')}</button><span>{t('Page {page} of {total}', { page: currentPage + 1, total: pageCount })}</span><button type="button" className="button secondary" disabled={busy || currentPage === pageCount - 1} onClick={() => setPage(currentPage + 1)}>{t('Next images')}</button></div>}{more && currentPage === pageCount - 1 && <button type="button" className="button secondary" disabled={busy || libraryLoading || search.loadingMore} onClick={() => { if (searching) void search.loadMore(); else void loadLibrary(cursor); }}>{t('Load more images')}</button>}</>}
       </section>}
-      {!user.current && <label className={styles.password}>{t('Your current password')}<input name="currentPassword" type="password" autoComplete="current-password" required maxLength={200} disabled={busy} /></label>}
+      {!draftMode && !user.current && <div className={styles.password}><CmsPasswordField label="Your current password" name="currentPassword" autoComplete="current-password" disabled={busy} /></div>}
       {error && <p className={styles.error} role="alert">{t(error)}</p>}
       {conflict && <div className={styles.conflict}><p>{t('Another change was saved first. Your selected photo is kept. Review the current photo before saving again.')}</p>{conflict.avatar && <img src={conflict.avatar} alt={t('Current saved profile photo')} width={64} height={64} />}<button type="button" className="button secondary" disabled={busy} onClick={() => { setBaseRevision(conflict.profileRevision ?? 0); setConflict(null); setError(''); }}>{t('Use my selected photo')}</button></div>}
-    </div><div className={styles.footer}><button type="button" className="button secondary" disabled={busy} onClick={onClose}>{t('Cancel')}</button><button type="submit" className="button" disabled={busy || !dirty || Boolean(conflict)}>{t(saving ? 'Saving photo…' : 'Save photo')}</button></div></form>
+    </div><div className={styles.footer}><button type="button" className="button secondary" disabled={busy} onClick={onClose}>{t('Cancel')}</button><button type="submit" className="button" disabled={busy || !dirty || Boolean(conflict)}>{t(draftMode ? 'Use photo' : saving ? 'Saving photo…' : 'Save photo')}</button></div></form>
   </dialog>;
 }

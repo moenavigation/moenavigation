@@ -285,7 +285,9 @@ test.describe('Expanded CMS mobile coverage', () => {
         await escapeDialog(page, nestedPhoto, nestedPhotoOpener);
         await expect(settings).toBeVisible();
         await escapeDialog(page, settings, settingsOpener);
-        const photoOpener = current.getByRole('button', { name: t('Change profile photo for {name}', { name: E2E_ADMIN.username }), exact: true });
+        await settingsOpener.tap();
+        await expect(settings).toBeVisible();
+        const photoOpener = settings.getByRole('button', { name: t('Change profile photo'), exact: true });
         const photo = await openDialog(page, photoOpener, t('Profile photo'), locale);
         await photo.getByRole('button', { name: t('Browse library'), exact: true }).tap();
         await expect(photo.locator('[data-profile-image]').first()).toBeVisible();
@@ -298,6 +300,7 @@ test.describe('Expanded CMS mobile coverage', () => {
         await noOverflow(page, photo);
         await touchTarget(photo.getByRole('button', { name: t('Cancel'), exact: true }));
         await escapeDialog(page, photo, photoOpener);
+        await escapeDialog(page, settings, settingsOpener);
         const navigation = page.getByRole('button', { name: t('Open CMS navigation'), exact: true });
         await navigation.tap();
         const drawer = page.getByRole('dialog', { name: t('CMS navigation'), exact: true });

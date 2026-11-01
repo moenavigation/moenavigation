@@ -3,6 +3,7 @@ import { request as apiRequest, type Locator, type Page } from '@playwright/test
 import type { Db } from 'mongodb';
 import { translateCms } from '../../src/lib/cms-locale';
 import { test, expect, login, E2E_ADMIN, E2E_BASE_URL, loginChallengeData } from './fixtures';
+import { checkPasswordToggle } from './user-password-helpers';
 
 type Account = { _id: string; username: string; role?: 'Dev' | 'Admin' | 'Operator'; passwordHash: string; passwordVersion: number; createdAt: Date };
 const newPassword = 'Nested-reset-safe-password-2026!';
@@ -42,10 +43,12 @@ test('Edit and nested Reset cancellation preserve the edit draft without writing
   await expect(edit.getByLabel('Username', { exact: true })).not.toBeEditable();
   await edit.getByLabel('Role', { exact: true }).selectOption('Admin');
   await edit.getByLabel('Your current password', { exact: true }).fill('unsaved-actor-password');
+  await checkPasswordToggle(edit, 'Your current password', 'unsaved-actor-password', 'en', true);
   const resetTrigger = edit.getByRole('button', { name: 'Reset password', exact: true });
   await resetTrigger.click();
   const reset = page.getByRole('dialog', { name: 'Reset password', exact: true });
   await fillReset(reset);
+  for (const label of ['New password', 'Confirm new password', 'Your current password']) await checkPasswordToggle(reset, label, label === 'Your current password' ? E2E_ADMIN.password : newPassword, 'en', true);
   await reset.getByRole('button', { name: 'Cancel', exact: true }).click();
   await expect(reset).not.toBeVisible();
   await expect(resetTrigger).toBeFocused();
@@ -62,6 +65,7 @@ test('Edit and nested Reset cancellation preserve the edit draft without writing
   await opener.click();
   await expect(edit.getByLabel('Username', { exact: true })).toHaveValue(target.username);
   await expect(edit.getByLabel('Your current password', { exact: true })).toHaveValue('');
+  await expect(edit.getByLabel('Your current password', { exact: true })).toHaveAttribute('type', 'password');
   await expect(edit.getByLabel('Role', { exact: true })).toHaveValue('Operator');
   await edit.getByLabel('Role', { exact: true }).selectOption('Admin');
   await edit.getByLabel('Your current password', { exact: true }).fill('incorrect-actor-password');
@@ -147,7 +151,10 @@ test('nested Reset validates and preserves failed input, blocks duplicate submis
     expect((await oldSession.get('/api/cms/users')).status()).toBe(401);
     expect((await oldSession.post('/api/cms/login', { data: { username: target.username, password: newPassword, ...await loginChallengeData(oldSession) } })).status()).toBe(200);
     await resetTrigger.click();
-    for (const label of ['New password', 'Confirm new password', 'Your current password']) await expect(reset.getByLabel(label, { exact: true })).toHaveValue('');
+    for (const label of ['New password', 'Confirm new password', 'Your current password']) {
+      await expect(reset.getByLabel(label, { exact: true })).toHaveValue('');
+      await expect(reset.getByLabel(label, { exact: true })).toHaveAttribute('type', 'password');
+    }
     await page.keyboard.press('Escape');
     await page.keyboard.press('Escape');
   } finally { release(); await oldSession.dispose(); }
@@ -240,6 +247,17 @@ for (const screen of [
     await expect(edit.getByLabel(t('Username'), { exact: true })).toHaveValue(target.username);
     await expect(edit.locator('[data-cms-language-switch]')).toHaveCount(0);
     await page.screenshot({ path: testInfo.outputPath('edit-user.png'), animations: 'disabled' });
+    const photoTrigger = edit.getByRole('region', { name: t('Profile photo'), exact: true }).getByRole('button', { name: t('Change profile photo'), exact: true });
+    await photoTrigger.tap();
+    const photo = page.getByRole('dialog', { name: t('Profile photo'), exact: true });
+    await expect(photo).toBeVisible(); await checkDialog(page, photo);
+    await photo.getByLabel(t('Your current password'), { exact: true }).fill('Unsaved-photo-authorization');
+    await checkPasswordToggle(photo, 'Your current password', 'Unsaved-photo-authorization', screen.locale, true);
+    await page.screenshot({ path: testInfo.outputPath('edit-user-profile-photo.png'), animations: 'disabled' });
+    await page.keyboard.press('Escape');
+    await expect(photo).not.toBeVisible();
+    await expect(photoTrigger).toBeFocused();
+    await expect(edit.getByLabel(t('Your current password'), { exact: true })).toHaveValue('');
     await edit.getByRole('button', { name: t('Save changes'), exact: true }).click();
     await checkFocusedInput(edit.getByLabel(t('Your current password'), { exact: true }));
     const resetTrigger = edit.getByRole('button', { name: t('Reset password'), exact: true });

@@ -411,6 +411,15 @@ password file or overwrites an existing account with different credentials.
 
 ## User profile photos
 
+`POST /api/cms/users` accepts an optional library/staged `avatar` and a UUID
+`submissionId` for account creation. An avatar requires a submission ID. The
+new account, photo commit, audit events and seven-day creation replay marker
+save in one transaction. Repeating the same actor/submission returns the same
+account after checking current permissions and the supplied password against
+its existing salted hash; it never creates a duplicate account. Replays with
+changed input, removed accounts or changed credentials are rejected. Older clients may
+still create accounts without a submission ID or photo.
+
 Accounts optionally store `avatar` and a separate `profileRevision` (legacy 0).
 `POST /api/cms/users/profile` accepts `{id,avatar,submissionId,expectedProfileRevision,currentPassword?}`.
 An empty avatar removes the photo. Every role can edit its own photo; other

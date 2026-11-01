@@ -5,6 +5,7 @@ import { Check, ExternalLink, Link2, MapPin } from 'lucide-react';
 import Dialog from './Dialog';
 import CmsWorkingPanel from './CmsWorkingPanel';
 import { useCmsLocale } from '@/lib/cms-locale';
+import { cmsContentPlaceholder } from '@/lib/cms-content-placeholders';
 import { cmsErrorText, cmsRequest } from '@/lib/cms-client';
 import { googleMapsPointUrl, MAX_GOOGLE_MAPS_URL_LENGTH } from '@/lib/google-maps';
 import styles from './CmsGoogleMapsDialog.module.css';
@@ -18,7 +19,7 @@ export default function CmsGoogleMapsDialog({ point, triggerRef, onClose, onAppl
   onClose: () => void;
   onApply: (coordinates: Coordinates) => void;
 }) {
-  const { t } = useCmsLocale();
+  const { locale, t } = useCmsLocale();
   const id = useId();
   const [url, setUrl] = useState('');
   const [attempt, setAttempt] = useState(0);
@@ -63,7 +64,7 @@ export default function CmsGoogleMapsDialog({ point, triggerRef, onClose, onAppl
       <p className={styles.point}><MapPin size={18} aria-hidden="true" />{point}</p>
       <p id={`${id}-hint`} className={styles.hint}>{t('Paste a Google Maps pin link to find its coordinates.')}</p>
       <label className={styles.field} htmlFor={`${id}-url`}><span><Link2 size={18} aria-hidden="true" />{t('Google Maps link')}</span>
-        <input id={`${id}-url`} type="url" inputMode="url" autoComplete="off" spellCheck={false} maxLength={MAX_GOOGLE_MAPS_URL_LENGTH} placeholder="https://maps.app.goo.gl/…" aria-describedby={`${id}-hint`} aria-invalid={Boolean(error)} value={url} onChange={event => {
+        <input id={`${id}-url`} type="url" inputMode="url" autoComplete="off" spellCheck={false} maxLength={MAX_GOOGLE_MAPS_URL_LENGTH} placeholder={cmsContentPlaceholder('googleMapsLink', locale)} aria-describedby={`${id}-hint`} aria-invalid={Boolean(error)} value={url} onChange={event => {
           requestRef.current?.abort();
           setUrl(event.target.value); setResult(null); setError(''); setBusy(Boolean(event.target.value.trim()));
         }} onKeyDown={event => {

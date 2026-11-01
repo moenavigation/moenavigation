@@ -55,6 +55,11 @@ clarity and reduces clutter.
 Keep visible labels when they help users understand an action, and give
 icon-only controls accessible names.
 
+Give editable text, number, search, and password fields short, specific
+placeholder hints in the appropriate language. Keep visible labels and use
+format guidance rather than prefilled values. Preserve native controls that
+do not support placeholders and their existing labels or instructions.
+
 Limit hover effects to input that supports true hover. Use tap, active, and
 appropriate focus states for touch interactions. Prevent hover styles from
 sticking after taps, including on devices with mixed inputs, and keep

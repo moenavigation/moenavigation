@@ -2,13 +2,14 @@
 
 import 'leaflet/dist/leaflet.css';
 
-import { useEffect, useRef, useState, type RefObject } from 'react';
-import { Check, MapPin, Minus, Plus, RotateCcw, Route } from 'lucide-react';
+import { useEffect, useId, useRef, useState, type RefObject } from 'react';
+import { AlertTriangle, Check, MapPin, Minus, Plus, RotateCcw, Route } from 'lucide-react';
 import type * as Leaflet from 'leaflet';
 import { cmsErrorText, cmsRequest } from '@/lib/cms-client';
 import { useCmsLocale } from '@/lib/cms-locale';
 import type { ContentRecord } from '@/lib/cms-types';
 import { routeCoordinateRows } from '@/lib/cms-route-fields';
+import { googleMapsPointUrl } from '@/lib/google-maps';
 import { applyGeneratedSeaRoute, isGeneratedSeaRoute, readSeaRouteEndpoints, type GeneratedSeaRoute } from '@/lib/sea-route';
 import Dialog from './Dialog';
 import CmsWorkingPanel from './CmsWorkingPanel';
@@ -21,6 +22,7 @@ const attribution = providerAttribution ? `${providerAttribution} · ${osmAttrib
 
 function SeaRoutePreview({ waypoints, onReady }: Pick<GeneratedSeaRoute, 'waypoints'> & { onReady: (ready: boolean) => void }) {
   const { t, locale } = useCmsLocale();
+  const descriptionId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Leaflet.Map | null>(null);
   const fitRef = useRef<() => void>(() => {});
@@ -39,6 +41,8 @@ function SeaRoutePreview({ waypoints, onReady }: Pick<GeneratedSeaRoute, 'waypoi
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       map = leaflet.map(containerRef.current, { zoomControl: false, scrollWheelZoom: false, keyboard: true, zoomAnimation: !reduced, fadeAnimation: !reduced, markerZoomAnimation: !reduced, minZoom: 2, maxZoom: 13 });
       const currentMap = map;
+      let panned = false;
+      currentMap.on('dragstart', () => { panned = true; });
       currentMap.attributionControl.setPrefix(false);
       const tiles = leaflet.tileLayer(tileUrl, { attribution, maxZoom: 19 });
       let loaded = 0;
@@ -52,11 +56,38 @@ function SeaRoutePreview({ waypoints, onReady }: Pick<GeneratedSeaRoute, 'waypoi
       leaflet.polyline(waypoints, { color: '#0b527f', weight: 3.5, interactive: false, lineCap: 'round', lineJoin: 'round' }).addTo(currentMap);
       waypoints.forEach((point, index) => {
         const endpoint = index === 0 || index === waypoints.length - 1;
-        const marker = leaflet.circleMarker(point, { radius: endpoint ? 7 : 2.5, color: endpoint ? '#fff' : '#0b527f', fillColor: index === 0 ? '#082b50' : '#087a9c', fillOpacity: 1, weight: endpoint ? 2 : 1, interactive: false }).addTo(currentMap);
+        const label = index === 0 ? t('Origin point') : endpoint ? t('Destination point') : t('Intermediate point {number}', { number: index });
+        const link = document.createElement('a');
+        link.href = googleMapsPointUrl(...point);
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.draggable = false;
+        link.title = label;
+        link.className = styles.pointLink;
+        link.dataset.routePoint = index === 0 ? 'origin' : endpoint ? 'destination' : 'intermediate';
+        link.setAttribute('aria-label', `${t('Open in Google Maps · {point}', { point: label })}${locale === 'th' ? ' (เปิดในแท็บใหม่)' : ' (opens in a new tab)'}`);
+        const center = document.createElement('span');
+        center.className = styles.pointCenter;
+        center.setAttribute('aria-hidden', 'true');
+        link.append(center);
+        const marker = leaflet.marker(point, {
+          icon: leaflet.divIcon({ className: styles.pointMarker, html: link, iconSize: [44, 44], iconAnchor: [22, 22] }),
+          keyboard: false, zIndexOffset: endpoint ? 1000 : 0,
+        }).addTo(currentMap);
+        // Claim synthetic touch double-clicks here so point taps do not zoom the map.
+        marker.on('dblclick', event => leaflet.DomEvent.stopPropagation(event.originalEvent));
+        // Panning from a marker must not accidentally follow its outbound link.
+        link.addEventListener('pointerenter', event => {
+          if (event.pointerType === 'mouse' || event.pointerType === 'pen' && event.buttons === 0) link.dataset.hovered = 'true';
+        });
+        link.addEventListener('pointerleave', () => { delete link.dataset.hovered; });
+        link.addEventListener('pointerdown', event => { panned = false; if (event.pointerType === 'touch') delete link.dataset.hovered; });
+        link.addEventListener('click', event => { if (event.detail > 0 && panned) event.preventDefault(); });
+        link.addEventListener('focus', () => { if (link.matches(':focus-visible')) currentMap.panInside(point, { padding: [32, 32], animate: false }); });
         if (endpoint) {
-          const label = document.createElement('span');
-          label.textContent = index === 0 ? (locale === 'th' ? 'จุดต้นทาง' : 'Origin point') : (locale === 'th' ? 'จุดปลายทาง' : 'Destination point');
-          marker.bindTooltip(label, { permanent: true, direction: 'top', offset: [0, -8] });
+          const tooltip = document.createElement('span');
+          tooltip.textContent = label;
+          marker.bindTooltip(tooltip, { permanent: true, direction: 'top', offset: [0, -8] });
         }
       });
       const fit = () => currentMap.fitBounds(leaflet.latLngBounds(waypoints), { padding: [48, 52], maxZoom: 9, animate: false });
@@ -74,10 +105,11 @@ function SeaRoutePreview({ waypoints, onReady }: Pick<GeneratedSeaRoute, 'waypoi
     }
     void initialize().catch(() => { if (!disposed) setFailed(true); });
     return () => { disposed = true; observer?.disconnect(); map?.remove(); mapRef.current = null; fitRef.current = () => {}; onReady(false); };
-  }, [waypoints, locale, onReady]);
+  }, [waypoints, locale, onReady, t]);
 
   return <div className={styles.mapFrame}>
-    <div ref={containerRef} className={styles.map} role="region" aria-label={t('Generated sea route map')} />
+    <div ref={containerRef} className={styles.map} role="region" aria-label={t('Generated sea route map')} aria-describedby={descriptionId} />
+    <span id={descriptionId} className={styles.srOnly}>{locale === 'th' ? 'จุดต้นทางและปลายทางแสดงอยู่เสมอ ชี้หรือโฟกัสที่จุดระหว่างทางเพื่อแสดงจุด แตะหรือกด Enter ที่จุดใดก็ได้เพื่อเปิด Google Maps ในแท็บใหม่' : 'Origin and destination stay visible. Hover or focus an intermediate point to reveal it. Tap or press Enter on any point to open Google Maps in a new tab.'}</span>
     <div className={styles.mapControls} role="group" aria-label={t('Map controls')}>
       <button type="button" aria-label={t('Zoom in')} disabled={!ready || failed || zoom >= 13} onClick={() => mapRef.current?.zoomIn()}><Plus size={19} aria-hidden="true" /></button>
       <button type="button" aria-label={t('Zoom out')} disabled={!ready || failed || zoom <= 2} onClick={() => mapRef.current?.zoomOut()}><Minus size={19} aria-hidden="true" /></button>
@@ -151,6 +183,7 @@ export default function CmsSeaRouteDialog({ record, sourceText, currentText, tri
       {stale ? <p className={styles.error} role="alert">{t('The route points changed while this preview was open. Close it and generate a new preview.')}</p> : error && <div className={styles.error} role="alert"><p>{t(error)}</p><button type="button" className={styles.retry} disabled={busy} onClick={() => { requestRef.current?.abort(); setError(''); setResult(null); setBusy(true); setAttempt(value => value + 1); }}>{t('Try again')}</button></div>}
       {result && !stale && <section className={styles.preview} aria-label={t('Generated route')}>
         <div className={styles.previewHeading}><h3><Route size={20} aria-hidden="true" />{t('Generated route')}</h3><span className={styles.ready} role="status"><Check size={17} aria-hidden="true" />{t('Ready to review')}</span></div>
+        {result.touchesLand && <p className={styles.landNote} role="note"><AlertTriangle size={20} aria-hidden="true" /><span>{t('This route touches land in the available map data. Review and adjust the points before saving.')}</span></p>}
         <dl className={styles.metrics}>
           <div><dt>{t('Intermediate points')}</dt><dd>{new Intl.NumberFormat(locale).format(result.waypoints.length - 2)}</dd></div>
           <div><dt>{t('Approximate distance')}</dt><dd>{t('{distance} km', { distance: new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(result.distanceKm) })}</dd></div>

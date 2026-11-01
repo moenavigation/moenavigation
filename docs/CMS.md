@@ -20,6 +20,11 @@ User settings. Retain current-password confirmation and existing role protection
 Present users as responsive cards with profile photos, roles, and account actions.
 Use dialogs for Add user and Move to Trash, and one page-level Refresh button
 that reloads the user list. Preserve failed input and clear passwords on closing.
+Offer accessible show/hide controls on every password field in the Users flow.
+Keep profile-photo settings inside Add/Edit user and personal User settings,
+with no separate Photo action on user cards. A new account may choose its photo
+before creation; upload only on Add user and commit the account and photo together.
+Preserve the parent form when opening or cancelling the nested photo picker.
 
 Let every role change its own profile photo without changing credentials or
 ending sessions. Dev can change any account photo; Admin can change Admin and
@@ -94,14 +99,26 @@ the existing save, validation, upload, or recovery rules.
 Each route point can import coordinates from a Google Maps pin link in a
 separate dialog. Extract automatically, preview before applying, and retain
 the rest of the unsaved route. Accept supported full and short share links;
-ask for a precise pin or manual coordinates when a link is ambiguous. Provide
-Google Maps links only for valid origin and destination points in the editor
-and on the public map. Intermediate points retain the route shape without links.
+ask for a precise pin or manual coordinates when a link is ambiguous.
+Use the selected pin's `!3d` latitude and `!4d` longitude when the link retains
+an older search point in a separate context section; do not choose a pair only
+because it appears first or last. Keep conflicting or malformed pins rejected.
+Provide Google Maps links for every valid point in the editor, public map, and generated
+route preview. Keep origin and destination markers visible; intermediate markers
+blend into the route line until hovered, focused by keyboard, or selected on touch.
+
+Offer an Edit points on map dialog in Map setup. Let users drag existing points,
+place missing points on the map, and edit the selected point's coordinates by
+keyboard. Keep changes local until Apply, preserve untouched coordinate text
+and point order, and discard dialog changes on Cancel, Escape, or outside click.
+Apply updates the route draft; the normal Save action persists it.
 
 Offer Generate sea route in Map setup when both endpoints are valid. Generate
 an approximate maritime-network path, check it against mapped land, and preview
 it before replacing intermediate points. Keep endpoint values and the rest of
-the draft unchanged; only normal Save publishes it. Allow cancellation/retry,
+the draft unchanged; only normal Save publishes it. Try to avoid land first;
+if no clear path is found, allow the best available network route with a visible
+land-contact note and the normal preview/apply actions. Allow cancellation/retry,
 preserve input on failures, and reject unsupported paths rather than inventing
 straight-line shortcuts. Label the result for website illustration and review,
 not navigation. Keep datasets and routing calculations on the server.

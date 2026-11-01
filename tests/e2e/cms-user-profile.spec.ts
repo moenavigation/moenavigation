@@ -1,9 +1,10 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { request as apiRequest, type APIRequestContext, type APIResponse, type Page } from '@playwright/test';
+import { request as apiRequest, type APIRequestContext, type APIResponse, type Locator, type Page } from '@playwright/test';
 import type { Db } from 'mongodb';
 import type { CmsRole } from '../../src/lib/cms-roles';
 import { translateCms } from '../../src/lib/cms-locale';
 import { test, expect, login, E2E_ADMIN, E2E_BASE_URL, E2E_IMAGE_BUFFER, E2E_IMAGE_ORIGIN, loginChallengeData } from './fixtures';
+import { checkPasswordToggle } from './user-password-helpers';
 
 type Account = { _id: string; username: string; role?: CmsRole; passwordHash: string; passwordVersion: number; createdAt: Date; avatar?: string; profileRevision?: number; deletedAt?: Date; purgeAt?: Date };
 type Image = { _id: string; id: string; title: string; url: string; publicId: string; state: 'committed' | 'staged' | 'trashed' | 'deleting'; owner: string; submissionId: string; pinned: boolean; createdAt: string; touchedAt: Date; trashedAt?: string };
@@ -75,6 +76,139 @@ async function mockUploads(page: Page, db: Db, owner: string, failFirst = false)
   return attempts;
 }
 
+async function fillNewUser(add: Locator, username: string) {
+  await add.getByLabel('Username', { exact: true }).fill(username);
+  await add.getByLabel('Role', { exact: true }).selectOption('Admin');
+  await add.getByLabel('Password', { exact: true }).fill('Private-created-user-password-2026!');
+  await add.getByLabel('Confirm password', { exact: true }).fill('Private-created-user-password-2026!');
+  await add.getByLabel('Your current password', { exact: true }).fill(E2E_ADMIN.password);
+}
+
+async function openAddPhoto(page: Page, add: Locator) {
+  const trigger = add.getByRole('region', { name: 'Profile photo', exact: true }).getByRole('button', { name: 'Change profile photo', exact: true });
+  await trigger.click();
+  const photo = page.getByRole('dialog', { name: 'Profile photo', exact: true });
+  await expect(photo).toBeVisible();
+  await expect(photo.getByLabel('Your current password', { exact: true })).toHaveCount(0);
+  return { photo, trigger };
+}
+
+test('Add user keeps its library photo in the draft until authorized creation and nested cancellation preserves the selection', async ({ page, db }) => {
+  const image = await seedImage(db, 'New account library portrait');
+  await login(page);
+  await page.goto('/cms/users');
+  const uploads = await mockUploads(page, db, E2E_ADMIN.id);
+  let creates = 0;
+  let profileWrites = 0;
+  page.on('request', request => {
+    if (request.method() !== 'POST') return;
+    if (new URL(request.url()).pathname === '/api/cms/users') creates++;
+    if (new URL(request.url()).pathname === '/api/cms/users/profile') profileWrites++;
+  });
+  const opener = page.getByRole('button', { name: 'Add user', exact: true });
+  await opener.click();
+  const add = page.getByRole('dialog', { name: 'Add user', exact: true });
+  await fillNewUser(add, 'created-with-library-photo');
+  const { photo, trigger } = await openAddPhoto(page, add);
+  await photo.getByRole('button', { name: 'Browse library', exact: true }).click();
+  await photo.getByRole('searchbox', { name: 'Search profile images', exact: true }).fill(image.title);
+  await photo.locator('[data-profile-image]').filter({ hasText: image.title }).click();
+  await photo.getByRole('button', { name: 'Use photo', exact: true }).click();
+  await expect(photo).not.toBeVisible();
+  await expect(trigger).toBeFocused();
+  const preview = add.getByRole('region', { name: 'Profile photo', exact: true }).locator('img');
+  await expect(preview).toHaveAttribute('src', image.url);
+  await expect(add.getByLabel('Role', { exact: true })).toHaveValue('Admin');
+  await trigger.click();
+  await photo.getByLabel('Choose profile photo', { exact: true }).setInputFiles({ name: 'discard-new-selection.png', mimeType: 'image/png', buffer: E2E_IMAGE_BUFFER });
+  await expect(photo.getByRole('img', { name: 'Profile photo preview', exact: true })).toHaveAttribute('src', /^blob:/);
+  await photo.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(preview).toHaveAttribute('src', image.url);
+  expect(uploads).toHaveLength(0);
+  expect(creates).toBe(0);
+  expect(profileWrites).toBe(0);
+  expect(await db.collection<Account>('moe_users').countDocuments({ username: 'created-with-library-photo' })).toBe(0);
+  const response = page.waitForResponse(value => new URL(value.url()).pathname === '/api/cms/users' && value.request().method() === 'POST');
+  await add.getByRole('button', { name: 'Add user', exact: true }).click();
+  await expectStatus(await response, 201);
+  await expect(add).not.toBeVisible();
+  const account = await db.collection<Account>('moe_users').findOne({ username: 'created-with-library-photo' });
+  expect(account).toMatchObject({ role: 'Admin', avatar: image.url, passwordVersion: 1 });
+  expect(creates).toBe(1);
+  expect(profileWrites).toBe(0);
+  expect(await db.collection<Image>('moe_media').findOne({ _id: image.id })).toMatchObject({ state: 'committed' });
+  await expect(page.getByRole('region', { name: 'Users', exact: true }).getByRole('listitem').filter({ hasText: 'created-with-library-photo' }).locator('img')).toHaveAttribute('src', image.url);
+  await opener.click();
+  await expect(add.getByRole('region', { name: 'Profile photo', exact: true }).locator('img')).toHaveCount(0);
+  await expect(add.getByLabel('Password', { exact: true })).toHaveValue('');
+  await add.getByRole('button', { name: 'Cancel', exact: true }).click();
+});
+
+test('Add user defers device uploads, discards cancelled previews and reuses staged media and submission identity on retry', async ({ page, db }) => {
+  await login(page);
+  await page.goto('/cms/users');
+  const uploads = await mockUploads(page, db, E2E_ADMIN.id, true);
+  const opener = page.getByRole('button', { name: 'Add user', exact: true });
+  await opener.click();
+  const add = page.getByRole('dialog', { name: 'Add user', exact: true });
+  const { photo, trigger } = await openAddPhoto(page, add);
+  await photo.getByLabel('Choose profile photo', { exact: true }).setInputFiles({ name: 'cancel-add-portrait.png', mimeType: 'image/png', buffer: E2E_IMAGE_BUFFER });
+  await expect(photo.getByRole('img', { name: 'Profile photo preview', exact: true })).toHaveAttribute('src', /^blob:/);
+  await photo.getByRole('button', { name: 'Use photo', exact: true }).click();
+  await expect(trigger).toBeFocused();
+  const preview = add.getByRole('region', { name: 'Profile photo', exact: true }).locator('img');
+  await expect(preview).toHaveAttribute('src', /^blob:/);
+  const abandonedPreview = (await preview.getAttribute('src'))!;
+  expect(await page.evaluate(url => fetch(url).then(response => response.ok).catch(() => false), abandonedPreview)).toBe(true);
+  await add.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(add).not.toBeVisible();
+  expect(uploads).toHaveLength(0);
+  expect(await page.evaluate(url => fetch(url).then(response => response.ok).catch(() => false), abandonedPreview)).toBe(false);
+  await opener.click();
+  await expect(preview).toHaveCount(0);
+  await fillNewUser(add, 'created-with-device-photo');
+  await trigger.click();
+  await photo.getByLabel('Choose profile photo', { exact: true }).setInputFiles({ name: 'retry-add-portrait.png', mimeType: 'image/png', buffer: E2E_IMAGE_BUFFER });
+  await expect(photo.getByRole('img', { name: 'Profile photo preview', exact: true })).toHaveAttribute('src', /^blob:/);
+  await photo.getByRole('button', { name: 'Use photo', exact: true }).click();
+  const writes: Record<string, unknown>[] = [];
+  await page.route('**/api/cms/users', async route => {
+    if (route.request().method() !== 'POST') return route.continue();
+    writes.push(route.request().postDataJSON());
+    if (writes.length <= 2) return route.fulfill({ status: 503, json: { error: 'Synthetic create with photo failure.' } });
+    return route.continue();
+  });
+  expect(uploads).toHaveLength(0);
+  await add.getByRole('button', { name: 'Add user', exact: true }).click();
+  await expect(add.getByRole('alert')).toContainText('Synthetic profile upload failure.');
+  expect(writes).toHaveLength(0);
+  await add.getByRole('button', { name: 'Add user', exact: true }).click();
+  await expect(add.getByRole('alert')).toContainText('Synthetic create with photo failure.');
+  expect(uploads).toHaveLength(2);
+  expect(writes).toHaveLength(2);
+  expect(await db.collection<Image>('moe_media').findOne({ _id: uploads[1].mediaId })).toMatchObject({ state: 'staged' });
+  expect(await db.collection<Account>('moe_users').countDocuments({ username: 'created-with-device-photo' })).toBe(0);
+  await expect(preview).toHaveAttribute('src', /^blob:/);
+  await expect(add.getByLabel('Role', { exact: true })).toHaveValue('Admin');
+  await expect(add.getByLabel('Your current password', { exact: true })).toHaveValue(E2E_ADMIN.password);
+  await add.getByRole('button', { name: 'Retry add user', exact: true }).click();
+  await expect(add).not.toBeVisible();
+  expect(uploads).toHaveLength(2);
+  expect(writes).toHaveLength(3);
+  expect(writes[0]).toEqual(writes[1]);
+  expect(writes[1]).toEqual(writes[2]);
+  expect(new Set([...uploads.map(attempt => attempt.submissionId), ...writes.map(write => write.submissionId)]).size).toBe(1);
+  const committed = await db.collection<Image>('moe_media').findOne({ _id: uploads[1].mediaId });
+  expect(committed).toMatchObject({ state: 'committed' });
+  const account = await db.collection<Account>('moe_users').findOne({ username: 'created-with-device-photo' });
+  expect(account).toMatchObject({ role: 'Admin', avatar: committed!.url, passwordVersion: 1 });
+  const replay = await page.request.post('/api/cms/users', { headers: origin, data: writes[2] });
+  await expectStatus(replay, 200);
+  expect((await replay.json()).replayed).toBe(true);
+  expect(await db.collection<Account>('moe_users').countDocuments({ username: 'created-with-device-photo' })).toBe(1);
+  expect(await db.collection('moe_logs').countDocuments({ action: 'user.created', 'target.id': account!._id })).toBe(1);
+});
+
 test('photo permissions allow every role to update itself and preserve all existing sessions', async ({ db }) => {
   const developer = await seedAccount(db, 'photo-dev', 'Dev');
   const operator = await seedAccount(db, 'photo-operator', 'Operator');
@@ -102,8 +236,8 @@ test('photo permissions allow every role to update itself and preserve all exist
     for (const index of [0, 2]) expect((await (await previous[index].get('/api/cms/session')).json()).user).toMatchObject({ avatar: second.url, profileRevision: 2 });
     expect((await (await previous[1].get('/api/cms/session')).json()).user).toMatchObject({ avatar: first.url, profileRevision: 1 });
     await expectStatus(await clients[0].patch('/api/cms/users', { data: { id: otherAdmin._id, avatar: first.url, currentPassword: E2E_ADMIN.password } }), 400);
-    await expectStatus(await clients[0].post('/api/cms/users', { data: { username: 'reject-combined-photo', role: 'Operator', password: E2E_ADMIN.password, avatar: first.url, currentPassword: E2E_ADMIN.password } }), 400);
-    expect(await db.collection<Account>('moe_users').findOne({ username: 'reject-combined-photo' })).toBeNull();
+    await expectStatus(await clients[0].post('/api/cms/users', { data: { username: 'reject-photo-without-submission', role: 'Operator', password: E2E_ADMIN.password, avatar: first.url, currentPassword: E2E_ADMIN.password } }), 400);
+    expect(await db.collection<Account>('moe_users').findOne({ username: 'reject-photo-without-submission' })).toBeNull();
   } finally { await Promise.all([...clients, ...previous].map(client => client.dispose())); }
 });
 
@@ -242,9 +376,15 @@ test('failed photo uploads and saves preserve the prepared image and reuse the s
     // roster read, without another upload or another profile mutation.
     return route.abort('failed');
   });
-  await page.getByRole('button', { name: `Change profile photo for ${target.username}`, exact: true }).click();
+  await page.getByRole('button', { name: `Edit ${target.username}`, exact: true }).click();
+  const edit = page.getByRole('dialog', { name: 'Edit user', exact: true });
+  await edit.getByLabel('Role', { exact: true }).selectOption('Admin');
+  await edit.getByLabel('Your current password', { exact: true }).fill('unsaved-edit-authorization');
+  const photoTrigger = edit.getByRole('region', { name: 'Profile photo', exact: true }).getByRole('button', { name: 'Change profile photo', exact: true });
+  await photoTrigger.click();
   const dialog = page.getByRole('dialog', { name: 'Profile photo', exact: true });
   await dialog.getByLabel('Your current password', { exact: true }).fill(E2E_ADMIN.password);
+  await checkPasswordToggle(dialog, 'Your current password', E2E_ADMIN.password, 'en', true);
   await dialog.getByLabel('Choose profile photo', { exact: true }).setInputFiles({ name: 'retry-profile.png', mimeType: 'image/png', buffer: E2E_IMAGE_BUFFER });
   await expect(dialog.getByRole('img', { name: 'Profile photo preview', exact: true })).toHaveAttribute('src', /^blob:/);
   expect(attempts).toHaveLength(0);
@@ -260,13 +400,23 @@ test('failed photo uploads and saves preserve the prepared image and reuse the s
   expect(await db.collection<Image>('moe_media').findOne({ _id: attempts[1].mediaId })).toMatchObject({ state: 'staged' });
   await dialog.getByRole('button', { name: 'Save photo', exact: true }).click();
   await expect(dialog).not.toBeVisible();
+  await expect(photoTrigger).toBeFocused();
+  await expect(edit).toBeVisible();
+  await expect(edit.getByLabel('Role', { exact: true })).toHaveValue('Admin');
+  await expect(edit.getByLabel('Your current password', { exact: true })).toHaveValue('unsaved-edit-authorization');
   expect(profileWrites).toBe(2);
   expect(attempts).toHaveLength(2);
   const saved = await db.collection<Image>('moe_media').findOne({ _id: attempts[1].mediaId });
   expect(saved).toMatchObject({ state: 'committed' });
-  expect(await db.collection<Account>('moe_users').findOne({ _id: target._id })).toMatchObject({ avatar: saved!.url, profileRevision: 1, passwordVersion: 1 });
+  expect(await db.collection<Account>('moe_users').findOne({ _id: target._id })).toMatchObject({ avatar: saved!.url, profileRevision: 1, passwordVersion: 1, role: 'Operator' });
   await expect(page.getByRole('region', { name: 'Users', exact: true }).getByRole('listitem').filter({ hasText: target.username }).locator('img')).toHaveAttribute('src', saved!.url);
   expect(await db.collection('moe_logs').countDocuments({ action: 'user.profile_updated', 'target.id': target._id })).toBe(1);
+  await photoTrigger.click();
+  await expect(dialog.getByLabel('Your current password', { exact: true })).toHaveValue('');
+  await expect(dialog.getByLabel('Your current password', { exact: true })).toHaveAttribute('type', 'password');
+  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(photoTrigger).toBeFocused();
+  await edit.getByRole('button', { name: 'Cancel', exact: true }).click();
 });
 
 test('the profile library shows twelve images per panel and own photos update the header with bilingual mobile layouts', async ({ page, db }) => {
@@ -276,6 +426,8 @@ test('the profile library shows twelve images per panel and own photos update th
   const client = await signIn(operator.username);
   try {
     await useSession(page, client);
+    await expect(page.getByRole('button', { name: 'Add user', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('region', { name: 'Users', exact: true }).getByRole('button', { name: /^(Edit |Change profile photo for )/ })).toHaveCount(0);
     const header = page.getByRole('button', { name: 'Open user settings', exact: true });
     await expect(header.locator('img')).toHaveCount(0);
     await expect(header).toContainText('P');

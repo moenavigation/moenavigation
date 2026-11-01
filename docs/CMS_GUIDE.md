@@ -28,8 +28,8 @@ Only Dev can create another Dev or change a Dev account. **Edit** opens a dialog
 
 **Move to Trash** disables an account immediately and signs it out everywhere. Its username stays reserved. Dev or an authorized Admin can restore it within 30 days from **Trash**, using their current password. Restoration keeps the account's password and role but requires a fresh login. Only Dev can restore or permanently delete a Dev account. User accounts expire after 30 days in Trash.
 
-To set your photo, open **User settings → Change profile photo**, or choose
-**Photo** beside your account. Choose a device image or **Browse library**,
+To set your photo, open **User settings → Change profile photo**. To change
+another permitted account's photo, open **Edit → Profile photo**. Choose a device image or **Browse library**,
 then **Save photo**. The library shows 12 images per panel and supports search.
 **Remove photo → Save photo** restores your initial. Cancel discards the choice;
 device images upload only when you save. A failed save keeps your prepared photo
@@ -37,8 +37,13 @@ so you can retry. Changing a photo keeps existing sessions signed in.
 
 Dev can change anyone's photo. Admin can change Admin and Operator photos,
 confirming its current password. Photos appear in the user list, settings,
-and header, including mobile. Create a new account first, then choose its
-**Photo** action. Images used by an account remain protected while that account
+and header, including mobile. **Add user** also includes a **Profile photo**
+section: choose an optional photo before creating the account. Device images
+upload when you confirm **Add user**, and the account and photo save together.
+Opening photo settings from **Edit user** preserves an unsaved role change;
+saving a photo does not save that role. Every password field in these dialogs
+has a show/hide icon; closing the dialog clears its password fields.
+Images used by an account remain protected while that account
 is in Trash; image usage links open the account's photo settings or its Trash item.
 
 ## One place for removed items
@@ -122,11 +127,13 @@ Open **Map setup** to edit the route's points. **Set up map points** provides or
 
 Existing points keep their saved values and order unless you edit, add, or remove them. Updating a route's text or images does not replace its intermediate points. Closing the map panels preserves unfinished coordinate edits along with the rest of the editor.
 
+Choose **Edit points on map** to position points visually. Drag a numbered point to update its latitude and longitude, or choose **Selected point** and click/tap the map to place it. You can also type precise coordinates in the dialog. For a new map, place both endpoints before applying; add or remove intermediate points using Map setup. **Use map points** updates the draft, and the normal **Save** action saves the route. Cancel, Escape, or clicking outside the dialog discards its changes.
+
 To suggest intermediate points automatically, enter distinct, valid **Origin point** and **Destination point** coordinates, then choose **Generate sea route**. Review the map and choose **Use generated points** to replace the intermediate points in your draft. The origin, destination, port details, and other edits stay unchanged. Cancel, Escape, or clicking outside the preview leaves the draft as it was; a failed calculation can be retried. Save the route normally to publish the result.
 
-Generated routes are approximate website illustrations based on a maritime network and mapped coastlines. Review coastal areas before saving; these are not navigational routes or verified vessel tracks. The generator may decline inland endpoints, land-crossing connections, uncovered areas, dateline crossings, or routes too detailed for the 100-point limit. You can still edit those routes manually.
+Generated routes are approximate website illustrations based on a maritime network and mapped coastlines. The generator tries to avoid land first. If it cannot find a clear path, it shows the best available network route with a land-contact note; you can still apply it and adjust the points before saving. Review coastal areas before saving; these are not navigational routes or verified vessel tracks. Uncovered areas, dateline crossings, or routes too detailed for the 100-point limit may still need manual points.
 
-For any point, choose **Use Google Maps link** and paste a link to a pin. Coordinates are extracted automatically; review them with **Open in Google Maps**, then choose **Use coordinates** to update just that point. Cancel or Escape leaves it unchanged. Full coordinate/pin links and supported Google Maps short share links work; if a named place does not include its pin coordinates or a link contains directions for several points, copy the pin's full link or enter its coordinates manually. A plain map-view link uses its center coordinates, so review the location before applying. Save the route normally when finished. Only valid **Origin point** and **Destination point** rows in the editor and their public map markers link to Google Maps. Intermediate points remain visible as part of the route without map links.
+For any point, choose **Use Google Maps link** and paste a link to a pin. Coordinates are extracted automatically; review them with **Open in Google Maps**, then choose **Use coordinates** to update just that point. Cancel or Escape leaves it unchanged. Full coordinate/pin links and supported Google Maps short share links work; if a named place does not include its pin coordinates or a link contains directions for several points, copy the pin's full link or enter its coordinates manually. A plain map-view link uses its center coordinates, so review the location before applying. Save the route normally when finished. Every valid coordinate row links to Google Maps. On the public map and generated-route preview, origin and destination stay visible while intermediate markers blend into the line until hovered or focused. Any point can open Google Maps, including by touch; on the public map, select a point first and use its **Open in Google Maps** link.
 
 ## Images
 

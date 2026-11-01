@@ -26,7 +26,7 @@
 .photoSettings { display: flex; align-items: center; gap: 1rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--line); }
 .photoSettings > div { display: grid; gap: .6rem; min-width: 0; }
 .photoSettings h3 { margin: 0; font-size: var(--font-lead); }
-.photoSettings button { padding: .6rem .8rem; }
+.photoSettings button { max-width: 100%; padding: .6rem .8rem; gap: .5rem; white-space: normal; }
 .settingsAvatar { width: 4rem; height: 4rem; flex: 0 0 4rem; border-radius: 50%; overflow: hidden; }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); }
 .actions :global(.button) { flex: 1 1 auto; gap: .45rem; padding: .55rem .6rem; min-height: 2.75rem; white-space: normal; }
@@ -37,12 +37,6 @@
 .field { display: grid; gap: .45rem; }
 .form input, .form select { width: 100%; min-width: 0; padding: .75rem .85rem; border: 1px solid #c9d8ee; border-radius: .35rem; color: var(--navy); background: #fff; }
 .form input:read-only { background: var(--pale); color: var(--muted); }
-.passwordInput { position: relative; }
-.form .passwordInput input { padding-inline-end: 3.5rem; }
-.passwordToggle { position: absolute; inset-inline-end: .2rem; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 2.75rem; height: 2.75rem; padding: 0; border: 0; border-radius: .3rem; background: transparent; color: var(--navy); cursor: pointer; }
-.passwordToggle svg { width: 1.3rem; height: 1.3rem; }
-.passwordToggle:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
-@media (hover: hover) and (pointer: fine) { .passwordToggle:hover:not(:disabled) { background: var(--pale); } }
 .form button[type=submit] { justify-self: start; }
 .formActions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .6rem; }
 .formActions > button { flex: 1 1 8rem; }

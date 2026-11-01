@@ -2,17 +2,16 @@ import 'server-only';
 import { clearFinderCache, NoRouteError, seaRoute, SnapFailedError, type MarnetNetwork } from 'searoute-ts';
 import { DEFAULT_MARNET } from 'searoute-ts/marnet-20km';
 import { MAX_ROUTE_POINTS } from '@/lib/cms-route-fields';
+import type { GeneratedSeaRoute } from '@/lib/sea-route';
 import { HttpError } from './http';
 import { getSeaRouteLandMask } from './sea-route-land';
 
 type Point = [number, number];
 const maxSnapKm = 100;
 const maxRoutingAttempts = 4;
-let routeNetwork = DEFAULT_MARNET;
 const messages = {
   coordinates: 'Enter valid origin and destination coordinates before generating a sea route.',
   same: 'Origin and destination must be different points.',
-  land: 'This route touches land in the available map data. Move the endpoints to nearby open water or add intermediate points manually.',
   snap: 'An endpoint is too far from the sea-route network. Move it closer to a coastal shipping route or add intermediate points manually.',
   unavailable: 'No sea route could be generated between these points. Adjust the endpoints or add intermediate points manually.',
   dateline: 'Routes across the international date line need manual map setup.',
@@ -30,10 +29,10 @@ function edgeKey(a: readonly number[], b: readonly number[]) {
 }
 
 /** Only remove source graph edges proven to cross land; never add user connectors to the graph. */
-function excludeNetworkEdges(blocked: Set<string>) {
+function excludeNetworkEdges(network: MarnetNetwork, blocked: Set<string>): MarnetNetwork {
   const features: MarnetNetwork['features'] = [];
   let removed = false;
-  for (const feature of routeNetwork.features) {
+  for (const feature of network.features) {
     const coordinates = feature.geometry.coordinates;
     if (!coordinates.some((point, index) => index > 0 && blocked.has(edgeKey(coordinates[index - 1], point)))) {
       features.push(feature);
@@ -49,12 +48,7 @@ function excludeNetworkEdges(blocked: Set<string>) {
     }
     if (section.length > 1) features.push({ ...feature, geometry: { type: 'LineString', coordinates: section } });
   }
-  if (removed) {
-    routeNetwork = { type: 'FeatureCollection', features };
-    // The package caches by network object identity. Retain only the current graph.
-    clearFinderCache();
-  }
-  return removed;
+  return removed ? { type: 'FeatureCollection', features } : network;
 }
 function distanceKm(a: Point, b: Point) {
   const radians = Math.PI / 180;
@@ -64,49 +58,73 @@ function distanceKm(a: Point, b: Point) {
 }
 
 /** Generates a preview only. Applying and saving remain explicit CMS actions. */
-export async function generateSeaRoute(origin: Point, destination: Point): Promise<{ waypoints: Point[]; distanceKm: number }> {
+export async function generateSeaRoute(origin: Point, destination: Point): Promise<GeneratedSeaRoute> {
   if (!validPoint(origin) || !validPoint(destination)) throw new HttpError(422, messages.coordinates);
   if (samePoint(origin, destination)) throw new HttpError(422, messages.same);
   if (Math.abs(origin[1] - destination[1]) > 180) throw new HttpError(422, messages.dateline);
   // Copy callers' arrays: the draft's exact endpoints must never be mutated or snapped in place.
   const start: Point = [...origin], finish: Point = [...destination];
   const mask = await getSeaRouteLandMask();
-  if (mask.contains(start) || mask.contains(finish)) throw new HttpError(422, messages.land);
-  // Everything after the awaited mask load is synchronous. A request cannot observe
-  // a half-updated graph, and every request checks its resulting geometry again.
-  for (let attempt = 0; attempt < maxRoutingAttempts; attempt++) {
-    let route: ReturnType<typeof seaRoute>;
-    try {
-      route = seaRoute([start[1], start[0]], [finish[1], finish[0]], {
-        network: routeNetwork, units: 'kilometers', maxSnapDistanceKm: maxSnapKm, allowArctic: false,
-      });
-    } catch (error) {
-      if (error instanceof SnapFailedError) throw new HttpError(422, messages.snap);
-      if (error instanceof NoRouteError) throw new HttpError(422, messages.unavailable);
-      throw error;
-    }
-    // The library caps distance to the nearest line, not the chosen graph vertex.
-    if (route.properties.originSnapKm > maxSnapKm || route.properties.destinationSnapKm > maxSnapKm) throw new HttpError(422, messages.snap);
-    if (route.geometry.type !== 'LineString') throw new HttpError(422, messages.unavailable);
-    const networkPoints: Point[] = route.geometry.coordinates.map(coordinate => [coordinate[1], coordinate[0]]);
-    if (networkPoints.length < 2 || networkPoints.some(point => !validPoint(point))) throw new HttpError(422, messages.unavailable);
-    const waypoints: Point[] = [start];
-    for (const point of networkPoints) if (!samePoint(waypoints[waypoints.length - 1], point)) waypoints.push(point);
-    if (!samePoint(waypoints[waypoints.length - 1], finish)) waypoints.push(finish);
-    if (waypoints.some((point, index) => index > 0 && Math.abs(point[1] - waypoints[index - 1][1]) > 180)) throw new HttpError(422, messages.dateline);
-    if (waypoints.length > MAX_ROUTE_POINTS) throw new HttpError(422, messages.count);
-    if (mask.intersectsPath([start, networkPoints[0]]) || mask.intersectsPath([networkPoints[networkPoints.length - 1], finish])) throw new HttpError(422, messages.land);
-    const blocked = new Set<string>();
-    for (let index = 1; index < networkPoints.length; index++) {
-      if (mask.intersectsPath([networkPoints[index - 1], networkPoints[index]])) {
-        blocked.add(edgeKey(route.geometry.coordinates[index - 1], route.geometry.coordinates[index]));
+  // Exclusions are request-local: one route must not remove another route's fallback.
+  let routeNetwork: MarnetNetwork = DEFAULT_MARNET;
+  let fallback: { route: GeneratedSeaRoute; landContactKm: number } | undefined;
+  const fail = (message: string): GeneratedSeaRoute => {
+    if (fallback) return fallback.route;
+    throw new HttpError(422, message);
+  };
+  // All graph work after the mask load is synchronous, including cache cleanup.
+  try {
+    for (let attempt = 0; attempt < maxRoutingAttempts; attempt++) {
+      let route: ReturnType<typeof seaRoute>;
+      try {
+        route = seaRoute([start[1], start[0]], [finish[1], finish[0]], {
+          network: routeNetwork, units: 'kilometers', maxSnapDistanceKm: maxSnapKm, allowArctic: false,
+        });
+      } catch (error) {
+        if (error instanceof SnapFailedError) return fail(messages.snap);
+        if (error instanceof NoRouteError) return fail(messages.unavailable);
+        throw error;
       }
+      // The library caps distance to the nearest line, not the chosen graph vertex.
+      if (route.properties.originSnapKm > maxSnapKm || route.properties.destinationSnapKm > maxSnapKm) return fail(messages.snap);
+      if (route.geometry.type !== 'LineString') return fail(messages.unavailable);
+      const networkPoints: Point[] = route.geometry.coordinates.map(coordinate => [coordinate[1], coordinate[0]]);
+      if (networkPoints.length < 2 || networkPoints.some(point => !validPoint(point))) return fail(messages.unavailable);
+      const waypoints: Point[] = [start];
+      for (const point of networkPoints) if (!samePoint(waypoints[waypoints.length - 1], point)) waypoints.push(point);
+      if (!samePoint(waypoints[waypoints.length - 1], finish)) waypoints.push(finish);
+      if (waypoints.some((point, index) => index > 0 && Math.abs(point[1] - waypoints[index - 1][1]) > 180)) return fail(messages.dateline);
+      if (waypoints.length > MAX_ROUTE_POINTS) return fail(messages.count);
+      let landContactKm = 0, touchesLand = false;
+      const touches = (a: Point, b: Point) => {
+        if (!mask.intersectsPath([a, b])) return false;
+        touchesLand = true;
+        // Rank candidates by whole touching segments, not a claimed exact inland distance.
+        landContactKm += distanceKm(a, b);
+        return true;
+      };
+      touches(start, networkPoints[0]);
+      touches(networkPoints[networkPoints.length - 1], finish);
+      const blocked = new Set<string>();
+      for (let index = 1; index < networkPoints.length; index++) {
+        if (touches(networkPoints[index - 1], networkPoints[index])) {
+          blocked.add(edgeKey(route.geometry.coordinates[index - 1], route.geometry.coordinates[index]));
+        }
+      }
+      const candidate: GeneratedSeaRoute = { waypoints, distanceKm: waypoints.slice(1).reduce((sum, point, index) => sum + distanceKm(waypoints[index], point), 0), touchesLand };
+      if (!touchesLand) return candidate;
+      if (!fallback || landContactKm < fallback.landContactKm || landContactKm === fallback.landContactKm && candidate.distanceKm < fallback.route.distanceKm) {
+        fallback = { route: candidate, landContactKm };
+      }
+      if (!blocked.size || attempt + 1 === maxRoutingAttempts) return fallback.route;
+      const nextNetwork = excludeNetworkEdges(routeNetwork, blocked);
+      if (nextNetwork === routeNetwork) return fallback.route;
+      clearFinderCache();
+      routeNetwork = nextNetwork;
     }
-    if (blocked.size) {
-      if (attempt + 1 < maxRoutingAttempts && excludeNetworkEdges(blocked)) continue;
-      throw new HttpError(422, messages.land);
-    }
-    return { waypoints, distanceKm: waypoints.slice(1).reduce((sum, point, index) => sum + distanceKm(waypoints[index], point), 0) };
+    return fail(messages.unavailable);
+  } finally {
+    // The package retains finders by network identity; release temporary graphs.
+    if (routeNetwork !== DEFAULT_MARNET) clearFinderCache();
   }
-  throw new HttpError(422, messages.unavailable);
 }

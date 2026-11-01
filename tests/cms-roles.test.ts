@@ -74,7 +74,7 @@ test('only Dev can create Dev and Operators cannot create accounts', async () =>
     const state = harness(actor);
     const action = createUserInTransaction(actor, { username: 'created', role, passwordHash: 'new-hash' }, state.db, session);
     if (canAssignRole(actorRole, role)) {
-      const user = await action;
+      const { user } = await action;
       assert.equal(state.users.get(user._id)?.role, role);
       assert.equal(user.passwordVersion, 1);
     } else {
@@ -310,7 +310,7 @@ test('active and trashed accounts reserve their username until permanent deletio
   const removed = trashed(account('reserved', 'Admin'));
   const available = harness(actor, removed);
   await permanentlyRemoveUserInTransaction(actor, removed._id, available.db, session);
-  const replacement = await createUserInTransaction(actor, { username: removed.username, role: 'Operator', passwordHash: 'new-hash' }, available.db, session);
+  const { user: replacement } = await createUserInTransaction(actor, { username: removed.username, role: 'Operator', passwordHash: 'new-hash' }, available.db, session);
   assert.notEqual(replacement._id, removed._id);
   assert.equal(replacement.username, removed.username);
 });

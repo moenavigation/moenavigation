@@ -4,11 +4,14 @@ import { useId, useRef, useState } from 'react';
 import { ExternalLink, Link2, MapPin, Plus, Route, Trash2, WandSparkles } from 'lucide-react';
 import type { ContentRecord, RoutePort } from '@/lib/cms-types';
 import { useCmsLocale } from '@/lib/cms-locale';
+import { cmsContentPlaceholder } from '@/lib/cms-content-placeholders';
 import { addRouteCoordinate, MAX_ROUTE_POINTS, removeRouteCoordinate, routeCoordinateRows, updateRouteCoordinate } from '@/lib/cms-route-fields';
 import { googleMapsPointUrl } from '@/lib/google-maps';
 import { applyGeneratedSeaRoute, readSeaRouteEndpoints } from '@/lib/sea-route';
+import { applyMapRouteChanges } from '@/lib/cms-route-map';
 import CmsGoogleMapsDialog from './CmsGoogleMapsDialog';
 import CmsSeaRouteDialog from './CmsSeaRouteDialog';
+import CmsRouteMapDialog from './CmsRouteMapDialog';
 import styles from './CmsRouteFields.module.css';
 
 const emptyPort = (): RoutePort => ({ name: '', nameTh: '', country: '', countryTh: '' });
@@ -20,7 +23,7 @@ export default function CmsRouteFields({ record, disabled, routeText, onChange, 
   onChange: (patch: Partial<ContentRecord>) => void;
   onRouteText: (text: string) => void;
 }) {
-  const { t } = useCmsLocale();
+  const { locale, t } = useCmsLocale();
   const id = useId();
   const points = routeCoordinateRows(routeText);
   const [importPoint, setImportPoint] = useState<{ index: number; label: string } | null>(null);
@@ -28,6 +31,8 @@ export default function CmsRouteFields({ record, disabled, routeText, onChange, 
   const generateTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [generationSource, setGenerationSource] = useState<{ routeText: string; record: ContentRecord } | null>(null);
   const canGenerate = Boolean(readSeaRouteEndpoints(routeText));
+  const mapTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const [mapSource, setMapSource] = useState<string | null>(null);
 
   function portFields(key: 'origin' | 'destination') {
     const port = record[key] || emptyPort();
@@ -36,7 +41,7 @@ export default function CmsRouteFields({ record, disabled, routeText, onChange, 
       <legend><MapPin size={19} aria-hidden="true" />{t(key === 'origin' ? 'Origin port' : 'Destination port')}</legend>
       <div className={styles.portFields}>{(['nameTh', 'countryTh', 'name', 'country'] as const).map(field => <label key={field}>
         {t(field === 'nameTh' ? 'Port name · Thai' : field === 'countryTh' ? 'Country · Thai' : field === 'name' ? 'Port name · English' : 'Country · English')}
-        <input lang={field.endsWith('Th') ? 'th' : 'en'} required={required} maxLength={field.startsWith('country') ? 100 : 150} value={port[field]} onChange={event => {
+        <input lang={field.endsWith('Th') ? 'th' : 'en'} placeholder={cmsContentPlaceholder(key === 'origin' ? field.startsWith('country') ? 'originCountry' : 'originName' : field.startsWith('country') ? 'destinationCountry' : 'destinationName', field.endsWith('Th') ? 'th' : 'en')} required={required} maxLength={field.startsWith('country') ? 100 : 150} value={port[field]} onChange={event => {
           const next = { ...port, [field]: event.target.value };
           onChange({ [key]: Object.values(next).every(value => value === '') ? undefined : next });
         }} />
@@ -58,6 +63,7 @@ export default function CmsRouteFields({ record, disabled, routeText, onChange, 
       <summary><span>{t('Map setup')}</span><span className={styles.hint}>{points.length ? t('{count} map points', { count: points.length }) : t('Optional')}</span></summary>
       <div className={styles.mapBody}>
         <p className={styles.hint}>{t('Use known coordinates to show this route on the map. Enter both ports above and at least an origin and a destination point.')}</p>
+        <button ref={mapTriggerRef} type="button" className="button secondary" aria-haspopup="dialog" onClick={event => { event.currentTarget.focus({ preventScroll: true }); setMapSource(routeText); }}><MapPin size={19} aria-hidden="true" />{t('Edit points on map')}</button>
         <div className={styles.generator}>
           <div><strong>{t('Build a sea route')}</strong><p id={`${id}-generate-hint`} className={styles.hint}>{t(canGenerate ? 'Preview intermediate points along a sea route, then apply them to this draft.' : 'Enter valid, different origin and destination coordinates first.')}</p></div>
           <button ref={generateTriggerRef} type="button" className="button secondary" aria-haspopup="dialog" aria-describedby={`${id}-generate-hint`} disabled={disabled || !canGenerate} onClick={event => { event.currentTarget.focus({ preventScroll: true }); setGenerationSource({ routeText, record }); }}><WandSparkles size={19} aria-hidden="true" />{t('Generate sea route')}</button>
@@ -70,14 +76,14 @@ export default function CmsRouteFields({ record, disabled, routeText, onChange, 
             return <li key={index} className={styles.point}>
               <div className={styles.pointHeading}><span className={styles.pointNumber}>{index + 1}</span><strong>{label}</strong><button type="button" className={styles.remove} aria-label={t('Remove {point}', { point: label })} title={t('Remove point')} onClick={() => onRouteText(removeRouteCoordinate(routeText, index))}><Trash2 size={18} aria-hidden="true" /><span>{t('Remove')}</span></button></div>
               <div className={styles.coordinates}>{(['latitude', 'longitude'] as const).map(field => <label key={field}>{t(field === 'latitude' ? 'Latitude' : 'Longitude')}
-                <input type="text" inputMode="decimal" lang="en" required ref={element => { element?.setCustomValidity(coordinateValidity(field, point[field])); }} aria-label={t('{point} · {coordinate}', { point: label, coordinate: t(field === 'latitude' ? 'Latitude' : 'Longitude') })} aria-describedby={`${id}-ranges`} value={point[field]} onChange={event => {
+                <input type="text" inputMode="decimal" lang="en" placeholder={cmsContentPlaceholder(field, locale)} required ref={element => { element?.setCustomValidity(coordinateValidity(field, point[field])); }} aria-label={t('{point} · {coordinate}', { point: label, coordinate: t(field === 'latitude' ? 'Latitude' : 'Longitude') })} aria-describedby={`${id}-ranges`} value={point[field]} onChange={event => {
                   event.target.setCustomValidity(coordinateValidity(field, event.target.value));
                   onRouteText(updateRouteCoordinate(routeText, index, field, event.target.value));
                 }} onBlur={event => event.target.setCustomValidity(coordinateValidity(field, event.target.value))} />
               </label>)}</div>
               <div className={styles.pointActions}>
                 <button type="button" className={styles.linkButton} aria-label={t('Use Google Maps link · {point}', { point: label })} onClick={event => { importTriggerRef.current = event.currentTarget; setImportPoint({ index, label }); }}><Link2 size={17} aria-hidden="true" />{t('Use Google Maps link')}</button>
-                {valid && (index === 0 || index === points.length - 1) && <a className={styles.mapLink} href={googleMapsPointUrl(Number(point.latitude), Number(point.longitude))} target="_blank" rel="noopener noreferrer" aria-label={t('Open in Google Maps · {point}', { point: label })}>{t('Open in Google Maps')}<ExternalLink size={16} aria-hidden="true" /></a>}
+                {valid && <a className={styles.mapLink} href={googleMapsPointUrl(Number(point.latitude), Number(point.longitude))} target="_blank" rel="noopener noreferrer" aria-label={t('Open in Google Maps · {point}', { point: label })}>{t('Open in Google Maps')}<ExternalLink size={16} aria-hidden="true" /></a>}
               </div>
             </li>;
           })}</ol>
@@ -95,6 +101,10 @@ export default function CmsRouteFields({ record, disabled, routeText, onChange, 
       if (routeText !== generationSource.routeText) throw new Error('The route points changed while this preview was open. Close it and generate a new preview.');
       onRouteText(applyGeneratedSeaRoute(routeText, result));
       setGenerationSource(null);
+    }} />}
+    {mapSource !== null && <CmsRouteMapDialog sourceText={mapSource} currentText={routeText} triggerRef={mapTriggerRef} onClose={() => setMapSource(null)} onApply={draft => {
+      onRouteText(applyMapRouteChanges(mapSource, routeText, draft));
+      setMapSource(null);
     }} />}
   </fieldset>;
 }

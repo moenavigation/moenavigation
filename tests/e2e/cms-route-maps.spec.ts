@@ -6,6 +6,10 @@ import { test, expect, login, E2E_ADMIN, E2E_BASE_URL } from './fixtures';
 const endpoint = '/api/cms/routes/coordinates';
 const pin = { latitude: 13.1234567891234, longitude: 100.987654321012 };
 const pinLink = `https://www.google.com/maps/place/Test+port/@12,99,15z/data=!4m2!3m1!1s0x0:0x0!3d${pin.latitude}!4d${pin.longitude}`;
+const selectedPin = { latitude: 11.048254, longitude: 103.223807 };
+// The nested 13.0833,100.8833 pair is a prior search. The selected pin is
+// the sibling !3m3!8m2 branch and agrees with the place title.
+const selectedPinLink = "https://www.google.com/maps/place/11%C2%B002'53.7%22N+103%C2%B013'25.7%22E/@11.0735511,103.1521576,877m/data=!3m1!1e3!4m10!1m5!3m4!2zMTPCsDA0JzU5LjkiTiAxMDDCsDUyJzU5LjkiRQ!8m2!3d13.0833!4d100.8833!3m3!8m2!3d11.048254!4d103.223807?entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D";
 const queryLink = (latitude: number, longitude: number) => `https://www.google.com/maps/search/?api=1&query=${latitude}%2C${longitude}`;
 
 async function records(page: Page): Promise<ContentRecord[]> {
@@ -56,8 +60,11 @@ async function save(page: Page, editor: Locator): Promise<ContentRecord> {
   return (await response.json()).record;
 }
 
-test('Google Maps import edits only the chosen point and saves exact coordinates through the route API', async ({ page }) => {
+test('Google Maps import selects the current pin over a nested prior search and saves only the chosen point', async ({ page }) => {
   await login(page);
+  const resolved = await page.request.post(endpoint, { headers: { Origin: E2E_BASE_URL }, data: { url: selectedPinLink } });
+  expect(resolved.status(), await resolved.text()).toBe(200);
+  expect(await resolved.json()).toMatchObject(selectedPin);
   const { editor, before } = await openExisting(page);
   const label = 'Intermediate point 1';
   const latitude = editor.getByLabel(`${label} · Latitude`, { exact: true });
@@ -67,29 +74,32 @@ test('Google Maps import edits only the chosen point and saves exact coordinates
   let saves = 0;
   page.on('request', request => { if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/cms/content') saves++; });
   const { dialog, input } = await openLink(page, editor, label);
-  await input.fill(pinLink);
+  await input.fill(selectedPinLink);
   await expect(dialog.getByRole('button', { name: 'Use coordinates', exact: true })).toBeEnabled();
-  await expect(dialog.getByText(String(pin.latitude), { exact: true })).toBeVisible();
-  await expect(dialog.getByText(String(pin.longitude), { exact: true })).toBeVisible();
+  await expect(dialog.getByText(String(selectedPin.latitude), { exact: true })).toBeVisible();
+  await expect(dialog.getByText(String(selectedPin.longitude), { exact: true })).toBeVisible();
+  await expect(dialog.getByText('13.0833', { exact: true })).toHaveCount(0);
+  await expect(dialog.getByText('100.8833', { exact: true })).toHaveCount(0);
   await expect(latitude).toHaveValue(draftLatitude);
   await expect(longitude).toHaveValue(draftLongitude);
   await dialog.getByRole('button', { name: 'Use coordinates', exact: true }).click();
   await expect(dialog).not.toBeVisible();
-  await expect(latitude).toHaveValue(String(pin.latitude));
-  await expect(longitude).toHaveValue(String(pin.longitude));
+  await expect(latitude).toHaveValue(String(selectedPin.latitude));
+  await expect(longitude).toHaveValue(String(selectedPin.longitude));
   expect(saves).toBe(0);
-  await expect(editor.getByRole('link', { name: `Open in Google Maps · ${label}`, exact: true })).toHaveCount(0);
+  await expect(editor.getByRole('link', { name: `Open in Google Maps · ${label}`, exact: true })).toHaveAttribute('href', queryLink(selectedPin.latitude, selectedPin.longitude));
   await expect(editor.getByRole('button', { name: `Use Google Maps link · ${label}`, exact: true })).toBeVisible();
-  await expect(editor.getByRole('link', { name: /^Open in Google Maps/ })).toHaveCount(2);
-  for (const [pointLabel, coordinates] of [['Origin point', before.waypoints![0]], ['Destination point', before.waypoints!.at(-1)!]] as const) {
+  const expectedPoints = before.waypoints!.map(point => [...point] as [number, number]);
+  expectedPoints[1] = [selectedPin.latitude, selectedPin.longitude];
+  await expect(editor.getByRole('link', { name: /^Open in Google Maps/ })).toHaveCount(expectedPoints.length);
+  for (const [index, coordinates] of expectedPoints.entries()) {
+    const pointLabel = index === 0 ? 'Origin point' : index === expectedPoints.length - 1 ? 'Destination point' : `Intermediate point ${index}`;
     const link = editor.getByRole('link', { name: `Open in Google Maps · ${pointLabel}`, exact: true });
     await expect(link).toHaveAttribute('href', queryLink(...coordinates));
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', /noopener/);
   }
   expect((await records(page)).find(record => record.id === before.id && record.type === 'Route')).toEqual(before);
-  const expectedPoints = before.waypoints!.map(point => [...point]);
-  expectedPoints[1] = [pin.latitude, pin.longitude];
   const saved = await save(page, editor);
   expect(saved).toMatchObject({ id: before.id, origin: before.origin, destination: before.destination, waypoints: expectedPoints, revision: before.revision + 1 });
   expect(saves).toBe(1);
@@ -127,15 +137,17 @@ test('Add route imports both endpoints and Enter in the link dialog never submit
   let saves = 0;
   page.on('request', request => { if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/cms/content') saves++; });
   const { dialog, input } = await openLink(page, editor, 'Origin point');
-  await input.fill(queryLink(pin.latitude, pin.longitude));
+  await input.fill(selectedPinLink);
   await input.press('Enter');
   await expect(dialog.getByRole('button', { name: 'Use coordinates', exact: true })).toBeEnabled();
+  await expect(dialog.getByText(String(selectedPin.latitude), { exact: true })).toBeVisible();
+  await expect(dialog.getByText(String(selectedPin.longitude), { exact: true })).toBeVisible();
   await expect(editor).toBeVisible();
   expect(saves).toBe(0);
   await dialog.getByRole('button', { name: 'Use coordinates', exact: true }).click();
   await importPoint(page, editor, 'Destination point', queryLink(7.203345678901, 100.59456789012));
   const saved = await save(page, editor);
-  expect(saved).toMatchObject({ type: 'Route', title: 'Google Maps test route', waypoints: [[pin.latitude, pin.longitude], [7.203345678901, 100.59456789012]] });
+  expect(saved).toMatchObject({ type: 'Route', title: 'Google Maps test route', waypoints: [[selectedPin.latitude, selectedPin.longitude], [7.203345678901, 100.59456789012]] });
   expect(saves).toBe(1);
 });
 
@@ -188,8 +200,10 @@ for (const locale of ['en', 'th'] as const) {
     if (locale === 'th') await page.locator('header [data-cms-language-switch]').click();
     const { editor } = await openExisting(page, locale);
     const { dialog, opener, input } = await openLink(page, editor, translateCms(locale, 'Origin point'), locale);
-    await input.fill(pinLink);
+    await input.fill(selectedPinLink);
     await expect(dialog.getByRole('button', { name: translateCms(locale, 'Use coordinates'), exact: true })).toBeEnabled();
+    await expect(dialog.getByText(String(selectedPin.latitude), { exact: true })).toBeVisible();
+    await expect(dialog.getByText(String(selectedPin.longitude), { exact: true })).toBeVisible();
     for (const width of [1280, 320]) {
       await page.setViewportSize({ width, height: width === 320 ? 750 : 960 });
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);

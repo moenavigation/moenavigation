@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Eye, EyeOff, LoaderCircle, RefreshCw, X } from 'lucide-react';
 import { cmsErrorText, cmsRequest } from '@/lib/cms-client';
 import { useCmsLocale } from '@/lib/cms-locale';
+import { cmsInputPlaceholder } from '@/lib/cms-input-placeholders';
 import useDialogBackdrop from './useDialogBackdrop';
 import styles from './CmsWorkspace.module.css';
 
@@ -23,7 +24,7 @@ export default function CmsLoginForm({ busy, error, onSignIn }: {
   error: string;
   onSignIn: (username: string, password: string, challengeId: string, challengePosition: number) => Promise<string | null>;
 }) {
-  const { t } = useCmsLocale();
+  const { t, locale } = useCmsLocale();
   // Only a username is retained; passwords stay in the native input and the browser's password manager.
   const [savedUsername] = useState(rememberedUsername);
   const [remember, setRemember] = useState(Boolean(savedUsername));
@@ -130,12 +131,12 @@ export default function CmsLoginForm({ busy, error, onSignIn }: {
     <p className={styles.loginIntro}>{t('Sign in to manage your website content and enquiries.')}</p>
     <form ref={formRef} className={styles.editor} method="post" onSubmit={submit} autoComplete="on" aria-busy={busy}>
       <label htmlFor="cms-login-username">{t('Username')}
-        <input id="cms-login-username" name="username" required autoComplete="username" autoCapitalize="none" spellCheck={false} maxLength={80} defaultValue={savedUsername} readOnly={busy} />
+        <input placeholder={cmsInputPlaceholder(locale, 'loginUsername')} id="cms-login-username" name="username" required autoComplete="username" autoCapitalize="none" spellCheck={false} maxLength={80} defaultValue={savedUsername} readOnly={busy} />
       </label>
       <div className={styles.loginPasswordField}>
         <label htmlFor="cms-login-password">{t('Password')}</label>
         <div className={styles.loginPasswordInput}>
-          <input id="cms-login-password" type={showPassword ? 'text' : 'password'} name="password" required autoComplete="current-password" autoCapitalize="none" spellCheck={false} maxLength={200} readOnly={busy} />
+          <input placeholder={cmsInputPlaceholder(locale, 'loginPassword')} id="cms-login-password" type={showPassword ? 'text' : 'password'} name="password" required autoComplete="current-password" autoCapitalize="none" spellCheck={false} maxLength={200} readOnly={busy} />
           <button className={styles.passwordToggle} type="button" onClick={() => setShowPassword(value => !value)} disabled={busy} aria-controls="cms-login-password" aria-label={t(showPassword ? 'Hide password' : 'Show password')} title={t(showPassword ? 'Hide password' : 'Show password')}>
             {showPassword ? <EyeOff size={21} aria-hidden="true" /> : <Eye size={21} aria-hidden="true" />}
           </button>

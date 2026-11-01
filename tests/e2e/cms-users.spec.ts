@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test';
 import { test, expect, login, E2E_ADMIN, E2E_BASE_URL, loginChallengeData } from './fixtures';
 import { cmsMainThai } from '../../src/lib/cms-main-th';
+import { checkPasswordToggle } from './user-password-helpers';
 
 async function openUserSettings(page: Page) {
   await page.goto('/cms/users');
@@ -21,8 +22,8 @@ test('administrators can be added, reset and removed without exposing or retaini
   await add.getByRole('textbox', { name: 'Username' }).fill('second-admin');
   await add.getByLabel('Role', { exact: true }).selectOption('Admin');
   await add.getByLabel('Password', { exact: true }).fill('A-strong-new-admin-password-2026');
-  await add.getByLabel('Confirm password').fill('A-strong-new-admin-password-2026');
-  await add.getByLabel('Your current password').fill(E2E_ADMIN.password);
+  await add.getByLabel('Confirm password', { exact: true }).fill('A-strong-new-admin-password-2026');
+  await add.getByLabel('Your current password', { exact: true }).fill(E2E_ADMIN.password);
   await add.getByRole('button', { name: 'Add user', exact: true }).click();
   await expect(page.getByText('User added. Share the password privately.')).toBeVisible();
   const created = await db.collection<{ _id: string; username: string; passwordHash: string; passwordVersion: number }>('moe_users').findOne({ username: 'second-admin' });
@@ -49,7 +50,8 @@ test('administrators can be added, reset and removed without exposing or retaini
   await edit.getByRole('button', { name: 'Cancel', exact: true }).click();
   await page.getByRole('button', { name: 'Move second-admin to Trash' }).click();
   const remove = page.getByRole('dialog', { name: 'Move user to Trash' });
-  await remove.getByLabel('Your current password').fill(E2E_ADMIN.password);
+  await remove.getByLabel('Your current password', { exact: true }).fill(E2E_ADMIN.password);
+  await checkPasswordToggle(remove, 'Your current password', E2E_ADMIN.password, 'en', true);
   const updatedOverview = page.waitForResponse(response => response.url().includes('/api/cms/content?scope=overview') && response.status() === 200);
   await remove.getByRole('button', { name: 'Move to Trash', exact: true }).click();
   await expect(page.getByText('User moved to Trash. Access is disabled until restored.')).toBeVisible();
@@ -83,6 +85,7 @@ test('personal user settings change the password and revoke previous sessions wh
   await dialog.getByLabel('Current password', { exact: true }).fill(E2E_ADMIN.password);
   await dialog.getByLabel('New password', { exact: true }).fill(password);
   await dialog.getByLabel('Confirm new password', { exact: true }).fill(password);
+  for (const label of ['Current password', 'New password', 'Confirm new password']) await checkPasswordToggle(dialog, label, label === 'Current password' ? E2E_ADMIN.password : password, 'en', true);
   await dialog.getByRole('button', { name: 'Update password', exact: true }).click();
   await expect(dialog).not.toBeVisible();
   await expect(page.getByText('Your password has been updated.', { exact: true })).toBeVisible();
@@ -99,7 +102,10 @@ test('personal user settings change the password and revoke previous sessions wh
   const newLogin = await page.request.post('/api/cms/login', { headers: { Origin: E2E_BASE_URL }, data: { username: E2E_ADMIN.username, password, ...await loginChallengeData(page.request) } });
   expect(newLogin.status()).toBe(200);
   await page.getByRole('button', { name: 'User settings', exact: true }).click();
-  for (const label of ['Current password', 'New password', 'Confirm new password']) await expect(dialog.getByLabel(label, { exact: true })).toHaveValue('');
+  for (const label of ['Current password', 'New password', 'Confirm new password']) {
+    await expect(dialog.getByLabel(label, { exact: true })).toHaveValue('');
+    await expect(dialog.getByLabel(label, { exact: true })).toHaveAttribute('type', 'password');
+  }
 });
 
 test('personal password validation and failed saves preserve input for a successful retry', async ({ page }) => {
@@ -136,13 +142,18 @@ test('user settings fit narrow screens, contain keyboard focus and clear passwor
   await login(page);
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto('/cms/users');
+  let writes = 0;
+  page.on('request', request => { if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/cms/password') writes++; });
   for (const language of ['en', 'th'] as const) {
     const text = (value: string) => language === 'en' ? value : cmsMainThai[value];
     const trigger = page.getByRole('button', { name: text('User settings'), exact: true });
     await trigger.click();
     const dialog = page.getByRole('dialog', { name: text('User settings'), exact: true });
     await expect(dialog).toBeVisible();
-    await dialog.getByLabel(text('Current password'), { exact: true }).fill('Unsaved-private-password');
+    for (const label of ['Current password', 'New password', 'Confirm new password']) {
+      await dialog.getByLabel(text(label), { exact: true }).fill('Unsaved-private-password');
+      await checkPasswordToggle(dialog, label, 'Unsaved-private-password', language, true);
+    }
     await expect.poll(() => dialog.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     for (let index = 0; index < 8; index++) {
@@ -153,8 +164,12 @@ test('user settings fit narrow screens, contain keyboard focus and clear passwor
     await expect(dialog).not.toBeVisible();
     await expect(trigger).toBeFocused();
     await trigger.click();
-    for (const label of ['Current password', 'New password', 'Confirm new password']) await expect(dialog.getByLabel(text(label), { exact: true })).toHaveValue('');
+    for (const label of ['Current password', 'New password', 'Confirm new password']) {
+      await expect(dialog.getByLabel(text(label), { exact: true })).toHaveValue('');
+      await expect(dialog.getByLabel(text(label), { exact: true })).toHaveAttribute('type', 'password');
+    }
     await page.keyboard.press('Escape');
     if (language === 'en') await page.locator('header [data-cms-language-switch]').click();
   }
+  expect(writes).toBe(0);
 });

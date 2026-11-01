@@ -29,3 +29,13 @@ test('stale endpoints and malformed generated routes cannot overwrite the draft'
   }
   assert.equal(isGeneratedSeaRoute(result), true);
 });
+
+test('land-contact metadata permits preview application without relaxing coordinate validation', () => {
+  const text = '13.750000,100.500000\n3.000000,101.000000';
+  const result: GeneratedSeaRoute = { waypoints: [[13.75, 100.5], [13, 100.4], [3, 101]], distanceKm: 1800, touchesLand: true };
+  assert.equal(isGeneratedSeaRoute(result), true);
+  assert.equal(isGeneratedSeaRoute({ ...result, touchesLand: false }), true);
+  assert.equal(applyGeneratedSeaRoute(text, result), '13.750000,100.500000\n13,100.4\n3.000000,101.000000');
+  for (const touchesLand of [null, 'true', 1, {}, []]) assert.equal(isGeneratedSeaRoute({ ...result, touchesLand }), false);
+  assert.equal(isGeneratedSeaRoute({ ...result, waypoints: [[13.75, 100.5], [91, 101]] }), false);
+});

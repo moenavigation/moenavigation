@@ -51,6 +51,65 @@ function onePoint(points: (GoogleMapsCoordinates | null)[]): GoogleMapsCoordinat
   return points.every(point => point!.latitude === first.latitude && point!.longitude === first.longitude) ? first : null;
 }
 
+type MapsDataNode = { field: number; type: string; value: string; children: MapsDataNode[] };
+
+/** Message lengths count the following flattened tokens, including nested headers. */
+function mapsDataTree(source: string): MapsDataNode[] | null {
+  const start = source.indexOf('!');
+  if (start < 0) return null;
+  const tokens = source.slice(start + 1).replace(/\/$/, '').split('!');
+  if (tokens.length > 1024) return null;
+  let cursor = 0;
+  function read(end: number, depth: number): MapsDataNode[] | null {
+    if (depth > 32) return null;
+    const nodes: MapsDataNode[] = [];
+    while (cursor < end) {
+      const match = /^([1-9]\d*)([a-z])([\s\S]*)$/.exec(tokens[cursor++]);
+      if (!match || !Number.isSafeInteger(Number(match[1]))) return null;
+      const node: MapsDataNode = { field: Number(match[1]), type: match[2], value: match[3], children: [] };
+      if (node.type === 'm') {
+        if (!/^\d+$/.test(node.value)) return null;
+        const childEnd = cursor + Number(node.value);
+        if (!Number.isSafeInteger(childEnd) || childEnd > end) return null;
+        const children = read(childEnd, depth + 1);
+        if (!children) return null;
+        node.children = children;
+      }
+      nodes.push(node);
+    }
+    return nodes;
+  }
+  return read(tokens.length, 0);
+}
+
+/** A place payload can retain an earlier search under 4m/1m beside its selected 4m/3m pin. */
+function selectedPlacePin(source: string, pathSource: boolean): GoogleMapsCoordinates | null {
+  const dataStart = pathSource ? source.indexOf('/data=') : -1;
+  if (dataStart >= 0) {
+    // A place name can contain !; never discard coordinate tokens before the payload.
+    if (/!3d|!4d/.test(source.slice(0, dataStart))) return null;
+    source = source.slice(dataStart + '/data='.length);
+  }
+  const roots = mapsDataTree(source);
+  if (!roots) return null;
+  const places = roots.filter(node => node.field === 4 && node.type === 'm');
+  if (places.length !== 1) return null;
+  const selected = places[0].children.filter(node => node.field === 3 && node.type === 'm');
+  if (selected.length !== 1) return null;
+  const pins = selected[0].children.filter(node => node.field === 8 && node.type === 'm');
+  if (pins.length !== 1) return null;
+  const [latitude, longitude, extra] = pins[0].children;
+  if (extra || latitude?.field !== 3 || latitude.type !== 'd' || longitude?.field !== 4 || longitude.type !== 'd') return null;
+  const point = coordinates(latitude.value, longitude.value);
+  if (!point) return null;
+  const allowed = new Set<MapsDataNode>([latitude, longitude]);
+  const includeContext = (node: MapsDataNode) => { allowed.add(node); node.children.forEach(includeContext); };
+  places[0].children.filter(node => node.field === 1 && node.type === 'm').forEach(includeContext);
+  const onlyKnownPoints = (nodes: MapsDataNode[]): boolean => nodes.every(node =>
+    !(node.type === 'd' && (node.field === 3 || node.field === 4) && !allowed.has(node)) && onlyKnownPoints(node.children));
+  return onlyKnownPoints(roots) ? point : null;
+}
+
 /** Read explicit point coordinates. A named place's viewport is not its pin. */
 export function parseGoogleMapsCoordinates(input: string): GoogleMapsCoordinates | null {
   const url = googleMapsUrl(input);
@@ -64,11 +123,21 @@ export function parseGoogleMapsCoordinates(input: string): GoogleMapsCoordinates
     || params.get('f') === 'd' || params.get('layer') === 'c') return null;
 
   // Place pin payloads take precedence over a different @ camera center.
-  const data = `${path}\n${params.getAll('data').join('\n')}`;
+  const sources = [path, ...params.getAll('data')];
+  const data = sources.join('\n');
   if (/!3d|!4d/.test(data)) {
     const matches = [...data.matchAll(/!3d([^!/?#\n]+)!4d([^!/?#\n]+)/g)];
     if (matches.length !== (data.match(/!3d/g)?.length ?? 0) || matches.length !== (data.match(/!4d/g)?.length ?? 0)) return null;
-    return onePoint(matches.map(match => coordinates(match[1], match[2])));
+    const points = matches.map(match => coordinates(match[1], match[2]));
+    if (points.some(point => !point)) return null;
+    const unique = onePoint(points);
+    if (unique) return unique;
+    // Resolve each payload independently so a message cannot span path/query boundaries.
+    return onePoint(sources.flatMap((source, index) => {
+      if (!/!3d|!4d/.test(source)) return [];
+      const sourcePoints = [...source.matchAll(/!3d([^!/?#\n]+)!4d([^!/?#\n]+)/g)].map(match => coordinates(match[1], match[2]));
+      return [onePoint(sourcePoints) || selectedPlacePin(source, index === 0)];
+    }));
   }
 
   // A Place ID overrides the fallback query, which may identify a different pin.

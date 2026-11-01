@@ -5,6 +5,9 @@
 .to { display: inline-block; margin-inline: .6rem; font-weight: 400; color: var(--muted); }
 .hint, .note { margin: 0; color: var(--muted); font-size: var(--font-small); line-height: 1.6; }
 .note { padding: .8rem 1rem; border-inline-start: .2rem solid #82aecb; border-radius: .2rem .45rem .45rem .2rem; background: #f1f7fc; color: #365b74; }
+.landNote { display: flex; align-items: flex-start; gap: .65rem; margin: 0; padding: .8rem 1rem; border: 1px solid #e8d49c; border-radius: .6rem; background: #fff9eb; color: #77511b; font-size: var(--font-small); line-height: 1.6; overflow-wrap: anywhere; }
+.landNote > svg { flex-shrink: 0; margin-top: .2rem; }
+.landNote > span { min-width: 0; }
 .error { padding: .9rem 1rem; border: 1px solid #e4ccd0; border-radius: .6rem; background: #fff5f5; color: #962e3d; overflow-wrap: anywhere; }
 .error p { margin: 0; }
 .retry { min-height: var(--target-size); padding: .5rem 0 0; border: 0; background: none; color: var(--navy); text-decoration: underline; text-underline-offset: .2rem; font-weight: 600; }
@@ -17,6 +20,14 @@
 .metrics dd { margin: .3rem 0 0; color: var(--navy); font-size: var(--font-lead); font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .mapFrame { position: relative; isolation: isolate; min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: .65rem; background: #dcecf3; }
 .map { height: 25rem; width: 100%; background: #dcecf3; }
+.pointMarker { border: 0; background: transparent; }
+.mapFrame .pointLink { display: grid; place-items: center; width: 44px; height: 44px; color: var(--navy); text-decoration: none; border-radius: 50%; }
+.pointCenter { width: 1rem; height: 1rem; border: .15rem solid #fff; border-radius: 50%; background: #087a9c; box-shadow: 0 .1rem .4rem #07273f33; transition: opacity .15s ease, transform .15s ease; }
+.pointLink[data-route-point="origin"] .pointCenter { background: #082b50; }
+.pointLink[data-route-point="intermediate"] .pointCenter { width: .8rem; height: .8rem; background: #0b527f; opacity: 0; }
+.pointLink:focus-visible { outline: .15rem solid var(--blue); outline-offset: -.15rem; }
+.pointLink:focus-visible .pointCenter { opacity: 1; transform: scale(1.1); }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .mapFrame :global(.leaflet-container) { font-family: var(--font-family); }
 .mapFrame :global(.leaflet-tooltip) { padding: .3rem .55rem; border: 1px solid #b6d3e2; color: var(--navy); font-size: var(--font-small); font-weight: 600; }
 .mapFrame :global(.leaflet-control-attribution) { max-width: calc(100% - .5rem); padding: .2rem .4rem; font-size: var(--font-small); line-height: 1.4; white-space: normal; }
@@ -30,5 +41,7 @@
 .actions { position: sticky; bottom: -1.25rem; z-index: 600; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .6rem; margin-bottom: -1.25rem; padding-block: .9rem 1.25rem; border-top: 1px solid var(--line); background: var(--white); }
 .actions > button { gap: .6rem; }
 @media (hover: hover) and (pointer: fine) { .mapControls button:not(:disabled):hover { background: #e9f3f9; } }
+@media (any-hover: hover) and (any-pointer: fine) { .pointLink[data-hovered="true"] .pointCenter { opacity: 1; transform: scale(1.1); } }
+@media (prefers-reduced-motion: reduce) { .pointCenter { transition: none; } }
 @media (max-width: 520px) { .map { height: 21rem; } .metrics { gap: .75rem; padding: .8rem; } .actions > button { flex: 1 1 100%; } .actions > button:first-child { order: 1; } }
 @media (max-width: 430px) { .actions { bottom: -1rem; margin-bottom: -1rem; padding-bottom: 1rem; } }

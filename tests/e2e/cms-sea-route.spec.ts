@@ -4,8 +4,10 @@ import type { ContentRecord } from '../../src/lib/cms-types';
 import type { GeneratedSeaRoute, SeaRoutePoint } from '../../src/lib/sea-route';
 import { translateCms, type CmsLocale } from '../../src/lib/cms-locale';
 import { test, expect, login, E2E_ADMIN, E2E_BASE_URL } from './fixtures';
+import { clickClippedMapPoint } from './map-point-helpers';
 
 const endpoint = '/api/cms/routes/generate';
+const landNote = 'This route touches land in the available map data. Review and adjust the points before saving.';
 // These offshore endpoints exercise a regional maritime route without relying
 // on a port's street address or silently moving an endpoint onto the network.
 const origin: SeaRoutePoint = [12.9, 100.7];
@@ -63,6 +65,7 @@ async function pointValues(editor: Locator, locale: CmsLocale = 'en') {
 
 test('a generated sea route is previewed before applying, preserves endpoint text and saves through the normal route workflow', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 1100 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await login(page);
   const { editor, before, opener } = await openExisting(page);
   await setEndpoints(editor);
@@ -82,10 +85,58 @@ test('a generated sea route is previewed before applying, preserves endpoint tex
   expect(generated.waypoints[0]).toEqual(origin);
   expect(generated.waypoints.at(-1)).toEqual(destination);
   expect(generated.distanceKm).toBeGreaterThan(0);
+  expect(generated.touchesLand).not.toBe(true);
   expect(Math.min(...generated.waypoints.map(point => point[0]))).toBeLessThan(2);
   await expect(preview.getByRole('button', { name: 'Use generated points', exact: true })).toBeEnabled();
-  await expect(preview.getByRole('region', { name: 'Generated sea route map', exact: true })).toBeVisible();
+  const map = preview.getByRole('region', { name: 'Generated sea route map', exact: true });
+  await expect(map).toBeVisible();
+  const links = map.locator('a[data-route-point]');
+  await expect(links).toHaveCount(generated.waypoints.length);
+  for (const [index, point] of generated.waypoints.entries()) {
+    await expect(links.nth(index)).toHaveAttribute('href', `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(point.join(','))}`);
+    await expect(links.nth(index)).toHaveAttribute('target', '_blank');
+    await expect(links.nth(index)).toHaveAttribute('rel', 'noopener noreferrer');
+  }
+  await expect(map.locator('a[data-route-point="origin"] > span')).toHaveCSS('opacity', '1');
+  await expect(map.locator('a[data-route-point="destination"] > span')).toHaveCSS('opacity', '1');
+  const intermediate = map.locator('a[data-route-point="intermediate"]').nth(4);
+  const dot = intermediate.locator(':scope > span');
+  await expect(dot).toHaveCSS('opacity', '0');
+  await intermediate.hover();
+  await expect(dot).toHaveCSS('opacity', '1');
+  await page.mouse.move(0, 0);
+  await expect(dot).toHaveCSS('opacity', '0');
+  await page.keyboard.press('Tab');
+  await intermediate.focus();
+  await expect(dot).toHaveCSS('opacity', '1');
+  const fit = preview.getByRole('button', { name: 'Fit generated route', exact: true });
+  await fit.focus();
+  await expect(dot).toHaveCSS('opacity', '0');
+  // A drag beginning on a linked marker pans the map without opening a tab.
+  const markerBounds = await intermediate.boundingBox();
+  const center = { x: markerBounds!.x + markerBounds!.width / 2, y: markerBounds!.y + markerBounds!.height / 2 };
+  let openedTabs = 0;
+  const countPopup = () => { openedTabs++; };
+  page.on('popup', countPopup);
+  await page.mouse.move(center.x, center.y);
+  await page.mouse.down();
+  await page.mouse.move(center.x + 60, center.y + 20, { steps: 6 });
+  await page.mouse.up();
+  await fit.click();
+  await page.mouse.move(0, 0);
+  await expect(dot).toHaveCSS('opacity', '0');
+  expect(openedTabs).toBe(0);
+  page.off('popup', countPopup);
+  await page.context().route('https://www.google.com/maps/search/**', route => route.fulfill({ status: 200, contentType: 'text/html', body: '<title>External map destination</title>' }));
+  const edgeTab = page.waitForEvent('popup');
+  await clickClippedMapPoint(page, map, intermediate);
+  const external = await edgeTab;
+  await expect(external).toHaveURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(generated.waypoints[5].join(','))}`);
+  await external.close();
+  await page.bringToFront();
+  await fit.click();
   await expect(preview.getByText('Approximate website route. Review coastal areas before saving. Not for navigation.', { exact: true })).toBeVisible();
+  await expect(preview.getByText(landNote, { exact: true })).toHaveCount(0);
   await preview.screenshot({ path: testInfo.outputPath('sea-route-real-detour-desktop.png'), animations: 'disabled' });
   expect(await pointValues(editor)).toEqual(beforePoints);
   expect(saves).toBe(0);
@@ -109,6 +160,64 @@ test('a generated sea route is previewed before applying, preserves endpoint tex
   expect(saved.origin).toEqual({ ...before.origin, name: 'Unsaved origin terminal' });
   expect(saved.destination).toEqual(before.destination);
   expect(saved.revision).toBe(before.revision + 1);
+  expect(saves).toBe(1);
+});
+
+test('unavoidable land contact returns a reviewable network route and only saves after applying and Save', async ({ page }, testInfo) => {
+  await login(page);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const { editor, before, opener } = await openExisting(page);
+  await setEndpoints(editor);
+  const inlandOrigin: SeaRoutePoint = [13.75, 100.5];
+  const inlandText = ['13.750000000', '100.5000000000'];
+  await coordinate(editor, 'Origin point', 'Latitude').fill(inlandText[0]);
+  await coordinate(editor, 'Origin point', 'Longitude').fill(inlandText[1]);
+  const portName = editor.getByRole('group', { name: 'Origin port', exact: true }).getByLabel('Port name · English', { exact: true });
+  await portName.fill('Coastal route draft');
+  const originalPoints = await pointValues(editor);
+  let saves = 0;
+  page.on('request', request => { if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/cms/content') saves++; });
+  const responsePromise = page.waitForResponse(response => new URL(response.url()).pathname === endpoint && response.request().method() === 'POST');
+  await opener.click();
+  const preview = page.getByRole('dialog', { name: 'Sea route preview', exact: true });
+  const response = await responsePromise;
+  expect(response.status(), await response.text()).toBe(200);
+  const generated = await response.json() as GeneratedSeaRoute;
+  expect(generated.touchesLand).toBe(true);
+  expect(generated.waypoints.length).toBeGreaterThan(2);
+  expect(generated.waypoints[0]).toEqual(inlandOrigin);
+  expect(generated.waypoints.at(-1)).toEqual(destination);
+  const apply = preview.getByRole('button', { name: 'Use generated points', exact: true });
+  await expect(apply).toBeEnabled();
+  await expect(preview.getByText(landNote, { exact: true })).toBeVisible();
+  await expect(preview.getByRole('alert')).toHaveCount(0);
+  for (const width of [1440, 320]) {
+    await page.setViewportSize({ width, height: width === 320 ? 780 : 1100 });
+    await expect.poll(() => preview.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+    await preview.screenshot({ path: testInfo.outputPath(`sea-route-land-contact-en-${width}.png`), animations: 'disabled' });
+  }
+  expect(await pointValues(editor)).toEqual(originalPoints);
+  await expect(portName).toHaveValue('Coastal route draft');
+  expect(saves).toBe(0);
+  expect((await records(page)).find(record => record.id === before.id && record.type === 'Route')).toEqual(before);
+  await apply.click();
+  await expect(preview).not.toBeVisible();
+  await expect(opener).toBeFocused();
+  const applied = await pointValues(editor);
+  expect(applied[0]).toEqual(inlandText);
+  expect(applied.at(-1)).toEqual(destinationText);
+  expect(applied.map(point => point.map(Number))).toEqual(generated.waypoints);
+  await expect(portName).toHaveValue('Coastal route draft');
+  expect(saves).toBe(0);
+  const savePromise = page.waitForResponse(response => new URL(response.url()).pathname === '/api/cms/content' && response.request().method() === 'POST');
+  await editor.getByRole('button', { name: 'Save', exact: true }).click();
+  const save = await savePromise;
+  expect(save.status(), await save.text()).toBe(200);
+  const saved = (await save.json()).record as ContentRecord;
+  expect(saved.waypoints).toEqual(generated.waypoints);
+  expect(saved.origin).toEqual({ ...before.origin, name: 'Coastal route draft' });
+  expect(saved.destination).toEqual(before.destination);
   expect(saves).toBe(1);
 });
 
@@ -180,7 +289,9 @@ test('cancelled generation and failed retries preserve the draft and ignore an o
   } finally { clearTimeout(timeout); release(); }
 });
 
-test('sea route preview fits Thai mobile and desktop, contains focus and cancels on the backdrop without applying', async ({ page }, testInfo) => {
+test.describe('touch sea route preview', () => {
+test.use({ hasTouch: true });
+test('sea route preview fits Thai mobile and desktop, links every point and cancels on the backdrop without applying', async ({ page }, testInfo) => {
   await login(page);
   await page.locator('header [data-cms-language-switch]').click();
   const locale = 'th';
@@ -189,17 +300,34 @@ test('sea route preview fits Thai mobile and desktop, contains focus and cancels
   await setEndpoints(editor, locale);
   const before = await pointValues(editor, locale);
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.route(`**${endpoint}`, route => route.fulfill({ status: 200, json: example() }));
+  await page.route(`**${endpoint}`, route => route.fulfill({ status: 200, json: { ...example(), touchesLand: true } }));
   await opener.click();
   const preview = page.getByRole('dialog', { name: t('Sea route preview'), exact: true });
   await expect(preview.getByRole('button', { name: t('Use generated points'), exact: true })).toBeEnabled();
+  await expect(preview.getByText(t(landNote), { exact: true })).toBeVisible();
   await expect(preview.getByRole('button', { name: t('Fit generated route'), exact: true })).toBeEnabled();
+  const map = preview.getByRole('region', { name: t('Generated sea route map'), exact: true });
+  await expect(map.locator('a[data-route-point]')).toHaveCount(example().waypoints.length);
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: width === 320 ? 780 : 960 });
     await expect.poll(() => preview.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     await preview.screenshot({ path: testInfo.outputPath(`sea-route-preview-th-${width}.png`), animations: 'disabled' });
   }
+  const intermediate = map.locator('a[data-route-point="intermediate"]').nth(4);
+  await expect(intermediate.locator(':scope > span')).toHaveCSS('opacity', '0');
+  const target = await intermediate.boundingBox();
+  expect(target!.width).toBeGreaterThanOrEqual(43.99);
+  expect(target!.height).toBeGreaterThanOrEqual(43.99);
+  await page.context().route('https://www.google.com/maps/search/**', route => route.fulfill({ status: 200, contentType: 'text/html', body: '<title>External map destination</title>' }));
+  const newTab = page.waitForEvent('popup');
+  await intermediate.tap();
+  const external = await newTab;
+  await expect(external).toHaveURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(example().waypoints[5].join(','))}`);
+  await external.close();
+  await page.bringToFront();
+  await expect(preview).toBeVisible();
+  expect(await pointValues(editor, locale)).toEqual(before);
   for (let index = 0; index < 12; index++) {
     await page.keyboard.press('Tab');
     expect(await preview.evaluate(element => element.contains(document.activeElement))).toBe(true);
@@ -211,6 +339,7 @@ test('sea route preview fits Thai mobile and desktop, contains focus and cancels
   await expect(opener).toBeFocused();
   await expect(editor).toBeVisible();
   expect(await pointValues(editor, locale)).toEqual(before);
+});
 });
 
 test('sea-route generation requires a same-origin CMS session, validates input and remains a read-only tool for every role', async ({ page, db }) => {

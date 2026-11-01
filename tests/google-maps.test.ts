@@ -10,6 +10,9 @@ const full = googleMapsPointUrl(expected.latitude, expected.longitude);
 const short = 'https://maps.app.goo.gl/Example123';
 const noFetch: typeof fetch = async () => { assert.fail('This input must not make a network request.'); };
 const status = (code: number) => (error: unknown) => error instanceof HttpError && error.status === code;
+const contextualPinLink = "https://www.google.com/maps/place/11%C2%B002'53.7%22N+103%C2%B013'25.7%22E/@11.0735511,103.1521576,877m/data=!3m1!1e3!4m10!1m5!3m4!2zMTPCsDA0JzU5LjkiTiAxMDDCsDUyJzU5LjkiRQ!8m2!3d13.0833!4d100.8833!3m3!8m2!3d11.048254!4d103.223807?entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D";
+const contextualPayload = '!3m1!1e3!4m10!1m5!3m4!2zMTPCsDA0JzU5LjkiTiAxMDDCsDUyJzU5LjkiRQ!8m2!3d13.0833!4d100.8833!3m3!8m2!3d11.048254!4d103.223807';
+const selectedPin = { latitude: 11.048254, longitude: 103.223807 };
 
 test('Google Maps point links use the documented cross-platform search format', () => {
   assert.equal(full, 'https://www.google.com/maps/search/?api=1&query=13.08654321%2C100.89456789');
@@ -43,6 +46,44 @@ test('place pins override camera centers and encoded data payloads are supported
     `https://www.google.com/maps/place/Port/@1,2,16z/?data=${encodeURIComponent(`!3d${expected.latitude}!4d${expected.longitude}`)}`,
     `https://www.google.com/maps/place/Port/data=%213d${expected.latitude}%214d${expected.longitude}`,
   ]) assert.deepEqual(parseGoogleMapsCoordinates(input), expected, input);
+});
+
+test('a selected place pin takes precedence over coordinates retained from an earlier search', async () => {
+  for (const input of [
+    contextualPinLink,
+    `https://www.google.com/maps/place/Pin/data=${encodeURIComponent(contextualPayload)}`,
+    `https://www.google.com/maps/place/Cafe%21/@1,2,16z/data=${contextualPayload}`,
+    `https://www.google.com/maps/place/Pin/@1,2,16z?data=${encodeURIComponent(contextualPayload)}`,
+    // Context can follow the selected point; this must not become a last-pair heuristic.
+    'https://www.google.com/maps/place/Pin/data=!4m10!3m3!8m2!3d11.048254!4d103.223807!1m5!3m4!2zcontext!8m2!3d13.0833!4d100.8833',
+  ]) {
+    assert.deepEqual(parseGoogleMapsCoordinates(input), selectedPin, input);
+    assert.deepEqual(await resolveGoogleMapsCoordinates(input, { fetch: noFetch }), selectedPin);
+  }
+});
+
+test('context disambiguation rejects malformed messages, extra competing pins and invalid coordinates', () => {
+  const prefix = 'https://www.google.com/maps/place/Pin/data=';
+  for (const payload of [
+    contextualPayload.replace('!4m10', '!4m9'),
+    contextualPayload.replace('!4m10', '!4m11'),
+    contextualPayload.replace('!1m5', '!1m6'),
+    contextualPayload.replace('!3m3!8m2', '!3m2!8m2'),
+    contextualPayload.replace('!4m10', '!4m1.5'),
+    contextualPayload.replace('!4m10', '!4m-10'),
+    contextualPayload.replace('!4m10', '!4m9007199254740992'),
+    contextualPayload.replace('!3d13.0833', '!3d91'),
+    `${contextualPayload}!3d12!4d104`,
+    `${contextualPayload}!4m4!3m3!8m2!3d12!4d104`,
+    '!4m8!3m3!8m2!3d11!4d103!3m3!8m2!3d13!4d100',
+    '!4m8!1m3!8m2!3d13!4d100!3m3!8m2!3d11!4d103!4d105',
+  ]) assert.equal(parseGoogleMapsCoordinates(prefix + payload), null, payload);
+  assert.equal(parseGoogleMapsCoordinates(`${prefix}${contextualPayload}?data=${encodeURIComponent('!3d12!4d104')}`), null);
+  assert.equal(parseGoogleMapsCoordinates(`${prefix}${contextualPayload}&irrelevant!3d12!4d104`), null);
+  assert.equal(parseGoogleMapsCoordinates(`https://www.google.com/maps/place/!3d12!4d104/data=${contextualPayload}`), null);
+  assert.equal(parseGoogleMapsCoordinates(`https://www.google.com/maps/place/Pin?data=${encodeURIComponent(`!3d12!4d104/data=${contextualPayload}`)}`), null);
+  // A message count must not borrow tokens from a separate data query parameter.
+  assert.equal(parseGoogleMapsCoordinates(`${prefix}!4m8!1m3!8m2!3d13!4d100?data=${encodeURIComponent('!3m3!8m2!3d11!4d103')}`), null);
 });
 
 test('unsupported, misleading and unsafe link origins never produce coordinates', () => {

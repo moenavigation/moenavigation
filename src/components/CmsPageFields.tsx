@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { ImagePlus, Languages } from 'lucide-react';
 import type { ContentRecord } from '@/lib/cms-types';
 import { useCmsLocale } from '@/lib/cms-locale';
+import { cmsContentPlaceholder } from '@/lib/cms-content-placeholders';
 import styles from './CmsPageFields.module.css';
 
 type TextField = 'title' | 'description' | 'eyebrow' | 'body' | 'caption' | 'imageAlt';
@@ -56,7 +57,7 @@ export default function CmsPageFields({ record, disabled, onChange, imageField }
     const key = (language === 'th' ? `${field}Th` : field) as TextField | ThaiTextField;
     const label = t(`${labels[field]} · ${language === 'th' ? 'Thai' : 'English'}`);
     const required = field === 'title' || (field === 'description' && record.type === 'Page');
-    const common = { lang: language, required, maxLength: limits[field], value: record[key] || '', onChange: (event: { target: { value: string } }) => onChange({ [key]: event.target.value }) };
+    const common = { lang: language, placeholder: cmsContentPlaceholder(field, language, record.type), required, maxLength: limits[field], value: record[key] || '', onChange: (event: { target: { value: string } }) => onChange({ [key]: event.target.value }) };
     return <label key={field} className={styles.field}>{label}
       {field === 'body' || field === 'description' ? <textarea {...common} rows={field === 'body' ? 7 : 3} /> : <input {...common} />}
       {field === 'body' && <span className={styles.hint}>{t('Separate paragraphs with a blank line.')}</span>}

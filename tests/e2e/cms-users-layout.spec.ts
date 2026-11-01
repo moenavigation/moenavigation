@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { Locator, Page } from '@playwright/test';
 import { translateCms } from '../../src/lib/cms-locale';
 import { test, expect, login, E2E_ADMIN } from './fixtures';
+import { checkPasswordToggle } from './user-password-helpers';
 
 async function clickOutside(page: Page, dialog: Locator) {
   const bounds = await dialog.boundingBox();
@@ -23,6 +24,7 @@ test('the single refresh updates user cards and the layout fits desktop and narr
   await page.goto('/cms/users');
   const region = page.getByRole('region', { name: 'Users', exact: true });
   await expect(region.getByRole('listitem')).toHaveCount(3);
+  await expect(region.getByRole('button', { name: /^Change profile photo for / })).toHaveCount(0);
   const refresh = page.getByRole('button', { name: 'Refresh workspace', exact: true });
   await expect(page.getByRole('button', { name: /Refresh/ })).toHaveCount(1);
   await expect(refresh).toHaveClass(/secondary/);
@@ -75,12 +77,19 @@ test('Add user closes by Cancel, Escape or backdrop, restores focus and clears p
       await opener.click();
       await expect(dialog).toBeVisible();
       await expect(dialog.getByLabel(t('Username'), { exact: true })).toHaveValue('');
-      for (const label of ['Password', 'Confirm password', 'Your current password']) await expect(dialog.getByLabel(t(label), { exact: true })).toHaveValue('');
+      for (const label of ['Password', 'Confirm password', 'Your current password']) {
+        await expect(dialog.getByLabel(t(label), { exact: true })).toHaveValue('');
+        await expect(dialog.getByLabel(t(label), { exact: true })).toHaveAttribute('type', 'password');
+      }
       await expect(dialog.getByLabel(t('Role'), { exact: true })).toHaveValue('Operator');
       await dialog.getByLabel(t('Username'), { exact: true }).fill('unsaved-new-user');
       await dialog.getByLabel(t('Role'), { exact: true }).selectOption('Admin');
       await dialog.getByLabel(t('Password'), { exact: true }).fill('Private-unsaved-password-2026!');
+      await dialog.getByLabel(t('Confirm password'), { exact: true }).fill('Private-unsaved-password-2026!');
       await dialog.getByLabel(t('Your current password'), { exact: true }).fill('Private-current-password');
+      for (const label of dismiss === 'Cancel' ? ['Password', 'Confirm password', 'Your current password'] : ['Password']) {
+        await checkPasswordToggle(dialog, label, label === 'Your current password' ? 'Private-current-password' : 'Private-unsaved-password-2026!', locale, true);
+      }
       await expect.poll(() => dialog.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
       for (let index = 0; index < 12; index++) {
         await page.keyboard.press('Tab');
@@ -112,6 +121,7 @@ test('Add user keeps its pending panel and failed input, then closes after one s
   await dialog.getByLabel('Password', { exact: true }).fill(password);
   await dialog.getByLabel('Confirm password', { exact: true }).fill(password);
   await dialog.getByLabel('Your current password', { exact: true }).fill(E2E_ADMIN.password);
+  for (const label of ['Password', 'Confirm password', 'Your current password']) await checkPasswordToggle(dialog, label, label === 'Your current password' ? E2E_ADMIN.password : password, 'en', true);
 
   let release!: () => void;
   const gate = new Promise<void>(resolve => { release = resolve; });
@@ -120,13 +130,14 @@ test('Add user keeps its pending panel and failed input, then closes after one s
   await page.route('**/api/cms/users', async route => {
     if (route.request().method() !== 'POST') return route.continue();
     writes++;
-    if (writes !== 1) return route.continue();
-    await gate;
+    if (writes > 2) return route.continue();
+    if (writes === 1) await gate;
     await route.fulfill({ status: 503, json: { error: 'Synthetic user creation unavailable.' } });
   });
   try {
     await dialog.getByRole('button', { name: 'Add user', exact: true }).click();
     await expect(dialog.locator('[data-working-panel]')).toContainText('Adding user…');
+    for (const label of ['Password', 'Confirm password', 'Your current password']) await expect(dialog.getByLabel(label, { exact: true })).toHaveAttribute('type', 'password');
     await expect(dialog.getByRole('button', { name: 'Cancel', exact: true })).toBeDisabled();
     await dialog.locator('form').evaluate((form: HTMLFormElement) => { form.requestSubmit(); form.requestSubmit(); });
     await page.keyboard.press('Escape');
@@ -141,10 +152,32 @@ test('Add user keeps its pending panel and failed input, then closes after one s
   await expect(dialog.getByLabel('Role', { exact: true })).toHaveValue('Admin');
   await expect(dialog.getByLabel('Password', { exact: true })).toHaveValue(password);
   await expect(dialog.getByLabel('Your current password', { exact: true })).toHaveValue(E2E_ADMIN.password);
-  await dialog.getByRole('button', { name: 'Add user', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Retry add user', exact: true }).click();
   await expect(dialog).not.toBeVisible();
   await expect(opener).toBeFocused();
-  expect(writes).toBe(2);
+  expect(writes).toBe(3);
   await expect(page.getByRole('region', { name: 'Users', exact: true }).getByText('retry-card-user', { exact: true })).toBeVisible();
   expect(await db.collection('moe_users').countDocuments({ username: 'retry-card-user' })).toBe(1);
+
+  // A failed account-only request has no uploaded image to abort on Cancel.
+  const accountCount = await db.collection('moe_users').countDocuments();
+  let submissionRequests = 0;
+  page.on('request', request => { if (new URL(request.url()).pathname === '/api/cms/media/submission') submissionRequests++; });
+  await page.route('**/api/cms/users', route => route.request().method() === 'POST'
+    ? route.fulfill({ status: 503, json: { error: 'Synthetic cancelled creation unavailable.' } })
+    : route.continue());
+  await opener.click();
+  await dialog.getByLabel('Username', { exact: true }).fill('cancel-failed-account-only');
+  await dialog.getByLabel('Password', { exact: true }).fill(password);
+  await dialog.getByLabel('Confirm password', { exact: true }).fill(password);
+  await dialog.getByLabel('Your current password', { exact: true }).fill(E2E_ADMIN.password);
+  await dialog.getByRole('button', { name: 'Add user', exact: true }).click();
+  await expect(dialog.getByRole('alert')).toHaveText('Synthetic cancelled creation unavailable.');
+  await expect(dialog.getByRole('button', { name: 'Retry add user', exact: true })).toBeEnabled();
+  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+  await expect(opener).toBeFocused();
+  expect(submissionRequests).toBe(0);
+  expect(await db.collection('moe_users').countDocuments()).toBe(accountCount);
+  expect(await db.collection('moe_users').countDocuments({ username: 'cancel-failed-account-only' })).toBe(0);
 });

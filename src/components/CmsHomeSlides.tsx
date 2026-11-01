@@ -9,6 +9,7 @@ import { CmsRequestError, cmsErrorText, cmsRequest, prepareCmsImage, resolveSubm
 import type { ContentImage, ContentRecord, MediaItem } from '@/lib/cms-types';
 import { defaultHomeSlides, getHomeSlides, getHomeSlideInterval } from '@/lib/home-slides';
 import { useCmsLocale } from '@/lib/cms-locale';
+import { cmsInputPlaceholder } from '@/lib/cms-input-placeholders';
 import Dialog from './Dialog';
 import CmsWorkingPanel from './CmsWorkingPanel';
 import useCmsMediaSearch from './useCmsMediaSearch';
@@ -44,7 +45,7 @@ function SlideCard({ slide, index, total, busy, onChange, onMove, onRemove }: { 
       <div className={styles.cardActions}><button type="button" className={styles.iconButton} disabled={busy || index === 0} aria-label={t('Move slide {number} up', { number: index + 1 })} onClick={() => onMove(-1)}><ArrowUp size={18} aria-hidden="true" /></button><button type="button" className={styles.iconButton} disabled={busy || index === total - 1} aria-label={t('Move slide {number} down', { number: index + 1 })} onClick={() => onMove(1)}><ArrowDown size={18} aria-hidden="true" /></button><button type="button" className={styles.iconButton} disabled={busy || total === 1} aria-label={t('Remove slide {number}', { number: index + 1 })} onClick={onRemove}><Trash2 size={18} aria-hidden="true" /></button></div>
     </div>
     <div className={styles.thumbnail}><img src={slide.url} alt={locale === 'th' ? slide.altTh : slide.alt} width={600} height={200} loading="lazy" /><span>{String(index + 1).padStart(2, '0')}</span></div>
-    <details className={styles.descriptions}><summary>{t('Image descriptions')}</summary><div>{fields.map(field => <label key={field}>{t(field === 'alt' ? 'Image description · English' : 'Image description · Thai')}<input lang={field === 'alt' ? 'en' : 'th'} maxLength={250} value={slide[field]} disabled={busy} onChange={event => onChange(field, event.target.value)} /></label>)}</div></details>
+    <details className={styles.descriptions}><summary>{t('Image descriptions')}</summary><div>{fields.map(field => <label key={field}>{t(field === 'alt' ? 'Image description · English' : 'Image description · Thai')}<input placeholder={cmsInputPlaceholder(field === 'alt' ? 'en' : 'th', field === 'alt' ? 'bannerDescriptionEn' : 'bannerDescriptionTh')} lang={field === 'alt' ? 'en' : 'th'} maxLength={250} value={slide[field]} disabled={busy} onChange={event => onChange(field, event.target.value)} /></label>)}</div></details>
   </Reorder.Item>;
 }
 

@@ -1,7 +1,7 @@
 import { MAX_ROUTE_POINTS, routeCoordinateRows } from './cms-route-fields';
 
 export type SeaRoutePoint = [number, number];
-export type GeneratedSeaRoute = { waypoints: SeaRoutePoint[]; distanceKm: number };
+export type GeneratedSeaRoute = { waypoints: SeaRoutePoint[]; distanceKm: number; touchesLand?: boolean };
 
 export function isSeaRoutePoint(value: unknown): value is SeaRoutePoint {
   return Array.isArray(value) && value.length === 2 && value.every(coordinate => typeof coordinate === 'number' && Number.isFinite(coordinate))
@@ -22,7 +22,8 @@ export function isGeneratedSeaRoute(value: unknown): value is GeneratedSeaRoute 
   if (!value || typeof value !== 'object') return false;
   const result = value as Partial<GeneratedSeaRoute>;
   return Array.isArray(result.waypoints) && result.waypoints.length >= 2 && result.waypoints.length <= MAX_ROUTE_POINTS
-    && result.waypoints.every(isSeaRoutePoint) && typeof result.distanceKm === 'number' && Number.isFinite(result.distanceKm) && result.distanceKm > 0;
+    && result.waypoints.every(isSeaRoutePoint) && typeof result.distanceKm === 'number' && Number.isFinite(result.distanceKm) && result.distanceKm > 0
+    && (result.touchesLand === undefined || typeof result.touchesLand === 'boolean');
 }
 
 /** Replace only the intermediate rows; preserve the editor's endpoint precision and formatting. */

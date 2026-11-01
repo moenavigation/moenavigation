@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { cmsRoles } from '@/lib/cms-roles';
 import { createSession, hashPassword, publicUser, requireUser } from '@/server/auth';
 import { collections, getDb, transaction } from '@/server/db';
-import { authorizeUserMutation, createUserInTransaction, editUserInTransaction, removeUserInTransaction } from '@/server/users';
+import { authorizeUserMutation, createUserInTransaction, editUserInTransaction, removeUserInTransaction, userCreateInput } from '@/server/users';
 import { api, json, readJson } from '@/server/http';
 
 export const runtime = 'nodejs';
@@ -10,7 +10,6 @@ export const runtime = 'nodejs';
 const username = z.string().trim().toLowerCase().regex(/^[a-z0-9][a-z0-9._-]{2,39}$/, 'Use 3–40 lowercase letters, numbers, dots, underscores or hyphens.');
 const password = z.string().min(14).max(200);
 const currentPassword = z.string().min(1).max(200);
-const createInput = z.strictObject({ username, password, role: z.enum(cmsRoles).default('Admin'), currentPassword });
 // Retain unchanged usernames from older clients; the transaction rejects renames.
 const editInput = z.strictObject({ id: z.string().uuid(), username: username.optional(), role: z.enum(cmsRoles).optional(), password: password.optional(), currentPassword })
   .refine(input => input.username !== undefined || input.role !== undefined || input.password !== undefined, 'Choose a user detail to update.');
@@ -23,11 +22,15 @@ export const GET = api(async () => {
 });
 
 export const POST = api(async request => {
-  const input = createInput.parse(await readJson(request));
+  const input = userCreateInput.parse(await readJson(request));
   const actor = await authorizeUserMutation(request, input.currentPassword);
   const passwordHash = await hashPassword(input.password);
-  await transaction((db, session) => createUserInTransaction(actor, { username: input.username, role: input.role, passwordHash }, db, session));
-  return json({ ok: true }, 201);
+  const result = await transaction((db, session) => createUserInTransaction(actor, {
+    username: input.username, role: input.role, passwordHash,
+    ...(input.avatar ? { avatar: input.avatar } : {}),
+    ...(input.submissionId ? { submissionId: input.submissionId, passwordForReplay: input.password } : {}),
+  }, db, session));
+  return json({ ok: true, user: publicUser(result.user), replayed: result.replayed }, result.replayed ? 200 : 201);
 });
 
 export const PATCH = api(async request => {

@@ -2,7 +2,7 @@
 
 The route editor generates an approximate map illustration from the existing origin and destination. Generation does not save content. Editors review the map, apply the proposed intermediate points, and save the route normally.
 
-The server uses the locally bundled maritime graph and land polygons below. No paid routing API, runtime geocoding, or external request is needed. These files stay on the server; the browser receives only the proposed coordinates and approximate distance.
+The server uses the locally bundled maritime graph and land polygons below. No paid routing API, runtime geocoding, or external request is needed. These files stay on the server; the browser receives the proposed coordinates, approximate distance, and whether the route touches mapped land.
 
 ## Sources and attribution
 
@@ -14,14 +14,16 @@ The server uses the locally bundled maritime graph and land polygons below. No p
 
 Input endpoints retain their exact coordinates. They connect to nearby maritime graph vertices, with a maximum 100 km distance to both the nearest graph line and the selected graph vertex. Every connector, network point, and network segment is checked against the land data, including coastline touches and polygon holes. Checks use Web Mercator geometry to match the straight polyline segments displayed by Leaflet.
 
-Some original maritime graph edges cross the coarse land polygons. When a proposed route contains one, the server removes that original edge from its cached working graph and retries, up to four route calculations. It never adds invented graph edges or changes the packaged graph. The library's old graph cache is cleared after an exclusion. Exact endpoint connectors crossing land are rejected; they are not used to remove unrelated graph edges. Each resulting route is checked again.
+Some original maritime graph edges cross the coarse land polygons. When a proposed route contains one, the server excludes that original edge for the current generation and retries, up to four route calculations. It never adds invented graph edges or changes the packaged graph. Exact endpoint connectors are checked but are not used to remove unrelated graph edges. Each resulting route is checked again.
+
+A clear route is preferred. If the bounded attempts cannot avoid land, the best available network route remains usable in the preview with `touchesLand: true` and a persistent land-contact note. Candidates are ranked by the total length of segments touching land, then total distance; this is an approximation, not a measurement of distance traveled on land. Inland endpoints and connectors touching land can use this fallback within the same snapping and point limits. Applying still replaces only intermediate points, and saving remains explicit.
 
 Intermediate points are original network vertices, without simplification that could cut across islands. The existing limit of 100 total route points applies. Longer routes, missing connections, excessive endpoint snapping, and date-line crossings return a readable error so an editor can adjust the endpoints or enter points manually. There is no straight-line fallback. Arctic routes are disabled.
 
-This is a **reviewed website illustration**, not a navigation chart or voyage plan. Generalized coastlines omit small islands, harbour detail, depth, tides, vessel clearance, traffic restrictions, and current conditions. A detected land crossing is rejected, but passing this coarse check does not prove that a vessel can sail the route. Ports and narrow canals may require manual points. Review the entire map before saving.
+This is a **reviewed website illustration**, not a navigation chart or voyage plan. Generalized coastlines omit small islands, harbour detail, depth, tides, vessel clearance, traffic restrictions, and current conditions. Land contact is flagged for review; passing the coarse check does not prove that a vessel can sail the route. Ports and narrow canals may require manual points. Review the entire map before saving.
 
-The land mask and current graph are cached per server process. `next.config.ts` traces the land file into the CMS generation endpoint and keeps `searoute-ts` as a server dependency. When updating the data or routing package, re-run the geographic regression tests and review representative regional maps.
+The land mask is cached per server process. Graph exclusions are local to each generation so earlier requests cannot remove a later request's fallback. Routing caches remain bounded. `next.config.ts` traces the land file into the CMS generation endpoint and keeps `searoute-ts` as a server dependency. When updating the data or routing package, re-run the geographic regression tests and review representative regional maps.
 
 ## Verification
 
-Run `node --conditions=react-server --import tsx --test tests/sea-route.test.ts`. The tests cover a Gulf of Thailand–Port Klang detour around the Malay peninsula, coastal routes, endpoint preservation, source-graph immutability, land and connector rejection, polygon holes and boundaries, projected geometry, invalid inputs, distance limits, unavailable routes, the date line, and the 100-point budget. Browser tests additionally exercise the CMS generation, preview, apply, cancel, loading, and permissions behavior.
+Run `node --conditions=react-server --import tsx --test tests/sea-route.test.ts`. The tests cover a Gulf of Thailand–Port Klang detour around the Malay peninsula, coastal routes, endpoint preservation, source-graph immutability, land-contact fallbacks, polygon holes and boundaries, projected geometry, invalid inputs, distance limits, unavailable routes, the date line, and the 100-point budget. Browser tests additionally exercise the CMS generation, preview, apply, cancel, loading, and permissions behavior.

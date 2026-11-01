@@ -9,6 +9,7 @@ import { enquiryRecipientLimit, saveEnquiryRecipientsSchema, type EnquiryRecipie
 import type { CmsRole } from '@/lib/cms-roles';
 import { cmsErrorText, CmsRequestError, cmsRequest } from '@/lib/cms-client';
 import { useCmsLocale } from '@/lib/cms-locale';
+import { cmsInputPlaceholder } from '@/lib/cms-input-placeholders';
 import { containDialogFocus } from '@/lib/dialog-focus';
 import { useCmsDeadline } from './useCmsEmailSetup';
 import styles from './CmsEnquiryRecipients.module.css';
@@ -27,7 +28,7 @@ export default function CmsEnquiryRecipients({ role, onSaved }: { role: CmsRole;
 }
 
 function RecipientDialog({ onClose, onSaved, trigger }: { onClose: () => void; onSaved: () => void; trigger: RefObject<HTMLButtonElement | null> }) {
-  const { t } = useCmsLocale();
+  const { t, locale } = useCmsLocale();
   const title = useId();
   const modal = useRef<HTMLDialogElement>(null);
   const request = useRef<AbortController | null>(null);
@@ -113,7 +114,7 @@ function RecipientDialog({ onClose, onSaved, trigger }: { onClose: () => void; o
         <p>{t('Choose who receives website enquiry emails. Add, edit or remove addresses, then save your changes.')}</p>
         {!loading && saved && <>
           <div className={styles.list}>{rows.map((row, index) => <div key={row.id} className={styles.row}>
-            <label className="field" htmlFor={row.id}>{t('Recipient email {number}', { number: index + 1 })}<input id={row.id} type="email" inputMode="email" autoComplete="off" spellCheck={false} required maxLength={254} value={row.email} disabled={saving} onChange={event => { const email = event.target.value; setRows(current => current.map(item => item.id === row.id ? { ...item, email } : item)); }} /></label>
+            <label className="field" htmlFor={row.id}>{t('Recipient email {number}', { number: index + 1 })}<input placeholder={cmsInputPlaceholder(locale, 'recipientEmail')} id={row.id} type="email" inputMode="email" autoComplete="off" spellCheck={false} required maxLength={254} value={row.email} disabled={saving} onChange={event => { const email = event.target.value; setRows(current => current.map(item => item.id === row.id ? { ...item, email } : item)); }} /></label>
             <button type="button" className={styles.remove} disabled={saving} onClick={() => setRows(current => current.filter(item => item.id !== row.id))} aria-label={t('Remove recipient {number}', { number: index + 1 })}><Trash2 size={19} aria-hidden="true" /></button>
           </div>)}</div>
           {!rows.length && <div className={styles.empty}><Mail size={28} aria-hidden="true" /><strong>{t('No notification recipients')}</strong><p>{t('An empty list pauses enquiry emails. Enquiries will still be saved in the CMS.')}</p></div>}

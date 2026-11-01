@@ -3,10 +3,10 @@ import { randomUUID } from 'node:crypto';
 import test from 'node:test';
 import type { ClientSession, Db } from 'mongodb';
 import { cmsRoles, canManageUser, type CmsRole } from '../src/lib/cms-roles';
-import { digest, publicUser } from '../src/server/auth';
+import { digest, hashPassword, publicUser } from '../src/server/auth';
 import type { MediaDocument, UserDocument } from '../src/server/db';
 import { HttpError } from '../src/server/http';
-import { updateUserProfileInTransaction, userProfileInput } from '../src/server/users';
+import { createUserInTransaction, updateUserProfileInTransaction, userCreateInput, userProfileInput } from '../src/server/users';
 
 type Row = Record<string, unknown> & { _id: string };
 type Filter = Record<string, unknown>;
@@ -74,6 +74,11 @@ function harness(users: UserDocument[], media: MediaDocument[] = []) {
     save: async (actor: UserDocument, change: ReturnType<typeof input>) => {
       const before = structuredClone(tables);
       try { return await updateUserProfileInTransaction(actor, change, db, session); }
+      catch (error) { tables = before; throw error; }
+    },
+    create: async (actor: UserDocument, change: Parameters<typeof createUserInTransaction>[1]) => {
+      const before = structuredClone(tables);
+      try { return await createUserInTransaction(actor, change, db, session); }
       catch (error) { tables = before; throw error; }
     },
   };
@@ -220,6 +225,154 @@ test('audit failure rolls back the staged photo, account, and operation marker i
     state.failAudit();
     await assert.rejects(state.save(actor, input(actor, image)), /Audit unavailable/);
     assert.deepEqual(state.table('moe_users').get(actor._id), actor);
+    assert.deepEqual(state.table('moe_media').get(image.id), image);
+    assert.equal(state.table('moe_state').size, 0);
+    assert.equal(state.table('moe_logs').size, 0);
+  }
+});
+
+const newPassword = 'new-user-secret-for-tests';
+let newPasswordHash: Promise<string> | undefined;
+async function creation(image?: MediaDocument) {
+  return {
+    username: 'created-user', role: 'Operator' as CmsRole,
+    passwordHash: await (newPasswordHash ??= hashPassword(newPassword)), passwordForReplay: newPassword,
+    submissionId: image?.submissionId ?? randomUUID(), ...(image ? { avatar: image.url } : {}),
+  };
+}
+
+test('account creation accepts optional photos with a save identity and keeps the old request contract', () => {
+  const request = { username: 'created-user', role: 'Admin', password: newPassword, currentPassword: 'actor-password' };
+  assert.deepEqual(userCreateInput.parse(request), request);
+  const withPhoto = { ...request, avatar: 'https://res.cloudinary.com/example/image/upload/photo.webp', submissionId: randomUUID() };
+  assert.deepEqual(userCreateInput.parse(withPhoto), withPhoto);
+  assert.equal(userCreateInput.safeParse({ ...request, submissionId: randomUUID() }).success, true);
+  for (const invalid of [
+    { ...withPhoto, submissionId: undefined }, { ...withPhoto, submissionId: '' },
+    { ...withPhoto, avatar: 'http://example.com/photo.jpg' }, { ...withPhoto, avatar: 'data:image/png;base64,test' },
+    { ...withPhoto, id: randomUUID() }, { ...withPhoto, passwordHash: 'provided-hash' },
+    { ...withPhoto, passwordForReplay: 'provided-secret' }, { ...withPhoto, profileRevision: 1 },
+  ]) assert.equal(userCreateInput.safeParse(invalid).success, false);
+});
+
+test('creating an account with a staged photo commits the reference, media and audit once', async () => {
+  const actor = account('Admin');
+  const image = photo(actor._id, randomUUID(), 'staged');
+  const state = harness([actor], [image]);
+  const change = await creation(image);
+  const first = await state.create(actor, change);
+  assert.equal(first.replayed, false);
+  assert.equal(first.user.avatar, image.url);
+  assert.equal(first.user.profileRevision, 1);
+  assert.equal(first.user.passwordVersion, 1);
+  assert.equal(first.user.role, 'Operator');
+  assert.notEqual(first.user._id, actor._id);
+  assert.deepEqual(state.table('moe_users').get(actor._id), actor);
+  assert.equal(state.table('moe_media').get(image.id)?.state, 'committed');
+  assert.deepEqual([...state.table('moe_logs').values()].map(row => row.action), ['media.uploaded', 'user.created']);
+  assert.deepEqual(Object.keys(first.user).sort(), ['_id', 'avatar', 'createdAt', 'passwordHash', 'passwordVersion', 'profileRevision', 'role', 'username'].sort());
+  const replay = await state.create(actor, { ...change, passwordHash: await hashPassword(newPassword) });
+  assert.equal(replay.replayed, true);
+  assert.deepEqual(replay.user, first.user);
+  assert.equal(state.table('moe_users').size, 2);
+  assert.equal(state.table('moe_logs').size, 2);
+  assert.equal(JSON.stringify([...state.table('moe_state').values()]).includes(newPassword), false);
+  assert.equal(JSON.stringify([...state.table('moe_state').values()]).includes(first.user.passwordHash), false);
+  assert.equal(JSON.stringify([...state.table('moe_logs').values()]).includes(first.user.passwordHash), false);
+  assert.ok(state.table('moe_state').get(`user-create:${actor._id}:${change.submissionId}`)?.expiresAt instanceof Date);
+});
+
+test('library-photo and photo-free creation both support exact replay without granting ownership', async () => {
+  const actor = account('Admin');
+  const library = photo('library-owner', randomUUID());
+  for (const image of [library, undefined]) {
+    const state = harness([actor], image ? [image] : []);
+    const change = await creation(image);
+    const first = await state.create(actor, change);
+    assert.equal(first.user.avatar, image?.url);
+    assert.equal((await state.create(actor, change)).user._id, first.user._id);
+    assert.deepEqual([...state.table('moe_logs').values()].map(row => row.action), ['user.created']);
+    if (image) {
+      assert.equal(state.table('moe_media').get(image.id)?.owner, image.owner);
+      assert.equal(state.table('moe_media').get(image.id)?.state, 'committed');
+      assert.ok((state.table('moe_media').get(image.id)?.touchedAt as Date) > image.touchedAt);
+    } else {
+      assert.equal([...state.table('moe_state').keys()].some(key => key.startsWith('media-submission:')), false);
+    }
+  }
+});
+
+test('create replay refuses changed payloads, changed passwords, and a different creator', async () => {
+  const actor = account('Admin'), other = { ...account('Admin'), username: 'other-admin' };
+  const state = harness([actor, other]);
+  const change = await creation();
+  const first = await state.create(actor, change);
+  for (const altered of [
+    { ...change, username: 'different-user' }, { ...change, role: 'Admin' as CmsRole },
+    { ...change, avatar: 'https://example.com/other.webp' }, { ...change, passwordForReplay: 'a-different-password' },
+  ]) await assert.rejects(state.create(actor, altered), rejects(409));
+  await assert.rejects(state.create(other, change), rejects(409));
+  state.table('moe_users').get(first.user._id)!.passwordHash = await hashPassword('password-changed-after-creation');
+  await assert.rejects(state.create(actor, change), rejects(409));
+  assert.equal(state.table('moe_users').size, 3);
+  assert.equal(state.table('moe_logs').size, 1);
+});
+
+test('creation replay rechecks current roles and retained accounts without restoring or recreating them', async () => {
+  const actor = account('Admin');
+  const state = harness([actor]);
+  const change = await creation();
+  const first = await state.create(actor, change);
+  state.table('moe_users').get(first.user._id)!.role = 'Dev';
+  await assert.rejects(state.create(actor, change), rejects(403));
+  state.table('moe_users').get(first.user._id)!.role = 'Operator';
+  state.table('moe_users').get(actor._id)!.role = 'Operator';
+  await assert.rejects(state.create(actor, change), rejects(403));
+  state.table('moe_users').get(actor._id)!.role = 'Admin';
+  state.table('moe_users').get(actor._id)!.passwordVersion = 2;
+  await assert.rejects(state.create(actor, change), rejects(409));
+  state.table('moe_users').get(actor._id)!.passwordVersion = 1;
+  state.table('moe_users').get(first.user._id)!.deletedAt = new Date();
+  await assert.rejects(state.create(actor, change), rejects(409));
+  state.table('moe_users').delete(first.user._id);
+  await assert.rejects(state.create(actor, change), rejects(409));
+  assert.equal(state.table('moe_users').size, 1);
+  assert.equal(state.table('moe_logs').size, 1);
+});
+
+test('creation rejects unowned, unavailable, missing or aborted photos without writing an account', async () => {
+  const actor = account('Admin'), submissionId = randomUUID();
+  for (const [image, expected] of [
+    [photo('another-owner', submissionId, 'staged'), 403],
+    [photo(actor._id, randomUUID(), 'staged'), 403],
+    [photo(actor._id, submissionId, 'uploading'), 400],
+    [photo(actor._id, submissionId, 'trashed'), 400],
+    [photo(actor._id, submissionId, 'deleting'), 400],
+  ] as const) {
+    const state = harness([actor], [image]);
+    await assert.rejects(state.create(actor, { ...await creation(image), submissionId }), rejects(expected));
+    assert.equal(state.table('moe_users').size, 1);
+    assert.equal(state.table('moe_media').get(image.id)?.state, image.state);
+    assert.equal(state.table('moe_logs').size, 0);
+  }
+  const image = photo(actor._id, submissionId, 'staged');
+  await assert.rejects(harness([actor]).create(actor, await creation(image)), rejects(400));
+  const cancelled = harness([actor], [image]);
+  const key = `media-submission:${digest(`${actor._id}:${submissionId}`)}`;
+  cancelled.table('moe_state').set(key, { _id: key, value: 'aborted', count: 1 });
+  await assert.rejects(cancelled.create(actor, await creation(image)), rejects(409));
+  assert.equal(cancelled.table('moe_users').size, 1);
+  assert.equal(cancelled.table('moe_media').get(image.id)?.state, 'staged');
+});
+
+test('creation audit failure rolls back account, media promotion and replay marker together', async () => {
+  for (const status of ['staged', 'committed'] as const) {
+    const actor = account('Admin');
+    const image = photo(actor._id, randomUUID(), status);
+    const state = harness([actor], [image]);
+    state.failAudit();
+    await assert.rejects(state.create(actor, await creation(image)), /Audit unavailable/);
+    assert.deepEqual([...state.table('moe_users').values()], [actor]);
     assert.deepEqual(state.table('moe_media').get(image.id), image);
     assert.equal(state.table('moe_state').size, 0);
     assert.equal(state.table('moe_logs').size, 0);
