@@ -13,9 +13,11 @@ export const test = base.extend<{ db: Db; _resetDatabase: void; cmsLocale: 'th' 
   },
   _resetDatabase: [async ({ db }, provide) => { await seedE2eDatabase(db); await refreshPublicCache(); await provide(); }, { auto: true }],
   context: async ({ context, cmsLocale }, provide) => {
-    // Existing workflow checks use English explicitly; language tests exercise the Thai default.
-    if (cmsLocale === 'en') await context.addInitScript(() => {
-      if (!localStorage.getItem('moe-cms-language')) localStorage.setItem('moe-cms-language', 'en');
+    // English exercises the actual default; Thai scenarios explicitly choose Thai.
+    if (cmsLocale === 'th') await context.addInitScript(() => {
+      try {
+        if (!localStorage.getItem('moe-cms-language')) localStorage.setItem('moe-cms-language', 'th');
+      } catch { /* Storage-blocked scenarios select their language in the interface. */ }
     });
     await context.route('**/*', async route => {
       const url = new URL(route.request().url());

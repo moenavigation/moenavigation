@@ -266,7 +266,7 @@
 .drawerFoot > :global(.button) { width: 100%; }
 .drawerViewSite { gap: .65rem; }
 .drawerUser { display: flex; align-items: center; gap: .6rem; min-width: 0; padding: .55rem; border: 1px solid var(--line); border-radius: .55rem; background: #f3f7fc; }
-.drawerUserAvatar { display: grid; place-items: center; flex: 0 0 2.4rem; width: 2.4rem; height: 2.4rem; border-radius: 50%; color: var(--navy); background: #dceaf8; font-weight: 700; }
+.drawerUserAvatar { display: grid; place-items: center; flex: 0 0 2.4rem; width: 2.4rem; height: 2.4rem; overflow: hidden; border-radius: 50%; color: var(--navy); background: #dceaf8; font-weight: 700; }
 .drawerUserText { display: grid; flex: 1 1 auto; gap: .1rem; min-width: 0; line-height: 1.3; }
 .drawerUserText span, .drawerUserText strong { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .drawerUserText span { color: var(--muted); }

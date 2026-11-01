@@ -377,6 +377,8 @@ test.describe('Thai mobile login', () => {
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto('/cms');
+    await expect(page.getByRole('heading', { name: 'Welcome back', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Switch to Thai', exact: true }).click();
     await expect(page.getByRole('heading', { name: cmsMainThai['Welcome back'], exact: true })).toBeVisible();
     await expect(page.locator('[class*="loginIcon"]')).toHaveCount(0);
     await expect(page.getByRole('button', { name: cmsMainThai['Show password'], exact: true })).toBeVisible();

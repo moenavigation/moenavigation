@@ -5,8 +5,8 @@ import { cmsFieldsThai } from '../../src/lib/cms-fields-th';
 import { cmsMessagesThai } from '../../src/lib/cms-messages-th';
 import { translateCms } from '../../src/lib/cms-locale';
 
-// An untouched browser has no stored preference. Existing workflow tests opt in
-// to English through the fixture; these tests exercise the actual Thai default.
+// Localization scenarios explicitly choose Thai; the default-language scenario
+// below uses a fresh browser without a stored preference.
 test.use({ cmsLocale: 'th' });
 
 function headerLanguage(page: Page) {
@@ -67,7 +67,16 @@ test('CMS desktop header and drawer stay usable after scrolling', async ({ page 
   await expect(menu).toBeFocused();
 });
 
-test('CMS defaults to Thai during loading and remembers an explicit language choice', async ({ page }, testInfo) => {
+test.describe('CMS language preference', () => {
+test.use({ cmsLocale: 'en' });
+
+test('CMS defaults to English during loading and remembers explicit Thai and English choices', async ({ page }, testInfo) => {
+  const response = await page.request.get('/cms');
+  expect(response.ok()).toBe(true);
+  const html = await response.text();
+  expect(html).toMatch(/<html[^>]*lang="en"/);
+  expect(html).toContain('data-cms-language="en"');
+  expect(html).toMatch(/<section[^>]*data-loading-screen="cms"[^>]*lang="en"/);
   let releaseSession!: () => void;
   const sessionGate = new Promise<void>(resolve => { releaseSession = resolve; });
   await page.route('**/api/cms/session', async route => {
@@ -77,27 +86,32 @@ test('CMS defaults to Thai during loading and remembers an explicit language cho
   await page.goto('/cms');
   const loading = page.locator('[data-loading-screen="cms"]');
   try {
-    await expect(loading).toHaveAttribute('lang', 'th');
-    await expect(loading.getByRole('status')).toContainText('กำลังตรวจสอบการเข้าสู่ระบบ');
+    await expect(loading).toHaveAttribute('lang', 'en');
+    await expect(loading.getByRole('status')).toContainText('Checking your session');
+    expect(await page.evaluate(() => localStorage.getItem('moe-cms-language'))).toBeNull();
   } finally {
     releaseSession();
   }
-  await expect(page.getByRole('heading', { name: cmsMainThai['Welcome back'], exact: true })).toBeVisible();
-  const loginSiteLink = page.locator('header').getByRole('link', { name: cmsMainThai['View website in a new tab'], exact: true });
-  await expect(loginSiteLink).toHaveAttribute('href', '/th');
-  await expect(loginSiteLink).toHaveAttribute('target', '_blank');
-  await page.screenshot({ path: testInfo.outputPath('thai-sign-in.png'), animations: 'disabled' });
-  await headerLanguage(page).click();
   await expect(page.getByRole('heading', { name: 'Welcome back', exact: true })).toBeVisible();
-  await expect(page.locator('header').getByRole('link', { name: 'View website in a new tab', exact: true })).toHaveAttribute('href', '/');
+  const loginSiteLink = page.locator('header').getByRole('link', { name: 'View website in a new tab', exact: true });
+  await expect(loginSiteLink).toHaveAttribute('href', '/');
+  await expect(loginSiteLink).toHaveAttribute('target', '_blank');
   await expect(headerLanguage(page)).toHaveText('EN');
   await expect(headerLanguage(page)).toHaveAttribute('aria-label', 'Switch to Thai');
+  await page.screenshot({ path: testInfo.outputPath('english-sign-in.png'), animations: 'disabled' });
+  await headerLanguage(page).click();
+  await expect(page.getByRole('heading', { name: cmsMainThai['Welcome back'], exact: true })).toBeVisible();
+  await expect(headerLanguage(page)).toHaveText('TH');
+  await expect(headerLanguage(page)).toHaveAttribute('aria-label', cmsMainThai['Switch to English']);
+  await expect(page.locator('header').getByRole('link', { name: cmsMainThai['View website in a new tab'], exact: true })).toHaveAttribute('href', '/th');
+  await page.reload();
+  await expect(page.getByRole('heading', { name: cmsMainThai['Welcome back'], exact: true })).toBeVisible();
+  await expect(headerLanguage(page)).toHaveText('TH');
+  await headerLanguage(page).click();
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Welcome back', exact: true })).toBeVisible();
   await expect(headerLanguage(page)).toHaveText('EN');
-  await headerLanguage(page).click();
-  await page.reload();
-  await expect(page.getByRole('heading', { name: cmsMainThai['Welcome back'], exact: true })).toBeVisible();
+});
 });
 
 test('switching language preserves sign-in input and translates an existing error', async ({ page }) => {

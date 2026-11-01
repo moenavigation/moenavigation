@@ -906,7 +906,7 @@ export default function CmsWorkspace() {
         <CmsWorkingPanel active={Boolean(busy)} title={busyTitle} />
         <Link href={href(locale)} target="_blank" rel="noopener noreferrer" className={`button secondary ${styles.drawerViewSite}`} aria-label={t("View website in a new tab")} onClick={() => setDrawerOpen(false)}><Globe2 size={19} aria-hidden="true" />{t("View website")}</Link>
         <div className={styles.drawerUser}>
-          <span className={styles.drawerUserAvatar} aria-hidden="true">{user.username.slice(0, 1).toUpperCase()}</span>
+          <span className={styles.drawerUserAvatar} aria-hidden="true"><CmsAvatar username={user.username} avatar={user.avatar} /></span>
           <div className={styles.drawerUserText}><span>{t("Signed in as")}</span><strong title={user.username}>{user.username}</strong></div>
           <button type="button" className={styles.drawerSignOut} aria-label={t("Sign out")} title={t("Sign out")} onClick={event => { event.currentTarget.focus({ preventScroll: true }); void logout(); }} disabled={Boolean(busy)}><LogOut size={19} aria-hidden="true" /><span>{t("Sign out")}</span></button>
         </div>

@@ -33,6 +33,9 @@ initial fallback. Choose from the image library (12 per panel) or prepare a
 device photo; upload only on Save. Commit the account/photo reference and audit
 entry together, retain failed-save input, and reconcile uncertain responses.
 Protect photos referenced by active or trashed accounts from media cleanup.
+Show saved profile photos consistently in the header, navigation drawer, user
+cards, settings, and user Trash rows. Contain the full photo and use initials
+when no photo is set or the image cannot load.
 
 Use one Save action for content. A successful save makes it available on the
 website immediately, without a draft/publish or approval stage. Keep unsaved

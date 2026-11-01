@@ -44,7 +44,7 @@ function translatedMessage(source: string): string {
   return source;
 }
 const storageKey = 'moe-cms-language';
-let localPreference: CmsLocale = 'th';
+let localPreference: CmsLocale = 'en';
 function snapshot(): CmsLocale {
   try { const stored = localStorage.getItem(storageKey); return stored === 'en' || stored === 'th' ? stored : localPreference; }
   catch { return localPreference; }
@@ -70,7 +70,7 @@ type CmsLocaleValue = { locale: CmsLocale; setLocale: typeof setLocale; t: (sour
 const CmsLocaleContext = createContext<CmsLocaleValue | null>(null);
 
 export function CmsLocaleProvider({ children }: { children: ReactNode }) {
-  const locale = useSyncExternalStore(subscribe, snapshot, () => 'th' as const);
+  const locale = useSyncExternalStore(subscribe, snapshot, () => 'en' as const);
   const value = useMemo(() => ({ locale, setLocale, t: (source: string, parameters?: Parameters) => translateCms(locale, source, parameters) }), [locale]);
   return <CmsLocaleContext.Provider value={value}><div lang={locale} data-cms-language={locale}>{children}</div></CmsLocaleContext.Provider>;
 }

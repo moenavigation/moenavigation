@@ -56,6 +56,26 @@ async function openOwnPhoto(page: Page, locale: 'en' | 'th' = 'en') {
   return dialog;
 }
 
+async function expectLoadedPhoto(image: Locator, url: string) {
+  await expect(image).toHaveAttribute('src', url);
+  await expect(image).toHaveCSS('object-fit', 'contain');
+  await expect.poll(() => image.evaluate(element => (element as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+}
+
+async function expectDrawerPhoto(page: Page, username: string, avatar?: string, locale: 'en' | 'th' = 'en') {
+  const t = (value: string) => translateCms(locale, value);
+  await page.getByRole('button', { name: t('Open CMS navigation'), exact: true }).click();
+  const drawer = page.getByRole('dialog', { name: t('CMS navigation'), exact: true });
+  const photo = drawer.locator('[class*="drawerUserAvatar"]');
+  if (avatar) await expectLoadedPhoto(photo.locator('img'), avatar);
+  else {
+    await expect(photo.locator('img')).toHaveCount(0);
+    await expect(photo).toHaveText(username.slice(0, 1).toUpperCase());
+  }
+  await drawer.getByRole('button', { name: t('Close CMS navigation'), exact: true }).click();
+  await expect(drawer).not.toBeVisible();
+}
+
 async function mockUploads(page: Page, db: Db, owner: string, failFirst = false) {
   const attempts: Array<{ filename: string; submissionId: string; mediaId: string }> = [];
   await page.route('**/api/cms/media', async route => {
@@ -294,7 +314,7 @@ test('invalid or foreign profile images are rejected and audit failure rolls bac
   } finally { await admin.dispose(); }
 });
 
-test('active and trashed account photos protect media until the last user reference is removed', async ({ db }) => {
+test('active and trashed account photos protect media until the last user reference is removed', async ({ db, page }) => {
   const target = await seedAccount(db, 'retained-profile-user', 'Operator');
   const image = await seedImage(db, 'Protected account photo');
   const admin = await signIn();
@@ -314,6 +334,15 @@ test('active and trashed account photos protect media until the last user refere
     }
     const trash = await (await admin.get(`/api/cms/trash?item=User:${target._id}`)).json();
     expect(trash.items[0]).toMatchObject({ image: image.url });
+    await login(page);
+    await page.goto(`/cms/trash?item=User:${target._id}`);
+    const row = page.locator(`[data-trash-key="User:${target._id}"]`);
+    await expectLoadedPhoto(row.locator('img'), image.url);
+    await page.route(image.url, route => route.abort('failed'));
+    await page.reload();
+    await expect(row.locator('img')).toHaveCount(0);
+    await expect(row.locator('span[aria-hidden="true"]').filter({ hasText: /^R$/ })).toBeVisible();
+    await page.unroute(image.url);
     await db.collection<Image>('moe_media').updateOne({ _id: image.id }, { $set: { state: 'trashed', trashedAt: new Date().toISOString() } });
     await expectStatus(await admin.post('/api/cms/media/remove', { data: { mediaId: image.id } }), 409);
     expect((await (await admin.get(`/api/cms/trash?item=Image:${image.id}`)).json()).items[0]).toMatchObject({ canDelete: false });
@@ -419,7 +448,7 @@ test('failed photo uploads and saves preserve the prepared image and reuse the s
   await edit.getByRole('button', { name: 'Cancel', exact: true }).click();
 });
 
-test('the profile library shows twelve images per panel and own photos update the header with bilingual mobile layouts', async ({ page, db }) => {
+test('the profile library shows twelve images per panel and own photos update every user display with bilingual mobile layouts', async ({ page, db }) => {
   const operator = await seedAccount(db, 'profile-viewer', 'Operator');
   const images = [];
   for (let index = 0; index < 25; index++) images.push(await seedImage(db, `Profile gallery ${String(index).padStart(2, '0')}`));
@@ -431,6 +460,7 @@ test('the profile library shows twelve images per panel and own photos update th
     const header = page.getByRole('button', { name: 'Open user settings', exact: true });
     await expect(header.locator('img')).toHaveCount(0);
     await expect(header).toContainText('P');
+    await expectDrawerPhoto(page, operator.username);
     const dialog = await openOwnPhoto(page);
     await expect(dialog.getByLabel('Your current password', { exact: true })).toHaveCount(0);
     await dialog.getByRole('button', { name: 'Browse library', exact: true }).click();
@@ -447,14 +477,18 @@ test('the profile library shows twelve images per panel and own photos update th
     expect((await db.collection<Account>('moe_users').findOne({ _id: operator._id }))?.avatar || '').toBe('');
     await dialog.getByRole('button', { name: 'Save photo', exact: true }).click();
     await expect(dialog).not.toBeVisible();
-    await page.getByRole('dialog', { name: 'User settings', exact: true }).getByRole('button', { name: 'Close user settings', exact: true }).click();
-    await expect(header.locator('img')).toHaveAttribute('src', images[24].url);
-    await expect(page.getByRole('region', { name: 'Users', exact: true }).getByRole('listitem').filter({ hasText: operator.username }).locator('img')).toHaveAttribute('src', images[24].url);
+    const settings = page.getByRole('dialog', { name: 'User settings', exact: true });
+    await expectLoadedPhoto(settings.getByRole('region', { name: 'Profile photo', exact: true }).locator('img'), images[24].url);
+    await settings.getByRole('button', { name: 'Close user settings', exact: true }).click();
+    await expectLoadedPhoto(header.locator('img'), images[24].url);
+    const card = page.getByRole('region', { name: 'Users', exact: true }).getByRole('listitem').filter({ hasText: operator.username });
+    await expectLoadedPhoto(card.locator('img'), images[24].url);
     for (const [width, locale] of [[1280, 'en'], [360, 'th']] as const) {
       await page.setViewportSize({ width, height: 900 });
       if (locale === 'th') await page.locator('header [data-cms-language-switch]').click();
       const t = (value: string) => translateCms(locale, value);
       if (locale === 'th') expect(t('Profile photo')).not.toBe('Profile photo');
+      await expectDrawerPhoto(page, operator.username, images[24].url, locale);
       const translated = await openOwnPhoto(page, locale);
       await expect(translated.getByRole('img', { name: t('Profile photo preview'), exact: true })).toHaveAttribute('src', images[24].url);
       await expect.poll(() => translated.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
@@ -464,6 +498,10 @@ test('the profile library shows twelve images per panel and own photos update th
       await page.getByRole('dialog', { name: t('User settings'), exact: true }).getByRole('button', { name: t('Close user settings'), exact: true }).click();
     }
     await page.locator('header [data-cms-language-switch]').click();
+    await page.reload();
+    await expectLoadedPhoto(header.locator('img'), images[24].url);
+    await expectLoadedPhoto(card.locator('img'), images[24].url);
+    await expectDrawerPhoto(page, operator.username, images[24].url);
     const remove = await openOwnPhoto(page);
     await remove.getByRole('button', { name: 'Remove photo', exact: true }).click();
     await remove.getByRole('button', { name: 'Save photo', exact: true }).click();
@@ -471,8 +509,50 @@ test('the profile library shows twelve images per panel and own photos update th
     await page.getByRole('dialog', { name: 'User settings', exact: true }).getByRole('button', { name: 'Close user settings', exact: true }).click();
     await expect(header.locator('img')).toHaveCount(0);
     await expect(header).toContainText('P');
+    await expect(card.locator('img')).toHaveCount(0);
+    await expectDrawerPhoto(page, operator.username);
     expect((await (await client.get('/api/cms/session')).json()).user).toMatchObject({ id: operator._id, profileRevision: 2 });
   } finally { await client.dispose(); }
+});
+
+test('a failed user photo can be removed and selected again without reloading the workspace', async ({ page, db }) => {
+  const image = await seedImage(db, 'Recovered account portrait');
+  await db.collection<Account>('moe_users').updateOne({ _id: E2E_ADMIN.id }, { $set: { avatar: image.url, profileRevision: 1 } });
+  let failedLoads = 0;
+  await page.route(image.url, route => { failedLoads++; return route.abort('failed'); });
+  await login(page);
+  await page.goto('/cms/users');
+  const header = page.getByRole('button', { name: 'Open user settings', exact: true });
+  const card = page.getByRole('region', { name: 'Users', exact: true }).getByRole('listitem').filter({ hasText: E2E_ADMIN.username });
+  await expect.poll(() => failedLoads).toBeGreaterThan(0);
+  await expect(header.locator('img')).toHaveCount(0);
+  await expect(card.locator('img')).toHaveCount(0);
+  await expect(header).toContainText(E2E_ADMIN.username.slice(0, 1).toUpperCase());
+  await expectDrawerPhoto(page, E2E_ADMIN.username);
+
+  // Keep the mounted workspace alive throughout removal and reselection; a
+  // navigation would otherwise hide a component that remembers a failed URL.
+  await header.click();
+  const settings = page.getByRole('dialog', { name: 'User settings', exact: true });
+  const change = settings.getByRole('button', { name: 'Change profile photo', exact: true });
+  const dialog = page.getByRole('dialog', { name: 'Profile photo', exact: true });
+  await change.click();
+  await dialog.getByRole('button', { name: 'Remove photo', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Save photo', exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+  await expect(settings.getByRole('region', { name: 'Profile photo', exact: true }).locator('img')).toHaveCount(0);
+  await page.unroute(image.url);
+  await change.click();
+  await dialog.getByRole('button', { name: 'Browse library', exact: true }).click();
+  await dialog.getByRole('searchbox', { name: 'Search profile images', exact: true }).fill(image.title);
+  await dialog.locator('[data-profile-image]').filter({ hasText: image.title }).click();
+  await dialog.getByRole('button', { name: 'Save photo', exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+  await expectLoadedPhoto(settings.getByRole('region', { name: 'Profile photo', exact: true }).locator('img'), image.url);
+  await settings.getByRole('button', { name: 'Close user settings', exact: true }).click();
+  await expectLoadedPhoto(header.locator('img'), image.url);
+  await expectLoadedPhoto(card.locator('img'), image.url);
+  await expectDrawerPhoto(page, E2E_ADMIN.username, image.url);
 });
 
 test('a conflicting profile edit keeps the staged photo until the user explicitly rebases and saves again', async ({ page, db }) => {

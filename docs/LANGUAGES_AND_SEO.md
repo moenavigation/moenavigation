@@ -1,7 +1,7 @@
 # Languages & SEO / AEO / GEO
 Public pages use English (en) at unprefixed URLs, including `/`, and Thai
 (th) under `/th`. Keep Thai then English in language selectors. The CMS at
-`/cms` keeps its independent language preference and Thai default.
+`/cms` keeps its independent language preference and English default.
 
 Remember explicit public language selections for one year in the
 `moe-public-language` cookie. New visits to `/` default to English; a saved Thai choice temporarily
