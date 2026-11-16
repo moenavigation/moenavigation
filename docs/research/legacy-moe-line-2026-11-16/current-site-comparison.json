@@ -1,0 +1,484 @@
+{
+  "schemaVersion": 1,
+  "reviewedDate": "2026-11-16",
+  "purpose": "Compare user-identified legacy website research with verified current public HTML and inspected repository capabilities. Research only; no publication or database update.",
+  "scope": {
+    "currentSite": "https://moe-navigation.com/",
+    "currentPagesReviewed": [
+      {
+        "url": "https://moe-navigation.com/",
+        "status": 200,
+        "bytes": 74240,
+        "title": "Moe Navigation Co.,Ltd. | Moe Navigation Co.,Ltd.",
+        "sourceText": ".local/legacy-moe-line-2026-11-16/current-site/home.txt",
+        "robots": [
+          "noindex, nofollow"
+        ]
+      },
+      {
+        "url": "https://moe-navigation.com/fleet",
+        "status": 200,
+        "bytes": 67715,
+        "title": "Our fleet | Moe Navigation Co.,Ltd.",
+        "sourceText": ".local/legacy-moe-line-2026-11-16/current-site/fleet.txt",
+        "robots": [
+          "noindex, nofollow"
+        ]
+      },
+      {
+        "url": "https://moe-navigation.com/routes",
+        "status": 200,
+        "bytes": 45488,
+        "title": "Port connections | Moe Navigation Co.,Ltd.",
+        "sourceText": ".local/legacy-moe-line-2026-11-16/current-site/routes.txt",
+        "robots": [
+          "noindex, nofollow"
+        ]
+      },
+      {
+        "url": "https://moe-navigation.com/about",
+        "status": 200,
+        "bytes": 46799,
+        "title": "About Moe Navigation Co.,Ltd. | Moe Navigation Co.,Ltd.",
+        "sourceText": ".local/legacy-moe-line-2026-11-16/current-site/about.txt",
+        "robots": [
+          "noindex, nofollow"
+        ]
+      },
+      {
+        "url": "https://moe-navigation.com/contact",
+        "status": 200,
+        "bytes": 44525,
+        "title": "Contact us | Moe Navigation Co.,Ltd.",
+        "sourceText": ".local/legacy-moe-line-2026-11-16/current-site/contact.txt",
+        "robots": [
+          "noindex, nofollow"
+        ]
+      },
+      {
+        "url": "https://moe-navigation.com/fleet/ranong-moe",
+        "status": 200,
+        "pageKind": "vessel-detail",
+        "sourceEvidence": ".local/legacy-moe-line-2026-11-16/current-site/vessel--ranong-moe.json",
+        "specificationText": [
+          "Vessel nameRANONG MOEVessel typeContainerSpecificationsPending verificationAvailabilityPending confirmation"
+        ],
+        "imageAlt": [
+          "Illustration of a container vessel representing Ranong Moe"
+        ]
+      },
+      {
+        "url": "https://moe-navigation.com/fleet/moe-line-2",
+        "status": 200,
+        "pageKind": "vessel-detail",
+        "sourceEvidence": ".local/legacy-moe-line-2026-11-16/current-site/vessel--moe-line-2.json",
+        "specificationText": [
+          "Vessel nameMOE 2Vessel typeContainerSpecificationsPending verificationAvailabilityPending confirmation"
+        ],
+        "imageAlt": [
+          "Illustration of a container vessel representing MOE 2"
+        ]
+      },
+      {
+        "url": "https://moe-navigation.com/fleet/moe-line-3",
+        "status": 200,
+        "pageKind": "vessel-detail",
+        "sourceEvidence": ".local/legacy-moe-line-2026-11-16/current-site/vessel--moe-line-3.json",
+        "specificationText": [
+          "Vessel nameMOE 3Vessel typeContainerSpecificationsPending verificationAvailabilityPending confirmation"
+        ],
+        "imageAlt": [
+          "Illustration of a container vessel representing MOE 3"
+        ]
+      },
+      {
+        "url": "https://moe-navigation.com/fleet/moe-line-4",
+        "status": 200,
+        "pageKind": "vessel-detail",
+        "sourceEvidence": ".local/legacy-moe-line-2026-11-16/current-site/vessel--moe-line-4.json",
+        "specificationText": [
+          "Vessel nameMOE 4Vessel typeCraneSpecificationsPending verificationAvailabilityPending confirmation"
+        ],
+        "imageAlt": [
+          "Illustration of a crane vessel representing MOE 4"
+        ]
+      },
+      {
+        "url": "https://moe-navigation.com/fleet/moe-line-5",
+        "status": 200,
+        "pageKind": "vessel-detail",
+        "sourceEvidence": ".local/legacy-moe-line-2026-11-16/current-site/vessel--moe-line-5.json",
+        "specificationText": [
+          "Vessel nameMOE 5Vessel typeContainerSpecificationsPending verificationAvailabilityPending confirmation"
+        ],
+        "imageAlt": [
+          "Illustration of a container vessel representing MOE 5"
+        ]
+      },
+      {
+        "url": "https://moe-navigation.com/fleet/moe-line-6",
+        "status": 200,
+        "pageKind": "vessel-detail",
+        "sourceEvidence": ".local/legacy-moe-line-2026-11-16/current-site/vessel--moe-line-6.json",
+        "specificationText": [
+          "Vessel nameMOE 6Vessel typeContainerSpecificationsPending verificationAvailabilityPending confirmation"
+        ],
+        "imageAlt": [
+          "Illustration of a container vessel representing MOE 6"
+        ]
+      },
+      {
+        "url": "https://moe-navigation.com/fleet/moe-line-7",
+        "status": 200,
+        "pageKind": "vessel-detail",
+        "sourceEvidence": ".local/legacy-moe-line-2026-11-16/current-site/vessel--moe-line-7.json",
+        "specificationText": [
+          "Vessel nameMOE 7Vessel typeContainerSpecificationsPending verificationAvailabilityPending confirmation"
+        ],
+        "imageAlt": [
+          "Illustration of a container vessel representing MOE 7"
+        ]
+      },
+      {
+        "url": "https://moe-navigation.com/fleet/dumai-moe",
+        "status": 200,
+        "pageKind": "vessel-detail",
+        "sourceEvidence": ".local/legacy-moe-line-2026-11-16/current-site/vessel--dumai-moe.json",
+        "specificationText": [
+          "Vessel nameDUMAI MOEVessel typeTankerSpecificationsPending verificationAvailabilityPending confirmation"
+        ],
+        "imageAlt": [
+          "Illustration of a tanker vessel representing Dumai Moe"
+        ]
+      }
+    ],
+    "method": "The main agent fetched current production HTML successfully over HTTP. Local Playwright parsed those snapshots with JavaScript disabled and all external requests aborted. The longest main element contains the streamed server-rendered page; the first main is a loading fallback. This is source-content verification, not an interactive or visual QA pass. The root agent also fetched all eight production vessel detail pages successfully over HTTP and parsed their specification definition lists and image descriptions; their source artifacts are referenced individually.",
+    "limitations": [
+      "Public web-reader attempts returned false-negative inaccessible errors; successful direct-fetch HTTP 200 snapshots are the production evidence.",
+      "No credentials, CMS API, database reads, writes or deployments were used.",
+      "The five current English pages were reviewed; current Thai pages were not independently captured."
+    ],
+    "currentPagesReviewedCount": 13,
+    "currentMainPagesReviewedCount": 5,
+    "currentVesselDetailPagesReviewedCount": 8
+  },
+  "currentVerified": {
+    "identity": "Moe Navigation Co.,Ltd.",
+    "home": {
+      "heading": "Moe Navigation Co.,Ltd.",
+      "eyebrow": "Beyond Shipping · Built on Trust",
+      "description": "Delivering seamless maritime solutions through trusted expertise, operational excellence, and an unwavering commitment to safety and reliability across every voyage.",
+      "historyCaption": "Established in 2022 · by the founder of SSOT Group Co., Ltd.",
+      "source": ".local/legacy-moe-line-2026-11-16/current-site/home.txt"
+    },
+    "fleet": {
+      "count": 8,
+      "vessels": [
+        {
+          "id": "ranong-moe",
+          "name": "RANONG MOE",
+          "type": "Container"
+        },
+        {
+          "id": "moe-line-2",
+          "name": "MOE 2",
+          "type": "Container"
+        },
+        {
+          "id": "moe-line-3",
+          "name": "MOE 3",
+          "type": "Container"
+        },
+        {
+          "id": "moe-line-4",
+          "name": "MOE 4",
+          "type": "Crane"
+        },
+        {
+          "id": "moe-line-5",
+          "name": "MOE 5",
+          "type": "Container"
+        },
+        {
+          "id": "moe-line-6",
+          "name": "MOE 6",
+          "type": "Container"
+        },
+        {
+          "id": "moe-line-7",
+          "name": "MOE 7",
+          "type": "Container"
+        },
+        {
+          "id": "dumai-moe",
+          "name": "DUMAI MOE",
+          "type": "Tanker"
+        }
+      ],
+      "imagery": "All eight fleet image alternative texts identify the images as illustrations representing named vessels.",
+      "illustrativeAlts": [
+        {
+          "src": "https://res.cloudinary.com/yod4qzgu/image/upload/f_auto,q_auto:good,c_limit,w_3840/v1792694748/moe-navigation/library/container-vessel-15c2222f580a9621f307.webp",
+          "alt": "Illustration of a container vessel representing Ranong Moe"
+        },
+        {
+          "src": "https://res.cloudinary.com/yod4qzgu/image/upload/f_auto,q_auto:good,c_limit,w_3840/v1792694758/moe-navigation/library/port-7db6750e9234effd2ac7.webp",
+          "alt": "Illustration of a container vessel representing MOE 2"
+        },
+        {
+          "src": "https://res.cloudinary.com/yod4qzgu/image/upload/f_auto,q_auto:good,c_limit,w_3840/v1793272471/moe-navigation/75b222dfcba0858348e4b58a208f9595da2c037de65c109c48dfaa3826151de4.webp",
+          "alt": "Illustration of a container vessel representing MOE 3"
+        },
+        {
+          "src": "https://res.cloudinary.com/yod4qzgu/image/upload/f_auto,q_auto:good,c_limit,w_3840/v1793272473/moe-navigation/59a5ba94ce39480820b77f62d79185d1d900b742b51463fa479be439a51bc82a.webp",
+          "alt": "Illustration of a crane vessel representing MOE 4"
+        },
+        {
+          "src": "https://res.cloudinary.com/yod4qzgu/image/upload/f_auto,q_auto:good,c_limit,w_3840/v1792694763/moe-navigation/library/vessel-deck-8bf1eca094a80e9b67a4.webp",
+          "alt": "Illustration of a container vessel representing MOE 5"
+        },
+        {
+          "src": "https://res.cloudinary.com/yod4qzgu/image/upload/f_auto,q_auto:good,c_limit,w_3840/v1793272476/moe-navigation/216f0e8574bbd40a5436e435dc3e9fe0f2115f4a5cd121d5cb2cede8c032236a.webp",
+          "alt": "Illustration of a container vessel representing MOE 6"
+        },
+        {
+          "src": "https://res.cloudinary.com/yod4qzgu/image/upload/f_auto,q_auto:good,c_limit,w_3840/v1793272478/moe-navigation/b39e52b0fae1182f24009d8055f7fb7e2db45cf83da2d6c112499a428477e704.webp",
+          "alt": "Illustration of a container vessel representing MOE 7"
+        },
+        {
+          "src": "https://res.cloudinary.com/yod4qzgu/image/upload/f_auto,q_auto:good,c_limit,w_3840/v1793272480/moe-navigation/606a71b4ca7fe784ba66ca246b35696ae275a3397bcf77c9731d68c878584640.webp",
+          "alt": "Illustration of a tanker vessel representing Dumai Moe"
+        }
+      ],
+      "source": ".local/legacy-moe-line-2026-11-16/current-site/fleet.txt",
+      "technicalParticulars": {
+        "status": "Missing from all eight current production vessel detail pages",
+        "verifiedCount": 8,
+        "specificationsLabel": "Pending verification",
+        "availabilityLabel": "Pending confirmation",
+        "source": ".local/legacy-moe-line-2026-11-16/current-site/vessel-details-summary.json",
+        "identityNote": "All eight current vessel names/types remain present; missing technical particulars do not negate their client-approved identities.",
+        "images": "The eight detail pages retain illustrative primary image descriptions."
+      }
+    },
+    "routes": {
+      "count": 3,
+      "pairs": [
+        "Laem Chabang — Singapore",
+        "Laem Chabang — Port Klang",
+        "Laem Chabang — Tanjung Priok"
+      ],
+      "description": "Review port pairs on the map, then enquire about routing, timing and availability for your cargo.",
+      "status": "Enquiry-planning connections; explicitly not confirmed sailing routes, timetables or service availability.",
+      "source": ".local/legacy-moe-line-2026-11-16/current-site/routes.txt"
+    },
+    "about": {
+      "headings": [
+        "About Moe Navigation Co.,Ltd.",
+        "A clear purpose.\nA practical approach.",
+        "Our vision",
+        "Our mission",
+        "Our values",
+        "Have an operation in mind?"
+      ],
+      "description": "Built around the people and partnerships that keep maritime operations moving.",
+      "intro": "Every operation starts with understanding your needs. Our approach brings together careful planning, clear communication and practical maritime support.",
+      "vision": "Better connections across the maritime industry.",
+      "mission": "Marine services shaped around your operational needs.",
+      "values": "Clear communication. Accountability. Respect.",
+      "source": ".local/legacy-moe-line-2026-11-16/current-site/about.txt"
+    },
+    "contact": {
+      "officeAddress": "819/67-68 Chewa Biz Home, Royal City–Bang Bon Village; Ekkachai Road, Khlong Bang Bon Subdistrict; Bang Bon District, Bangkok 10150, Thailand",
+      "phone": "02 427 5905",
+      "phoneHref": "tel:024275905",
+      "email": "md.assist@moe-navigation.com",
+      "mapUrl": "https://maps.app.goo.gl/9Ub4dyqhFpAsqiFGA",
+      "note": "Contact fields are already populated in production. Blank defaults/seeds are not evidence that production contact details are missing.",
+      "source": ".local/legacy-moe-line-2026-11-16/current-site/contact.txt"
+    },
+    "indexing": "All five reviewed pages carry noindex, nofollow."
+  },
+  "legacyComparison": {
+    "identity": {
+      "legacyName": "Moe Container Line Company Limited",
+      "currentName": "Moe Navigation Co.,Ltd.",
+      "action": "Retain the current client identity. Record the legal/trading relationship before transferring legacy director, capital, bank or affiliate claims as current facts."
+    },
+    "fleet": {
+      "legacyCount": 7,
+      "currentCount": 8,
+      "sharedIds": [
+        "ranong-moe",
+        "moe-line-2",
+        "moe-line-3",
+        "moe-line-4",
+        "moe-line-5",
+        "moe-line-6",
+        "moe-line-7"
+      ],
+      "absentFromLegacy": "dumai-moe",
+      "namingDifference": "Legacy MOE LINE N vs current client-approved MOE N. Match by existing record identity and evidence; do not rename current titles from the old site.",
+      "opportunity": "Original vessel-specific photos and published particulars could substantially improve the current illustrative fleet experience. All eight current production vessel detail pages explicitly show Specifications: Pending verification and Availability: Pending confirmation. Cross-check vessel identity and specification conflicts before a field-level import."
+    },
+    "routes": {
+      "legacyPublishedPairs": [
+        "Laem Chabang — Bangkok",
+        "Laem Chabang / Bangkok — Surat Thani",
+        "Laem Chabang / Bangkok — Songkhla",
+        "Ranong — Yangon",
+        "Laem Chabang — Sihanoukville"
+      ],
+      "currentPairOverlap": [],
+      "action": "Prepare five source-backed legacy connection candidates and ask operations to establish current scope/status. Do not silently replace the three existing enquiry connections or present legacy transit estimates as a live schedule.",
+      "ambiguity": "Legacy Surat Thani and Songkhla headings mention BKK/LCB but detail rows identify Laem Chabang; do not infer a second Bangkok-origin service without confirmation."
+    },
+    "about": {
+      "opportunity": "Replace generic introduction with source-backed history, actual service focus, maintenance, crew and safety practices, and a clear group relationship once current facts are established.",
+      "alreadyPresent": "Production home already states establishment in 2022 and connection to the founder of SSOT Group. Avoid treating these as missing or duplicating the caption without more detail.",
+      "excludedClaims": "Do not turn legacy zero cargo loss/damage, zero breakdowns, environmental comparisons, director/capital/bank or affiliates into unqualified current assertions."
+    },
+    "contact": {
+      "opportunity": "Legacy telephone and street address corroborate the current contact page broadly. Use source review to resolve the exact address/map pin; preserve current company email.",
+      "warning": "Do not overwrite current md.assist@moe-navigation.com with a different legacy mailbox merely because it appears on the old site."
+    }
+  },
+  "priorityPlan": [
+    {
+      "priority": 1,
+      "area": "Fleet",
+      "action": "Build a seven-vessel photo and particulars import plan keyed to retained current IDs; flag conflicting values and preserve DUMAI MOE. Keep current named-vessel illustrations until the replacement photo has an established identity.",
+      "currentEvidence": ".local/legacy-moe-line-2026-11-16/current-site/fleet.txt",
+      "implementation": "Existing CMS supports main photo, gallery, alt text and core vesselSpecs. All eight current production vessel details lack verified specifications; legacy technical values still need current vessel and source-conflict confirmation."
+    },
+    {
+      "priority": 1,
+      "area": "Routes",
+      "action": "Create five legacy route candidates with source date, original figures and ambiguity notes. Establish which remain current before adding them to the existing interactive map.",
+      "currentEvidence": ".local/legacy-moe-line-2026-11-16/current-site/routes.txt",
+      "implementation": "Use existing Route collection, bilingual ports, body and waypoints. Distance, sailing time and capacity are not dedicated schema fields; initially retain them as reviewed body copy."
+    },
+    {
+      "priority": 1,
+      "area": "About",
+      "action": "Draft a specific bilingual company introduction and richer mission/vision using legacy evidence and current identity. Explain SSOT relationship clearly instead of assuming legal continuity.",
+      "currentEvidence": ".local/legacy-moe-line-2026-11-16/current-site/about.txt",
+      "implementation": "Edit existing about Page and about-intro/about-mission/about-vision/about-values sections. Current CMS disallows creating, deleting, reparenting or reordering Page/Section structures."
+    },
+    {
+      "priority": 2,
+      "area": "Contact",
+      "action": "Keep current production phone/email/address and compare legacy details for consistency. Verify the destination of the map link if address precision is being changed.",
+      "currentEvidence": ".local/legacy-moe-line-2026-11-16/current-site/contact.txt"
+    },
+    {
+      "priority": 2,
+      "area": "Legacy URL continuity",
+      "action": "Prepare an explicit old-to-new English/Thai redirect map for approved migration, preserving vessel detail destinations.",
+      "implementation": "next.config.ts currently contains www-to-apex canonical redirect only; old WordPress paths are not redirected here."
+    },
+    {
+      "priority": 2,
+      "area": "Search and factual consistency",
+      "action": "Use descriptive service and vessel copy with real named ports, remove unsupported absolutes, and keep indexing governed by existing content-approval controls.",
+      "implementation": "Production remains noindex. Legacy source availability does not establish approval for indexing, certifications, modern operating status or commercial guarantees."
+    }
+  ],
+  "implementationMap": {
+    "vesselStructuredFields": {
+      "IMO number": "vesselSpecs.imo",
+      "LOA": "vesselSpecs.lengthM",
+      "Breadth": "vesselSpecs.beamM",
+      "Draft": "vesselSpecs.draftM",
+      "DWT": "vesselSpecs.deadweightT",
+      "Nominal container capacity": "vesselSpecs.capacityTeu"
+    },
+    "vesselNonStructuredFields": [
+      "Depth",
+      "GRT",
+      "NRT",
+      "Reefer plugs",
+      "Official registration number",
+      "Crane maker",
+      "Crane type",
+      "Safe working load",
+      "Anchor points"
+    ],
+    "vesselFallback": "Retain unsupported fields in bilingual vessel body text, or propose optional schema support later; never put an official registration number into the IMO field.",
+    "routeStructuredFields": [
+      "origin.name/nameTh/country/countryTh",
+      "destination.name/nameTh/country/countryTh",
+      "waypoints"
+    ],
+    "routeNonStructuredFields": [
+      "Distance in nautical miles",
+      "Sailing time range",
+      "Nominal route capacity"
+    ],
+    "contactSettingsFields": [
+      "officeAddress",
+      "officeAddressTh",
+      "phone",
+      "email",
+      "mapUrl"
+    ],
+    "authoritativeDataBoundary": "Public components read saved MongoDB content; local seed edits do not update production. Initial migration merges existing saved fields over seed values, including intentional empty strings.",
+    "paths": [
+      {
+        "path": "src/lib/cms-types.ts",
+        "line": 6,
+        "reason": "Core VesselSpecs and bilingual content schema"
+      },
+      {
+        "path": "src/components/CmsCollectionFields.tsx",
+        "line": 86,
+        "reason": "Vessel specifications editor"
+      },
+      {
+        "path": "src/components/ContentPages.tsx",
+        "line": 189,
+        "reason": "Public vessel specification rows"
+      },
+      {
+        "path": "src/components/ContentPages.tsx",
+        "line": 49,
+        "reason": "Existing About sections"
+      },
+      {
+        "path": "src/components/RouteExplorer.tsx",
+        "line": 104,
+        "reason": "Selected route fields/body and confirmation note"
+      },
+      {
+        "path": "scripts/data/client-fleet.ts",
+        "line": 3,
+        "reason": "Client-approved eight-vessel names/types and retained IDs"
+      },
+      {
+        "path": "scripts/data/website-content.ts",
+        "line": 294,
+        "reason": "Local seed route pairs; useful implementation context, not production authority"
+      },
+      {
+        "path": "scripts/migrate-website.mts",
+        "line": 126,
+        "reason": "Existing saved values win over seed snapshot"
+      },
+      {
+        "path": "next.config.ts",
+        "line": 16,
+        "reason": "Current redirect configuration"
+      },
+      {
+        "path": "docs/CONTENT_APPROVAL.md",
+        "line": 5,
+        "reason": "Interim content and factual approval boundaries"
+      },
+      {
+        "path": "docs/WEBSITE.md",
+        "line": 73,
+        "reason": "MongoDB content boundary"
+      }
+    ]
+  }
+}

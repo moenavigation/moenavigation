@@ -1,0 +1,142 @@
+{
+  "researchDate": "2026-11-16",
+  "scope": "Technical facts published by the legacy Moe Container Line website; not independent confirmation of current ownership, operation, class, condition or cargo acceptance.",
+  "listingSources": [
+    "https://www.moe-line.com/fleet-list/",
+    "https://www.moe-line.com/th/fleet-list/"
+  ],
+  "sourcePrecision": "Measurements and equipment strings retain source precision and wording, with repeated whitespace normalized. GRT/NRT labels are preserved; do not silently relabel as GT/NT. Unlisted fields are null or omitted, never zero.",
+  "directSnapshotValidation": {
+    "archive": ".local/legacy-moe-line-2026-11-16/records",
+    "listingPagesChecked": 2,
+    "detailPagesChecked": 14,
+    "allPagesHttpStatus": 200,
+    "detailTechnicalFieldsChecked": 195,
+    "detailFieldDiscrepancies": 0,
+    "englishThaiTechnicalTablesIdenticalForAllSevenVessels": true,
+    "listingFieldsComparedWithDetails": 62,
+    "listingDetailDiscrepancies": 0,
+    "downloadedPrimaryPhotos": 7,
+    "primaryPhotoHttpStatus": 200,
+    "documentDownloadLinksFoundOnDetailPages": 0,
+    "shipParticularsRecoveredThroughPublicMediaApi": 7,
+    "shipParticularsTextAndRenderedPageReviews": 7,
+    "note": "Validation compares this transcription and the two language versions with the live HTTP snapshots fetched on the research date. It does not independently validate the source's underlying vessel facts."
+  },
+  "pdfParticularsReview": {
+    "dataFile": "pdf-particulars.json",
+    "note": "Seven one-page ship-particulars PDFs were discovered through the public WordPress media API although not linked in the detail-page link sets. The HTML-derived vessel values below remain unchanged. Review PDF conflicts before any CMS import.",
+    "sharedConflict": "All six container-vessel PDFs state 5 reefer plugs; all six HTML details and listings state 3.",
+    "otherConflicts": ["MOE LINE 1 PDF states 72 TEU; RANONG MOE HTML states 96 TEU for the same IMO and official registration.", "MOE LINE 4 PDF distinguishes one Mitsubishi crane engine and two Airman generators; HTML labels the Mitsubishi as GEN 1 and lists only one Airman generator."],
+    "legalFooterAsPublished": {"entity": "Moe Container Line Co.,Ltd.", "registeredIn": "Thailand", "registerNo": "0105565067684"},
+    "legalIdentityWarning": "This registration belongs to the entity named in the legacy documents and must not be assigned to Moe Navigation without evidence."
+  },
+  "legacyFleetComposition": {
+    "containerVessels": 6,
+    "craneBarges": 1,
+    "totalListedVessels": 7,
+    "containerVesselNames": ["RANONG MOE", "MOE LINE 2", "MOE LINE 3", "MOE LINE 5", "MOE LINE 6", "MOE LINE 7"],
+    "craneBargeName": "MOE LINE 4",
+    "craneLocationAsPublished": "Terminal 12 of TCT",
+    "containerCapacityTotalTeuCalculated": 600,
+    "containerCapacityTotalNote": "Arithmetic sum of six legacy nominal capacities, not annual carried volume, operational availability, or an approved public statistic."
+  },
+  "vessels": [
+    {
+      "legacyDisplayName": "RANONG MOE",
+      "legacyDetailNameField": "MOE LINE 1",
+      "sourceUrls": {
+        "en": "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "th": "https://www.moe-line.com/th/fleet-list/ranong-moe/"
+      },
+      "photoUrl": "https://www.moe-line.com/wp-content/uploads/2025/01/ranongmoe.webp",
+      "particularsPdfUrl": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-1-PARTICULAR.pdf",
+      "identity": {"flag": "THAI", "imo": "1091434", "officialNo": "5300-02061", "callSign": "HSB 4575", "mmsi": null, "typeAsPublished": "CONTAINER CARRIER", "classAsPublished": "TG", "builtYear": 2010, "builtCountry": "THAILAND"},
+      "dimensionsMetres": {"loa": "63.00", "lbp": null, "breadth": "13.60", "depth": "5.30", "draft": "3.59"},
+      "containerCapacity": {"nominalTeu": 96, "reeferPlugs": 3},
+      "tonnageAsPublished": {"grt": 1419, "nrt": 741, "dwt": 2088, "dwcc": 1800},
+      "machinery": {"mainEngine": "CUMMINS KTA 38 1050 HP X 2 UNITS", "generator1": "HINO EK100 350HP 150KVA", "generator2": "HINO EH700 168HP 60KVA"},
+      "consumptionAsPublished": {"mainEngine": "70 L PER HR @ 1100 RPM", "generator1": "13 L PER HR", "generator2": "9 L PER HR", "speedKnots": 7},
+      "tankCapacityCubicMetres": {"bunker": "20.090", "freshWater": "41.850", "ballast": "774.771"},
+      "reviewNotes": ["Heading and listing call the vessel RANONG MOE; detail Name of vessel calls it MOE LINE 1. The PDF dated 12.11.24 also uses MOE LINE 1 with the same IMO/official registration. This supports historical naming but is not proof of a legal rename.", "Homepage historical first-vessel paragraph and the PDF say 72 TEU, while this detail and listing give 96 TEU. Do not automatically resolve this conflict.", "The PDF states 5 reefer plugs versus HTML 3; preserve the conflicting source values pending review.", "No MMSI or LBP recovered from either the published detail or the PDF."]
+    },
+    {
+      "legacyDisplayName": "MOE LINE 2",
+      "sourceUrls": {"en": "https://www.moe-line.com/fleet-list/moe-line-2/", "th": "https://www.moe-line.com/th/fleet-list/moe-line-2/"},
+      "photoUrl": "https://www.moe-line.com/wp-content/uploads/2025/01/fleet-moe-2.webp",
+      "particularsPdfUrl": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-2-PARTICULAR.pdf",
+      "identity": {"flag": "THAI", "imo": "8359184", "officialNo": "660000333", "callSign": "HSB8926", "mmsi": "567073300", "typeAsPublished": "RIVER-SEA CONTAINER FEEDER", "classAsPublished": "TG", "builtYear": 2008, "builtCountry": "CHINA"},
+      "dimensionsMetres": {"loa": "49.98", "lbp": "47.24", "breadth": "12.80", "depth": "4.50", "draft": "3.85"},
+      "containerCapacity": {"nominalTeu": 72, "reeferPlugs": 3},
+      "tonnageAsPublished": {"grt": 835, "nrt": 505, "dwt": 1590, "dwcc": 1550},
+      "machinery": {"mainEngine": "CUMMINS KTA 19M 500 HP X 2 UNITS", "generator1": "HINO EK100 350HP 150KVA", "generator2": "HINO EH700 168 HP 60 KVA"},
+      "consumptionAsPublished": {"mainEngine": "60 L PER HR @ 1000 RPM", "generator1": "13 L PER HR", "generator2": "9 L PER HR", "speedKnots": 7},
+      "tankCapacityCubicMetres": {"bunker": "10.675", "freshWater": "15.448", "ballast": "496.636"}
+    },
+    {
+      "legacyDisplayName": "MOE LINE 3",
+      "sourceUrls": {"en": "https://www.moe-line.com/fleet-list/moe-line-3/", "th": "https://www.moe-line.com/th/fleet-list/moe-line-3/"},
+      "photoUrl": "https://www.moe-line.com/wp-content/uploads/2025/01/fleet-moe-3.webp",
+      "particularsPdfUrl": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-3-PARTICULAR.pdf",
+      "identity": {"flag": "THAI", "imo": "8359172", "officialNo": "660000765", "callSign": "HSB9051", "mmsi": "567006677", "typeAsPublished": "RIVER-SEA CONTAINER FEEDER", "classAsPublished": "TG", "builtYear": 2011, "builtCountry": "CHINA"},
+      "dimensionsMetres": {"loa": "49.98", "lbp": "40.716", "breadth": "12.80", "depth": "4.20", "draft": "3.20"},
+      "containerCapacity": {"nominalTeu": 72, "reeferPlugs": 3},
+      "tonnageAsPublished": {"grt": 760, "nrt": 464, "dwt": 1290, "dwcc": 1250},
+      "machinery": {"mainEngine": "CUMMINS KTA 19M 500 HP X 2 UNITS", "generator1": "HINO EK100 350HP 150KVA", "generator2": "HINO EH700 168 HP 60 KVA"},
+      "consumptionAsPublished": {"mainEngine": "70 L PER HR @ 1000 RPM", "generator1": "13 L PER HR", "generator2": "9 L PER HR", "speedKnots": 7},
+      "tankCapacityCubicMetres": {"bunker": "23.625", "freshWater": "13.020", "ballast": "461.074"}
+    },
+    {
+      "legacyDisplayName": "MOE LINE 4",
+      "sourceUrls": {"en": "https://www.moe-line.com/fleet-list/moe-line-4/", "th": "https://www.moe-line.com/th/fleet-list/moe-line-4/"},
+      "photoUrl": "https://www.moe-line.com/wp-content/uploads/2025/01/sld-0233.webp",
+      "particularsPdfUrl": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-4-PARTICULAR.pdf",
+      "identity": {"flag": "THAI", "imo": null, "officialNo": "4800-00377", "callSign": null, "mmsi": null, "typeAsPublished": "FLOATING CRANE BARGE (NON SELFPROPELLED)", "classAsPublished": "TG", "builtYear": 1988, "builtCountry": "JAPAN"},
+      "dimensionsMetres": {"loa": "55.00", "lbp": null, "breadth": "19.00", "depth": "4.00", "draft": null},
+      "containerCapacity": null,
+      "tonnageAsPublished": {"grt": 1329, "nrt": null, "dwt": null, "dwcc": null},
+      "crane": {"typeAsPublished": "REVOLVING", "makerAsPublished": "SUMITOMO SG1500 HDS", "liftingCapacityAsPublished": "200 TONS SWL", "generator1": "MITSUBISHI S6A2 MPTA 470PS", "generator2": "AIRMAN SDG 125 S 235 KVA", "anchorPoints": 4, "winches": 4},
+      "reviewNotes": ["Keep official registration separate from IMO. The source supplies no IMO for this crane barge.", "This is a stationary non-self-propelled crane barge in the legacy listing, not an additional container carrier.", "The reported 200 tons SWL is not proof of capacity at every outreach or configuration; obtain an approved load chart before using it operationally.", "The PDF separates a Mitsubishi crane engine from two Airman generators; the HTML GEN 1/GEN 2 labels are inconsistent with that document. Preserve both source versions for review."]
+    },
+    {
+      "legacyDisplayName": "MOE LINE 5",
+      "sourceUrls": {"en": "https://www.moe-line.com/fleet-list/moe-line-5/", "th": "https://www.moe-line.com/th/fleet-list/moe-line-5/"},
+      "photoUrl": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-5.webp",
+      "particularsPdfUrl": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-5-PARTICULAR.pdf",
+      "identity": {"flag": "THAI", "imo": "1042457", "officialNo": "670000335", "callSign": "HSB9161", "mmsi": "567003250", "typeAsPublished": "COASTAL CONTAINER", "classAsPublished": "TG ( DANGEROUS GOOD )", "builtYear": 2009, "builtCountry": "CHINA"},
+      "dimensionsMetres": {"loa": "49.98", "lbp": "40.716", "breadth": "14.80", "depth": "4.92", "draft": "3.52"},
+      "containerCapacity": {"nominalTeu": 120, "reeferPlugs": 3},
+      "tonnageAsPublished": {"grt": 1163, "nrt": 651, "dwt": 1800, "dwcc": 1750},
+      "machinery": {"mainEngine": "CUMMINS KTA 19M 500 HP X 2 UNITS", "generator1": "HINO EK100 350HP 150KVA", "generator2": "HINO EH700 168 HP 60 KVA"},
+      "consumptionAsPublished": {"mainEngine": "66 L PER HR @ 1100 RPM", "generator1": "13 L PER HR", "generator2": "9 L PER HR", "speedKnots": 7},
+      "tankCapacityCubicMetres": {"bunker": "50.378", "freshWater": "48.698", "ballast": "490.874"},
+      "reviewNotes": ["Preserve the legacy DG class wording as a source field; it does not establish current acceptance of every dangerous-goods class or certificate validity."]
+    },
+    {
+      "legacyDisplayName": "MOE LINE 6",
+      "sourceUrls": {"en": "https://www.moe-line.com/fleet-list/moe-line-6/", "th": "https://www.moe-line.com/th/fleet-list/moe-line-6/"},
+      "photoUrl": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-6new.webp",
+      "particularsPdfUrl": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-6-PARTICULAR.pdf",
+      "identity": {"flag": "THAI", "imo": "1042469", "officialNo": "670000953", "callSign": "HSB9157", "mmsi": "567003240", "typeAsPublished": "LOCAL TRADE/CONTAINER", "classAsPublished": "TG", "builtYear": 2006, "builtCountry": "CHINA"},
+      "dimensionsMetres": {"loa": "49.98", "lbp": "47.80", "breadth": "14.80", "depth": "4.62", "draft": "3.35"},
+      "containerCapacity": {"nominalTeu": 120, "reeferPlugs": 3},
+      "tonnageAsPublished": {"grt": 1047, "nrt": 592, "dwt": 1800, "dwcc": 1750},
+      "machinery": {"mainEngine": "CHIDONG 6190ZLCA2-1 330 HP X 2 UNITS", "generator1": "HINO EK100 350HP 150KVA", "generator2": "HINO EH700 168 HP 60 KVA"},
+      "consumptionAsPublished": {"mainEngine": "66 L PER HR @ 700 RPM", "generator1": "13 L PER HR", "generator2": "9 L PER HR", "speedKnots": 7},
+      "tankCapacityCubicMetres": {"bunker": "26.224", "freshWater": "27.40", "ballast": "492.328"}
+    },
+    {
+      "legacyDisplayName": "MOE LINE 7",
+      "sourceUrls": {"en": "https://www.moe-line.com/fleet-list/moe-line-7/", "th": "https://www.moe-line.com/th/fleet-list/moe-line-7/"},
+      "photoUrl": "https://www.moe-line.com/wp-content/uploads/2025/01/nbnb2.webp",
+      "particularsPdfUrl": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-7-PARTICULAR.pdf",
+      "identity": {"flag": "THAI", "imo": "1065837", "officialNo": "670001551", "callSign": "HSB9363", "mmsi": "567003330", "typeAsPublished": "LOCAL TRADE/CONTAINER", "classAsPublished": "TG", "builtYear": 2003, "builtCountry": "CHINA"},
+      "dimensionsMetres": {"loa": "49.98", "lbp": "47.20", "breadth": "15.60", "depth": "5.40", "draft": "3.90"},
+      "containerCapacity": {"nominalTeu": 120, "reeferPlugs": 3},
+      "tonnageAsPublished": {"grt": 1266, "nrt": 687, "dwt": 2100, "dwcc": 2050},
+      "machinery": {"mainEngine": "CHIDONG 6190ZLCA2-1 330 HP X 2 UNITS", "generator1": "AE 4135ACAF", "generator2": "AE 4135ACAF"},
+      "consumptionAsPublished": {"mainEngine": "66 L PER HR @ 750 RPM", "generator1": "7 L PER HR", "generator2": "7 L PER HR", "speedKnots": 7},
+      "tankCapacityCubicMetres": {"bunker": "9.500", "freshWater": "17.600", "ballast": "512.000"}
+    }
+  ]
+}

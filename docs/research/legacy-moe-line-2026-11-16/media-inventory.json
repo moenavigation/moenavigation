@@ -1,0 +1,5067 @@
+{
+  "sourceOrigin": "https://www.moe-line.com",
+  "observedOn": "2026-11-16",
+  "localArchive": ".local/legacy-moe-line-2026-11-16",
+  "note": "Public page assets, linked Elementor stylesheet backgrounds, and all source originals in the public WordPress media library. Library presence does not establish active use, ownership, depicted identity or publication approval. Local binaries are ignored by Git.",
+  "assets": [
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/logo-moe.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/contact-us/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/about-us/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/trading-routes/",
+        "https://www.moe-line.com/th/contact-us/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 9166,
+      "sha256": "b71b9972a3c9a0c37721b994465795e240f99b782e6a0132b1593ba4168c9d5e",
+      "localPath": "assets/092f0a71e1-logo-moe.webp",
+      "width": 400,
+      "height": 182,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 28
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/banner-0016224.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 98662,
+      "sha256": "97e2b7d48d0d1c9e91b94b76dc7240ede9ce6eacef7d2c11ec93f54435ec6f27",
+      "localPath": "assets/6f3350ead2-banner-0016224.webp",
+      "width": 848,
+      "height": 868,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 992
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-011.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 52262,
+      "sha256": "51f29b8920e55d594179bd21e2d9e365f470c2d477abba2d655895faee65bdde",
+      "localPath": "assets/4074c83f2c-sld-011.webp",
+      "width": 1141,
+      "height": 854,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 1522
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-010.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 69822,
+      "sha256": "8de6bd4568f17d9fdc252f8c9e143974d4546ce67f182b9b265f23c80427ee40",
+      "localPath": "assets/730e74951e-sld-010.webp",
+      "width": 1141,
+      "height": 854,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 1521
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/ranongmoe.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 180018,
+      "sha256": "a26124c88fc17e036d02adcbe3ee648c66f25e37fcc3a5a56458b0df8ae53873",
+      "localPath": "assets/8dd0a6211c-ranongmoe.webp",
+      "width": 1920,
+      "height": 1440,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 1190
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/fleet-moe-2.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 246170,
+      "sha256": "519e9eea9a8c44939d99b5ea4efd3c2c702c24a9cbbb8c03047a017db9c5a211",
+      "localPath": "assets/a1a8aee5f0-fleet-moe-2.webp",
+      "width": 1920,
+      "height": 1159,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 912
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/fleet-moe-3.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 256670,
+      "sha256": "3f62a5b4f953a4f2dd87e766fa27461ffc2c67a992eae5c5db8db21b4e46a0af",
+      "localPath": "assets/ef0dacf5d8-fleet-moe-3.webp",
+      "width": 1920,
+      "height": 1159,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 913
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/sld-0233.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 79544,
+      "sha256": "565a83fc4190759254163c94d1322dca2445972a194f1b88f819e7b61598bc05",
+      "localPath": "assets/fe9e4ec878-sld-0233.webp",
+      "width": 1280,
+      "height": 720,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 1655
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-5.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 90686,
+      "sha256": "df82bd9d0d087be1ccb23b2f998478bfa1c3613f2b2c55f427d6cbaf10907c25",
+      "localPath": "assets/2568e199c6-moe-5.webp",
+      "width": 1920,
+      "height": 1159,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 230
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-6new.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 139964,
+      "sha256": "9193df78b6ea7e036ad6b918a22cc553793b38cd7d682cc6105787f8b6ff51ca",
+      "localPath": "assets/a578c3d850-moe-6new.webp",
+      "width": 1920,
+      "height": 1159,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 1005
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/nbnb2.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 205464,
+      "sha256": "fd91b1e8d769dc8b00b2df0dbd32cf28808a532f5cf9e5de7f9352a081d19b52",
+      "localPath": "assets/f462203695-nbnb2.webp",
+      "width": 1919,
+      "height": 1079,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 1667
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/logo-moe2-150x150.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/contact-us/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/about-us/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/trading-routes/",
+        "https://www.moe-line.com/th/contact-us/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 3548,
+      "sha256": "a003a1fdd73be9608733f00d8d2abac8621f692decf2f3e8bb29a3beafb36830",
+      "localPath": "assets/4d5fdd4baa-logo-moe2-150x150.webp",
+      "width": 150,
+      "height": 150,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/logo-moe2.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/contact-us/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/about-us/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/trading-routes/",
+        "https://www.moe-line.com/th/contact-us/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 6646,
+      "sha256": "0c637f85c1e469777e7cd7ea8a6e6d5b2080186c49c49956e9d8bb0a96914f06",
+      "localPath": "assets/3b2fca772f-logo-moe2.webp",
+      "width": 300,
+      "height": 300,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 29
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/logo-moe-300x137.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/contact-us/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/about-us/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/trading-routes/",
+        "https://www.moe-line.com/th/contact-us/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 8460,
+      "sha256": "680011753436167097cd24c07727eee04841cc1adf2dbc5569fcf3ff1a4164bb",
+      "localPath": "assets/df3cadc56c-logo-moe-300x137.webp",
+      "width": 300,
+      "height": 137,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/banner-0016224-293x300.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 20350,
+      "sha256": "4028d363b43c3e9a9c5c2ad7b2ff229c0b15f4b7a815f30598e4fedb7b4599de",
+      "localPath": "assets/0ca26b7ffb-banner-0016224-293x300.webp",
+      "width": 293,
+      "height": 300,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/banner-0016224-768x786.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 95802,
+      "sha256": "a0c600a1bd049cc6097db482147560116a482164eb2639a947bf6cbe03e54516",
+      "localPath": "assets/4e856477e2-banner-0016224-768x786.webp",
+      "width": 768,
+      "height": 786,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/banner-0016224-12x12.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 214,
+      "sha256": "88a06d3d05e662aca693610a88653c2a8c9069d0e2313c528d27f33e7ac55387",
+      "localPath": "assets/4256622356-banner-0016224-12x12.webp",
+      "width": 12,
+      "height": 12,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-011-300x225.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 8944,
+      "sha256": "3606b1c4b41173b941a3c427f231acc626cc6a67e296b3d0d30fee7956d3fd39",
+      "localPath": "assets/53c3fc2cd0-sld-011-300x225.webp",
+      "width": 300,
+      "height": 225,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-011-1024x766.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 50762,
+      "sha256": "d6dbe912a43349eaacdb62b015988368c6f534a5863af25ae183a08a0411dbac",
+      "localPath": "assets/6c53e828fe-sld-011-1024x766.webp",
+      "width": 1024,
+      "height": 766,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-011-768x575.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 35370,
+      "sha256": "edf2b2881ab30f426050318935a2fec0c02e247f58c4e9b150527c3e7a8be02a",
+      "localPath": "assets/d9ac477938-sld-011-768x575.webp",
+      "width": 768,
+      "height": 575,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-011-16x12.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 130,
+      "sha256": "64738398377f6dd237fe30f44533121872bd7b3f649222df7ac5ee5702d2ae8b",
+      "localPath": "assets/d2fa313efd-sld-011-16x12.webp",
+      "width": 16,
+      "height": 12,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-010-300x225.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 11202,
+      "sha256": "f144584d65a48725e31263e1ef32318f4597fee4610ad84421e3b45bfaa3f389",
+      "localPath": "assets/cfdc8bfec5-sld-010-300x225.webp",
+      "width": 300,
+      "height": 225,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-010-1024x766.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 66958,
+      "sha256": "36fbb31d2daa3500101d5157c7d141a05d2ea07b0e70bed2ad422a24be449d32",
+      "localPath": "assets/241177b142-sld-010-1024x766.webp",
+      "width": 1024,
+      "height": 766,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-010-768x575.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 44768,
+      "sha256": "92bb8e235fbd65b26b3dbd0f41b883cc133fbdcfaa7522a3853afa5178d43962",
+      "localPath": "assets/67f84cfe0b-sld-010-768x575.webp",
+      "width": 768,
+      "height": 575,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-010-16x12.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 142,
+      "sha256": "ba4748d9664f3c09eee36b270669bffab74e035a87ddc4279d63a0a071c36ca2",
+      "localPath": "assets/472e747282-sld-010-16x12.webp",
+      "width": 16,
+      "height": 12,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/ranongmoe-300x225.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 11994,
+      "sha256": "443f2bba2fc608f715bcedc8a3daa1d977d4966dac98adf102f27a3e97ef5b8a",
+      "localPath": "assets/2fbbfd299a-ranongmoe-300x225.webp",
+      "width": 300,
+      "height": 225,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/ranongmoe-1024x768.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 85568,
+      "sha256": "3e343d4be24c73e536998a361e3374f4842af39a99df2abd7340ff082eda38bb",
+      "localPath": "assets/32b78738f2-ranongmoe-1024x768.webp",
+      "width": 1024,
+      "height": 768,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/ranongmoe-768x576.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 55110,
+      "sha256": "3122b268c28e2c67639530077ed98ec5b32449f4449f229b0bfe9bbbde35462d",
+      "localPath": "assets/1831246605-ranongmoe-768x576.webp",
+      "width": 768,
+      "height": 576,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/ranongmoe-1536x1152.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 144162,
+      "sha256": "9acdc6e3c8b63ed45bef70522577062e6633883328e1b7383c6b5c29e834f913",
+      "localPath": "assets/72dd496bee-ranongmoe-1536x1152.webp",
+      "width": 1536,
+      "height": 1152,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/ranongmoe-16x12.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 168,
+      "sha256": "bfc19da4b2aabf3ebe4848213c44aa97231909ad59f38453601d0e2631e39424",
+      "localPath": "assets/b66d9f43ad-ranongmoe-16x12.webp",
+      "width": 16,
+      "height": 12,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/fleet-moe-2-300x181.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 15452,
+      "sha256": "08ed8770b0e5467ddf4cd13835aabcd99e43573bf2312982f58bb699fc4ff227",
+      "localPath": "assets/c719bf3261-fleet-moe-2-300x181.webp",
+      "width": 300,
+      "height": 181,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/fleet-moe-2-1024x618.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 127566,
+      "sha256": "f56349043273052184b39eb1f6bfaaeb23504b3d5628e6dd4c87a975fcaa7031",
+      "localPath": "assets/7c6b09604c-fleet-moe-2-1024x618.webp",
+      "width": 1024,
+      "height": 618,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/fleet-moe-2-768x464.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 81670,
+      "sha256": "8843769cb7fd3375c8169422008c013910cfb32f37e408a21d3970a567571ab3",
+      "localPath": "assets/f13ac124b9-fleet-moe-2-768x464.webp",
+      "width": 768,
+      "height": 464,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/fleet-moe-2-1536x927.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 212928,
+      "sha256": "384919d55465c882aaaad782d7932a0518f44aeb0bc83180688f495f2743e0b6",
+      "localPath": "assets/d2c8e44f01-fleet-moe-2-1536x927.webp",
+      "width": 1536,
+      "height": 927,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/fleet-moe-3-300x181.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 15820,
+      "sha256": "3e21a0a32e192516584a4af5902885836f4ea8f7bb98b6448d5f4f93176b97e1",
+      "localPath": "assets/e41f49fac4-fleet-moe-3-300x181.webp",
+      "width": 300,
+      "height": 181,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/fleet-moe-3-1024x618.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 134186,
+      "sha256": "07a331b650a626ca134496b1258a317161df774f01a7c0f9c2c702ceeac55fca",
+      "localPath": "assets/690100e95b-fleet-moe-3-1024x618.webp",
+      "width": 1024,
+      "height": 618,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/fleet-moe-3-768x464.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 84436,
+      "sha256": "b152bc0f87067f590b0d246463bcf43cb40639f11fafc2e9a17f9660ffe7f5e2",
+      "localPath": "assets/5ff13a1cd9-fleet-moe-3-768x464.webp",
+      "width": 768,
+      "height": 464,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/fleet-moe-3-1536x927.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 231026,
+      "sha256": "631bcdc9fe3c646fa7241f7fc56edf819df83bd234015d7ed1c1ed16b5efb42b",
+      "localPath": "assets/308c7594e7-fleet-moe-3-1536x927.webp",
+      "width": 1536,
+      "height": 927,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/sld-0233-300x169.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 11380,
+      "sha256": "ab6b1ff6bc4cf31299eac28164aaba1f3d044270d1a2ca9e2ee5fce964b879b7",
+      "localPath": "assets/fb8cded058-sld-0233-300x169.webp",
+      "width": 300,
+      "height": 169,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/sld-0233-1024x576.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 67792,
+      "sha256": "c92ce97ff80326e092b43d869912025fee3463257398d4ac27ac7ef1939fe8e1",
+      "localPath": "assets/13aa2a56a0-sld-0233-1024x576.webp",
+      "width": 1024,
+      "height": 576,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/sld-0233-768x432.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 49288,
+      "sha256": "e4763751b97f8fef0a80f6ec64ca7ddff4e25f26256a45462ead8c8ffbd98425",
+      "localPath": "assets/7409bcfa40-sld-0233-768x432.webp",
+      "width": 768,
+      "height": 432,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/sld-0233-18x10.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 174,
+      "sha256": "b8ed7a6c54e9d167e68091947358d8b9b99e330391c5529c866383bc8c7b318b",
+      "localPath": "assets/bf893eff2b-sld-0233-18x10.webp",
+      "width": 18,
+      "height": 10,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-5-300x181.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 9428,
+      "sha256": "c342cc341883f038492a57440908f3e3885ed981419c4ac34c78000028b43272",
+      "localPath": "assets/5ead90b372-moe-5-300x181.webp",
+      "width": 300,
+      "height": 181,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-5-1024x618.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 53042,
+      "sha256": "533f974c05722a02859da71ecfeee9ac4828609a53c36800324ff291d0046185",
+      "localPath": "assets/0bad122bb8-moe-5-1024x618.webp",
+      "width": 1024,
+      "height": 618,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-5-768x464.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 38146,
+      "sha256": "6cb568dd5d0f759e2d3b214a95f517cb44c352a15d483fb255da8d1c1c438090",
+      "localPath": "assets/9b321d44c5-moe-5-768x464.webp",
+      "width": 768,
+      "height": 464,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-5-1536x927.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 84152,
+      "sha256": "c3b7415d16376680b29de533be4e5a1c7ffd15296fb0ca945e4e15b165456534",
+      "localPath": "assets/9b95b5c396-moe-5-1536x927.webp",
+      "width": 1536,
+      "height": 927,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-6new-300x181.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 10538,
+      "sha256": "6a2a596eee5504662b255fc1bc22e655d781b718c433eac51ca008fec23cd29a",
+      "localPath": "assets/8964f7d843-moe-6new-300x181.webp",
+      "width": 300,
+      "height": 181,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-6new-1024x618.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 71400,
+      "sha256": "f0a5d9643b294c83564f59db1076f274802c6c1132ad9ff5dd5bbcbcad2515dd",
+      "localPath": "assets/c8170fe1b8-moe-6new-1024x618.webp",
+      "width": 1024,
+      "height": 618,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-6new-768x464.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 46552,
+      "sha256": "3db00450d1416e5a562d91d420e750b2195252ac9b453e362cdae7b5f1deecef",
+      "localPath": "assets/0a7c3420c0-moe-6new-768x464.webp",
+      "width": 768,
+      "height": 464,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-6new-1536x927.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 122480,
+      "sha256": "9340fa7bb325c7dcfaa9bf987eb0b01a69af7066d4e1a38c22bcf4d9391492a9",
+      "localPath": "assets/3d3c0fd56f-moe-6new-1536x927.webp",
+      "width": 1536,
+      "height": 927,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-6new-18x12.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 190,
+      "sha256": "145e9ab404a0f24ad9bbc83f54a2450fe53668d3fdedc6f54d8b9c4372590c12",
+      "localPath": "assets/e9989239ec-moe-6new-18x12.webp",
+      "width": 18,
+      "height": 12,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/nbnb2-300x169.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 7900,
+      "sha256": "cef94f4f09b6654a52e0f6e813ddeccd173db9cb8daaad9c8b78c2dc6b11c718",
+      "localPath": "assets/49b69216a6-nbnb2-300x169.webp",
+      "width": 300,
+      "height": 169,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/nbnb2-1024x576.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 77988,
+      "sha256": "101a6f2f8236de71f3b54d9b337689ec160e2051f2ce35ced90775aa149beb8e",
+      "localPath": "assets/469a1d8b40-nbnb2-1024x576.webp",
+      "width": 1024,
+      "height": 576,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/nbnb2-768x432.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 46336,
+      "sha256": "96a6d1902dd83f6e8fbbb1284b9a4693514a49b80881479321051e8d24e33c80",
+      "localPath": "assets/f4258da2f5-nbnb2-768x432.webp",
+      "width": 768,
+      "height": 432,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/nbnb2-1536x864.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 153572,
+      "sha256": "82bc254ed94666568e9fa93a11502f3679ca144e4392c29ae31889d1a06caf02",
+      "localPath": "assets/0891fbc3c4-nbnb2-1536x864.webp",
+      "width": 1536,
+      "height": 864,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/nbnb2-18x10.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 154,
+      "sha256": "2f42afa56a4b26e4c0ee23ceedfbca1d2898cfb4d50361cf6e05bb80bf1916c6",
+      "localPath": "assets/51fb3dda09-nbnb2-18x10.webp",
+      "width": 18,
+      "height": 10,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-015.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 303212,
+      "sha256": "1e6d0bfd58cd93f29a5fc124e699f3c549e82ee3ef2e00f852a9e209b454bf99",
+      "localPath": "assets/2e8220c141-sld-015.webp",
+      "width": 2501,
+      "height": 2560,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 1554
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/07/sld-026.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 135666,
+      "sha256": "085176a7434745daf0474d6a9887f41134161890ad6e6189bcbeddff21869c29",
+      "localPath": "assets/c24795a4ec-sld-026.webp",
+      "width": 1396,
+      "height": 1047,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 1626
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-023.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 107468,
+      "sha256": "255e137219244399ad380a91e6a94db726d30d9f8cc1f0fa6a478295ef3a8a55",
+      "localPath": "assets/f13751dbee-sld-023.webp",
+      "width": 1396,
+      "height": 1047,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 1603
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/08/sld-0231.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 105468,
+      "sha256": "6c3437091194d9c96da74f1054fe4c1b66782d15ef99f67884cb1d64d52243e4",
+      "localPath": "assets/664a3773b3-sld-0231.webp",
+      "width": 1396,
+      "height": 1047,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 1644
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-019.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 24602,
+      "sha256": "17976bb7b950b5fbc663f4e1dea0c110e30664288972302d3c271063026fba58",
+      "localPath": "assets/1f483a7015-sld-019.webp",
+      "width": 800,
+      "height": 608,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 1558
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/8884-scaled.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "linked-asset",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 235844,
+      "sha256": "1dd46c2b34946a2379b0f60c8b3a5782e8a70aa301ae424ed2cefa89d567734a",
+      "localPath": "assets/50e37f6251-8884-scaled.webp",
+      "width": 1806,
+      "height": 2560,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 997
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-015-293x300.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 21570,
+      "sha256": "ba829d5ee91d26ec1f12607b3638f9c2dda970d4453748e3be3089f16ac63a47",
+      "localPath": "assets/a48b74e6e7-sld-015-293x300.webp",
+      "width": 293,
+      "height": 300,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-015-1000x1024.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 131844,
+      "sha256": "7c379bd4b4341ac7914a17c55381d33bc99de1dd9e7b3509d1d20852cc5426e1",
+      "localPath": "assets/24170e1cbf-sld-015-1000x1024.webp",
+      "width": 1000,
+      "height": 1024,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-015-768x786.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 94764,
+      "sha256": "94f0815aaeb03e63ff5fcef8fdfa1acca1931da080cb7f83e82e5ec5a6419cc1",
+      "localPath": "assets/664287f9e1-sld-015-768x786.webp",
+      "width": 768,
+      "height": 786,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-015-1501x1536.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 212944,
+      "sha256": "9e8f9966b77c55ea8cca0dfc31342bc7e9a2829b3942398bf67a939d9be883c6",
+      "localPath": "assets/257bdceeae-sld-015-1501x1536.webp",
+      "width": 1501,
+      "height": 1536,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-015-2001x2048.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 283580,
+      "sha256": "4c2314710f0dbd522c332d6c483f2341f3e0463bac6214b6ff08371cc1c87414",
+      "localPath": "assets/ad21c3d834-sld-015-2001x2048.webp",
+      "width": 2001,
+      "height": 2048,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-015-12x12.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 134,
+      "sha256": "17b22c636f5ac07539e707653c9fae1eeaffa41826317a2d06748420271f7269",
+      "localPath": "assets/32b395e65f-sld-015-12x12.webp",
+      "width": 12,
+      "height": 12,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/07/sld-026-300x225.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 20122,
+      "sha256": "abadfda32d7eb6f0507fdfb78ca82ced6711482db6763634be263f973a9296d8",
+      "localPath": "assets/ec6afd8147-sld-026-300x225.webp",
+      "width": 300,
+      "height": 225,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/07/sld-026-1024x768.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 117288,
+      "sha256": "6c16c1bdb7dde82f38e64ff9aa79964dac4d1c1840253a42e07e08942db9eb11",
+      "localPath": "assets/7d0c76f4a3-sld-026-1024x768.webp",
+      "width": 1024,
+      "height": 768,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/07/sld-026-768x576.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 80674,
+      "sha256": "22e44598d5ad2a85de117e729e05af8e466a22a845cbb176911133fdc60741ce",
+      "localPath": "assets/046982826c-sld-026-768x576.webp",
+      "width": 768,
+      "height": 576,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/07/sld-026-16x12.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 204,
+      "sha256": "0d70149630863f9db421811c620209a458ef44c6562a297f22f9235bf4af651e",
+      "localPath": "assets/90b1dd394d-sld-026-16x12.webp",
+      "width": 16,
+      "height": 12,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-023-300x225.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 21370,
+      "sha256": "67bf88e40e9c97bf9e806c90b8c8aa178b8cace800c799ded588d144d10ba990",
+      "localPath": "assets/0fc7d8268f-sld-023-300x225.webp",
+      "width": 300,
+      "height": 225,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-023-1024x768.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 96346,
+      "sha256": "63f857cf73ee67b6c2132d8add360e6943ddc17f92fbf1851cda3a747e79122e",
+      "localPath": "assets/2e9c7e34cf-sld-023-1024x768.webp",
+      "width": 1024,
+      "height": 768,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-023-768x576.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 71326,
+      "sha256": "da0427b28d3fa0cda200e7997886b4eb8b08f20f28912fd835c327f7b47982e8",
+      "localPath": "assets/976fc22634-sld-023-768x576.webp",
+      "width": 768,
+      "height": 576,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-023-16x12.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 214,
+      "sha256": "0a7e7cacc88d67edf1b60e5a51d628bac79a54c9fd7591ec6858ca3f4e24656d",
+      "localPath": "assets/d96318851a-sld-023-16x12.webp",
+      "width": 16,
+      "height": 12,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/08/sld-0231-300x225.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 16074,
+      "sha256": "aef02bf9294ec89b9418026b72a40ecb57e84cd90100e3e3710567ebfca1a2c1",
+      "localPath": "assets/280881cde3-sld-0231-300x225.webp",
+      "width": 300,
+      "height": 225,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/08/sld-0231-1024x768.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 89092,
+      "sha256": "c2c012347ce737d52ee5290940ef0b3ca11e471cd585775cc725fa480d2ced37",
+      "localPath": "assets/1b2b1bc042-sld-0231-1024x768.webp",
+      "width": 1024,
+      "height": 768,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/08/sld-0231-768x576.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 63040,
+      "sha256": "aa3fee1039a2e7bb6c9708ea597d5c028cfb1fca10d8f354cdfd78edb73bce73",
+      "localPath": "assets/7963a31f35-sld-0231-768x576.webp",
+      "width": 768,
+      "height": 576,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/08/sld-0231-16x12.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 180,
+      "sha256": "0084cb7bcc8e21a15e0fd93f9b32a32f2920781d47647b0a982d1695ee67f55b",
+      "localPath": "assets/7ef028cec6-sld-0231-16x12.webp",
+      "width": 16,
+      "height": 12,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-019-300x228.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 10064,
+      "sha256": "2642897ad93d00d2ef96c79be0ca669f323a0e6c20ddb6e118b609aa666f0ef7",
+      "localPath": "assets/9937af0ae2-sld-019-300x228.webp",
+      "width": 300,
+      "height": 228,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-019-768x584.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 29196,
+      "sha256": "6f9955a1dcb785125031493d9bbfeb6979f005b5a3e249227c741858250f8e4e",
+      "localPath": "assets/78cfcb264e-sld-019-768x584.webp",
+      "width": 768,
+      "height": 584,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-019-16x12.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 204,
+      "sha256": "dd41009cc24d8e2c3c401de87a01c373c8926a74e77f2d217caf288ca5f77b41",
+      "localPath": "assets/ec0e592799-sld-019-16x12.webp",
+      "width": 16,
+      "height": 12,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/8884-212x300.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 7516,
+      "sha256": "0411f43ab8586b5ab5213cd12f77bbdfed46bbb66c96f334b0d27568357f8016",
+      "localPath": "assets/a2d2f8b1fb-8884-212x300.webp",
+      "width": 212,
+      "height": 300,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/8884-722x1024.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 66214,
+      "sha256": "50cedc6baa46bc66b152beda00f0f30eb3cb255300b538b123e417b5e95d41ae",
+      "localPath": "assets/535ea95f8d-8884-722x1024.webp",
+      "width": 722,
+      "height": 1024,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/8884-768x1089.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 73092,
+      "sha256": "d467290504326aae99e0b5dbc93a4dec1090cbd6dead196a04be8b6f6f76f88a",
+      "localPath": "assets/87cfe015e6-8884-768x1089.webp",
+      "width": 768,
+      "height": 1089,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/8884-1084x1536.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 120626,
+      "sha256": "d8fe7d76a38511a8df5f7ca63eebe4e6f8cfc0dcdd6e75c8f1e761ffd6bef0e2",
+      "localPath": "assets/7fcd30836b-8884-1084x1536.webp",
+      "width": 1084,
+      "height": 1536,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/8884-1445x2048.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 178612,
+      "sha256": "ecb883e4223a6a282219984119ad8ecff2a858c6759c656a52f0f4a836874bc1",
+      "localPath": "assets/13fe5e9f89-8884-1445x2048.webp",
+      "width": 1445,
+      "height": 2048,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/8884-8x12.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 78,
+      "sha256": "d89d764de65f6e6b78e5dc44905ad18f4cd3e2b04d3d1ff35478817117f49fdc",
+      "localPath": "assets/e0416be48a-8884-8x12.webp",
+      "width": 8,
+      "height": 12,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/03/sss-002.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/th/trading-routes/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 69520,
+      "sha256": "8e3fa4b24543cc98c5dfc1d03ae2b2137a31b7331a213c3014cf877d4bf9c1d7",
+      "localPath": "assets/8ee37d0a0f-sss-002.webp",
+      "width": 1920,
+      "height": 398,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 1123
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/04/nmap-1.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/th/trading-routes/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 35392,
+      "sha256": "61781a576efab7f10514506c3337d39e80ce770631041df4da623be2220b9d86",
+      "localPath": "assets/3e4318410b-nmap-1.webp",
+      "width": 1000,
+      "height": 800,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 1321
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/04/nmap-2.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/th/trading-routes/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 34284,
+      "sha256": "70cc5899e87ec92b778407780c38d7730153f5ee031f51a4bb880173c2d53805",
+      "localPath": "assets/6fc788c6bb-nmap-2.webp",
+      "width": 1000,
+      "height": 800,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 1323
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/03/sss-002-300x62.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/th/trading-routes/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 6740,
+      "sha256": "496ff44de7a39c21c5a741a80fe887a524c52e27c87088060aa9e122d52974aa",
+      "localPath": "assets/4395de261c-sss-002-300x62.webp",
+      "width": 300,
+      "height": 62,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/03/sss-002-1024x212.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/th/trading-routes/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 34110,
+      "sha256": "7e6b3dfa7df01b25a6f2505463e0fdac9e732d92152ea038e4867af9a1942be4",
+      "localPath": "assets/03b4f7de2f-sss-002-1024x212.webp",
+      "width": 1024,
+      "height": 212,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/03/sss-002-768x159.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/th/trading-routes/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 22780,
+      "sha256": "f8c52e28a09ee157204eb3359c667e485c158d21c61a0e1e75f8008922c5f383",
+      "localPath": "assets/765dd22a8c-sss-002-768x159.webp",
+      "width": 768,
+      "height": 159,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/03/sss-002-1536x318.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/th/trading-routes/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 58284,
+      "sha256": "5ede51f9b1accb11b4f3fdf3fbe9dbd6bb07853e98f527eeabb99800575271ac",
+      "localPath": "assets/3a159f4c06-sss-002-1536x318.webp",
+      "width": 1536,
+      "height": 318,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/03/sss-002-18x4.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/th/trading-routes/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 274,
+      "sha256": "e14389c0711adef565aaf4e279841fc8af76d929e66f92bc96b6c07a03f50ba8",
+      "localPath": "assets/838c1c935f-sss-002-18x4.webp",
+      "width": 18,
+      "height": 4,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/04/nmap-1-300x240.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/th/trading-routes/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 8860,
+      "sha256": "a5853a2cf05c45df52a6b303cc9c0f4daa4ec75632b68089056117753a31a5a9",
+      "localPath": "assets/217f636f30-nmap-1-300x240.webp",
+      "width": 300,
+      "height": 240,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/04/nmap-1-768x614.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/th/trading-routes/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 29650,
+      "sha256": "c0a9cad591c28683e13c4f64f1fc0615f831cb1bc02583a39639f3a4dd85a549",
+      "localPath": "assets/a96b9fc42b-nmap-1-768x614.webp",
+      "width": 768,
+      "height": 614,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/04/nmap-1-15x12.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/th/trading-routes/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 184,
+      "sha256": "f14057022a59bac901beef95c49aeca332751bc895f1649274d638bb8254e766",
+      "localPath": "assets/8a6f8698ad-nmap-1-15x12.webp",
+      "width": 15,
+      "height": 12,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/04/nmap-2-300x240.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/th/trading-routes/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 9378,
+      "sha256": "073f3e92740a0c2f683a17cea50e0cfc8c918d8b03caddf269507a46f88834ef",
+      "localPath": "assets/bdae3b82dd-nmap-2-300x240.webp",
+      "width": 300,
+      "height": 240,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/04/nmap-2-768x614.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/th/trading-routes/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 29960,
+      "sha256": "a8ac4d89b112ab517ff6b61d10acb0524ccdaafe0ac53fa8204e4e8613c85422",
+      "localPath": "assets/c4f30317f5-nmap-2-768x614.webp",
+      "width": 768,
+      "height": 614,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/04/nmap-2-15x12.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/th/trading-routes/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 194,
+      "sha256": "02f404625599aea04098d7da2021b11ceae69ce5f2b790b94315967b5830931a",
+      "localPath": "assets/d32545e3e3-nmap-2-15x12.webp",
+      "width": 15,
+      "height": 12,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/09/contact-001.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/contact-us/",
+        "https://www.moe-line.com/th/contact-us/"
+      ],
+      "uses": [
+        "image",
+        "html-reference",
+        "public-media-library"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 93408,
+      "sha256": "4cbb7c468aa3932faf718a351b647c4a2ec0e35da298f599dcc5a5799d6771cf",
+      "localPath": "assets/2a0c8999c4-contact-001.webp",
+      "width": 802,
+      "height": 1080,
+      "format": "webp",
+      "resizedVariant": false,
+      "mediaLibraryId": 1741
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/09/contact-001-223x300.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/contact-us/",
+        "https://www.moe-line.com/th/contact-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 13824,
+      "sha256": "17983d00483a2ae995e3277538cf026411628f9bd4abe9bdb847cebcd6b18920",
+      "localPath": "assets/6625068c39-contact-001-223x300.webp",
+      "width": 223,
+      "height": 300,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/09/contact-001-760x1024.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/contact-us/",
+        "https://www.moe-line.com/th/contact-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 90922,
+      "sha256": "00eb4d3446a17976d2e02fd92a60d475d1314f78bf64d0bb62686449816af414",
+      "localPath": "assets/c79141bd20-contact-001-760x1024.webp",
+      "width": 760,
+      "height": 1024,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/09/contact-001-768x1034.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/contact-us/",
+        "https://www.moe-line.com/th/contact-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 92828,
+      "sha256": "7819af372cc79e5e596ded10d88e6190ddc101f72729043a63f587bd54d9eba5",
+      "localPath": "assets/ab669323f3-contact-001-768x1034.webp",
+      "width": 768,
+      "height": 1034,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/09/contact-001-9x12.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/contact-us/",
+        "https://www.moe-line.com/th/contact-us/"
+      ],
+      "uses": [
+        "html-reference"
+      ],
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 142,
+      "sha256": "60f8d181e4c579db1d9c561baea6e2f748d8ae3e0c7bb2466f09f6708df83224",
+      "localPath": "assets/1e4554c63e-contact-001-9x12.webp",
+      "width": 9,
+      "height": 12,
+      "format": "webp",
+      "resizedVariant": true
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0003.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ],
+      "uses": [
+        "stylesheet-background",
+        "public-media-library"
+      ],
+      "mediaLibraryId": 249,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 114626,
+      "sha256": "1b2dc8e8f79917c21309433a05e96b1bad319ad34570e70d47c3f06e8dd6d4bd",
+      "localPath": "assets/9b934b5a92-banner-0003.webp",
+      "width": 1920,
+      "height": 816,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-012.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/"
+      ],
+      "uses": [
+        "stylesheet-background",
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1545,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 90044,
+      "sha256": "8b9700a5322bb73201797958c6fe5ff0f94ae47e45d911a4f98a1c923b253f9c",
+      "localPath": "assets/200d0bb472-sld-012.webp",
+      "width": 1246,
+      "height": 854,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-013.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th/"
+      ],
+      "uses": [
+        "stylesheet-background",
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1547,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 53418,
+      "sha256": "99dc30cb843d96b5efe9f56d1387a8a30594700ab11542224a37da1e79537777",
+      "localPath": "assets/b57b2a87a0-sld-013.webp",
+      "width": 1246,
+      "height": 854,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-022.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/th/about-us/"
+      ],
+      "uses": [
+        "stylesheet-background",
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1599,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 177870,
+      "sha256": "00ab71ccf564c828bdf3833c28ddcd5795c1d698cca5aea327c13e838555d4b9",
+      "localPath": "assets/5a0f6ff89e-sld-022.webp",
+      "width": 1920,
+      "height": 1047,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2026/02/bbb2.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/th/trading-routes/"
+      ],
+      "uses": [
+        "stylesheet-background",
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1785,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 255216,
+      "sha256": "bd72ba00109703ccfa9d4e02601a45146e49528c2612929803a0fd3b841caa77",
+      "localPath": "assets/fc6db953e4-bbb2.webp",
+      "width": 1920,
+      "height": 912,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/sld-001.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/th/trading-routes/"
+      ],
+      "uses": [
+        "stylesheet-background",
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1008,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 282452,
+      "sha256": "ae572ea2cd197aebcb400485beb63969cf972ebd42c4313a38c6e59939037788",
+      "localPath": "assets/d5e359a757-sld-001.webp",
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-021.webp",
+      "alt": [],
+      "usedOn": [
+        "https://www.moe-line.com/contact-us/",
+        "https://www.moe-line.com/th/contact-us/"
+      ],
+      "uses": [
+        "stylesheet-background",
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1572,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 134122,
+      "sha256": "cc01216f05aec992bb346273a16d0a6099337c52af2ce4bf540ccb89567993ec",
+      "localPath": "assets/3a60a8c1de-sld-021.webp",
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/09/nw-001.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1730,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 213596,
+      "sha256": "97b742e9a59182be857e7d201d2744682c66514f246859bed5a35c28efc02dc4",
+      "localPath": "assets/25420841a1-nw-001.webp",
+      "width": 1920,
+      "height": 1044,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/08/Untitled-video-1-Trimed.mp4",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1686,
+      "status": 200,
+      "contentType": "video/mp4",
+      "bytes": 82843766,
+      "sha256": "edb1ee7b3b6e0fa187501e9fa9284dcc657f82c8e5ea25537cbdd162c3e7d789",
+      "localPath": "assets/c42a3fdbb1-Untitled-video-1-Trimed.mp4",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/08/nbnb7.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1680,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 58582,
+      "sha256": "f31446fa3cb2c0cc99b3d8a6a2904a9967a5a7fa4cba76d6d532d91e086a0280",
+      "localPath": "assets/e12e07f020-nbnb7.webp",
+      "width": 1920,
+      "height": 540,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/08/nbnb6.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1676,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 58774,
+      "sha256": "73b4bf6dd142a8e744552d303df566fc3dd4c1f60a97d199242300c5a552d767",
+      "localPath": "assets/5d213e4bd1-nbnb6.webp",
+      "width": 1200,
+      "height": 1138,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/08/Untitled-video-1.mp4",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1668,
+      "status": 200,
+      "contentType": "video/mp4",
+      "bytes": 1069790308,
+      "sha256": "0045626d59cf8819a09b3b18ab0c63a7a34d3a0e81cf6fc4a5164a473ff93d53",
+      "localPath": "assets/76632bd775-Untitled-video-1.mp4",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/08/nbnb5.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1662,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 88858,
+      "sha256": "057d5032425874d7f79c49d86beba3932c2c3f924da51ef94572ecfd3aa9fbef",
+      "localPath": "assets/26ef3f998b-nbnb5.webp",
+      "width": 1920,
+      "height": 701,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/08/sld-0232.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1651,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 98076,
+      "sha256": "7ffefc9a25f8dfb69d87c31c99623642eb2f345a43f2f6b1e8f3622a210aa2c6",
+      "localPath": "assets/e13d1a8498-sld-0232.webp",
+      "width": 1200,
+      "height": 1610,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/08/sld-0230.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1640,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 131304,
+      "sha256": "ced14e1ec458ddbba61b245a76ba48bf4db7b2c2160f6e275291de9931728bb8",
+      "localPath": "assets/3afef6cadf-sld-0230.webp",
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/07/sld-029.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1636,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 87254,
+      "sha256": "6da5854354534514bfc24f348cdaba119fb7416e5da9ef9fc7e77b3fbcaab0f6",
+      "localPath": "assets/d535d87b50-sld-029.webp",
+      "width": 1396,
+      "height": 1047,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/07/sld-028.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1632,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 52032,
+      "sha256": "09468eed6c8576777687f2d57aeab440e803b26794d635c77a343839a2ad9b75",
+      "localPath": "assets/476ac0cef9-sld-028.webp",
+      "width": 1920,
+      "height": 700,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/07/sld-027.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1627,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 92156,
+      "sha256": "f56989e2cbec8aff3247d317bf9261350bf2f7a8c104c13f1ed5b29db25025ee",
+      "localPath": "assets/129f6ac867-sld-027.webp",
+      "width": 1396,
+      "height": 1047,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-025.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1611,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 181556,
+      "sha256": "2ba54a95a5a8931f580123bafb70fe8f7b8e3e1560edf9af89997d8275b729f7",
+      "localPath": "assets/833894c922-sld-025.webp",
+      "width": 1396,
+      "height": 1047,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-024.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1604,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 115688,
+      "sha256": "550b84d3742d2784d13b9f605d3b518bcf5d26bff8090a94a34d9d0023b2a035",
+      "localPath": "assets/2ec7588102-sld-024.webp",
+      "width": 1396,
+      "height": 1047,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-020.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1565,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 125356,
+      "sha256": "b4630f306d694624ae3190c9990b5db09acc33ba2b7d0c0302e777612375bf39",
+      "localPath": "assets/3dd2482c7e-sld-020.webp",
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-018.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1557,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 65024,
+      "sha256": "b69475b81ba279359e732a740b18557d3af47ede8c3d40a5f69a4fb2113e2b81",
+      "localPath": "assets/85f761b99b-sld-018.webp",
+      "width": 800,
+      "height": 608,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-017.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1556,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 56758,
+      "sha256": "bcf0c3a8d448946aee80fe40306c58fdbce9750643d8d133b40541a0276206d0",
+      "localPath": "assets/ad65090988-sld-017.webp",
+      "width": 800,
+      "height": 608,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-016.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1555,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 61970,
+      "sha256": "f40e8ff20f595d98ac9839e21b6f93ad696d16d9fe78babe8d84420f495d171b",
+      "localPath": "assets/e3fb12f5b4-sld-016.webp",
+      "width": 800,
+      "height": 608,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-014.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1553,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 186676,
+      "sha256": "3eb66aec259489e7a6b0b22fa238d65504a645b5aef715ab5dbdd43c983e756a",
+      "localPath": "assets/3e9224a81e-sld-014.webp",
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/05/sld-009.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1495,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 72860,
+      "sha256": "4917b7bec8e28d6b30d2d3715af7e01db38660f3dc56fbf3e801f3052582b695",
+      "localPath": "assets/2021863f39-sld-009.webp",
+      "width": 1920,
+      "height": 700,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/05/sld-008.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1482,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 115354,
+      "sha256": "b7709893dd6501d3688803da45ac098b5207b844fd0ff6f17469764b3e6fbf9e",
+      "localPath": "assets/91d423dc1e-sld-008.webp",
+      "width": 1920,
+      "height": 700,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/05/collaboration.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1469,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 3734,
+      "sha256": "23aba6a90f16a1403df804afca717e17f26b80ebb5e08ff3e6276ce8faca1d3c",
+      "localPath": "assets/0f6af40f26-collaboration.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/05/crew.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1468,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 3817,
+      "sha256": "791b6aee26c8573236a5f640a5beb6fe8393ca2fbdb92739021055712577ce09",
+      "localPath": "assets/8c73eb0423-crew.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/05/cargo-ship.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1463,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 2754,
+      "sha256": "09d79461cac15f370c22fa651eeba83afff9f3f8dd52cd02bfb5fb45f2066823",
+      "localPath": "assets/393e79ad5e-cargo-ship.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/05/cruise-ship.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1462,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 3973,
+      "sha256": "565a5f7fa1e3ad6bdf0d04727da3e2a14f90450978352a60dcbaab3d37c07d4b",
+      "localPath": "assets/c4a0492d91-cruise-ship.svg",
+      "width": 64,
+      "height": 64,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/05/framework.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1461,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 3609,
+      "sha256": "82ed98356c87d5f75c89bb61d2da2f8d32887b54ba498f46633bfbb227f475da",
+      "localPath": "assets/420eb8468b-framework.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/05/banner-0004.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1400,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 109280,
+      "sha256": "402806fa9e06ac8daf66964420732b70aeda5b02b60b9bb5fde44587fb62d3e4",
+      "localPath": "assets/ea67bdf7f4-banner-0004.webp",
+      "width": 1920,
+      "height": 816,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/05/moe-0001.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1395,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 70962,
+      "sha256": "18309acc63187ca1ebb5e6f6263c070de48e21dbedf824fdb970247da5efa674",
+      "localPath": "assets/00468c4949-moe-0001.webp",
+      "width": 1920,
+      "height": 700,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/04/nmap-2-1.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1324,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 34284,
+      "sha256": "70cc5899e87ec92b778407780c38d7730153f5ee031f51a4bb880173c2d53805",
+      "localPath": "assets/d36ff9b476-nmap-2-1.webp",
+      "width": 1000,
+      "height": 800,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/04/mp-005.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1236,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 36522,
+      "sha256": "1e6ac5c8f8d8ea2890ce7e376be748280ed7201d53925e32f52880f7833bb936",
+      "localPath": "assets/0854c467d8-mp-005.webp",
+      "width": 1280,
+      "height": 1049,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/04/mp-004.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1234,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 37904,
+      "sha256": "878b767be9625807cacd2a50b5cdb2818b5d8bcadf57bdfcd310b93e11982609",
+      "localPath": "assets/dab46f1033-mp-004.webp",
+      "width": 1280,
+      "height": 1049,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/04/mp-003.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1232,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 37528,
+      "sha256": "efa74260dcc0903679a51f176af35cf01ab656fbd14155e30121844f63d93dfa",
+      "localPath": "assets/5b40e8fba4-mp-003.webp",
+      "width": 1280,
+      "height": 1049,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/04/mp-002.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1230,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 46860,
+      "sha256": "3ae7312821d2f81893761c469b57ebaa26870ef2fe33ea908243ede2282cdf7a",
+      "localPath": "assets/97fca03871-mp-002.webp",
+      "width": 1280,
+      "height": 1049,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/04/mp-001.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1228,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 43934,
+      "sha256": "616ee9d3ed08a05daf9db1f37342a07563a69c3011bd9bf18a250aa7da20a73d",
+      "localPath": "assets/4e4427cd7f-mp-001.webp",
+      "width": 1280,
+      "height": 1049,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/03/mapp22.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1161,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 41156,
+      "sha256": "57e918d42a957eacb0ba7c82f6931483bbf5933632b506f72dc188d5b95c8f08",
+      "localPath": "assets/1c77fa3b51-mapp22.webp",
+      "width": 1920,
+      "height": 660,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/03/DJI_0004.mp4",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1138,
+      "status": 200,
+      "contentType": "video/mp4",
+      "bytes": 269098329,
+      "sha256": "c8e68d7f3a82559cdfc217ebb5b89df40da230e190a862309290cc9325c5a3be",
+      "localPath": "assets/aad61df36f-DJI_0004.mp4",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/03/sss-001.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1122,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 69612,
+      "sha256": "06139430d7bdd2a25f3f6a426dd8a35be096d17b9e73567be19ded2a1921db91",
+      "localPath": "assets/f3da96d538-sss-001.webp",
+      "width": 1920,
+      "height": 398,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/03/map22121.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1050,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 92542,
+      "sha256": "f24e647e88b9cb6b1d99e181ec943b14dd46fd760d5fd56c9bdee288e6dc0c88",
+      "localPath": "assets/a45c67e906-map22121.webp",
+      "width": 1920,
+      "height": 1410,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/asdsadsadsa4545666.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1036,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 262824,
+      "sha256": "b373cbb3fa12856d21e831b3c7b53e536f6e813c35db3df2f32ce1a8054535d1",
+      "localPath": "assets/9eabdf489d-asdsadsadsa4545666.webp",
+      "width": 1920,
+      "height": 753,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/asdsadsadsa4545.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1035,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 268056,
+      "sha256": "85a0bb73f4a71c923edb59f325fcd2e05bae7461c4644eb6a58760c0ad3632ae",
+      "localPath": "assets/5f89699549-asdsadsadsa4545.webp",
+      "width": 1920,
+      "height": 789,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/asdsadsadsa.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1031,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 172416,
+      "sha256": "58e69ff51455efdab3f5e2de74856b6daf63d220c3014897b9d00a4501127fe3",
+      "localPath": "assets/5b690fcec8-asdsadsadsa.webp",
+      "width": 1320,
+      "height": 1200,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/sld-006.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1018,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 29290,
+      "sha256": "af0f505ab565843e406a805af9b28fae7851d6a0dd1173983be7b5c18797cef9",
+      "localPath": "assets/d88598405b-sld-006.webp",
+      "width": 500,
+      "height": 400,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/sld-005.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1017,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 23304,
+      "sha256": "c9ae847d764d05783ddbe969a673be76402f7f3e14dd6d4adc8dbe32143a7cfa",
+      "localPath": "assets/97d5d76297-sld-005.webp",
+      "width": 500,
+      "height": 400,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/sld-004.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1016,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 22854,
+      "sha256": "6d81bf6453e64e816bd8aa38d2d7d3e5092405e463a2c57e1f26043ca71679b4",
+      "localPath": "assets/794eafb0c0-sld-004.webp",
+      "width": 500,
+      "height": 400,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/ship.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1011,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 3908,
+      "sha256": "49afe941522411b7abb3a2c2552257e8067e31cfc3e0426dd1769b071c53763f",
+      "localPath": "assets/01c699bcf3-ship.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/sld-003.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1010,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 15424,
+      "sha256": "bb266b4f33a2bd73882ed52613c286bb163bda2cf4e56164880401bd35bf3eaf",
+      "localPath": "assets/d55f7c4164-sld-003.webp",
+      "width": 500,
+      "height": 400,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/sld-002.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1009,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 248348,
+      "sha256": "77ad92a2baa79b0cb695a42bd751f20a4ad734bd886cde09bc2fc0224c54abe2",
+      "localPath": "assets/7198228db0-sld-002.webp",
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-7new.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 1006,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 195404,
+      "sha256": "59f43fcbe4435f5304b98087fe771c0b7c2246a49afe39ad52072a83b5b53d88",
+      "localPath": "assets/514afcd7d1-moe-7new.webp",
+      "width": 1920,
+      "height": 1159,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/DOC-Document-of-Compliance.pdf",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 996,
+      "status": 200,
+      "contentType": "application/pdf",
+      "bytes": 780685,
+      "sha256": "f59dab77111283b0520d00f37d8afe4b47a44c929e57360f78c9288b062b18b3",
+      "localPath": "assets/ed7a5b314f-DOC-Document-of-Compliance.pdf",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/1628784_Container_Vessel_1920x1080.mp4",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 967,
+      "status": 200,
+      "contentType": "video/mp4",
+      "bytes": 15332032,
+      "sha256": "7e7390de238191ff5ddb4ff9615e8a1dbf042d8f802a4a8ae328d24db5e9b64c",
+      "localPath": "assets/39454addfd-1628784_Container_Vessel_1920x1080.mp4",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/1628784_Container_Vessel_3840x2160.mp4",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 966,
+      "status": 200,
+      "contentType": "video/mp4",
+      "bytes": 32246158,
+      "sha256": "d1c97e69f1b22a4f224788b1d83ffb6ac654c0d8e51a761f580a67006ef1c5ca",
+      "localPath": "assets/d3523848a4-1628784_Container_Vessel_3840x2160.mp4",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/bann113.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 917,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 124308,
+      "sha256": "563144aed59ad75750d681fbe828b9da196273647c2c138ddb0b4c5039671160",
+      "localPath": "assets/84f6583836-bann113.webp",
+      "width": 1920,
+      "height": 1046,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/bann112.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 916,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 75656,
+      "sha256": "4b8da43f7964bc61b004f7e1233728f2c31fca6f586734c4d824e7742ae08be5",
+      "localPath": "assets/1a59c01302-bann112.webp",
+      "width": 1920,
+      "height": 1046,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/bann111.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 914,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 207986,
+      "sha256": "d1a5f865c1925c300a39fdf00b41b96d8c30f9a004cd53978ec2b39b254bec21",
+      "localPath": "assets/cc6f5534d8-bann111.webp",
+      "width": 1920,
+      "height": 1046,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/fleet-moe-1.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 911,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 175718,
+      "sha256": "7590abced949d7218662776a27fc6c659928c5bfe289f941aab26433f2583bdd",
+      "localPath": "assets/9768a320f9-fleet-moe-1.webp",
+      "width": 1920,
+      "height": 1440,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/nnnnbanner-0016.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 907,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 196390,
+      "sha256": "1320cf26dfac068c45558d56a2cf0242858a9e1b2c278487ff945e9c622dc634",
+      "localPath": "assets/db17f4cd09-nnnnbanner-0016.webp",
+      "width": 1920,
+      "height": 1304,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/nnnnbanner-0015.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 903,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 62370,
+      "sha256": "115f3baad67aae15a64666baf292a84d90321a1a8db05859f2e3a562f86954c4",
+      "localPath": "assets/ac71a81871-nnnnbanner-0015.webp",
+      "width": 1920,
+      "height": 816,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/nnnnbanner-0014.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 896,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 201504,
+      "sha256": "fa265e81ea9249374f0851e555d0f88525f9c17170f60deab6afbfc9eeac65d4",
+      "localPath": "assets/9343f43a86-nnnnbanner-0014.webp",
+      "width": 1920,
+      "height": 790,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/nnnnbanner-0013.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 895,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 81002,
+      "sha256": "c1f9411a250981467fea2466df503fdd85dafeaa76330a4423764a4f60466d82",
+      "localPath": "assets/3c2cf4eb6f-nnnnbanner-0013.webp",
+      "width": 1200,
+      "height": 800,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/nnnnbanner-0012.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 893,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 81978,
+      "sha256": "c882663b700f3144fe60728f55558951d8160d252d873d1e5b1389dc8d9dd888",
+      "localPath": "assets/dcb1a1d883-nnnnbanner-0012.webp",
+      "width": 1200,
+      "height": 800,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/banner-0014-scaled.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 889,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 441124,
+      "sha256": "3ba2641a65b31530cea229b9a2621b4c099e00bfad3c4ccecbe92e6e04367759",
+      "localPath": "assets/57a84519d7-banner-0014-scaled.webp",
+      "width": 2501,
+      "height": 2560,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/contactimg7.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 885,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 189030,
+      "sha256": "f4d2831a719d2fc60da16d0354c5912fb786722451424b0b03183a15bdd16189",
+      "localPath": "assets/058be848b8-contactimg7.webp",
+      "width": 1320,
+      "height": 1200,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/contactimg6.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 878,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 118630,
+      "sha256": "c68136b0a101eb68a3dd83e250584de079ed4b4d8c3785f42d7aeddaa0fb903d",
+      "localPath": "assets/6ee4241d43-contactimg6.webp",
+      "width": 1320,
+      "height": 1200,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/02/mewim-scaled.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 874,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 421898,
+      "sha256": "ce8ee26b4b7357ba7093cc30cc27c3c0433b023ea821f2099f689b18097ce862",
+      "localPath": "assets/9fff9de614-mewim-scaled.webp",
+      "width": 2501,
+      "height": 2560,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0019.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 785,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 100772,
+      "sha256": "46478a052cf8284ea39b54cc8a9069e3217298cf55b018b14253a352c532d947",
+      "localPath": "assets/7250bf50eb-banner-0019.webp",
+      "width": 1920,
+      "height": 1046,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0018.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 784,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 63146,
+      "sha256": "c8db0b9e12dff4c359936cbc9d030214b37cc1e400b9a0cb593aedf33e13ea0c",
+      "localPath": "assets/78d5c7c6ee-banner-0018.webp",
+      "width": 1920,
+      "height": 1046,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0017.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 783,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 212042,
+      "sha256": "9333c26020ed7bd9c14b5df3f480ce0e97415773e52cba3764cd2a07f37b8a6f",
+      "localPath": "assets/af9d0a3f85-banner-0017.webp",
+      "width": 1920,
+      "height": 1046,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0016.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 740,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 120052,
+      "sha256": "36c4633d104d2757b7cd57c8c695209f199cbf6b3b3c399efd7c2af6ee2b2104",
+      "localPath": "assets/ddc5bdaf23-banner-0016.webp",
+      "width": 848,
+      "height": 868,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0015.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 738,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 79524,
+      "sha256": "a438a476325f1826658e6befdabe140134de378f8808060a65c0cac00e885f45",
+      "localPath": "assets/a55501e446-banner-0015.webp",
+      "width": 848,
+      "height": 868,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/affiliare-marketing.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 666,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 815,
+      "sha256": "bb2976b21042bb8dcbb4396fd197f8ddbe02de363ca5298ce4a09cbd87b8c80c",
+      "localPath": "assets/3771316f4c-affiliare-marketing.svg",
+      "width": 64,
+      "height": 64,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0013.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 645,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 56174,
+      "sha256": "ea95483c4d243d05860903a894891bc70f6788c2d823f40e6042786601cb5d02",
+      "localPath": "assets/b7c7ecf963-banner-0013.webp",
+      "width": 848,
+      "height": 868,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0012.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 644,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 57438,
+      "sha256": "29414eb8c61bcdf1297ce4a47e03206396d5077a7bd0f681a212a364f115a255",
+      "localPath": "assets/7006dace6e-banner-0012.webp",
+      "width": 1200,
+      "height": 800,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0011.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 643,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 66026,
+      "sha256": "c4e12d550fcc043c2c886125346e2db38c9bd10ea86fbcb11f20546ed960ff2f",
+      "localPath": "assets/68b042210d-banner-0011.webp",
+      "width": 1200,
+      "height": 800,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0010.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 642,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 149236,
+      "sha256": "de89789bfd0eeeb053311d24cfae8e68d14a279f590da7beafb5689043d5a315",
+      "localPath": "assets/75a2c6511e-banner-0010.webp",
+      "width": 1920,
+      "height": 794,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/menus-3.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 639,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 996,
+      "sha256": "33cb6e99eb83387dc7f6e5f72e795baa3fb53eb96cab92ba3d07ed6ca62b94b4",
+      "localPath": "assets/49e68e9115-menus-3.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/map9.jpg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 613,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 87879,
+      "sha256": "523a01f0409c13f26878205f84ccd907c70ddbec9d36dfcb684a053df2089b95",
+      "localPath": "assets/af53b771f0-map9.jpg",
+      "width": 1200,
+      "height": 1010,
+      "format": "jpeg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/map8.jpg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 612,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 84865,
+      "sha256": "7eb185ca221be55b745619365b5172dd131ab34ac8452b61a3e157e2f400a8da",
+      "localPath": "assets/0f4d45b01f-map8.jpg",
+      "width": 1200,
+      "height": 1010,
+      "format": "jpeg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/map7.jpg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 611,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 102197,
+      "sha256": "d0c1e290565ae6fdcf039244eba94b9b5dee9cea9133ec989e3305afb00c8a95",
+      "localPath": "assets/a3553560e4-map7.jpg",
+      "width": 1200,
+      "height": 1010,
+      "format": "jpeg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/map6.jpg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 610,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 102536,
+      "sha256": "092fcc2ce793871499a3051dc29c1ecefdf4325fbd1fe47c53ffa4ee8c885fa5",
+      "localPath": "assets/72d0f63da9-map6.jpg",
+      "width": 1200,
+      "height": 1010,
+      "format": "jpeg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/map5.jpg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 609,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 100100,
+      "sha256": "4a40e228433fe1fa787de19eb260807893063adc0577d35ebdcdc418d0403c64",
+      "localPath": "assets/455dfcfbbb-map5.jpg",
+      "width": 1200,
+      "height": 1010,
+      "format": "jpeg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/map4.jpg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 593,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 84255,
+      "sha256": "5242704774d9d283d5cff6cb7df154dedde4cc4248451b32455939c2b6d95835",
+      "localPath": "assets/78f41c0979-map4.jpg",
+      "width": 1200,
+      "height": 1010,
+      "format": "jpeg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/map3.jpg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 591,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 82578,
+      "sha256": "e10cbf1f6b36a7566d6b2eb0c86a1079dfee6329588306992276d377f56bd759",
+      "localPath": "assets/25520d3ed4-map3.jpg",
+      "width": 1200,
+      "height": 1010,
+      "format": "jpeg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/map2.jpg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 590,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 96893,
+      "sha256": "81c828decc15b5a324091fec192ad36aed420fcf9858a5976ade488f78314957",
+      "localPath": "assets/8e41ef969a-map2.jpg",
+      "width": 1200,
+      "height": 1010,
+      "format": "jpeg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/map1.jpg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 589,
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 97849,
+      "sha256": "6396793f47b43ef26e12817c6434642cd52b01bf0284fde15680868b337a978c",
+      "localPath": "assets/0f7f0cc7bb-map1.jpg",
+      "width": 1200,
+      "height": 1010,
+      "format": "jpeg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/on-time.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 565,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 1432,
+      "sha256": "a74381920f4dc91e20bf4c45af6ce16fed1495159599db3d82d091519140b6c8",
+      "localPath": "assets/8a015283c4-on-time.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/travel-time.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 564,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 4086,
+      "sha256": "87ebb4e702c6b1a93a332431a5558edb2e78acefa905e4831305f56dcfd0094f",
+      "localPath": "assets/bb0a1a28b5-travel-time.svg",
+      "width": 64,
+      "height": 64,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/stock.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 563,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 1775,
+      "sha256": "6ea26c629c36c0d2d163da4dca713183391eaa5b10528d3d164e0086b9bbcfdc",
+      "localPath": "assets/e1208d92a0-stock.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/distance.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 561,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 2696,
+      "sha256": "438b8c11a6804bdf6b7aea5caf481662047a42ffaf8b575633ad43e998a666d9",
+      "localPath": "assets/10ddd4a648-distance.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0009.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 530,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 357484,
+      "sha256": "966d5858748e12b05413135be2bf0a1a1d80d06513d79b4a48153eb8ae62a3d4",
+      "localPath": "assets/dd6a507973-banner-0009.webp",
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/route.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 455,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 1383,
+      "sha256": "8e9994a3903583e96951bea91830039d923d27b1406bfa7ceb00af51a92d6a59",
+      "localPath": "assets/57ec3e5272-route.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/map3.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 442,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 43064,
+      "sha256": "054af7340d8e80beea3b56f638ca7cdc28c9df6706e0bbf7bec2a45c3a4d65d0",
+      "localPath": "assets/2df579e2cb-map3.webp",
+      "width": 623,
+      "height": 631,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/map2.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 441,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 51652,
+      "sha256": "ef219d2e3a2968fa2d6d0769a3ba667627fd4a94693f7e995bd354c27c959589",
+      "localPath": "assets/40b7ed6146-map2.webp",
+      "width": 623,
+      "height": 631,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/map1.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 440,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 34318,
+      "sha256": "a91dc0d10bbb106dfcb148003b56454ed44469c64efa0356e7c4b711d5cd8016",
+      "localPath": "assets/18450c3306-map1.webp",
+      "width": 623,
+      "height": 631,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0008.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 429,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 25948,
+      "sha256": "1edb02f8004b2ad7aff2a6b1b5ee8badbc3c7a4e0178722c1c6a3b4aba27ed43",
+      "localPath": "assets/1d9069b60c-banner-0008.webp",
+      "width": 560,
+      "height": 782,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/port.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 412,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 2720,
+      "sha256": "3bd240598102c5ba0d318aa58be1c76a6d5277c83329871620eb42cfc2c937ff",
+      "localPath": "assets/a36282f4f8-port.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/leadership.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 407,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 2335,
+      "sha256": "dd70ba6bbadb87644b34e70ec646e611c3f9826bf06984a8e33d1a2dfc2e98f9",
+      "localPath": "assets/2d86edc5cc-leadership.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/reliability.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 406,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 3032,
+      "sha256": "d6a88c9d1ec956d35a09472882f25187c01e0d519ce0a455a9d5c0552079f043",
+      "localPath": "assets/6f2352f6c4-reliability.svg",
+      "width": 510,
+      "height": 510,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/environmental-1.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 404,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 2179,
+      "sha256": "802f6a2f749ed7ccb8dbf7300992ca7d6366271920cc27d1d0b6e2f327e0d575",
+      "localPath": "assets/2b8d208985-environmental-1.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/environmental.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 403,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 5080,
+      "sha256": "fa6fcffccf92c68f199102a1f8253a87e6c3dc2b8e29f9dc9c4d4af80a471919",
+      "localPath": "assets/68b0760392-environmental.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/profit.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 402,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 2166,
+      "sha256": "29d4be4adaccab8702d4c5ec489a7cd01a77314b17de714208f061c48c19a77a",
+      "localPath": "assets/76cfe47498-profit.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0007.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 395,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 159620,
+      "sha256": "426538a2e12e8f687efe27c1a5ebd8f304faf6412e834bd2277c17c92949ae31",
+      "localPath": "assets/d0ccb95d8a-banner-0007.webp",
+      "width": 1920,
+      "height": 1304,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0006.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 394,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 135714,
+      "sha256": "ce586e76380ea77009f805d58d2b8e4afe1786a11adb78a2a3328b397c76ceaa",
+      "localPath": "assets/baa8de851a-banner-0006.webp",
+      "width": 1423,
+      "height": 1085,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0005.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 393,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 236134,
+      "sha256": "a3c45e6ac7bbea575323cb8d8aa8b2511bd83a88780faa4694da0e98caecfc88",
+      "localPath": "assets/9dd2cbe8de-banner-0005.webp",
+      "width": 1920,
+      "height": 1304,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0004.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 391,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 109280,
+      "sha256": "402806fa9e06ac8daf66964420732b70aeda5b02b60b9bb5fde44587fb62d3e4",
+      "localPath": "assets/4b20c29781-banner-0004.webp",
+      "width": 1920,
+      "height": 816,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0002.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 248,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 129752,
+      "sha256": "9f0719d5b1d86699cd058d133a7138af4aa4a98ec2a878afd669d9bb1727bf13",
+      "localPath": "assets/36d38ec179-banner-0002.webp",
+      "width": 1920,
+      "height": 816,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/banner-0001.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 244,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 53512,
+      "sha256": "f3edac755425b8c4b295e6f1355bec9f225629b4da74248d211f83fe1a2da405",
+      "localPath": "assets/95b617035c-banner-0001.webp",
+      "width": 1920,
+      "height": 816,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-7.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 232,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 89578,
+      "sha256": "11130f8ecae1f503267cbd18e175ade048a3ed714cf59add7adc4bd12517133a",
+      "localPath": "assets/8acb24cd4b-moe-7.webp",
+      "width": 1920,
+      "height": 1159,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-6.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 231,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 91982,
+      "sha256": "20290899860745e00d564f91282274b3f00746f766857541ef4de67e64fa9f41",
+      "localPath": "assets/21e3eaacb0-moe-6.webp",
+      "width": 1920,
+      "height": 1159,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-4.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 229,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 210514,
+      "sha256": "dd946f9463332ded1354eac3f7b92ce484fa6fbb148d02270a0ed35f4691ed85",
+      "localPath": "assets/7e78618c7a-moe-4.webp",
+      "width": 1920,
+      "height": 1159,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-3.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 228,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 208628,
+      "sha256": "eb6a73c0dcf5abd737729786e7fb42681b6683bddf68fbb3d4cb5ee02ff9d38b",
+      "localPath": "assets/e032c7e58c-moe-3.webp",
+      "width": 1920,
+      "height": 1159,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-2.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 227,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 208918,
+      "sha256": "dc98b8b139fc4be3048ccb236b5f74e0bfcbb26fc7823f042d40728e9c42a02c",
+      "localPath": "assets/f9d2bbbf64-moe-2.webp",
+      "width": 1920,
+      "height": 1159,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/contactimg5.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 220,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 298690,
+      "sha256": "1f70d33498dc06f55dbf22ac6bf3660b0e01984ef4b75ca4c2a676d71c291866",
+      "localPath": "assets/b1e4df1da4-contactimg5.webp",
+      "width": 1920,
+      "height": 942,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/contactimg4.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 218,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 153142,
+      "sha256": "420a225fbf689c39a26a9248ed10c16727a8f4767b3bb824fdedc79c340499b9",
+      "localPath": "assets/61426663d3-contactimg4.webp",
+      "width": 1920,
+      "height": 942,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/boat-with-containers-1.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 185,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 2790,
+      "sha256": "8def3897fc8388b7a284258c5bf8aba37dcc6217deb93a140982a6c22743f31b",
+      "localPath": "assets/a85f9ab5a9-boat-with-containers-1.svg",
+      "width": 490,
+      "height": 490,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/downloads-1.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 182,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 1466,
+      "sha256": "58e8c6b9399c47289670a43a797e3c376c27c2243867c484ba5309714deaba4f",
+      "localPath": "assets/34ddfa668f-downloads-1.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/downloads.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 181,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 1593,
+      "sha256": "61609be21b2a3d2c8e7d8497e7c268106ebd430b408b0623c0a553767bbc56e8",
+      "localPath": "assets/de349f039a-downloads.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/download.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 180,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 2114,
+      "sha256": "bec4bbd5c85afc6e2f1f4cc9e56a823945e4abeb4794d30dd34f15021b614ee2",
+      "localPath": "assets/ad3aba7d0c-download.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-1.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 168,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 161688,
+      "sha256": "189c6c4e27ef60625e19d05da30cbf7e9d1b6f43e0f54e4b51191e290196940a",
+      "localPath": "assets/ccb91e981a-moe-1.webp",
+      "width": 1920,
+      "height": 1440,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-7-PARTICULAR.pdf",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 167,
+      "status": 200,
+      "contentType": "application/pdf",
+      "bytes": 226201,
+      "sha256": "dcafea4255584bcc52635a13b760667c025200b1b2fe02d2b4cbedc297ee20e5",
+      "localPath": "assets/e8d7b35ceb-MOE-LINE-7-PARTICULAR.pdf",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-6-PARTICULAR.pdf",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 165,
+      "status": 200,
+      "contentType": "application/pdf",
+      "bytes": 223788,
+      "sha256": "1406ee8766754c410aef20cd906323db909d00332603bfb27a510a0fab7e47b2",
+      "localPath": "assets/fe25f5c9c4-MOE-LINE-6-PARTICULAR.pdf",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-5-PARTICULAR.pdf",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 163,
+      "status": 200,
+      "contentType": "application/pdf",
+      "bytes": 210978,
+      "sha256": "056551e78547b714a31a0bce0367ef0b405df89309bcbfb6639cc26dd8bb91ca",
+      "localPath": "assets/c82d578820-MOE-LINE-5-PARTICULAR.pdf",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-4-PARTICULAR.pdf",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 161,
+      "status": 200,
+      "contentType": "application/pdf",
+      "bytes": 329808,
+      "sha256": "d4ce8b93e6cee13e8608280f231b123ed6bd056c7319644232daecb266ab720d",
+      "localPath": "assets/7a7c05ba6f-MOE-LINE-4-PARTICULAR.pdf",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-3-PARTICULAR.pdf",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 159,
+      "status": 200,
+      "contentType": "application/pdf",
+      "bytes": 299734,
+      "sha256": "a2f40d8e471f5566c7c68cf29f69d22bdc3f16b69709c9d2c45a91b864c653cf",
+      "localPath": "assets/d8ad4fdacc-MOE-LINE-3-PARTICULAR.pdf",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-2-PARTICULAR.pdf",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 157,
+      "status": 200,
+      "contentType": "application/pdf",
+      "bytes": 342160,
+      "sha256": "c5af6323dbdf43c1779966493fb418f14bdd9eb8be5129f096e4ff01bbec6ee8",
+      "localPath": "assets/883f79a4c9-MOE-LINE-2-PARTICULAR.pdf",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-1-PARTICULAR.pdf",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 155,
+      "status": 200,
+      "contentType": "application/pdf",
+      "bytes": 234394,
+      "sha256": "c87a49d3bed3c722583b083fd80ff93b516c2ee54abbd17b6318353257b44d8b",
+      "localPath": "assets/b106ef316f-MOE-LINE-1-PARTICULAR.pdf",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/viber-2.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 113,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 2808,
+      "sha256": "8905f28c8e2cdac8b57dc4d59e19efde1bb341da818c6ccb19a98f7f0682b374",
+      "localPath": "assets/f7dd2805eb-viber-2.svg",
+      "width": 322,
+      "height": 322,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/pin-1.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 112,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 738,
+      "sha256": "754b9690b0cbace64d624235a48b40710fa06acfbf62e0d2ae962acb74b9d03d",
+      "localPath": "assets/90af1f4f95-pin-1.svg",
+      "width": 512,
+      "height": 512,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/boat.svg",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 111,
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 1237,
+      "sha256": "7105b3795965773945a9ad2d01816afe354df2228847295d28c9b2a499d5cb28",
+      "localPath": "assets/a485ac438d-boat.svg",
+      "width": 513,
+      "height": 513,
+      "format": "svg",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/contactimg3.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 86,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 56112,
+      "sha256": "a44c631839d07e2e90c7082f3738734551306cfb29d06d90341c5a641e681bb5",
+      "localPath": "assets/7f012a463c-contactimg3.webp",
+      "width": 1280,
+      "height": 448,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/contactimg2.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 82,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 81988,
+      "sha256": "e4fb6df96ca47960aa18b370bd85cab367dbd7a1bccfbb9fcd108b956ef1a96e",
+      "localPath": "assets/b4281c23bb-contactimg2.webp",
+      "width": 1280,
+      "height": 599,
+      "format": "webp",
+      "resizedVariant": false
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/contactimg.webp",
+      "alt": [],
+      "usedOn": [],
+      "uses": [
+        "public-media-library"
+      ],
+      "mediaLibraryId": 81,
+      "status": 200,
+      "contentType": "image/webp",
+      "bytes": 65996,
+      "sha256": "2919f19add5b52deef7114fee4c0cc86dbe9ad7045bdca7d89a7e9be28d7550a",
+      "localPath": "assets/c8bad7ce72-contactimg.webp",
+      "width": 792,
+      "height": 720,
+      "format": "webp",
+      "resizedVariant": false
+    }
+  ],
+  "cssDiscovery": [
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/elementor/css/post-8.css?ver=1738328349",
+      "status": 200
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/elementor/css/post-11.css?ver=1758541666",
+      "status": 200
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/elementor/css/post-31.css?ver=1768557885",
+      "status": 200
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/elementor/css/post-42.css?ver=1768557959",
+      "status": 200
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/elementor/css/post-13.css?ver=1779298993",
+      "status": 200
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/elementor/css/post-15.css?ver=1756308955",
+      "status": 200
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/elementor/css/post-17.css?ver=1770156224",
+      "status": 200
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/elementor/css/post-19.css?ver=1757190604",
+      "status": 200
+    },
+    {
+      "url": "https://www.moe-line.com/wp-content/uploads/elementor/css/post-170.css?ver=1756309008",
+      "status": 200
+    }
+  ]
+}

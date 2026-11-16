@@ -1,0 +1,34 @@
+{
+  "reviewDate": "2026-11-16",
+  "sourceUrl": "https://www.moe-line.com/wp-content/uploads/2025/02/DOC-Document-of-Compliance.pdf",
+  "localFile": ".local/legacy-moe-line-2026-11-16/assets/ed7a5b314f-DOC-Document-of-Compliance.pdf",
+  "pages": 2,
+  "method": "Both complete pages rendered with Poppler and visually inspected. The scanned PDF yielded no readable extracted text with pypdf.",
+  "certificateAsPrinted": {
+    "title": "DOCUMENT OF COMPLIANCE",
+    "certificateNo": "DC-67-038",
+    "companyName": "MOE CONTAINER LINE CO., LTD.",
+    "companyId": "6320768",
+    "authority": "Government of the Kingdom of Thailand, Marine Department",
+    "shipTypeNotStruckOut": "Other cargo ship",
+    "verificationCompletionDate": "2024-10-16",
+    "issueDate": "2024-10-21",
+    "issuePlace": "BANGKOK, THAILAND",
+    "nominalValidUntil": "2029-10-20",
+    "conditionAsPrinted": "subject to periodical verification"
+  },
+  "page2AnnualVerificationEndorsements": {
+    "heading": "ENDORSEMENT FOR ANNUAL VERIFICATION",
+    "annualVerificationSections": [1, 2, 3, 4],
+    "fieldsPerSection": ["Signed", "Place", "Date"],
+    "visibleCompletedEndorsements": 0,
+    "allSignedPlaceAndDateLinesBlank": true,
+    "visibleEndorsementStamps": 0
+  },
+  "interpretation": "This archived two-page copy records a certificate issued to the legacy Moe Container Line entity in October 2024 with a nominal printed end date of 20 October 2029, subject to periodic verification. Its annual-verification endorsement page is entirely blank. It does not establish current validity, completion of subsequent annual verifications, or certification of the separate Moe Navigation entity.",
+  "reuse": "A possible supporting source for historical safety-management information after entity and current endorsement checks. Do not publish an unqualified currently valid certification claim from this copy alone.",
+  "renderedPages": [
+    ".local/legacy-moe-line-2026-11-16/pdfs/DOC-Document-of-Compliance.png",
+    ".local/legacy-moe-line-2026-11-16/pdfs/DOC-Document-of-Compliance-page2.png"
+  ]
+}

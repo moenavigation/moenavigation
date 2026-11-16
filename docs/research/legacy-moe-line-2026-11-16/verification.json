@@ -1,0 +1,14 @@
+{
+  "checkedOn": "2026-11-16",
+  "jsonFiles": 10,
+  "legacyHtmlSnapshots": 35,
+  "legacySnapshotHashesVerified": 35,
+  "mediaFilesExistAndMatchRecordedSizes": 245,
+  "mediaLibraryRecords": 159,
+  "fleetRecords": 7,
+  "routeRecords": 5,
+  "proposedLegacyPaths": 34,
+  "currentVesselPagesHttp200": 8,
+  "reportLinksChecked": true,
+  "failures": []
+}

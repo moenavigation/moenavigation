@@ -1,0 +1,1712 @@
+{
+  "sourceOrigin": "https://www.moe-line.com",
+  "observedOn": "2026-11-16",
+  "collectionScope": "Linked public English/Thai pages, WordPress sitemap, public fleet/route/post collections, stylesheet backgrounds and public media-library index.",
+  "localArchive": ".local/legacy-moe-line-2026-11-16",
+  "pages": [
+    {
+      "url": "https://www.moe-line.com/",
+      "finalUrl": "https://www.moe-line.com/",
+      "title": "moecontainerline.com – MOE CONTAINER LINE CO.,LTD",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:48:05.253Z",
+      "htmlPath": "html/home.html",
+      "textPath": "text/home.txt",
+      "recordPath": "records/home.json",
+      "htmlSha256": "6e649485da9e66ccd5e5e02f88fdf508201ac6b426dd91dc5f54a49823927be1",
+      "imageCount": 22,
+      "tableCount": 0,
+      "counters": [
+        {
+          "label": "Our Fleet",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Carried Volume",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Skilled Crew",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Voyages",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/about-us/",
+      "finalUrl": "https://www.moe-line.com/about-us/",
+      "title": "About Us – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:48:05.299Z",
+      "htmlPath": "html/about-us.html",
+      "textPath": "text/about-us.txt",
+      "recordPath": "records/about-us.json",
+      "htmlSha256": "a97f477a791968c8e1188a01df54fd8d1eb4531a99a8c1730d48d150ec05c630",
+      "imageCount": 18,
+      "tableCount": 1,
+      "counters": [
+        {
+          "label": "Our Fleet",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Carried Volume",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Skilled Crew",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Voyages",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/",
+      "finalUrl": "https://www.moe-line.com/fleet-list/",
+      "title": "Fleet List – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:48:05.344Z",
+      "htmlPath": "html/fleet-list.html",
+      "textPath": "text/fleet-list.txt",
+      "recordPath": "records/fleet-list.json",
+      "htmlSha256": "572c701f49822a6908c4fd331c0a86c4329d44025474d8079bbc621c3771c6d4",
+      "imageCount": 19,
+      "tableCount": 21,
+      "counters": [
+        {
+          "label": "Our Fleet",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Carried Volume",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Skilled Crew",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Voyages",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/trading-routes/",
+      "finalUrl": "https://www.moe-line.com/trading-routes/",
+      "title": "Services – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:48:05.381Z",
+      "htmlPath": "html/trading-routes.html",
+      "textPath": "text/trading-routes.txt",
+      "recordPath": "records/trading-routes.json",
+      "htmlSha256": "a68ef629c818455d46d648a8e21597df7ebab7d18a8cdb9bc3fc53e3e9986289",
+      "imageCount": 15,
+      "tableCount": 5,
+      "counters": [
+        {
+          "label": "Our Fleet",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Carried Volume",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Skilled Crew",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Voyages",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/contact-us/",
+      "finalUrl": "https://www.moe-line.com/contact-us/",
+      "title": "Contact Us – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:48:05.417Z",
+      "htmlPath": "html/contact-us.html",
+      "textPath": "text/contact-us.txt",
+      "recordPath": "records/contact-us.json",
+      "htmlSha256": "e16257030633e44f2af0f2deccb9fea135da620dbb592a3f92a2bce85d9b225a",
+      "imageCount": 13,
+      "tableCount": 0,
+      "counters": [
+        {
+          "label": "Our Fleet",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Carried Volume",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Skilled Crew",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Voyages",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th/",
+      "finalUrl": "https://www.moe-line.com/th/",
+      "title": "moecontainerline.com – MOE CONTAINER LINE CO.,LTD",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:48:05.483Z",
+      "htmlPath": "html/th.html",
+      "textPath": "text/th.txt",
+      "recordPath": "records/th.json",
+      "htmlSha256": "fbce5473076c6d36bf3b319b1f5a8b88741001553da572c11ad473786fbbc6ab",
+      "imageCount": 22,
+      "tableCount": 0,
+      "counters": [
+        {
+          "label": "เรือของเรา",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ปริมาณการขนส่งต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ทีมงานผู้เชี่ยวชาญ",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "เที่ยวเรือต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/ranong-moe/",
+      "finalUrl": "https://www.moe-line.com/fleet-list/ranong-moe/",
+      "title": "RANONG MOE – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:48:05.522Z",
+      "htmlPath": "html/fleet-list__ranong-moe.html",
+      "textPath": "text/fleet-list__ranong-moe.txt",
+      "recordPath": "records/fleet-list__ranong-moe.json",
+      "htmlSha256": "14b3c02239087d2265eae52c58af2dd1efb4a203d0ab78459fd2b6d2071ee05f",
+      "imageCount": 19,
+      "tableCount": 10,
+      "counters": [
+        {
+          "label": "Our Fleet",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Carried Volume",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Skilled Crew",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Voyages",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-2/",
+      "finalUrl": "https://www.moe-line.com/fleet-list/moe-line-2/",
+      "title": "MOE LINE 2 – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:48:05.559Z",
+      "htmlPath": "html/fleet-list__moe-line-2.html",
+      "textPath": "text/fleet-list__moe-line-2.txt",
+      "recordPath": "records/fleet-list__moe-line-2.json",
+      "htmlSha256": "561b69cd6539cbc525382bb82af25c8b3e51f8edf9fa37fd8b807085e9349b27",
+      "imageCount": 19,
+      "tableCount": 10,
+      "counters": [
+        {
+          "label": "Our Fleet",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Carried Volume",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Skilled Crew",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Voyages",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-3/",
+      "finalUrl": "https://www.moe-line.com/fleet-list/moe-line-3/",
+      "title": "MOE LINE 3 – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:48:05.596Z",
+      "htmlPath": "html/fleet-list__moe-line-3.html",
+      "textPath": "text/fleet-list__moe-line-3.txt",
+      "recordPath": "records/fleet-list__moe-line-3.json",
+      "htmlSha256": "d2f98fc2d7f3e2956c4e335eb84110d9b4b02bd718ed2b446c79ef541bda6b9c",
+      "imageCount": 19,
+      "tableCount": 10,
+      "counters": [
+        {
+          "label": "Our Fleet",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Carried Volume",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Skilled Crew",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Voyages",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-4/",
+      "finalUrl": "https://www.moe-line.com/fleet-list/moe-line-4/",
+      "title": "MOE LINE 4 – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:48:05.632Z",
+      "htmlPath": "html/fleet-list__moe-line-4.html",
+      "textPath": "text/fleet-list__moe-line-4.txt",
+      "recordPath": "records/fleet-list__moe-line-4.json",
+      "htmlSha256": "d7243d2d7a9c59ec202ad8bcf52644b87d90a41155ebf8705e95aa61f1be2bff",
+      "imageCount": 19,
+      "tableCount": 7,
+      "counters": [
+        {
+          "label": "Our Fleet",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Carried Volume",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Skilled Crew",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Voyages",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-5/",
+      "finalUrl": "https://www.moe-line.com/fleet-list/moe-line-5/",
+      "title": "MOE LINE 5 – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:48:05.671Z",
+      "htmlPath": "html/fleet-list__moe-line-5.html",
+      "textPath": "text/fleet-list__moe-line-5.txt",
+      "recordPath": "records/fleet-list__moe-line-5.json",
+      "htmlSha256": "91a969db2baa3b802333c14ad6eb0e584caa6f5971061275d2946faf57848fa0",
+      "imageCount": 19,
+      "tableCount": 10,
+      "counters": [
+        {
+          "label": "Our Fleet",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Carried Volume",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Skilled Crew",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Voyages",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-6/",
+      "finalUrl": "https://www.moe-line.com/fleet-list/moe-line-6/",
+      "title": "MOE LINE 6 – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:48:05.708Z",
+      "htmlPath": "html/fleet-list__moe-line-6.html",
+      "textPath": "text/fleet-list__moe-line-6.txt",
+      "recordPath": "records/fleet-list__moe-line-6.json",
+      "htmlSha256": "e582afd63b8a2b52dbdb49ab7532bb2ee844f18c17f54d707f226d8bc600bf2a",
+      "imageCount": 19,
+      "tableCount": 10,
+      "counters": [
+        {
+          "label": "Our Fleet",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Carried Volume",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Skilled Crew",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Voyages",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-7/",
+      "finalUrl": "https://www.moe-line.com/fleet-list/moe-line-7/",
+      "title": "MOE LINE 7 – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:48:05.745Z",
+      "htmlPath": "html/fleet-list__moe-line-7.html",
+      "textPath": "text/fleet-list__moe-line-7.txt",
+      "recordPath": "records/fleet-list__moe-line-7.json",
+      "htmlSha256": "5de0828c8c88247e05a7209d3357112654cbc04d0debc60d34990c97675f63f1",
+      "imageCount": 19,
+      "tableCount": 10,
+      "counters": [
+        {
+          "label": "Our Fleet",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Carried Volume",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Skilled Crew",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "Annual Voyages",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th/about-us/",
+      "finalUrl": "https://www.moe-line.com/th/about-us/",
+      "title": "About Us – moecontainerline.com",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:48:05.781Z",
+      "htmlPath": "html/th__about-us.html",
+      "textPath": "text/th__about-us.txt",
+      "recordPath": "records/th__about-us.json",
+      "htmlSha256": "e9eda7ce292ab64f2990aa30d92aa38f8af3e1184815ff029b0cbbe0e574d1e6",
+      "imageCount": 18,
+      "tableCount": 1,
+      "counters": [
+        {
+          "label": "เรือของเรา",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ปริมาณการขนส่งต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ทีมงานผู้เชี่ยวชาญ",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "เที่ยวเรือต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/",
+      "finalUrl": "https://www.moe-line.com/th/fleet-list/",
+      "title": "Fleet List – moecontainerline.com",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:48:05.821Z",
+      "htmlPath": "html/th__fleet-list.html",
+      "textPath": "text/th__fleet-list.txt",
+      "recordPath": "records/th__fleet-list.json",
+      "htmlSha256": "3dec1db3ced81d0e6bc3ece4bb500031fb2147e48f63c3ae5c7e594612bb2e2e",
+      "imageCount": 19,
+      "tableCount": 21,
+      "counters": [
+        {
+          "label": "เรือของเรา",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ปริมาณการขนส่งต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ทีมงานผู้เชี่ยวชาญ",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "เที่ยวเรือต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th/trading-routes/",
+      "finalUrl": "https://www.moe-line.com/th/trading-routes/",
+      "title": "Services – moecontainerline.com",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:48:05.855Z",
+      "htmlPath": "html/th__trading-routes.html",
+      "textPath": "text/th__trading-routes.txt",
+      "recordPath": "records/th__trading-routes.json",
+      "htmlSha256": "b4f01821fbca390b86e0fd1f30e37e5cdcdfb741890e1077ef779e1c38c86bef",
+      "imageCount": 15,
+      "tableCount": 5,
+      "counters": [
+        {
+          "label": "เรือของเรา",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ปริมาณการขนส่งต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ทีมงานผู้เชี่ยวชาญ",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "เที่ยวเรือต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th/contact-us/",
+      "finalUrl": "https://www.moe-line.com/th/contact-us/",
+      "title": "Contact Us – moecontainerline.com",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:48:07.080Z",
+      "htmlPath": "html/th__contact-us.html",
+      "textPath": "text/th__contact-us.txt",
+      "recordPath": "records/th__contact-us.json",
+      "htmlSha256": "1b0a05192fde912b18c69a2d9967b730726dc7cdda9932151bf3ee750f61364d",
+      "imageCount": 13,
+      "tableCount": 0,
+      "counters": [
+        {
+          "label": "เรือของเรา",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ปริมาณการขนส่งต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ทีมงานผู้เชี่ยวชาญ",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "เที่ยวเรือต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+      "finalUrl": "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+      "title": "RANONG MOE – moecontainerline.com",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:48:07.195Z",
+      "htmlPath": "html/th__fleet-list__ranong-moe.html",
+      "textPath": "text/th__fleet-list__ranong-moe.txt",
+      "recordPath": "records/th__fleet-list__ranong-moe.json",
+      "htmlSha256": "99eef3f2d0b32f12f71659024853aeba591fdf4d469217d95aca67b9d628c76a",
+      "imageCount": 19,
+      "tableCount": 10,
+      "counters": [
+        {
+          "label": "เรือของเรา",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ปริมาณการขนส่งต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ทีมงานผู้เชี่ยวชาญ",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "เที่ยวเรือต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+      "finalUrl": "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+      "title": "MOE LINE 2 – moecontainerline.com",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:48:07.241Z",
+      "htmlPath": "html/th__fleet-list__moe-line-2.html",
+      "textPath": "text/th__fleet-list__moe-line-2.txt",
+      "recordPath": "records/th__fleet-list__moe-line-2.json",
+      "htmlSha256": "36c1bd50c54f8d2f127a97666d9bc297b2f8e3667974a066c22851610596f3e3",
+      "imageCount": 19,
+      "tableCount": 10,
+      "counters": [
+        {
+          "label": "เรือของเรา",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ปริมาณการขนส่งต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ทีมงานผู้เชี่ยวชาญ",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "เที่ยวเรือต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+      "finalUrl": "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+      "title": "MOE LINE 3 – moecontainerline.com",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:48:07.283Z",
+      "htmlPath": "html/th__fleet-list__moe-line-3.html",
+      "textPath": "text/th__fleet-list__moe-line-3.txt",
+      "recordPath": "records/th__fleet-list__moe-line-3.json",
+      "htmlSha256": "2d13cde83fd06eaa1052a19cca52805541f9066e986a1ed487dc3325b28192a8",
+      "imageCount": 19,
+      "tableCount": 10,
+      "counters": [
+        {
+          "label": "เรือของเรา",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ปริมาณการขนส่งต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ทีมงานผู้เชี่ยวชาญ",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "เที่ยวเรือต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+      "finalUrl": "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+      "title": "MOE LINE 4 – moecontainerline.com",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:48:07.326Z",
+      "htmlPath": "html/th__fleet-list__moe-line-4.html",
+      "textPath": "text/th__fleet-list__moe-line-4.txt",
+      "recordPath": "records/th__fleet-list__moe-line-4.json",
+      "htmlSha256": "7fad1d036304cfc9397b7d6072ef864107510c47833f47288965255fdc54ea65",
+      "imageCount": 19,
+      "tableCount": 7,
+      "counters": [
+        {
+          "label": "เรือของเรา",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ปริมาณการขนส่งต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ทีมงานผู้เชี่ยวชาญ",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "เที่ยวเรือต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+      "finalUrl": "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+      "title": "MOE LINE 5 – moecontainerline.com",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:48:07.366Z",
+      "htmlPath": "html/th__fleet-list__moe-line-5.html",
+      "textPath": "text/th__fleet-list__moe-line-5.txt",
+      "recordPath": "records/th__fleet-list__moe-line-5.json",
+      "htmlSha256": "064c209c6bfde1d1134ff418337f04290a0a034f825e9e460a274082d5ba078b",
+      "imageCount": 19,
+      "tableCount": 10,
+      "counters": [
+        {
+          "label": "เรือของเรา",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ปริมาณการขนส่งต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ทีมงานผู้เชี่ยวชาญ",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "เที่ยวเรือต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+      "finalUrl": "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+      "title": "MOE LINE 6 – moecontainerline.com",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:48:07.405Z",
+      "htmlPath": "html/th__fleet-list__moe-line-6.html",
+      "textPath": "text/th__fleet-list__moe-line-6.txt",
+      "recordPath": "records/th__fleet-list__moe-line-6.json",
+      "htmlSha256": "103cdedd1d425d61ae70d836292e6ae69d05fd23848f236aa65a2e4633a6bc61",
+      "imageCount": 19,
+      "tableCount": 10,
+      "counters": [
+        {
+          "label": "เรือของเรา",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ปริมาณการขนส่งต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ทีมงานผู้เชี่ยวชาญ",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "เที่ยวเรือต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-7/",
+      "finalUrl": "https://www.moe-line.com/th/fleet-list/moe-line-7/",
+      "title": "MOE LINE 7 – moecontainerline.com",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:48:07.446Z",
+      "htmlPath": "html/th__fleet-list__moe-line-7.html",
+      "textPath": "text/th__fleet-list__moe-line-7.txt",
+      "recordPath": "records/th__fleet-list__moe-line-7.json",
+      "htmlSha256": "c6439660da60a0b048f38ca3a8d9df85e6f3bc5cb225f2ada5ad8a40b7987917",
+      "imageCount": 19,
+      "tableCount": 10,
+      "counters": [
+        {
+          "label": "เรือของเรา",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "7",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ปริมาณการขนส่งต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "15559",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "ทีมงานผู้เชี่ยวชาญ",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "89",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        },
+        {
+          "label": "เที่ยวเรือต่อปี",
+          "values": [
+            {
+              "text": "0",
+              "duration": "2000",
+              "toValue": "1119",
+              "fromValue": "0",
+              "delimiter": ","
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/trading-routes/lcb-sihanoukville/",
+      "finalUrl": "https://www.moe-line.com/trading-routes/lcb-sihanoukville/",
+      "title": "LCB – SIHANOUKVILLE – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:53:56.692Z",
+      "htmlPath": "html/trading-routes__lcb-sihanoukville.html",
+      "textPath": "text/trading-routes__lcb-sihanoukville.txt",
+      "recordPath": "records/trading-routes__lcb-sihanoukville.json",
+      "htmlSha256": "0853732ec8546d157c5e97ed0f371fa4184b1b38889656505b95bbb5c421edbd",
+      "imageCount": 17,
+      "tableCount": 0,
+      "counters": []
+    },
+    {
+      "url": "https://www.moe-line.com/th/trading-routes/lcb-sihanoukville/",
+      "finalUrl": "https://www.moe-line.com/th/trading-routes/lcb-sihanoukville/",
+      "title": "LCB – SIHANOUKVILLE – moecontainerline.com",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:53:56.738Z",
+      "htmlPath": "html/th__trading-routes__lcb-sihanoukville.html",
+      "textPath": "text/th__trading-routes__lcb-sihanoukville.txt",
+      "recordPath": "records/th__trading-routes__lcb-sihanoukville.json",
+      "htmlSha256": "4ad760941ca97168cb2c4082ae6cf39846eb8343cf02dd8cc4ac7cb9195af1c0",
+      "imageCount": 17,
+      "tableCount": 0,
+      "counters": []
+    },
+    {
+      "url": "https://www.moe-line.com/trading-routes/ranong-yangon/",
+      "finalUrl": "https://www.moe-line.com/trading-routes/ranong-yangon/",
+      "title": "RANONG – YANGON – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:53:56.774Z",
+      "htmlPath": "html/trading-routes__ranong-yangon.html",
+      "textPath": "text/trading-routes__ranong-yangon.txt",
+      "recordPath": "records/trading-routes__ranong-yangon.json",
+      "htmlSha256": "ec66cdf56dfad689fc7b63c35b5a4d6678a371c3dfb79f5e931b7600e730bed9",
+      "imageCount": 17,
+      "tableCount": 0,
+      "counters": []
+    },
+    {
+      "url": "https://www.moe-line.com/th/trading-routes/ranong-yangon/",
+      "finalUrl": "https://www.moe-line.com/th/trading-routes/ranong-yangon/",
+      "title": "RANONG – YANGON – moecontainerline.com",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:53:58.734Z",
+      "htmlPath": "html/th__trading-routes__ranong-yangon.html",
+      "textPath": "text/th__trading-routes__ranong-yangon.txt",
+      "recordPath": "records/th__trading-routes__ranong-yangon.json",
+      "htmlSha256": "796e30ec13b4b35f92db1c7335bf44a8ff018f99d743db366b2e9128b69b09a9",
+      "imageCount": 17,
+      "tableCount": 0,
+      "counters": []
+    },
+    {
+      "url": "https://www.moe-line.com/trading-routes/bkk-lcb-songkhla/",
+      "finalUrl": "https://www.moe-line.com/trading-routes/bkk-lcb-songkhla/",
+      "title": "BKK /LCB – SONGKHLA – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:53:58.781Z",
+      "htmlPath": "html/trading-routes__bkk-lcb-songkhla.html",
+      "textPath": "text/trading-routes__bkk-lcb-songkhla.txt",
+      "recordPath": "records/trading-routes__bkk-lcb-songkhla.json",
+      "htmlSha256": "3de8fadd8badc0700236332ce1d77d4ffe192830c5efa6463a455538d3fee5d3",
+      "imageCount": 17,
+      "tableCount": 0,
+      "counters": []
+    },
+    {
+      "url": "https://www.moe-line.com/th/trading-routes/bkk-lcb-songkhla/",
+      "finalUrl": "https://www.moe-line.com/th/trading-routes/bkk-lcb-songkhla/",
+      "title": "BKK /LCB – SONGKHLA – moecontainerline.com",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:53:58.818Z",
+      "htmlPath": "html/th__trading-routes__bkk-lcb-songkhla.html",
+      "textPath": "text/th__trading-routes__bkk-lcb-songkhla.txt",
+      "recordPath": "records/th__trading-routes__bkk-lcb-songkhla.json",
+      "htmlSha256": "3b50a69edbea44893dffcfd36823235867ab98770c03d5f7e3b89e7952b704f8",
+      "imageCount": 17,
+      "tableCount": 0,
+      "counters": []
+    },
+    {
+      "url": "https://www.moe-line.com/trading-routes/bkk-lcb-suratthani/",
+      "finalUrl": "https://www.moe-line.com/trading-routes/bkk-lcb-suratthani/",
+      "title": "BKK/LCB – SURATTHANI – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:53:58.853Z",
+      "htmlPath": "html/trading-routes__bkk-lcb-suratthani.html",
+      "textPath": "text/trading-routes__bkk-lcb-suratthani.txt",
+      "recordPath": "records/trading-routes__bkk-lcb-suratthani.json",
+      "htmlSha256": "90881d4b4f89cad6d9c0b6d183d3deaeb2738260fc930c8ed5c7a8a899bd879f",
+      "imageCount": 17,
+      "tableCount": 0,
+      "counters": []
+    },
+    {
+      "url": "https://www.moe-line.com/th/trading-routes/bkk-lcb-suratthani/",
+      "finalUrl": "https://www.moe-line.com/th/trading-routes/bkk-lcb-suratthani/",
+      "title": "BKK/LCB – SURATTHANI – moecontainerline.com",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:53:58.889Z",
+      "htmlPath": "html/th__trading-routes__bkk-lcb-suratthani.html",
+      "textPath": "text/th__trading-routes__bkk-lcb-suratthani.txt",
+      "recordPath": "records/th__trading-routes__bkk-lcb-suratthani.json",
+      "htmlSha256": "e6bd8f027df8e7d66812f9d8899c7c6be0c8294f59327ecc22c57ccf9038e696",
+      "imageCount": 17,
+      "tableCount": 0,
+      "counters": []
+    },
+    {
+      "url": "https://www.moe-line.com/trading-routes/bkk-lcb/",
+      "finalUrl": "https://www.moe-line.com/trading-routes/bkk-lcb/",
+      "title": "BKK – LCB – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:53:58.925Z",
+      "htmlPath": "html/trading-routes__bkk-lcb.html",
+      "textPath": "text/trading-routes__bkk-lcb.txt",
+      "recordPath": "records/trading-routes__bkk-lcb.json",
+      "htmlSha256": "7594e0fa0d1969f9c9811966467600f7aa61e7c5bff6970220dd0352d5e6f7db",
+      "imageCount": 17,
+      "tableCount": 0,
+      "counters": []
+    },
+    {
+      "url": "https://www.moe-line.com/th/trading-routes/bkk-lcb/",
+      "finalUrl": "https://www.moe-line.com/th/trading-routes/bkk-lcb/",
+      "title": "BKK – LCB – moecontainerline.com",
+      "lang": "th",
+      "fetchedAt": "2026-11-16T03:53:58.962Z",
+      "htmlPath": "html/th__trading-routes__bkk-lcb.html",
+      "textPath": "text/th__trading-routes__bkk-lcb.txt",
+      "recordPath": "records/th__trading-routes__bkk-lcb.json",
+      "htmlSha256": "d9156a79ba73b8fb8bbb4ca6dfc8726925c548e2d4ccfc264c759aa5c377fbb1",
+      "imageCount": 17,
+      "tableCount": 0,
+      "counters": []
+    },
+    {
+      "url": "https://www.moe-line.com/hello-world/",
+      "finalUrl": "https://www.moe-line.com/hello-world/",
+      "title": "สวัสดีชาวโลก – -‘ – moecontainerline.com",
+      "lang": "en-US",
+      "fetchedAt": "2026-11-16T03:53:58.997Z",
+      "htmlPath": "html/hello-world.html",
+      "textPath": "text/hello-world.txt",
+      "recordPath": "records/hello-world.json",
+      "htmlSha256": "0895fcf45f7f5413cbcd7fa1476095922f95e83c2a80034d35bbd2fa0e34e457",
+      "imageCount": 13,
+      "tableCount": 0,
+      "counters": []
+    }
+  ],
+  "failures": [],
+  "discovery": [
+    {
+      "url": "https://www.moe-line.com/robots.txt",
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8"
+    },
+    {
+      "url": "https://www.moe-line.com/sitemap_index.xml",
+      "status": 404,
+      "contentType": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://www.moe-line.com/wp-sitemap.xml",
+      "status": 200,
+      "contentType": "application/xml; charset=UTF-8"
+    },
+    {
+      "url": "https://www.moe-line.com/wp-sitemap-posts-page-1.xml",
+      "status": 200
+    },
+    {
+      "url": "https://www.moe-line.com/sitemap.xml",
+      "status": 200,
+      "contentType": "application/xml; charset=UTF-8"
+    },
+    {
+      "url": "https://www.moe-line.com/wp-sitemap-posts-page-1.xml",
+      "status": 200
+    }
+  ],
+  "publicCollections": {
+    "pages": 5,
+    "fleet": 7,
+    "tradingRoutes": 5,
+    "posts": 1,
+    "media": 159
+  }
+}

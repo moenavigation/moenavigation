@@ -1,0 +1,758 @@
+{
+  "observedOn": "2026-11-16",
+  "source": "Live public HTML snapshots; counters are configured target values, not current verified business statistics.",
+  "counterTargets": [
+    {
+      "label": "Our Fleet",
+      "value": 7,
+      "unit": null,
+      "reportingYear": null
+    },
+    {
+      "label": "Annual Carried Volume",
+      "value": 15559,
+      "unit": null,
+      "reportingYear": null
+    },
+    {
+      "label": "Skilled Crew",
+      "value": 89,
+      "unit": null,
+      "reportingYear": null
+    },
+    {
+      "label": "Annual Voyages",
+      "value": 1119,
+      "unit": null,
+      "reportingYear": null
+    }
+  ],
+  "contactLinks": [
+    {
+      "url": "https://maps.app.goo.gl/r9HwWEmpBCDoANddA",
+      "labels": [
+        "819 /67-68 Chewa Biz Home Ekachai-Bangbon, Bangbon, Bangkok, 10150 Thailand",
+        "Office Location",
+        "819/67-68 ชีวา บิซ โฮม เอกชัย-บางบอน, บางบอน, กรุงเทพมหานคร 10150 ประเทศไทย",
+        "สถานที่ตั้ง"
+      ],
+      "sourcePages": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/contact-us/",
+        "https://www.moe-line.com/th",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/about-us/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/trading-routes/",
+        "https://www.moe-line.com/th/contact-us/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ]
+    },
+    {
+      "url": "https://maps.app.goo.gl/sJTQ87EpFFLMpBup6",
+      "labels": [
+        "Map"
+      ],
+      "sourcePages": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/th"
+      ]
+    },
+    {
+      "url": "https://maps.app.goo.gl/4FChT26eY9RHw6eE8",
+      "labels": [
+        "Office Location",
+        "819 /67-68 Chewa Biz Home Ekachai-Bangbon, Bangbon, Bangkok, 10150 Thailand",
+        "สถานที่ตั้ง",
+        "819/67-68 ชีวา บิซ โฮม เอกชัย-บางบอน, บางบอน, กรุงเทพมหานคร 10150 ประเทศไทย"
+      ],
+      "sourcePages": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/contact-us/",
+        "https://www.moe-line.com/th",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/about-us/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/trading-routes/",
+        "https://www.moe-line.com/th/contact-us/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ]
+    },
+    {
+      "url": "tel:+6624275905",
+      "labels": [
+        "Call Us",
+        "+66 2 427-5905"
+      ],
+      "sourcePages": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/contact-us/",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/"
+      ]
+    },
+    {
+      "url": "mailto:kamon@ssotgroup.com",
+      "labels": [],
+      "sourcePages": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/contact-us/",
+        "https://www.moe-line.com/th",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/about-us/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/trading-routes/",
+        "https://www.moe-line.com/th/contact-us/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ]
+    },
+    {
+      "url": "https://maps.app.goo.gl/sdinmVHRqLtHTw7h7",
+      "labels": [],
+      "sourcePages": [
+        "https://www.moe-line.com/",
+        "https://www.moe-line.com/about-us/",
+        "https://www.moe-line.com/fleet-list/",
+        "https://www.moe-line.com/trading-routes/",
+        "https://www.moe-line.com/contact-us/",
+        "https://www.moe-line.com/th",
+        "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "https://www.moe-line.com/th/about-us/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/trading-routes/",
+        "https://www.moe-line.com/th/contact-us/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ]
+    },
+    {
+      "url": "tel: 6624275905",
+      "labels": [
+        "โทรติดต่อ",
+        "+66 2 427-5905"
+      ],
+      "sourcePages": [
+        "https://www.moe-line.com/th",
+        "https://www.moe-line.com/th/about-us/",
+        "https://www.moe-line.com/th/fleet-list/",
+        "https://www.moe-line.com/th/trading-routes/",
+        "https://www.moe-line.com/th/contact-us/",
+        "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+        "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      ]
+    }
+  ],
+  "mapEmbeds": [
+    {
+      "sourcePage": "https://www.moe-line.com/contact-us/",
+      "urls": [
+        "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3876.832164835474!2d100.41771877508876!3d13.667967386715187!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30e2bdff2253cda7%3A0x4c08f9dfe4c83e6b!2sMOE%20CONTAINER%20LINE%20CO.%2C%20LTD.!5e0!3m2!1sth!2sth!4v1742885870683!5m2!1sth!2sth"
+      ]
+    },
+    {
+      "sourcePage": "https://www.moe-line.com/th/contact-us/",
+      "urls": [
+        "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3876.832164835474!2d100.41771877508876!3d13.667967386715187!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30e2bdff2253cda7%3A0x4c08f9dfe4c83e6b!2sMOE%20CONTAINER%20LINE%20CO.%2C%20LTD.!5e0!3m2!1sth!2sth!4v1742885870683!5m2!1sth!2sth"
+      ]
+    }
+  ],
+  "metadataFindings": [
+    {
+      "url": "https://www.moe-line.com/",
+      "title": "moecontainerline.com – MOE CONTAINER LINE CO.,LTD",
+      "canonical": "https://www.moe-line.com/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/"
+        }
+      ],
+      "description": null,
+      "heading1": [
+        "MOE CONTAINER LINE CO., LTD.",
+        "MOE CONTAINER",
+        "LINE  CO., LTD."
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/about-us/",
+      "title": "About Us – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/about-us/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/about-us/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/about-us/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/about-us/"
+        }
+      ],
+      "description": null,
+      "heading1": [
+        "ABOUT US"
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/",
+      "title": "Fleet List – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/fleet-list/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/fleet-list/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/fleet-list/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/fleet-list/"
+        }
+      ],
+      "description": null,
+      "heading1": [
+        "Fleet List"
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/trading-routes/",
+      "title": "Services – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/trading-routes/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/trading-routes/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/trading-routes/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/trading-routes/"
+        }
+      ],
+      "description": null,
+      "heading1": [
+        "Trading Routes"
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/contact-us/",
+      "title": "Contact Us – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/contact-us/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/contact-us/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/contact-us/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/contact-us/"
+        }
+      ],
+      "description": null,
+      "heading1": [
+        "Contact Us"
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th",
+      "title": "moecontainerline.com – MOE CONTAINER LINE CO.,LTD",
+      "canonical": "https://www.moe-line.com/th/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/"
+        }
+      ],
+      "description": null,
+      "heading1": [
+        "MOE CONTAINER LINE CO., LTD.",
+        "MOE CONTAINER",
+        "LINE  CO., LTD."
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/ranong-moe/",
+      "title": "RANONG MOE – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/fleet-list/ranong-moe/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/fleet-list/ranong-moe/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/fleet-list/ranong-moe/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/fleet-list/ranong-moe/"
+        }
+      ],
+      "description": null,
+      "heading1": []
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-2/",
+      "title": "MOE LINE 2 – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/fleet-list/moe-line-2/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-2/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/fleet-list/moe-line-2/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-2/"
+        }
+      ],
+      "description": null,
+      "heading1": []
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-3/",
+      "title": "MOE LINE 3 – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/fleet-list/moe-line-3/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-3/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/fleet-list/moe-line-3/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-3/"
+        }
+      ],
+      "description": null,
+      "heading1": []
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-4/",
+      "title": "MOE LINE 4 – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/fleet-list/moe-line-4/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-4/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/fleet-list/moe-line-4/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-4/"
+        }
+      ],
+      "description": null,
+      "heading1": []
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-5/",
+      "title": "MOE LINE 5 – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/fleet-list/moe-line-5/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-5/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/fleet-list/moe-line-5/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-5/"
+        }
+      ],
+      "description": null,
+      "heading1": []
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-6/",
+      "title": "MOE LINE 6 – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/fleet-list/moe-line-6/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-6/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/fleet-list/moe-line-6/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-6/"
+        }
+      ],
+      "description": null,
+      "heading1": []
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-7/",
+      "title": "MOE LINE 7 – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/fleet-list/moe-line-7/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-7/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-7/"
+        }
+      ],
+      "description": null,
+      "heading1": []
+    },
+    {
+      "url": "https://www.moe-line.com/th/about-us/",
+      "title": "About Us – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/th/about-us/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/about-us/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/about-us/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/about-us/"
+        }
+      ],
+      "description": null,
+      "heading1": [
+        "เกี่ยวกับเรา"
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/",
+      "title": "Fleet List – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/th/fleet-list/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/fleet-list/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/fleet-list/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/fleet-list/"
+        }
+      ],
+      "description": null,
+      "heading1": [
+        "เรือที่ให้บริการ"
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th/trading-routes/",
+      "title": "Services – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/th/trading-routes/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/trading-routes/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/trading-routes/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/trading-routes/"
+        }
+      ],
+      "description": null,
+      "heading1": [
+        "เส้นทางเดินเรือ"
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th/contact-us/",
+      "title": "Contact Us – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/th/contact-us/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/contact-us/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/contact-us/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/contact-us/"
+        }
+      ],
+      "description": null,
+      "heading1": [
+        "ติดต่อเรา"
+      ]
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+      "title": "RANONG MOE – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/fleet-list/ranong-moe/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/fleet-list/ranong-moe/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/fleet-list/ranong-moe/"
+        }
+      ],
+      "description": null,
+      "heading1": []
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+      "title": "MOE LINE 2 – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-2/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/fleet-list/moe-line-2/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-2/"
+        }
+      ],
+      "description": null,
+      "heading1": []
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+      "title": "MOE LINE 3 – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-3/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/fleet-list/moe-line-3/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-3/"
+        }
+      ],
+      "description": null,
+      "heading1": []
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+      "title": "MOE LINE 4 – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-4/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/fleet-list/moe-line-4/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-4/"
+        }
+      ],
+      "description": null,
+      "heading1": []
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+      "title": "MOE LINE 5 – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-5/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/fleet-list/moe-line-5/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-5/"
+        }
+      ],
+      "description": null,
+      "heading1": []
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+      "title": "MOE LINE 6 – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-6/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/fleet-list/moe-line-6/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-6/"
+        }
+      ],
+      "description": null,
+      "heading1": []
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-7/",
+      "title": "MOE LINE 7 – moecontainerline.com",
+      "canonical": "https://www.moe-line.com/th/fleet-list/moe-line-7/",
+      "alternateLanguages": [
+        {
+          "lang": "en-US",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-7/"
+        },
+        {
+          "lang": "th",
+          "url": "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+        },
+        {
+          "lang": "en",
+          "url": "https://www.moe-line.com/fleet-list/moe-line-7/"
+        }
+      ],
+      "description": null,
+      "heading1": []
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "reviewDate": "2026-11-16",
+  "discovery": "Public WordPress media API; these PDFs were not linked in the seven vessel detail-page link sets.",
+  "scope": "Historical company-published ship-particulars sheets, not independently authenticated current vessel certificates.",
+  "method": "All seven PDFs downloaded with HTTP 200, text extracted with pypdf and complete one-page Poppler renderings visually inspected. Visible technical fields were compared with the direct HTML tables. Stray hidden text was excluded from the interpreted values.",
+  "localExtraction": ".local/legacy-moe-line-2026-11-16/pdfs/particulars-extraction.json",
+  "companyFooterAsPublished": {
+    "name": "Moe Container Line Co.,Ltd.",
+    "registrationCountry": "Thailand",
+    "registerNo": "0105565067684",
+    "address": "819/67-68 Chew Biz Home, Muban Royal City-Bang Bon, Ekkachai Road, Khlong Bang Bon Sub-district, Bang Bon District, Bangkok 10150 Thailand",
+    "warning": "Do not assign this company's registration or historical particulars to Moe Navigation without confirming the legal relationship."
+  },
+  "commonFindings": [
+    "Every container-vessel sheet visibly states five reefer plugs; every matching HTML detail states three. Both values must remain attributed to their source until the current configuration is confirmed.",
+    "Outside the differences listed for each sheet, the visible vessel identity, dimensions, tonnage, machinery, fuel-consumption values and tank capacities agree with fleet-data.json after line-break and whitespace normalization.",
+    "The PDFs have no future validity claim or certificate number for the vessel particulars. Their printed update dates are historical source version dates, not a guarantee that the equipment remains unchanged.",
+    "No MMSI or LBP is present for MOE LINE 1/RANONG MOE in either the HTML or its particulars sheet."
+  ],
+  "documents": [
+    {
+      "vesselAsPrinted": "MOE LINE 1",
+      "matchingHtmlHeading": "RANONG MOE",
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-1-PARTICULAR.pdf",
+      "localFile": ".local/legacy-moe-line-2026-11-16/assets/b106ef316f-MOE-LINE-1-PARTICULAR.pdf",
+      "updateDateAsPrinted": "12.11.24",
+      "interpretedUpdateDate": "2024-11-12",
+      "pages": 1,
+      "differencesFromHtml": {"nominalTeu": {"pdf": 72, "html": 96}, "reeferPlugs": {"pdf": 5, "html": 3}},
+      "matchingStableIdentifiers": {"imo": "1091434", "officialNo": "5300-02061", "callSign": "HSB 4575"},
+      "note": "The vessel name and photograph support a historical MOE LINE 1 identity for this IMO; the documents do not establish a legal rename or why the nominal capacity changed."
+    },
+    {
+      "vesselAsPrinted": "MOE LINE 2",
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-2-PARTICULAR.pdf",
+      "localFile": ".local/legacy-moe-line-2026-11-16/assets/883f79a4c9-MOE-LINE-2-PARTICULAR.pdf",
+      "updateDateAsPrinted": "12.11.24",
+      "interpretedUpdateDate": "2024-11-12",
+      "pages": 1,
+      "differencesFromHtml": {"reeferPlugs": {"pdf": 5, "html": 3}},
+      "extractionNote": "The text layer repeats a machinery block that is not a second visible set of equipment; do not count duplicated extraction as extra engines."
+    },
+    {
+      "vesselAsPrinted": "MOE LINE 3",
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-3-PARTICULAR.pdf",
+      "localFile": ".local/legacy-moe-line-2026-11-16/assets/d8ad4fdacc-MOE-LINE-3-PARTICULAR.pdf",
+      "updateDateAsPrinted": "12.11.2024",
+      "interpretedUpdateDate": "2024-11-12",
+      "pages": 1,
+      "differencesFromHtml": {"reeferPlugs": {"pdf": 5, "html": 3}},
+      "visibleBuilt": "2011, CHINA",
+      "extractionNote": "A stray BUILT 2008 string appears in the text layer but is not the rendered general-details value. The visible sheet and HTML both show 2011, China."
+    },
+    {
+      "vesselAsPrinted": "MOE LINE 4",
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-4-PARTICULAR.pdf",
+      "localFile": ".local/legacy-moe-line-2026-11-16/assets/7a7c05ba6f-MOE-LINE-4-PARTICULAR.pdf",
+      "updateDateAsPrinted": "05.06.24",
+      "interpretedUpdateDate": "2024-06-05",
+      "pages": 1,
+      "craneMachineryAsPrinted": {"craneEngine": "MITSUBISHI S6A2 MPTA 470PS", "generator1": "AIRMAN SDG 125 S 235 KVA", "generator2": "AIRMAN SDG 125 S 235 KVA"},
+      "differencesFromHtml": {"machineryLabelsAndCount": {"pdf": "One Mitsubishi crane engine plus two Airman generators", "html": "GEN 1 Mitsubishi; GEN 2 Airman, without a separate crane-engine row"}},
+      "note": "The PDF's IMO field is a dash, consistent with no IMO supplied. Registration 4800-00377, 200 tons SWL, four anchor points, four winches, dimensions and GRT otherwise agree with HTML."
+    },
+    {
+      "vesselAsPrinted": "MOE LINE 5",
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-5-PARTICULAR.pdf",
+      "localFile": ".local/legacy-moe-line-2026-11-16/assets/c82d578820-MOE-LINE-5-PARTICULAR.pdf",
+      "updateDateAsPrinted": "13.11.24",
+      "interpretedUpdateDate": "2024-11-13",
+      "pages": 1,
+      "differencesFromHtml": {"reeferPlugs": {"pdf": 5, "html": 3}},
+      "visibleBuilt": "2009, CHINA",
+      "extractionNote": "A stray BUILT 2008 string appears in the text layer but is not the rendered general-details value. The visible sheet and HTML both show 2009, China."
+    },
+    {
+      "vesselAsPrinted": "MOE LINE 6",
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-6-PARTICULAR.pdf",
+      "localFile": ".local/legacy-moe-line-2026-11-16/assets/fe25f5c9c4-MOE-LINE-6-PARTICULAR.pdf",
+      "updateDateAsPrinted": "13.11.24",
+      "interpretedUpdateDate": "2024-11-13",
+      "pages": 1,
+      "differencesFromHtml": {"reeferPlugs": {"pdf": 5, "html": 3}},
+      "visibleBuilt": "2006, CHINA",
+      "extractionNote": "A stray BUILT 2008 string appears in the text layer but is not the rendered general-details value. The visible sheet and HTML both show 2006, China."
+    },
+    {
+      "vesselAsPrinted": "MOE LINE 7",
+      "url": "https://www.moe-line.com/wp-content/uploads/2025/01/MOE-LINE-7-PARTICULAR.pdf",
+      "localFile": ".local/legacy-moe-line-2026-11-16/assets/e8d7b35ceb-MOE-LINE-7-PARTICULAR.pdf",
+      "updateDateAsPrinted": "11.11.24",
+      "interpretedUpdateDate": "2024-11-11",
+      "pages": 1,
+      "differencesFromHtml": {"reeferPlugs": {"pdf": 5, "html": 3}},
+      "visibleBuilt": "2003, CHINA",
+      "extractionNote": "A stray BUILT 2008 and repeated draft appear in the text layer. The rendered general-details value is 2003, China; the rendered draft is one value, 3.90 metres."
+    }
+  ],
+  "dateInterpretation": "Printed dates are interpreted as day.month.year; 13.11.24 in the same series establishes that convention. Original date strings are retained."
+}

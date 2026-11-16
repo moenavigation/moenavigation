@@ -1,0 +1,279 @@
+{
+  "reviewedOn": "2026-11-16",
+  "status": "Research proposal only; no redirects have been installed.",
+  "note": "Permanent old-domain redirects need control of the old host. Verify production destination pages and finalized route identities before enabling them. Preserve English/Thai equivalence and query strings. The demonstration post is excluded.",
+  "entries": [
+    {
+      "sourceUrl": "https://www.moe-line.com/",
+      "sourcePath": "/",
+      "suggestedDestination": "/",
+      "reason": "Equivalent current homepage.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/about-us/",
+      "sourcePath": "/about-us/",
+      "suggestedDestination": "/about",
+      "reason": "Equivalent current About page.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/fleet-list/",
+      "sourcePath": "/fleet-list/",
+      "suggestedDestination": "/fleet",
+      "reason": "Equivalent current Fleet collection.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/trading-routes/",
+      "sourcePath": "/trading-routes/",
+      "suggestedDestination": "/routes",
+      "reason": "Equivalent current Routes collection.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/contact-us/",
+      "sourcePath": "/contact-us/",
+      "suggestedDestination": "/contact",
+      "reason": "Equivalent current Contact page.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/",
+      "sourcePath": "/th/",
+      "suggestedDestination": "/th",
+      "reason": "Equivalent current homepage.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/fleet-list/ranong-moe/",
+      "sourcePath": "/fleet-list/ranong-moe/",
+      "suggestedDestination": "/fleet/ranong-moe",
+      "reason": "Preserve the current matching vessel URL; verify identity before migration.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/fleet-list/moe-line-2/",
+      "sourcePath": "/fleet-list/moe-line-2/",
+      "suggestedDestination": "/fleet/moe-line-2",
+      "reason": "Preserve the current matching vessel URL; verify identity before migration.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/fleet-list/moe-line-3/",
+      "sourcePath": "/fleet-list/moe-line-3/",
+      "suggestedDestination": "/fleet/moe-line-3",
+      "reason": "Preserve the current matching vessel URL; verify identity before migration.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/fleet-list/moe-line-4/",
+      "sourcePath": "/fleet-list/moe-line-4/",
+      "suggestedDestination": "/fleet/moe-line-4",
+      "reason": "Preserve the current matching vessel URL; verify identity before migration.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/fleet-list/moe-line-5/",
+      "sourcePath": "/fleet-list/moe-line-5/",
+      "suggestedDestination": "/fleet/moe-line-5",
+      "reason": "Preserve the current matching vessel URL; verify identity before migration.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/fleet-list/moe-line-6/",
+      "sourcePath": "/fleet-list/moe-line-6/",
+      "suggestedDestination": "/fleet/moe-line-6",
+      "reason": "Preserve the current matching vessel URL; verify identity before migration.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/fleet-list/moe-line-7/",
+      "sourcePath": "/fleet-list/moe-line-7/",
+      "suggestedDestination": "/fleet/moe-line-7",
+      "reason": "Preserve the current matching vessel URL; verify identity before migration.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/about-us/",
+      "sourcePath": "/th/about-us/",
+      "suggestedDestination": "/th/about",
+      "reason": "Equivalent current About page.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/fleet-list/",
+      "sourcePath": "/th/fleet-list/",
+      "suggestedDestination": "/th/fleet",
+      "reason": "Equivalent current Fleet collection.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/trading-routes/",
+      "sourcePath": "/th/trading-routes/",
+      "suggestedDestination": "/th/routes",
+      "reason": "Equivalent current Routes collection.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/contact-us/",
+      "sourcePath": "/th/contact-us/",
+      "suggestedDestination": "/th/contact",
+      "reason": "Equivalent current Contact page.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+      "sourcePath": "/th/fleet-list/ranong-moe/",
+      "suggestedDestination": "/th/fleet/ranong-moe",
+      "reason": "Preserve the current matching vessel URL; verify identity before migration.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+      "sourcePath": "/th/fleet-list/moe-line-2/",
+      "suggestedDestination": "/th/fleet/moe-line-2",
+      "reason": "Preserve the current matching vessel URL; verify identity before migration.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+      "sourcePath": "/th/fleet-list/moe-line-3/",
+      "suggestedDestination": "/th/fleet/moe-line-3",
+      "reason": "Preserve the current matching vessel URL; verify identity before migration.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+      "sourcePath": "/th/fleet-list/moe-line-4/",
+      "suggestedDestination": "/th/fleet/moe-line-4",
+      "reason": "Preserve the current matching vessel URL; verify identity before migration.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+      "sourcePath": "/th/fleet-list/moe-line-5/",
+      "suggestedDestination": "/th/fleet/moe-line-5",
+      "reason": "Preserve the current matching vessel URL; verify identity before migration.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+      "sourcePath": "/th/fleet-list/moe-line-6/",
+      "suggestedDestination": "/th/fleet/moe-line-6",
+      "reason": "Preserve the current matching vessel URL; verify identity before migration.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/fleet-list/moe-line-7/",
+      "sourcePath": "/th/fleet-list/moe-line-7/",
+      "suggestedDestination": "/th/fleet/moe-line-7",
+      "reason": "Preserve the current matching vessel URL; verify identity before migration.",
+      "requiresConfirmedNewRoute": false,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/trading-routes/lcb-sihanoukville/",
+      "sourcePath": "/trading-routes/lcb-sihanoukville/",
+      "suggestedDestination": "/routes",
+      "reason": "Collection fallback only: no matching current detail ID has been established. Prefer a confirmed new route detail when available.",
+      "requiresConfirmedNewRoute": true,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/trading-routes/lcb-sihanoukville/",
+      "sourcePath": "/th/trading-routes/lcb-sihanoukville/",
+      "suggestedDestination": "/th/routes",
+      "reason": "Collection fallback only: no matching current detail ID has been established. Prefer a confirmed new route detail when available.",
+      "requiresConfirmedNewRoute": true,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/trading-routes/ranong-yangon/",
+      "sourcePath": "/trading-routes/ranong-yangon/",
+      "suggestedDestination": "/routes",
+      "reason": "Collection fallback only: no matching current detail ID has been established. Prefer a confirmed new route detail when available.",
+      "requiresConfirmedNewRoute": true,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/trading-routes/ranong-yangon/",
+      "sourcePath": "/th/trading-routes/ranong-yangon/",
+      "suggestedDestination": "/th/routes",
+      "reason": "Collection fallback only: no matching current detail ID has been established. Prefer a confirmed new route detail when available.",
+      "requiresConfirmedNewRoute": true,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/trading-routes/bkk-lcb-songkhla/",
+      "sourcePath": "/trading-routes/bkk-lcb-songkhla/",
+      "suggestedDestination": "/routes",
+      "reason": "Collection fallback only: no matching current detail ID has been established. Prefer a confirmed new route detail when available.",
+      "requiresConfirmedNewRoute": true,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/trading-routes/bkk-lcb-songkhla/",
+      "sourcePath": "/th/trading-routes/bkk-lcb-songkhla/",
+      "suggestedDestination": "/th/routes",
+      "reason": "Collection fallback only: no matching current detail ID has been established. Prefer a confirmed new route detail when available.",
+      "requiresConfirmedNewRoute": true,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/trading-routes/bkk-lcb-suratthani/",
+      "sourcePath": "/trading-routes/bkk-lcb-suratthani/",
+      "suggestedDestination": "/routes",
+      "reason": "Collection fallback only: no matching current detail ID has been established. Prefer a confirmed new route detail when available.",
+      "requiresConfirmedNewRoute": true,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/trading-routes/bkk-lcb-suratthani/",
+      "sourcePath": "/th/trading-routes/bkk-lcb-suratthani/",
+      "suggestedDestination": "/th/routes",
+      "reason": "Collection fallback only: no matching current detail ID has been established. Prefer a confirmed new route detail when available.",
+      "requiresConfirmedNewRoute": true,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/trading-routes/bkk-lcb/",
+      "sourcePath": "/trading-routes/bkk-lcb/",
+      "suggestedDestination": "/routes",
+      "reason": "Collection fallback only: no matching current detail ID has been established. Prefer a confirmed new route detail when available.",
+      "requiresConfirmedNewRoute": true,
+      "implemented": false
+    },
+    {
+      "sourceUrl": "https://www.moe-line.com/th/trading-routes/bkk-lcb/",
+      "sourcePath": "/th/trading-routes/bkk-lcb/",
+      "suggestedDestination": "/th/routes",
+      "reason": "Collection fallback only: no matching current detail ID has been established. Prefer a confirmed new route detail when available.",
+      "requiresConfirmedNewRoute": true,
+      "implemented": false
+    }
+  ]
+}

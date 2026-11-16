@@ -1,0 +1,253 @@
+{
+  "schemaVersion": 1,
+  "reviewedDate": "2026-11-16",
+  "purpose": "Research input for improving the current website; this file does not publish or import content.",
+  "verificationStatus": "Published on the user-identified old website; present ownership, entity relationship and operating availability are unverified.",
+  "sources": {
+    "homeEn": "https://www.moe-line.com/",
+    "homeTh": "https://www.moe-line.com/th/",
+    "aboutEn": "https://www.moe-line.com/about-us/",
+    "aboutTh": "https://www.moe-line.com/th/about-us/",
+    "routesEn": "https://www.moe-line.com/trading-routes/",
+    "routesTh": "https://www.moe-line.com/th/trading-routes/",
+    "contactEn": "https://www.moe-line.com/contact-us/",
+    "contactTh": "https://www.moe-line.com/th/contact-us/"
+  },
+  "company": {
+    "sourceKeys": ["aboutEn", "aboutTh", "homeEn", "contactEn", "contactTh"],
+    "legacyTradeName": {
+      "en": "Moe Container Line Company Limited",
+      "th": "บริษัท โม คอนเทนเนอร์ ไลน์ จำกัด"
+    },
+    "legacyBrand": "MOE CONTAINER LINE CO., LTD.",
+    "currentProjectName": {
+      "en": "Moe Navigation Co.,Ltd.",
+      "th": "บริษัท โม เนวิเกชั่น จำกัด"
+    },
+    "currentProjectNameSource": "src/lib/company.ts",
+    "entityRelationship": null,
+    "entityNote": "Do not transfer the old entity's legal profile or contact information into the current identity without checking the relationship.",
+    "establishedYearCE": 2022,
+    "establishedYearBE": 2565,
+    "managingDirectorAsPublished": {
+      "en": "Eddie Moe",
+      "th": "เอ็ดดี้ มอร์"
+    },
+    "capitalAsPublishedTHB": 10000000,
+    "mainBankAsPublished": {
+      "en": "Kasikorn Bank PCL",
+      "th": "ธนาคารกสิกรไทย"
+    },
+    "businessSummary": "Marine logistics, shipping and freight services.",
+    "headOfficeAsPublished": {
+      "en": "819/67-68 Chewa Biz Home Ekachai-Bangbon, Bangbon Bangkok 10150 Thailand",
+      "th": "819/67-68 ชีวา บิซ โฮม เอกชัย-บางบอน, บางบอน กรุงเทพมหานคร 10150 ประเทศไทย"
+    },
+    "telephoneAsPublished": "+66 2 427-5905",
+    "telephoneNormalized": "+6624275905",
+    "officeMapLinkAsPublished": "https://maps.app.goo.gl/r9HwWEmpBCDoANddA",
+    "mapDestinationVerified": false,
+    "mapDestinationVerificationScope": "Legacy short-link redirect targets were observed; the current Moe Navigation office address and map location remain unconfirmed.",
+    "mapDestinationsVerifiedAsLegacyLinks": true,
+    "publicEmailObserved": "kamon@ssotgroup.com",
+    "publicEmailEvidence": "Public page HTML contains a mailto link, although the text reader did not display an email label. Current ownership, delivery and suitability for the new site remain unverified.",
+    "mapLinksAsPublished": [
+      {"url": "https://maps.app.goo.gl/r9HwWEmpBCDoANddA", "context": "Office address and footer location links", "redirectStatus": 302, "selectedPlace": "MOE CONTAINER LINE CO., LTD.", "selectedPlaceId": "0x30e2bdff2253cda7:0x4c08f9dfe4c83e6b", "selectedPin": {"latitude": 13.6679674, "longitude": 100.4202937}},
+      {"url": "https://maps.app.goo.gl/4FChT26eY9RHw6eE8", "context": "Other office location/address links", "redirectStatus": 302, "selectedPlace": "MOE CONTAINER LINE CO., LTD.", "selectedPlaceId": "0x30e2bdff2253cda7:0x4c08f9dfe4c83e6b", "selectedPin": {"latitude": 13.6679674, "longitude": 100.4202937}},
+      {"url": "https://maps.app.goo.gl/sJTQ87EpFFLMpBup6", "context": "Homepage Map link", "redirectStatus": 302, "selectedPlace": "MOE CONTAINER LINE CO., LTD.", "selectedPlaceId": "0x30e2bdff2253cda7:0x4c08f9dfe4c83e6b", "selectedPin": {"latitude": 13.6679674, "longitude": 100.4202937}},
+      {"url": "https://maps.app.goo.gl/sdinmVHRqLtHTw7h7", "context": "Unlabeled public HTML map link; distinct SSOT Group location", "redirectStatus": 302, "selectedPlace": "SSOT Group Co.,Ltd", "selectedPlaceId": "0x30e2a163a6a16ac9:0x2667479735fb9294", "selectedPin": {"latitude": 13.6685763, "longitude": 100.4198339}}
+    ],
+    "mapCoordinateEvidence": "Selected pin coordinates use the redirect URL's !3d latitude and !4d longitude. The @ viewport coordinates, including longitude 100.4177188 on office links, are not the place pin. Three short links resolve to the same Moe Container Line place; the fourth resolves to a different SSOT Group place.",
+    "affiliatedCompaniesAsPublished": [
+      "SSOT Group Co., Ltd.",
+      "SSOT Yangon Co., Ltd.",
+      "Maui Trading and Logistics Co., Ltd.",
+      "KLOP Shiptrading Limited",
+      "Eastern Port Link Pte. Ltd."
+    ],
+    "historySummary": "The site dates the business to 2022 and names MOE LINE 1 as the first vessel. It describes shared founding roots with SSOT Group.",
+    "firstVesselAsPublished": {
+      "name": "MOE LINE 1",
+      "dwt": 2088,
+      "capacityTEU": 72,
+      "sourceKey": "homeEn",
+      "relationshipToRanongMoe": null
+    },
+    "fleetCompositionAsPublished": {
+      "containerVessels": 6,
+      "floatingCraneBarges": 1,
+      "totalInLegacyList": 7,
+      "mainPortPair": ["Bangkok", "Laem Chabang"],
+      "note": "The current client-supplied fleet contains eight vessels, including Dumai Moe. Preserve those newer supplied names/types. The old site is not evidence for removing Dumai Moe or establishing a rename from MOE LINE 1."
+    },
+    "counterTargetsAsConfigured": {
+      "fleet": 7,
+      "annualCarriedVolume": 15559,
+      "skilledCrew": 89,
+      "annualVoyages": 1119,
+      "reportingYear": null,
+      "carriedVolumeUnit": null,
+      "evidence": "Public HTML counter configuration; the targets are source-published figures with unknown reporting period, not verified current statistics."
+    },
+    "certificateImageCandidate": {
+      "sourceUrl": "https://www.moe-line.com/wp-content/uploads/2025/02/8884-scaled.webp",
+      "documentPdfSourceUrl": "https://www.moe-line.com/wp-content/uploads/2025/02/DOC-Document-of-Compliance.pdf",
+      "documentTypeAsDisplayed": "Document of Compliance",
+      "numberAsDisplayed": "DC-67-038",
+      "entityNamedAsDisplayed": "Moe Container Line",
+      "issuerAsDisplayed": "Marine Department",
+      "shipTypeAsDisplayed": "Other cargo ship",
+      "issuedDateAsDisplayed": "2024-10-21",
+      "verificationDateAsDisplayed": "2024-10-16",
+      "validUntilAsDisplayed": "2029-10-20",
+      "conditionAsDisplayed": "Subject to periodical verification",
+      "authenticationStatus": "Image not authenticated; current certificate validity, verification status and applicability to Moe Navigation are not established."
+    }
+  },
+  "routes": [
+    {
+      "researchKey": "legacy-bkk-lcb",
+      "detailPageUrl": "https://www.moe-line.com/trading-routes/bkk-lcb/",
+      "detailPageUrlTh": "https://www.moe-line.com/th/trading-routes/bkk-lcb/",
+      "sourceKeys": ["routesEn", "routesTh"],
+      "categoryAsPublished": "Domestic Routes",
+      "headingAsPublished": "BKK – LCB",
+      "endpointTextAsPublished": {
+        "en": "LEAM CHABANG PORT > BANGKOK PORT",
+        "th": "ท่าเรือแหลมฉบัง > ท่าเรือกรุงเทพ"
+      },
+      "normalizedOrigin": {"en": "Laem Chabang Port", "th": "ท่าเรือแหลมฉบัง", "country": "Thailand"},
+      "normalizedDestination": {"en": "Bangkok Port", "th": "ท่าเรือกรุงเทพ", "country": "Thailand"},
+      "distanceNM": 58,
+      "capacityTEU": {"min": 72, "max": 120},
+      "sailingHours": {"min": 8, "max": 10},
+      "coordinates": null,
+      "availability": null,
+      "schedule": null,
+      "notes": ["Heading order is BKK–LCB; endpoint text is LCB to Bangkok. Confirm directionality rather than infer a two-way schedule."]
+    },
+    {
+      "researchKey": "legacy-lcb-surat-thani",
+      "detailPageUrl": "https://www.moe-line.com/trading-routes/bkk-lcb-suratthani/",
+      "detailPageUrlTh": "https://www.moe-line.com/th/trading-routes/bkk-lcb-suratthani/",
+      "sourceKeys": ["routesEn", "routesTh"],
+      "categoryAsPublished": "Domestic Routes",
+      "headingAsPublished": "BKK /LCB – Surat Thani",
+      "endpointTextAsPublished": {
+        "en": "LEAM CHABANG PORT > SURATTHANI PORT",
+        "th": "ท่าเรือแหลมฉบัง > ท่าเรือสุราษฎร์ธานี"
+      },
+      "normalizedOrigin": {"en": "Laem Chabang Port", "th": "ท่าเรือแหลมฉบัง", "country": "Thailand"},
+      "normalizedDestination": {"en": "Surat Thani Port", "th": "ท่าเรือสุราษฎร์ธานี", "country": "Thailand"},
+      "distanceNM": 261,
+      "capacityTEU": {"min": 72, "max": 120},
+      "sailingHours": {"min": 34, "max": 36},
+      "sailingHoursObservationSource": ["routesEn", "routesTh"],
+      "sourceConflict": {
+        "field": "sailingHours",
+        "listingObservation": {
+          "min": 34,
+          "max": 36,
+          "sourceUrls": ["https://www.moe-line.com/trading-routes/", "https://www.moe-line.com/th/trading-routes/"]
+        },
+        "detailObservation": {
+          "min": 8,
+          "max": 10,
+          "sourceUrls": ["https://www.moe-line.com/trading-routes/bkk-lcb-suratthani/", "https://www.moe-line.com/th/trading-routes/bkk-lcb-suratthani/"]
+        },
+        "resolution": "Unresolved. Preserve both observations and confirm with the company before publishing a sailing-time value."
+      },
+      "coordinates": null,
+      "availability": null,
+      "schedule": null,
+      "notes": ["Heading permits BKK/LCB; endpoint row specifies LCB. Do not apply the 261 NM or listing's 34–36 hours to a separate Bangkok-origin service without evidence.", "The listing publishes 34–36 hours, but both directly captured English and Thai detail pages publish 8–10 hours. Neither observation is selected as the verified value."]
+    },
+    {
+      "researchKey": "legacy-lcb-songkhla",
+      "detailPageUrl": "https://www.moe-line.com/trading-routes/bkk-lcb-songkhla/",
+      "detailPageUrlTh": "https://www.moe-line.com/th/trading-routes/bkk-lcb-songkhla/",
+      "sourceKeys": ["routesEn", "routesTh"],
+      "categoryAsPublished": "Domestic Routes",
+      "headingAsPublished": "BKK /LCB – Songkhla",
+      "endpointTextAsPublished": {
+        "en": "LEAM CHABANG PORT > SONGKHLA PORT",
+        "th": "ท่าเรือแหลมฉบัง > ท่าเรือสงขลา"
+      },
+      "normalizedOrigin": {"en": "Laem Chabang Port", "th": "ท่าเรือแหลมฉบัง", "country": "Thailand"},
+      "normalizedDestination": {"en": "Songkhla Port", "th": "ท่าเรือสงขลา", "country": "Thailand"},
+      "distanceNM": 361,
+      "capacityTEU": {"min": 72, "max": 120},
+      "sailingHours": {"min": 52, "max": 54},
+      "coordinates": null,
+      "availability": null,
+      "schedule": null,
+      "notes": ["Heading permits BKK/LCB; endpoint row specifies LCB. Exact terminal and Bangkok-origin particulars remain unknown."]
+    },
+    {
+      "researchKey": "legacy-ranong-yangon",
+      "detailPageUrl": "https://www.moe-line.com/trading-routes/ranong-yangon/",
+      "detailPageUrlTh": "https://www.moe-line.com/th/trading-routes/ranong-yangon/",
+      "sourceKeys": ["routesEn", "routesTh"],
+      "categoryAsPublished": "Coastal Routes",
+      "headingAsPublished": "Ranong – Yangon",
+      "endpointTextAsPublished": {"en": "RANONG – YANGON", "th": "ระนอง – ย่างกุ้ง"},
+      "normalizedOrigin": {"en": "Ranong", "th": "ระนอง", "country": "Thailand"},
+      "normalizedDestination": {"en": "Yangon", "th": "ย่างกุ้ง", "country": "Myanmar"},
+      "distanceNM": 459,
+      "capacityTEU": {"min": 72, "max": 120},
+      "sailingHours": {"min": 65, "max": 65},
+      "coordinates": null,
+      "availability": null,
+      "schedule": null,
+      "notes": ["Cross-border port pair despite the legacy Coastal Routes category. Ports are named at city level; exact terminals and current service status are unverified."]
+    },
+    {
+      "researchKey": "legacy-lcb-sihanoukville",
+      "detailPageUrl": "https://www.moe-line.com/trading-routes/lcb-sihanoukville/",
+      "detailPageUrlTh": "https://www.moe-line.com/th/trading-routes/lcb-sihanoukville/",
+      "sourceKeys": ["routesEn", "routesTh"],
+      "categoryAsPublished": "Coastal Routes",
+      "headingAsPublished": "LCB – Sihanoukville",
+      "endpointTextAsPublished": {
+        "en": "LEAM CHABANG PORT > SIHANOUKVILLE",
+        "th": "ท่าเรือแหลมฉบัง > ท่าเรือสีหนุวิลล์"
+      },
+      "normalizedOrigin": {"en": "Laem Chabang Port", "th": "ท่าเรือแหลมฉบัง", "country": "Thailand"},
+      "normalizedDestination": {"en": "Sihanoukville", "th": "สีหนุวิลล์", "country": "Cambodia"},
+      "distanceNM": 248,
+      "capacityTEU": {"min": 72, "max": 120},
+      "sailingHours": {"min": 31, "max": 33},
+      "coordinates": null,
+      "availability": null,
+      "schedule": null,
+      "notes": ["Cross-border port pair. The source does not provide a timetable or exact berth coordinates."]
+    }
+  ],
+  "contentOpportunities": [
+    {"destination": "About page", "idea": "Add a dated company history and structured corporate profile after checking which entity the facts describe."},
+    {"destination": "Services page", "idea": "Describe container feeder/coastal/inland transport and terminal crane handling if confirmed for the current business."},
+    {"destination": "About page", "idea": "Use concrete safety, maintenance and crew practices as trust topics, supported by current evidence."},
+    {"destination": "Routes page", "idea": "Use the five old route records as candidates for review, with separate distance, capacity and indicative sailing-time fields."},
+    {"destination": "Contact page", "idea": "Use the published bilingual address, telephone and office-map link as verification candidates."},
+    {"destination": "Website language review", "idea": "Translate remaining English paragraphs and route categories on Thai pages; correct Thai spelling and keep names/units equivalent."}
+  ],
+  "claimsRequiringEvidence": [
+    "Current vessel ownership, fleet totals, availability and operating routes.",
+    "First-vessel history and any relationship between MOE LINE 1 and RANONG MOE.",
+    "Current affiliated-company relationships, managing director and capital.",
+    "Dry/liquid bulk, reefer and dangerous-goods capability and applicable operating conditions.",
+    "Certified safety status: a public Document of Compliance image names Moe Container Line, but its authenticity, periodical-verification status and applicability to Moe Navigation need checking.",
+    "Zero breakdowns, zero loss/damage and guaranteed punctuality.",
+    "Comparative fuel/emissions or efficiency advantages over both truck and rail; no calculation, scope or methodology is supplied.",
+    "Nationwide or all-major-port coverage."
+  ],
+  "sourceQualityNotes": [
+    "English source spelling LEAM CHABANG is preserved in endpointTextAsPublished; normalized labels use Laem Chabang.",
+    "Thai About-page introductory paragraphs and affiliate headings remain in English; Thai route category headings also remain English.",
+    "Home and About mission statements differ; agree on one approved bilingual version rather than merge them automatically.",
+    "Footer counters render as zero in text extraction, while live HTML configures targets of 7 vessels, 15,559 annual carried volume, 89 skilled crew and 1,119 annual voyages. The reporting year and carried-volume unit are absent, so these cannot establish current statistics.",
+    "All ten English/Thai route detail pages were directly captured with HTTP 200. Four route pairs repeat the listing figures; Surat Thani conflicts, with 34–36 hours in both listings and 8–10 hours in both detail pages. Detail pages supply no fixed schedule or terminal coordinates. The reduced archived REST index contains identifiers, titles, URLs and publication dates rather than full route content.",
+    "The old site's title includes moecontainerline.com while supplied URLs use moe-line.com; keep the current project's own canonical domain settings.",
+    "No port coordinates, fixed sailing timetable, cargo cut-off, quotation or service validity date is supplied in the reviewed route text."
+  ]
+}
