@@ -55,18 +55,34 @@ test('port identity ignores case and spacing, survives language changes, and dis
 });
 
 test('pagination bounds a large collection and handles empty, partial and invalid pages', () => {
-  const routes = Array.from({ length: 200 }, (_, index) => route(index));
+  const routes = Array.from({ length: 203 }, (_, index) => route(index));
   const first = getRoutePage(routes, 0);
-  assert.equal(ROUTE_PAGE_SIZE, 6);
-  assert.deepEqual({ page: first.page, pageCount: first.pageCount, total: first.total, start: first.start, end: first.end }, { page: 1, pageCount: 34, total: 200, start: 1, end: 6 });
-  assert.deepEqual(first.items.map(item => item.id), routes.slice(0, 6).map(item => item.id));
+  assert.equal(ROUTE_PAGE_SIZE, 10);
+  assert.deepEqual({ page: first.page, pageCount: first.pageCount, total: first.total, start: first.start, end: first.end }, { page: 1, pageCount: 21, total: 203, start: 1, end: 10 });
+  assert.deepEqual(first.items.map(item => item.id), routes.slice(0, 10).map(item => item.id));
   const last = getRoutePage(routes, 1000);
-  assert.deepEqual({ page: last.page, start: last.start, end: last.end }, { page: 34, start: 199, end: 200 });
-  assert.deepEqual(last.items.map(item => item.id), ['route-198', 'route-199']);
+  assert.deepEqual({ page: last.page, start: last.start, end: last.end }, { page: 21, start: 201, end: 203 });
+  assert.deepEqual(last.items.map(item => item.id), ['route-200', 'route-201', 'route-202']);
+  assert.equal(getRoutePage(routes.slice(0, 200), 20).items.length, 10, 'An exact multiple has no empty extra page.');
   assert.equal(getRoutePage(routes, 2.9).page, 2);
   assert.equal(getRoutePage(routes, Number.NaN).page, 1);
   assert.equal(getRoutePage(routes, Number.POSITIVE_INFINITY).page, 1);
   assert.deepEqual(getRoutePage([], 99), { items: [], page: 1, pageCount: 1, total: 0, start: 0, end: 0 });
+});
+
+test('numbered navigation and a shrinking result set clamp the page without losing the selected route URL', () => {
+  const routes = Array.from({ length: 126 }, (_, index) => route(index));
+  const requested = { ...emptyRouteFilters, page: 13 };
+  const search = writeRouteFilters('?route=route-23&tracking=kept', requested);
+  const reloaded = readRouteFilters(new URLSearchParams(search));
+  assert.deepEqual(getRoutePage(routes, reloaded.page).items.map(item => item.id), routes.slice(120).map(item => item.id));
+  const filtered = filterMappedRoutes(routes, { ...reloaded, destination: routePortKey(singapore) });
+  const clamped = getRoutePage(filtered, reloaded.page);
+  assert.deepEqual({ page: clamped.page, pageCount: clamped.pageCount, start: clamped.start, end: clamped.end }, { page: 7, pageCount: 7, start: 61, end: 63 });
+  assert.deepEqual(clamped.items.map(item => item.id), ['route-121', 'route-123', 'route-125']);
+  const updated = new URLSearchParams(writeRouteFilters(search, { ...reloaded, page: clamped.page }));
+  assert.equal(updated.get('route'), 'route-23');
+  assert.equal(updated.get('tracking'), 'kept');
 });
 
 test('route URL state round-trips bilingual search and preserves selected route and campaign parameters', () => {

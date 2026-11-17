@@ -14,6 +14,7 @@ import BrandMark from "./BrandMark";
 import { companyName } from "@/lib/company";
 import FloatingContact from "./FloatingContact";
 import ContactsBox from "./ContactsBox";
+import FooterStatistics from "./FooterStatistics";
 import styles from "./SiteShell.module.css";
 
 export function Brand({locale}:{locale:Locale}) { return <span className={styles.brand}><BrandMark className={styles.brandLogo} locale={locale}/></span>; }
@@ -110,6 +111,7 @@ export default function SiteShell({locale,children}:{locale:Locale;children:Reac
     <SiteHeader locale={locale}/>
     <main id="main" tabIndex={-1}>{children}<div className="container"><AdditionalSections pageId="shared" locale={locale} exclude={["shared-callout","footer","footer-contact"]} /></div></main>
     <footer className={styles.footer} onClickCapture={scrollCurrentPageToTop}>
+      <div className="container"><FooterStatistics record={footer} locale={locale}/></div>
       <div className={`container ${styles.footerTop}`}><div><Link href={href(locale)}><Brand locale={locale}/></Link><p>{contentText(footer,"title",locale)}</p></div><ContactsBox locale={locale} settings={settings}/></div>
       <div className={`container ${styles.footerBottom}`}><span>© {new Date().getFullYear()} {local(locale,settings.companyName,settings.companyNameTh)}</span><Link href={href(locale,"privacy")}>{local(locale,"Privacy policy","นโยบายความเป็นส่วนตัว")}</Link></div>
       <FloatingContact key={path} locale={locale}/>

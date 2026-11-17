@@ -1,0 +1,205 @@
+{
+  "reviewedOn": "2026-11-17",
+  "scope": "Independent visual identity review against original vessel photographs and painted-name references. Passing entries are local review copies only, not website replacements or a claim of pixel-identical photographic restoration. Original and pre-repair drafts remain preserved.",
+  "beforeFixDirectory": "drafts-before-thai-fix",
+  "sourceThaiNames": {
+    "ranong": { "text": "ระนอง โม", "confidence": "high", "reference": "archived .local/legacy-moe-line-2026-11-16/assets/8dd0a6211c-ranongmoe.webp" },
+    "moe2": { "text": "โมไลน์ 2", "confidence": "The word is visible but faded. Spacing and the digit are less legible in the primary photograph; vessel number 2 is established by the associated fleet profile. Do not copy the shortened CMS name โม2.", "crop": "source-checks/moe2-original-name.png" },
+    "moe3": { "text": "โมไลน์ 3", "confidence": "Readable but soft; preserve the single cancellation mark in ไลน์. Do not invent extra syllables or marks.", "crop": "source-checks/moe3-original-name.png" },
+    "moe4": { "text": null, "confidence": "The crane housing has an English MOE LINE4 sign. No Thai lettering should be invented." },
+    "moe5": { "text": "โม ไลน์ 5", "confidence": "high", "reference": "archived 2e8220c141-sld-015.webp, clear painted bow name" },
+    "moe6": { "text": "โม ไลน์ 6", "confidence": "high; spatial separation varies along the curved bow and number 6 is large", "crop": "source-checks/moe6-original-name.png" },
+    "moe7": { "text": "โม ไลน์ 7", "confidence": "high; large number 7 to the right", "crop": "source-checks/moe7-original-name.png" },
+    "dumai": { "text": null, "confidence": "No authenticated legacy photograph or painted-name reference recovered. Do not substitute another vessel." }
+  },
+  "jobs": [
+    {
+      "key": "ranong-neutral",
+      "status": "pending_user_requested_Thai_repair_and_final_review",
+      "identity": "English RANONG MOE and Thai ระนอง โม are readable and consistent with the original. SAFETY FIRST remains visible.",
+      "fidelity": "Rounded green/red hull, empty red hold, blue trim and tall white rear bridge remain consistent. Increased contrast and sharper weathering are cosmetic.",
+      "uncertainty": "The fitting beneath the name exists in the original. An additional hanging anchor-like form near the far-left bow edge is more resolved in the generated image, while the original edge is dark; no definite equipment mismatch established.",
+      "comparison": "source-checks/ranong-bow-readonly-audit.png"
+    },
+    {
+      "key": "ranong-warm",
+      "status": "pending_user_requested_Thai_repair_and_final_review",
+      "identity": "RANONG MOE, ระนอง โม and SAFETY FIRST remain consistent in the available view.",
+      "fidelity": "Main geometry and empty cargo hold are retained; warm daylight treatment is restrained. Same bow-edge uncertainty as the neutral version."
+    },
+    {
+      "key": "moe2-neutral",
+      "status": "needs_Thai_name_repair",
+      "identity": "English MOE LINE2 is readable. Thai lettering contains apparent extra syllable/strokes before ไลน์ and does not faithfully match the source name.",
+      "fidelity": "Main long turquoise/red hull, two end structures, blue rail, tire fenders and cargo arrangement remain recognizable. No material silhouette change confirmed.",
+      "comparison": "source-checks/moe2-neutral-name-audit.png"
+    },
+    {
+      "key": "moe2-warm",
+      "status": "needs_Thai_name_repair",
+      "identity": "English MOE LINE2 remains readable. The Thai line is visibly malformed and must not be accepted as โมไลน์ 2.",
+      "fidelity": "Geometry and cargo remain broadly consistent; Thai glyph corruption is the material issue.",
+      "comparison": "source-checks/moe2-warm-name-audit.png"
+    },
+    {
+      "key": "moe3-neutral",
+      "status": "needs_Thai_name_repair",
+      "identity": "The Thai line has extra/distorted strokes compared with โมไลน์ 3. The final English vessel digit is poorly formed at the enlarged view and should be checked while repairing the name.",
+      "fidelity": "Low turquoise/red hull, blue rails, small end cabins and two pink ONE containers remain consistent. No material silhouette change confirmed.",
+      "comparison": "source-checks/moe3-neutral-name-audit.png"
+    },
+    {
+      "key": "moe3-warm",
+      "status": "needs_Thai_name_repair",
+      "identity": "Thai glyphs are substantially malformed rather than โมไลน์ 3. Check the poorly formed final English digit during the same correction.",
+      "fidelity": "Vessel structure, container layout and framing remain broadly consistent. Text corruption prevents approval.",
+      "comparison": "source-checks/moe3-warm-name-audit.png"
+    },
+    {
+      "key": "ranong-neutral-thai-fixed",
+      "status": "pass_identity_review",
+      "approvedForFinal": true,
+      "finalVessel": "ranong-moe",
+      "variant": "neutral",
+      "identity": "ระนอง โม and RANONG MOE are legible in the repaired crop; no extra Thai diacritics. SAFETY FIRST remains visible.",
+      "fidelity": "Full-frame review retains rounded green/red hull, blue trim, empty red hold, white aft bridge, mooring and original framing. No material identity or silhouette mismatch confirmed. Fine weathering and small equipment edges are generative approximations; the original dark bow-edge uncertainty remains.",
+      "comparison": "source-checks/ranong-neutral-thai-fixed-name-audit.png"
+    },
+    {
+      "key": "ranong-warm-thai-fixed",
+      "status": "pass_identity_review",
+      "approvedForFinal": true,
+      "finalVessel": "ranong-moe",
+      "variant": "warm",
+      "identity": "ระนอง โม and RANONG MOE are legible; correct Thai character order and English name retained.",
+      "fidelity": "Full-frame review retains the same vessel, empty hold and scene. Warm treatment remains restrained. Same fine-detail/source-shadow limitation as the neutral review.",
+      "comparison": "source-checks/ranong-warm-thai-fixed-name-audit.png"
+    },
+    {
+      "key": "moe2-neutral-thai-fixed",
+      "status": "pass_identity_review",
+      "approvedForFinal": true,
+      "finalVessel": "moe-line-2",
+      "variant": "neutral",
+      "identity": "โมไลน์ 2 is readable with one cancellation mark above น and no extra syllable; English MOE LINE2 has clear digit 2.",
+      "fidelity": "Full-frame comparison retains the taller right two-level cabin, low long hull, both end structures, blue rail, tires, cargo positions and bridge background. No material silhouette or equipment change confirmed. Painted letter shapes are clearer and differ stylistically from the faded source.",
+      "comparison": "source-checks/moe2-neutral-thai-fixed-name-audit.png"
+    },
+    {
+      "key": "moe2-warm-thai-fixed",
+      "status": "pass_identity_review",
+      "approvedForFinal": true,
+      "finalVessel": "moe-line-2",
+      "variant": "warm",
+      "identity": "โมไลน์ 2 is readable. The single cancellation mark is stylized but placed above น; no added syllable or conflicting number. English MOE LINE2 remains readable with digit 2.",
+      "fidelity": "Full-frame comparison retains vessel structure and cargo arrangement. English painted lettering becomes more serif-like than the original; spelling and identity remain correct. Fine cargo markings remain generative approximations.",
+      "comparison": "source-checks/moe2-warm-thai-fixed-name-audit.png"
+    },
+    {
+      "key": "moe3-neutral-thai-fixed",
+      "status": "pass_identity_review",
+      "approvedForFinal": true,
+      "finalVessel": "moe-line-3",
+      "variant": "neutral",
+      "identity": "โมไลน์ 3 is legible with the cancellation mark above น; English MOE LINE3 now ends in a clear digit 3.",
+      "fidelity": "Full-frame review retains the low cabins and long turquoise/red hull, blue rails and the same cargo including two pink ONE containers. Small secondary container-tagline text is approximated rather than faithfully readable. No material vessel silhouette mismatch confirmed.",
+      "comparison": "source-checks/moe3-neutral-thai-fixed-name-audit.png"
+    },
+    {
+      "key": "moe4-neutral",
+      "status": "pass_identity_review",
+      "approvedForFinal": true,
+      "finalVessel": "moe-line-4",
+      "variant": "neutral",
+      "identity": "English MOE LINE4 remains clear on the original crane-housing sign. No Thai name has been invented.",
+      "fidelity": "Full-frame comparison retains the blue/red rectangular pontoon, diagonal red lattice crane and cables, black/yellow counterweight, small white corner hut, tires, far cabin and nearby tug. Source is soft; sharpened small equipment and background are generative approximations, with no material identity or silhouette mismatch confirmed.",
+      "reference": "archived .local/legacy-moe-line-2026-11-16/assets/fe9e4ec878-sld-0233.webp"
+    },
+    {
+      "key": "moe4-warm",
+      "status": "pass_identity_review",
+      "approvedForFinal": true,
+      "finalVessel": "moe-line-4",
+      "variant": "warm",
+      "identity": "English MOE LINE4 remains clear; no invented Thai name.",
+      "fidelity": "Full-frame review retains the same crane barge, equipment positions and scene with modest warmer daylight. The same soft-source small-detail limitation applies.",
+      "reference": "archived .local/legacy-moe-line-2026-11-16/assets/fe9e4ec878-sld-0233.webp"
+    },
+    {
+      "key": "moe3-warm-thai-fixed",
+      "status": "pass_identity_review",
+      "approvedForFinal": true,
+      "finalVessel": "moe-line-3",
+      "variant": "warm",
+      "identity": "Repaired โมไลน์ 3 is readable with one cancellation mark above น. English MOE LINE3 has clear digit 3. No added Thai syllable is visible in the close crop.",
+      "fidelity": "Full-frame comparison retains the long low turquoise/red hull, low end cabins, blue rails and source cargo arrangement including two stacked pink ONE containers. No material silhouette or equipment mismatch confirmed. Fine cargo lettering and texture are generative approximations.",
+      "comparison": "source-checks/moe3-warm-thai-fixed-name-audit.png"
+    },
+    {
+      "key": "moe5-neutral",
+      "status": "pass_identity_review",
+      "approvedForFinal": true,
+      "finalVessel": "moe-line-5",
+      "variant": "neutral",
+      "identity": "Thai โมไลน์ 5 is legible with the correct single cancellation mark and digit 5. The lower English paint reads MOE LINE, which matches sharp source sld-015: its numeral 5 is on the upper Thai row, not repeated on the lower English row.",
+      "fidelity": "Full-frame comparison retains the green broad bow/hull, tall white rear bridge with red roof and trim, forward mast, black fenders and the selected photograph's container positions. No material identity or silhouette mismatch confirmed. Fine cargo markings and hull wear are approximated.",
+      "reference": "archived .local/legacy-moe-line-2026-11-16/assets/2568e199c6-moe-5.webp; name detail 2e8220c141-sld-015.webp",
+      "comparison": "source-checks/moe5-neutral-name-audit.png"
+    },
+    {
+      "key": "moe5-warm",
+      "status": "pass_identity_review",
+      "approvedForFinal": true,
+      "finalVessel": "moe-line-5",
+      "variant": "warm",
+      "identity": "Thai โมไลน์ 5 and lower English MOE LINE are readable and source-consistent. A lower English numeral 5 has not been invented; the vessel number is correctly retained on the upper Thai row.",
+      "fidelity": "Retains the same green vessel, tall bridge, loaded container well and full framing with restrained warmer daylight. No material silhouette or equipment mismatch confirmed. Paint strokes and small secondary markings are not pixel-identical to the original.",
+      "reference": "archived .local/legacy-moe-line-2026-11-16/assets/2568e199c6-moe-5.webp; name detail 2e8220c141-sld-015.webp",
+      "comparison": "source-checks/moe5-warm-name-audit.png"
+    },
+    {
+      "key": "moe6-neutral",
+      "status": "pass_identity_review",
+      "approvedForFinal": true,
+      "finalVessel": "moe-line-6",
+      "variant": "neutral",
+      "identity": "English MOE LINE6 and BANGKOK are clear and correctly spelled on the stern. No Thai name was added to this English-only source view.",
+      "fidelity": "Retains the square green stern/red waterline, broad white rear structure, black flat roof and two rooftop vents, green shutters, red trim, rails, ladder, yellow MSC cargo and port background. No material silhouette/equipment mismatch confirmed. Sharpened small fixtures, logo strokes and textures remain approximate.",
+      "reference": "archived .local/legacy-moe-line-2026-11-16/assets/a578c3d850-moe-6new.webp",
+      "comparison": "source-checks/moe6-neutral-name-audit.png"
+    },
+    {
+      "key": "moe6-warm",
+      "status": "pass_identity_review",
+      "approvedForFinal": true,
+      "finalVessel": "moe-line-6",
+      "variant": "warm",
+      "identity": "MOE LINE6 and BANGKOK remain correct, including a clear final digit 6. No invented Thai text.",
+      "fidelity": "Full-frame comparison retains stern shape, white structure, two black rooftop vents, green shutters, yellow cargo arrangement and scene. Warm daylight is modest; no material identity or silhouette mismatch confirmed.",
+      "reference": "archived .local/legacy-moe-line-2026-11-16/assets/a578c3d850-moe-6new.webp",
+      "comparison": "source-checks/moe6-warm-name-audit.png"
+    },
+    {
+      "key": "moe7-neutral",
+      "status": "pass_identity_review",
+      "approvedForFinal": true,
+      "finalVessel": "moe-line-7",
+      "variant": "neutral",
+      "identity": "Thai โม ไลน์ 7 is retained on both bow faces, with correct digit 7 and the single cancellation mark. The more oblique left face is foreshortened. Lower English MOE LINE matches the selected nbnb2 source, which places 7 on the Thai row rather than repeating it below.",
+      "fidelity": "Retains dark green/red bow, paired anchors/hawsepipes, draft marks, white forward wheelhouse with red roof, container rows and bridge scene. No material silhouette or equipment mismatch confirmed. Small lettering and background detail are generative approximations.",
+      "reference": "archived .local/legacy-moe-line-2026-11-16/assets/f462203695-nbnb2.webp",
+      "comparison": "source-checks/moe7-neutral-name-audit.png"
+    },
+    {
+      "key": "moe7-warm",
+      "status": "pass_identity_review",
+      "approvedForFinal": true,
+      "finalVessel": "moe-line-7",
+      "variant": "warm",
+      "identity": "Both bow faces retain readable โม ไลน์ 7 and lower English MOE LINE in the source layout. Correct 7 and cancellation mark retained; no extra Thai syllable confirmed.",
+      "fidelity": "Full-frame comparison retains the same bow/anchors, wheelhouse, containers and bridge location. Warm lighting is restrained; no material identity or silhouette mismatch confirmed. Oblique left lettering remains small and perspective-compressed as in the source.",
+      "reference": "archived .local/legacy-moe-line-2026-11-16/assets/f462203695-nbnb2.webp",
+      "comparison": "source-checks/moe7-warm-name-audit.png"
+    }
+  ]
+}

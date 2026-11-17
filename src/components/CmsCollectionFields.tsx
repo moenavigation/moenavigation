@@ -1,18 +1,37 @@
 'use client';
 
 import { useId, type ReactNode } from 'react';
-import { ArrowDown, ArrowUp, ImagePlus, Languages, MapPin, Plus, Ship, Trash2 } from 'lucide-react';
-import type { CmsCategorySuggestions, ContentImage, ContentRecord, VesselSpecs } from '@/lib/cms-types';
+import { ArrowDown, ArrowUp, ClipboardList, ImagePlus, Languages, MapPin, Plus, Ship, Trash2 } from 'lucide-react';
+import type { CmsCategorySuggestions, ContentImage, ContentRecord, RouteSpecs, VesselSpecs } from '@/lib/cms-types';
 import { useCmsLocale } from '@/lib/cms-locale';
 import { cmsContentPlaceholder } from '@/lib/cms-content-placeholders';
 import CmsRouteFields from './CmsRouteFields';
 import CmsServiceIconPicker from './CmsServiceIconPicker';
+import SelectionDialog from './SelectionDialog';
 import styles from './CmsCollectionFields.module.css';
 import workspace from './CmsWorkspace.module.css';
 
 type TextField = 'title' | 'description' | 'bodyHeading' | 'body' | 'imageAlt';
 const textLabels: Record<TextField, string> = { title: 'Title', description: 'Summary', bodyHeading: 'Content heading', body: 'Content', imageAlt: 'Image description' };
 const textLimits: Record<TextField, number> = { title: 200, description: 2000, bodyHeading: 200, body: 30000, imageAlt: 250 };
+const vesselDetailGroups = [
+  { label: 'Dimension', fields: [
+    { key: 'lengthM', label: 'LOA (m)', max: 1000, whole: false },
+    { key: 'beamM', label: 'Breadth (m)', max: 500, whole: false },
+    { key: 'depthM', label: 'Depth (m)', max: 100, whole: false },
+    { key: 'draftM', label: 'Draft (m)', max: 100, whole: false },
+  ] },
+  { label: 'Container Capacity', fields: [
+    { key: 'capacityTeu', label: 'Nominal (TEU)', max: 100000, whole: true },
+    { key: 'reeferPlugs', label: 'Reefer Plug (units)', max: 100000, whole: true },
+  ] },
+  { label: 'Tonnage', fields: [
+    { key: 'grossTonnage', label: 'GRT', max: 2000000, whole: false },
+    { key: 'netTonnage', label: 'NRT', max: 2000000, whole: false },
+    { key: 'deadweightT', label: 'DWT (tonnes)', max: 2000000, whole: false },
+    { key: 'cargoCapacityT', label: 'DWCC (tonnes)', max: 2000000, whole: false },
+  ] },
+] as const;
 
 export default function CmsCollectionFields({ record, records = [], categories, disabled, preparing, onChange, imageField, onGalleryChange, routeText, onRouteText }: {
   record: ContentRecord;
@@ -48,16 +67,27 @@ export default function CmsCollectionFields({ record, records = [], categories, 
   function categoryField(language: 'th' | 'en') {
     const key = language === 'th' ? 'categoryTh' : 'category';
     const suggestions = categories?.[record.type]?.[language] ?? [...new Set(records.filter(item => !item.deletedAt && item.type === record.type).map(item => item[key]).filter((value): value is string => Boolean(value?.trim())))];
-    return <label className={styles.field}>{t(categoryLabel)} · {languageName(language)}
-      <input lang={language} placeholder={cmsContentPlaceholder(record.type === 'Vessel' ? 'vesselType' : record.type === 'Project' ? 'projectCategory' : 'newsCategory', language)} required={language === 'en'} maxLength={100} value={record[key] || ''} list={suggestions.length ? `${categoryId}-${language}` : undefined} onChange={event => onChange({ [key]: event.target.value })} />
-      {suggestions.length > 0 && <datalist id={`${categoryId}-${language}`}>{suggestions.map(value => <option key={value} value={value} />)}</datalist>}
-    </label>;
+    const label = `${t(categoryLabel)} · ${languageName(language)}`;
+    const chooseExisting = locale === 'th' ? 'เลือกที่มีอยู่' : 'Choose existing';
+    return <div className={styles.field}><label htmlFor={`${categoryId}-${language}`}>{label}</label><div className={styles.categoryInput}>
+      <input id={`${categoryId}-${language}`} lang={language} placeholder={cmsContentPlaceholder(record.type === 'Vessel' ? 'vesselType' : record.type === 'Project' ? 'projectCategory' : 'newsCategory', language)} required={language === 'en'} maxLength={100} value={record[key] || ''} onChange={event => onChange({ [key]: event.target.value })} />
+      {suggestions.length > 0 && <SelectionDialog label={`${chooseExisting}: ${label}`} triggerLabel={chooseExisting} value={record[key] || ''} options={suggestions.map(value => ({ value, label: value }))} onChange={value => onChange({ [key]: value })} disabled={disabled} closeLabel={locale === 'th' ? 'ปิดตัวเลือก' : 'Close choices'} searchPlaceholder={locale === 'th' ? 'ค้นหาตัวเลือก' : 'Search choices'} className={styles.categoryChoices} />}
+    </div></div>;
   }
 
   function updateSpec(key: keyof VesselSpecs, value: string | number | undefined) {
     const specs = { ...record.vesselSpecs, [key]: value };
     if (value === undefined || value === '') delete specs[key];
     onChange({ vesselSpecs: Object.keys(specs).length ? specs : undefined });
+  }
+
+  function routeNumberField(key: keyof RouteSpecs, label: string, whole = false) {
+    return <label className={styles.field}>{t(label)}<input type="number" placeholder={cmsContentPlaceholder(key, locale)} min={whole ? 1 : 0.01} max={whole ? 100000 : undefined} step={whole ? 1 : 'any'} value={record.routeSpecs?.[key] ?? ''} onChange={event => {
+      const specs = { ...record.routeSpecs };
+      if (event.target.value === '') delete specs[key];
+      else specs[key] = Number(event.target.value);
+      onChange({ routeSpecs: Object.keys(specs).length ? specs : undefined });
+    }} /></label>;
   }
 
   function moveImage(index: number, direction: -1 | 1) {
@@ -79,14 +109,27 @@ export default function CmsCollectionFields({ record, records = [], categories, 
       {imageField(t('Main image'), 'image', record.image, record.type === 'Vessel')}
       <div className={styles.twoColumns}>{languages.map(language => <div key={language}>{textField('imageAlt', language)}</div>)}</div>
     </section>
+    {record.type === 'Route' && <details className={styles.card}>
+      <summary><span className={styles.cardTitle}><ClipboardList size={20} aria-hidden="true" />{t('Route details')}</span><span className={styles.hint}>{t('Optional')}</span></summary>
+      <div className={styles.cardBody}>
+        <p className={styles.hint}>{t('Enter confirmed route information only. Leave missing or conflicting values blank.')}</p>
+        {routeNumberField('distanceNm', 'Distance (NM)')}
+        <p className={styles.hint}>{t('Enter both ends of a range, or leave both blank. For a single value, use the same number in both fields.')}</p>
+        <fieldset className={styles.detailsGroup}><legend>{t('Container capacity')}</legend><div className={styles.twoColumns}>{routeNumberField('capacityMinTeu', 'Capacity from (TEU)', true)}{routeNumberField('capacityMaxTeu', 'Capacity to (TEU)', true)}</div></fieldset>
+        <fieldset className={styles.detailsGroup}><legend>{t('Sailing time')}</legend><div className={styles.twoColumns}>{routeNumberField('sailingMinHours', 'Sailing time from (hours)')}{routeNumberField('sailingMaxHours', 'Sailing time to (hours)')}</div></fieldset>
+      </div>
+    </details>}
     {record.type === 'Route' && <details className={styles.card}><summary><span className={styles.cardTitle}><MapPin size={20} aria-hidden="true" />{t('Route map and ports')}</span><span className={styles.hint}>{t('Optional')}</span></summary><div className={styles.cardBody}><CmsRouteFields record={record} disabled={disabled} routeText={routeText} onChange={onChange} onRouteText={onRouteText} /></div></details>}
     {record.type === 'Vessel' && <details className={styles.card}>
-      <summary><span className={styles.cardTitle}><Ship size={20} aria-hidden="true" />{t('Vessel specifications')}</span><span className={styles.hint}>{t('Optional')}</span></summary>
-      <div className={styles.cardBody}><p className={styles.hint}>{t('Enter approved vessel information only. Leave unknown values blank; they will not appear as confirmed specifications. Availability is a written statement, not live tracking.')}</p>
-        <div className={styles.twoColumns}><label className={styles.field}>{t('IMO ship number')}<input inputMode="numeric" placeholder={cmsContentPlaceholder('imo', locale)} maxLength={7} pattern="[1-9][0-9]{6}" value={record.vesselSpecs?.imo || ''} onChange={event => updateSpec('imo', event.target.value)} /><span className={styles.hint}>{t('Seven digits without the IMO prefix. The check digit is validated when saving.')}</span></label><label className={styles.field}>{t('Year built')}<input type="number" placeholder={cmsContentPlaceholder('yearBuilt', locale)} min={1800} max={new Date().getUTCFullYear()} step={1} value={record.vesselSpecs?.yearBuilt ?? ''} onChange={event => updateSpec('yearBuilt', event.target.value === '' ? undefined : Number(event.target.value))} /></label>
-          {([{ key: 'lengthM', label: 'Length overall (m)', max: 1000 }, { key: 'beamM', label: 'Beam (m)', max: 500 }, { key: 'draftM', label: 'Draft (m)', max: 100 }, { key: 'deadweightT', label: 'Deadweight (tonnes)', max: 2000000 }, { key: 'capacityTeu', label: 'Container capacity (TEU)', max: 100000 }] as const).map(field => <label className={styles.field} key={field.key}>{t(field.label)}<input type="number" placeholder={cmsContentPlaceholder(field.key, locale)} min={field.key === 'capacityTeu' ? 0 : 0.01} max={field.max} step={field.key === 'capacityTeu' ? 1 : 'any'} value={record.vesselSpecs?.[field.key] ?? ''} onChange={event => updateSpec(field.key, event.target.value === '' ? undefined : Number(event.target.value))} /></label>)}
-        </div>
-        {languages.map(language => <div className={styles.twoColumns} key={language}><label className={styles.field}>{bilingualLabel('Flag state', language)}<input lang={language} placeholder={cmsContentPlaceholder('flag', language)} maxLength={100} value={record.vesselSpecs?.[language === 'th' ? 'flagTh' : 'flag'] || ''} onChange={event => updateSpec(language === 'th' ? 'flagTh' : 'flag', event.target.value)} /></label><label className={styles.field}>{bilingualLabel('Availability statement', language)}<input lang={language} placeholder={cmsContentPlaceholder('availability', language)} maxLength={200} value={record.vesselSpecs?.[language === 'th' ? 'availabilityTh' : 'availability'] || ''} onChange={event => updateSpec(language === 'th' ? 'availabilityTh' : 'availability', event.target.value)} /></label></div>)}
+      <summary><span className={styles.cardTitle}><Ship size={20} aria-hidden="true" />{t('Vessel details')}</span><span className={styles.hint}>{t('Optional')}</span></summary>
+      <div className={styles.cardBody}><p className={styles.hint}>{t('Enter approved vessel information only. Leave unknown values blank.')}</p>
+        <fieldset className={styles.detailsGroup}><legend>{t('Vessel identity')}</legend>
+          <div className={styles.twoColumns}><label className={styles.field}>{t('IMO ship number')}<input inputMode="numeric" placeholder={cmsContentPlaceholder('imo', locale)} maxLength={7} pattern="[1-9][0-9]{6}" value={record.vesselSpecs?.imo || ''} onChange={event => updateSpec('imo', event.target.value)} /><span className={styles.hint}>{t('Seven digits without the IMO prefix. The check digit is validated when saving.')}</span></label><label className={styles.field}>{t('Year built')}<input type="number" placeholder={cmsContentPlaceholder('yearBuilt', locale)} min={1800} max={new Date().getUTCFullYear()} step={1} value={record.vesselSpecs?.yearBuilt ?? ''} onChange={event => updateSpec('yearBuilt', event.target.value === '' ? undefined : Number(event.target.value))} /></label></div>
+          <div className={styles.twoColumns}>{languages.map(language => <label className={styles.field} key={language}>{bilingualLabel('Flag state', language)}<input lang={language} placeholder={cmsContentPlaceholder('flag', language)} maxLength={100} value={record.vesselSpecs?.[language === 'th' ? 'flagTh' : 'flag'] || ''} onChange={event => updateSpec(language === 'th' ? 'flagTh' : 'flag', event.target.value)} /></label>)}</div>
+        </fieldset>
+        {vesselDetailGroups.map(group => <fieldset className={styles.detailsGroup} key={group.label}><legend>{t(group.label)}</legend><div className={styles.twoColumns}>
+          {group.fields.map(field => <label className={styles.field} key={field.key}>{t(field.label)}<input type="number" placeholder={cmsContentPlaceholder(field.key, locale)} min={field.whole ? 0 : 0.01} max={field.max} step={field.whole ? 1 : 'any'} value={record.vesselSpecs?.[field.key] ?? ''} onChange={event => updateSpec(field.key, event.target.value === '' ? undefined : Number(event.target.value))} /></label>)}
+        </div></fieldset>)}
       </div>
     </details>}
     {record.type === 'Vessel' && <details className={styles.card}>

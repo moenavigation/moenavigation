@@ -5,6 +5,7 @@ import { ImagePlus, Languages } from 'lucide-react';
 import type { ContentRecord } from '@/lib/cms-types';
 import { useCmsLocale } from '@/lib/cms-locale';
 import { cmsContentPlaceholder } from '@/lib/cms-content-placeholders';
+import CmsFooterStatisticsFields from './CmsFooterStatisticsFields';
 import styles from './CmsPageFields.module.css';
 
 type TextField = 'title' | 'description' | 'eyebrow' | 'body' | 'caption' | 'imageAlt';
@@ -21,7 +22,7 @@ function editableFields(record: ContentRecord): PageFields {
       mobileImage: false,
     };
   }
-  if (record.id === 'footer' && record.parentId === 'shared') return { text: ['title'], mainImage: false, mobileImage: false };
+  if (record.id === 'footer' && record.parentId === 'shared') return { text: ['title', 'caption'], mainImage: false, mobileImage: false };
   const planningParents: Record<string, string> = { 'service-planning': 'services', 'vessel-planning': 'fleet', 'project-planning': 'projects' };
   const template = (record.id.startsWith('home-') && record.parentId === 'home')
     || (record.id.startsWith('about-') && record.parentId === 'about')
@@ -55,7 +56,8 @@ export default function CmsPageFields({ record, disabled, onChange, imageField }
 
   function input(field: TextField, language: 'th' | 'en') {
     const key = (language === 'th' ? `${field}Th` : field) as TextField | ThaiTextField;
-    const label = t(`${labels[field]} · ${language === 'th' ? 'Thai' : 'English'}`);
+    const name = record.id === 'footer' && record.parentId === 'shared' && field === 'caption' ? 'Statistics heading' : labels[field];
+    const label = t(`${name} · ${language === 'th' ? 'Thai' : 'English'}`);
     const required = field === 'title' || (field === 'description' && record.type === 'Page');
     const common = { lang: language, placeholder: cmsContentPlaceholder(field, language, record.type), required, maxLength: limits[field], value: record[key] || '', onChange: (event: { target: { value: string } }) => onChange({ [key]: event.target.value }) };
     return <label key={field} className={styles.field}>{label}
@@ -70,6 +72,7 @@ export default function CmsPageFields({ record, disabled, onChange, imageField }
       <summary><span className={styles.languageTitle}><Languages size={20} aria-hidden="true" />{languageName(language)}</span><span className={styles.hint}>{t('Website text')}</span></summary>
       <div className={styles.textFields}>{textFields.map(field => input(field, language))}</div>
     </details>)}
+    {record.id === 'footer' && record.parentId === 'shared' && <CmsFooterStatisticsFields record={record} onChange={onChange} />}
     {(fields.mainImage || fields.mobileImage) && <section className={styles.pictures} aria-label={t('Pictures')}>
       <div className={styles.pictureHeading}><ImagePlus size={21} aria-hidden="true" /><h3>{t('Pictures')}</h3></div>
       <p className={styles.hint}>{t('Choose a replacement picture. It will appear after you save.')}</p>

@@ -1,0 +1,90 @@
+{
+  "checkedOn": "2026-11-17",
+  "method": "Independent visual reading of original full photographs, native decoded pixel crops and embedded JPEG photos from the matching particulars PDFs. Pixel-repeat enlargements are inspection aids, not reconstructed letters.",
+  "rule": "Preserve the painted legacy identity. Current CMS display names do not authorize repainting the hull. Hand-painted gaps are visual placement, not reliably inferable Unicode space counts; follow the source crops.",
+  "numberedVesselThaiCharacters": "โมไลน์",
+  "lineWordCodePoints": [
+    "U+0E44",
+    "U+0E25",
+    "U+0E19",
+    "U+0E4C"
+  ],
+  "vessels": [
+    {
+      "currentId": "ranong-moe",
+      "currentName": "RANONG MOE",
+      "paintedThai": "ระนอง โม",
+      "paintedEnglish": "RANONG MOE",
+      "bestCrop": "painted-name-crops/ranong-moe-native-crop.png",
+      "confidence": "clear"
+    },
+    {
+      "currentId": "moe-line-2",
+      "currentName": "MOE 2",
+      "thaiCharacterSequenceWithoutSpaces": "โมไลน์2",
+      "referenceTranscription": "โมไลน์ 2",
+      "paintedEnglish": "MOE LINE",
+      "bestCrop": "painted-name-crops/moe-2-pdf-native-crop.png",
+      "confidence": "name and numeral confirmed; soft source lettering",
+      "legacyEnglishVesselName": "MOE LINE 2",
+      "numeralPlacement": "Vessel numeral is painted on the upper Thai row; do not add it to the lower English row solely from the vessel record."
+    },
+    {
+      "currentId": "moe-line-3",
+      "currentName": "MOE 3",
+      "thaiCharacterSequenceWithoutSpaces": "โมไลน์3",
+      "referenceTranscription": "โมไลน์ 3",
+      "paintedEnglish": "MOE LINE",
+      "bestCrop": "painted-name-crops/moe-3-wide-native-crop.png",
+      "confidence": "clear characters and numeral in wider source frame",
+      "legacyEnglishVesselName": "MOE LINE 3",
+      "numeralPlacement": "Vessel numeral is painted on the upper Thai row; do not add it to the lower English row solely from the vessel record."
+    },
+    {
+      "currentId": "moe-line-4",
+      "currentName": "MOE 4",
+      "paintedThai": null,
+      "paintedEnglish": "MOE LINE 4",
+      "note": "No Thai vessel name was verified in the selected primary photograph. Do not add one."
+    },
+    {
+      "currentId": "moe-line-5",
+      "currentName": "MOE 5",
+      "thaiCharacterSequenceWithoutSpaces": "โมไลน์5",
+      "referenceTranscription": "โม ไลน์ 5",
+      "paintedEnglish": "MOE LINE",
+      "bestCrop": "painted-name-crops/moe-5-native-crop.png",
+      "confidence": "very clear in full3392x3472 original",
+      "legacyEnglishVesselName": "MOE LINE 5",
+      "numeralPlacement": "Vessel numeral is painted on the upper Thai row; do not add it to the lower English row solely from the vessel record."
+    },
+    {
+      "currentId": "moe-line-6",
+      "currentName": "MOE 6",
+      "thaiCharacterSequenceWithoutSpaces": "โมไลน์6",
+      "referenceTranscription": "โม ไลน์6",
+      "paintedEnglish": "MOE LINE 6",
+      "bestCrop": "painted-name-crops/moe-6-pdf-native-crop.png",
+      "confidence": "clear character sequence; visual gap after โม",
+      "note": "Selected primary stern photo has MOE LINE6 in English. The alternate bow reference has the numeral on the upper Thai row and MOE LINE on the lower English row."
+    },
+    {
+      "currentId": "moe-line-7",
+      "currentName": "MOE 7",
+      "thaiCharacterSequenceWithoutSpaces": "โมไลน์7",
+      "referenceTranscription": "โม ไลน์ 7",
+      "paintedEnglish": "MOE LINE",
+      "bestCrop": "painted-name-crops/moe-7-pdf-native-crop.png",
+      "confidence": "clear in embedded PDF photograph",
+      "legacyEnglishVesselName": "MOE LINE 7",
+      "numeralPlacement": "Vessel numeral is painted on the upper Thai row; do not add it to the lower English row solely from the vessel record."
+    },
+    {
+      "currentId": "dumai-moe",
+      "currentName": "DUMAI MOE",
+      "paintedThai": null,
+      "paintedEnglish": null,
+      "note": "No verified original vessel photograph recovered; no painted text inferred."
+    }
+  ]
+}

@@ -66,7 +66,16 @@ export async function seedE2eDatabase(db: Db) {
   for (const name of ownedCollections) await db.collection(name).deleteMany({});
   const source = structuredClone(websiteContentRecords) as ContentRecord[];
   const originals = new Set(source.flatMap(record => [record.image, record.mobileImage, ...(record.gallery || []).map(image => image.url)]).filter((url): url is string => Boolean(url)));
-  const mappings = new Map([...originals].map(url => [url, `${E2E_IMAGE_ORIGIN}v1/${url.split('/').at(-1)!.replace(/\.[^.]+$/, '')}.png`]));
+  const imageStem = (url: string) => url.split('/').at(-1)!.replace(/\.[^.]+$/, '');
+  const stems = [...originals].map(imageStem);
+  // Different source folders can contain the same filename. Keep fixture URLs
+  // unique so the media URL index can initialize just as it does in production.
+  const mappings = new Map([...originals].map(url => {
+    const stem = imageStem(url);
+    const suffix = stems.filter(value => value === stem).length > 1 ? `-${createHash('sha256').update(url).digest('hex').slice(0, 12)}` : '';
+    return [url, `${E2E_IMAGE_ORIGIN}v1/${stem}${suffix}.png`];
+  }));
+  assert.equal(new Set(mappings.values()).size, mappings.size, 'Synthetic media URLs must remain unique.');
   const now = new Date().toISOString();
   for (const record of source) {
     record.image = mappings.get(record.image) || '';

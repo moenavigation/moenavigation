@@ -1,3 +1,4 @@
+import { chooseDialogOption } from './selection-helpers';
 import { randomUUID } from 'node:crypto';
 import type { Locator, Page } from '@playwright/test';
 import { translateCms } from '../../src/lib/cms-locale';
@@ -81,9 +82,9 @@ test('Add user closes by Cancel, Escape or backdrop, restores focus and clears p
         await expect(dialog.getByLabel(t(label), { exact: true })).toHaveValue('');
         await expect(dialog.getByLabel(t(label), { exact: true })).toHaveAttribute('type', 'password');
       }
-      await expect(dialog.getByLabel(t('Role'), { exact: true })).toHaveValue('Operator');
+      await expect(dialog.getByRole('button', { name: t('Role'), exact: true })).toHaveAttribute('data-selection-value', 'Operator');
       await dialog.getByLabel(t('Username'), { exact: true }).fill('unsaved-new-user');
-      await dialog.getByLabel(t('Role'), { exact: true }).selectOption('Admin');
+      await chooseDialogOption(dialog.getByRole('button', { name: t('Role'), exact: true }), 'Admin');
       await dialog.getByLabel(t('Password'), { exact: true }).fill('Private-unsaved-password-2026!');
       await dialog.getByLabel(t('Confirm password'), { exact: true }).fill('Private-unsaved-password-2026!');
       await dialog.getByLabel(t('Your current password'), { exact: true }).fill('Private-current-password');
@@ -117,7 +118,7 @@ test('Add user keeps its pending panel and failed input, then closes after one s
   const dialog = page.getByRole('dialog', { name: 'Add user', exact: true });
   const password = 'Retry-new-user-password-2026!';
   await dialog.getByLabel('Username', { exact: true }).fill('retry-card-user');
-  await dialog.getByLabel('Role', { exact: true }).selectOption('Admin');
+  await chooseDialogOption(dialog.getByRole('button', { name: 'Role', exact: true }), 'Admin');
   await dialog.getByLabel('Password', { exact: true }).fill(password);
   await dialog.getByLabel('Confirm password', { exact: true }).fill(password);
   await dialog.getByLabel('Your current password', { exact: true }).fill(E2E_ADMIN.password);
@@ -149,7 +150,7 @@ test('Add user keeps its pending panel and failed input, then closes after one s
   await expect(dialog.getByRole('alert')).toHaveText('Synthetic user creation unavailable.');
   await expect(dialog.locator('[data-working-panel]')).toHaveCount(0);
   await expect(dialog.getByLabel('Username', { exact: true })).toHaveValue('retry-card-user');
-  await expect(dialog.getByLabel('Role', { exact: true })).toHaveValue('Admin');
+  await expect(dialog.getByRole('button', { name: 'Role', exact: true })).toHaveAttribute('data-selection-value', 'Admin');
   await expect(dialog.getByLabel('Password', { exact: true })).toHaveValue(password);
   await expect(dialog.getByLabel('Your current password', { exact: true })).toHaveValue(E2E_ADMIN.password);
   await dialog.getByRole('button', { name: 'Retry add user', exact: true }).click();

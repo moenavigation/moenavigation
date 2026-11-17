@@ -6,6 +6,7 @@ import { translateCms } from '../../src/lib/cms-locale';
 import type { CmsRole } from '../../src/lib/cms-roles';
 
 type Locale = 'en' | 'th';
+const fullBrowserMatrix = process.env.MOE_FULL_BROWSER_MATRIX === '1';
 const sizes = [
   { name: '320 portrait', width: 320, height: 740 },
   { name: '360 portrait', width: 360, height: 800 },
@@ -184,7 +185,7 @@ test.describe('Expanded public mobile coverage', () => {
   for (const locale of locales) for (const size of sizes.filter(size => [320, 390, 430, 844].includes(size.width))) {
     test.describe(() => {
       test.use({ viewport: { width: size.width, height: size.height } });
-      test.skip(({ browserName }) => browserName !== 'chromium' && ![430, 844].includes(size.width), 'The narrow route sweep runs once; portrait and landscape touch navigation run across engines.');
+      test.skip(({ browserName }) => !fullBrowserMatrix && browserName !== 'chromium' && ![430, 844].includes(size.width), 'The narrow route sweep runs once; portrait and landscape touch navigation run across engines.');
       test(`${locale} ${size.name}: public pages, details and drawer`, async ({ page, db, browserName }) => {
         test.setTimeout(120_000);
         const records = await db.collection<{ id: string; type: string }>('moe_content').find({ type: 'Page', deletedAt: { $exists: false } }).project<{ id: string }>({ id: 1, _id: 0 }).toArray();
@@ -246,7 +247,7 @@ test.describe('Expanded CMS mobile coverage', () => {
   for (const role of ['Admin', 'Dev', 'Operator'] as const) for (const locale of locales) for (const size of sizes.filter(size => [320, 390].includes(size.width) || role === 'Admin' && size.width === 430)) {
     test.describe(() => {
       test.use({ viewport: { width: size.width, height: size.height } });
-      test.skip(({ browserName }) => browserName !== 'chromium', 'Shared route/role geometry is covered once; touch dialogs are checked across engines.');
+      test.skip(({ browserName }) => !fullBrowserMatrix && browserName !== 'chromium', 'Shared route/role geometry is covered once; touch dialogs are checked across engines.');
       test(`${role} ${locale} ${size.name}: CMS screens, navigation and role controls`, async ({ page, db }) => {
         test.setTimeout(120_000);
         const { trashedUserId } = await signIn(page, db, role, locale);
@@ -409,9 +410,12 @@ test.describe('Expanded CMS mobile coverage', () => {
         await page.goto('/cms/enquiries');
         const enquiryOpener = page.locator('[class*="enquiryRow"]').first();
         const enquiry = await openDialog(page, enquiryOpener, t('Enquiry details'), locale);
+        await expect(enquiry.getByRole('button', { name: t('In progress'), exact: true })).toHaveAttribute('aria-pressed', 'true');
         await enquiry.getByRole('link', { name: t('Reply by email'), exact: true }).scrollIntoViewIfNeeded();
         await expect(enquiry.getByRole('link', { name: t('Reply by email'), exact: true })).toBeInViewport({ ratio: 0.98 });
-        await escapeDialog(page, enquiry, enquiryOpener);
+        // Opening a New enquiry saves In progress and refreshes the list, so
+        // the original row unmounts. The modal deliberately restores search.
+        await escapeDialog(page, enquiry, page.getByRole('searchbox', { name: t('Search all enquiries'), exact: true }));
         await page.goto('/cms/trash');
         const filterOpener = page.getByRole('button', { name: t('Filter Trash'), exact: true });
         const filter = await openDialog(page, filterOpener, t('Filter Trash'), locale);

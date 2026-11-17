@@ -33,6 +33,8 @@ export function changeEditorContentType(record: ContentRecord, nextType: Content
     delete next.vesselSpecs;
   }
   if (nextType !== 'Route') {
+    if (record.routeSpecs && Object.values(record.routeSpecs).some(value => value !== undefined)) discardedFields.push('route details');
+    delete next.routeSpecs;
     if (routeText.trim() || record.waypoints?.length || [record.origin, record.destination].some(port => port && Object.values(port).some(value => value.trim()))) discardedFields.push('route ports and coordinates');
     delete next.origin;
     delete next.destination;

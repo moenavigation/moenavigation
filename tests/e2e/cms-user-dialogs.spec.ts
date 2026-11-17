@@ -1,3 +1,4 @@
+import { chooseDialogOption } from './selection-helpers';
 import { randomUUID } from 'node:crypto';
 import { request as apiRequest, type Locator, type Page } from '@playwright/test';
 import type { Db } from 'mongodb';
@@ -41,7 +42,7 @@ test('Edit and nested Reset cancellation preserve the edit draft without writing
     return route.continue();
   });
   await expect(edit.getByLabel('Username', { exact: true })).not.toBeEditable();
-  await edit.getByLabel('Role', { exact: true }).selectOption('Admin');
+  await chooseDialogOption(edit.getByRole('button', { name: 'Role', exact: true }), 'Admin');
   await edit.getByLabel('Your current password', { exact: true }).fill('unsaved-actor-password');
   await checkPasswordToggle(edit, 'Your current password', 'unsaved-actor-password', 'en', true);
   const resetTrigger = edit.getByRole('button', { name: 'Reset password', exact: true });
@@ -53,7 +54,7 @@ test('Edit and nested Reset cancellation preserve the edit draft without writing
   await expect(reset).not.toBeVisible();
   await expect(resetTrigger).toBeFocused();
   await expect(edit.getByLabel('Username', { exact: true })).toHaveValue(target.username);
-  await expect(edit.getByLabel('Role', { exact: true })).toHaveValue('Admin');
+  await expect(edit.getByRole('button', { name: 'Role', exact: true })).toHaveAttribute('data-selection-value', 'Admin');
   await expect(edit.getByLabel('Your current password', { exact: true })).toHaveValue('unsaved-actor-password');
   await edit.getByRole('button', { name: 'Cancel', exact: true }).click();
   await expect(edit).not.toBeVisible();
@@ -66,13 +67,13 @@ test('Edit and nested Reset cancellation preserve the edit draft without writing
   await expect(edit.getByLabel('Username', { exact: true })).toHaveValue(target.username);
   await expect(edit.getByLabel('Your current password', { exact: true })).toHaveValue('');
   await expect(edit.getByLabel('Your current password', { exact: true })).toHaveAttribute('type', 'password');
-  await expect(edit.getByLabel('Role', { exact: true })).toHaveValue('Operator');
-  await edit.getByLabel('Role', { exact: true }).selectOption('Admin');
+  await expect(edit.getByRole('button', { name: 'Role', exact: true })).toHaveAttribute('data-selection-value', 'Operator');
+  await chooseDialogOption(edit.getByRole('button', { name: 'Role', exact: true }), 'Admin');
   await edit.getByLabel('Your current password', { exact: true }).fill('incorrect-actor-password');
   await edit.getByRole('button', { name: 'Save changes', exact: true }).click();
   await expect(edit.getByRole('alert')).toContainText('Your current password is incorrect.');
   await expect(edit.getByLabel('Username', { exact: true })).toHaveValue(target.username);
-  await expect(edit.getByLabel('Role', { exact: true })).toHaveValue('Admin');
+  await expect(edit.getByRole('button', { name: 'Role', exact: true })).toHaveAttribute('data-selection-value', 'Admin');
   await edit.getByLabel('Your current password', { exact: true }).fill(E2E_ADMIN.password);
   await edit.getByRole('button', { name: 'Save changes', exact: true }).click();
   await expect(edit).not.toBeVisible();
@@ -97,7 +98,7 @@ test('nested Reset validates and preserves failed input, blocks duplicate submis
     await login(page);
     const { dialog: edit } = await openEdit(page, target.username);
     await expect(edit.getByLabel('Username', { exact: true })).not.toBeEditable();
-    await edit.getByLabel('Role', { exact: true }).selectOption('Admin');
+    await chooseDialogOption(edit.getByRole('button', { name: 'Role', exact: true }), 'Admin');
     const resetTrigger = edit.getByRole('button', { name: 'Reset password', exact: true });
     await resetTrigger.click();
     const reset = page.getByRole('dialog', { name: 'Reset password', exact: true });
@@ -146,7 +147,7 @@ test('nested Reset validates and preserves failed input, blocks duplicate submis
     await expect(reset).not.toBeVisible();
     await expect(resetTrigger).toBeFocused();
     await expect(edit.getByLabel('Username', { exact: true })).toHaveValue(target.username);
-    await expect(edit.getByLabel('Role', { exact: true })).toHaveValue('Admin');
+    await expect(edit.getByRole('button', { name: 'Role', exact: true })).toHaveAttribute('data-selection-value', 'Admin');
     expect(await db.collection<Account>('moe_users').findOne({ _id: target._id })).toMatchObject({ username: target.username, role: 'Operator', passwordVersion: target.passwordVersion + 1 });
     expect((await oldSession.get('/api/cms/users')).status()).toBe(401);
     expect((await oldSession.post('/api/cms/login', { data: { username: target.username, password: newPassword, ...await loginChallengeData(oldSession) } })).status()).toBe(200);

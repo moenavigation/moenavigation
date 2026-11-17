@@ -1,6 +1,10 @@
 // Only application-authored messages belong here. Record text, filenames and
 // customer enquiries are never passed through a general translation service.
 export const cmsMessagesThai: Record<string, string> = {
+  'Provide both English and Thai labels for a visible statistic.': 'กรอกชื่อสถิติทั้งภาษาอังกฤษและภาษาไทยสำหรับสถิติที่แสดง',
+  'Footer statistics belong to the shared footer only.': 'สถิติส่วนท้ายเว็บไซต์ใช้ได้เฉพาะส่วนท้ายเว็บไซต์ที่ใช้ร่วมกันเท่านั้น',
+  'Close dialog': 'ปิดหน้าต่าง',
+  'Search points': 'ค้นหาจุดในเส้นทาง',
   'Edit points on map': 'แก้ไขจุดบนแผนที่',
   'Add point on map': 'เพิ่มจุดบนแผนที่',
   'Cancel adding point': 'ยกเลิกการเพิ่มจุด',
@@ -491,6 +495,11 @@ export const cmsMessagesThai: Record<string, string> = {
   'Choose an image for this content.': 'เลือกรูปภาพสำหรับเนื้อหานี้',
   'Choose the page this section belongs to.': 'เลือกหน้าเว็บไซต์ที่ต้องการให้ส่วนเนื้อหานี้แสดง',
   'Mapped routes need both ports and at least two coordinates.': 'เส้นทางที่แสดงบนแผนที่ต้องระบุท่าเรือต้นทาง ท่าเรือปลายทาง และพิกัดอย่างน้อย 2 จุด',
+  'Route details belong to route records only.': 'ระบุรายละเอียดเส้นทางได้เฉพาะเนื้อหาประเภทเส้นทาง',
+  'Enter both capacity limits, or leave both blank.': 'กรอกความจุต่ำสุดและสูงสุดให้ครบทั้งคู่ หรือเว้นว่างทั้งคู่',
+  'Maximum capacity cannot be less than minimum capacity.': 'ความจุสูงสุดต้องไม่น้อยกว่าความจุต่ำสุด',
+  'Enter both sailing-time limits, or leave both blank.': 'กรอกเวลาเดินเรือต่ำสุดและสูงสุดให้ครบทั้งคู่ หรือเว้นว่างทั้งคู่',
+  'Maximum sailing time cannot be less than minimum sailing time.': 'เวลาเดินเรือสูงสุดต้องไม่น้อยกว่าเวลาเดินเรือต่ำสุด',
   'Use at least 14 characters.': 'ใช้อย่างน้อย 14 ตัวอักษร',
   'Enter a valid email address.': 'กรอกอีเมลที่ถูกต้อง',
   'Enter a valid phone number, including the country code if applicable.': 'กรอกหมายเลขโทรศัพท์ที่ถูกต้อง พร้อมรหัสประเทศหากมี',
@@ -572,12 +581,14 @@ export const cmsMessagesThai: Record<string, string> = {
 };
 
 const validationFieldsThai: Record<string, string> = {
+  'Footer statistics': 'สถิติส่วนท้ายเว็บไซต์',
   'English image caption': 'คำบรรยายใต้ภาพภาษาอังกฤษ', 'Thai image caption': 'คำบรรยายใต้ภาพภาษาไทย',
   'Parent page': 'หน้าที่แสดงส่วนเนื้อหานี้', 'Display order': 'ลำดับการแสดงผล',
   'English eyebrow': 'ข้อความนำภาษาอังกฤษ', 'Thai eyebrow': 'ข้อความนำภาษาไทย',
   'Icon': 'ไอคอน', 'Mobile image': 'รูปภาพสำหรับมือถือ', 'Gallery images': 'รูปภาพในแกลเลอรี',
   'English content heading': 'หัวข้อเนื้อหาภาษาอังกฤษ', 'Thai content heading': 'หัวข้อเนื้อหาภาษาไทย',
   'Origin port': 'ท่าเรือต้นทาง', 'Destination port': 'ท่าเรือปลายทาง', 'Route coordinates': 'พิกัดเส้นทาง',
+  'Route details': 'รายละเอียดเส้นทาง', 'Route distance': 'ระยะทางเส้นทาง', 'Minimum capacity': 'ความจุต่ำสุด', 'Maximum capacity': 'ความจุสูงสุด', 'Minimum sailing time': 'เวลาเดินเรือต่ำสุด', 'Maximum sailing time': 'เวลาเดินเรือสูงสุด',
   'URL identifier': 'ชื่อใน URL', 'Content type': 'ประเภทเนื้อหา', 'English title': 'ชื่อหรือหัวข้อภาษาอังกฤษ', 'Thai title': 'ชื่อหรือหัวข้อภาษาไทย',
   'English summary': 'ข้อความสรุปภาษาอังกฤษ', 'Thai summary': 'ข้อความสรุปภาษาไทย', 'Content image': 'รูปภาพประกอบเนื้อหา',
   'English category': 'หมวดหมู่ภาษาอังกฤษ', 'Thai category': 'หมวดหมู่ภาษาไทย', 'Status': 'สถานะ',
@@ -588,6 +599,8 @@ const validationFieldsThai: Record<string, string> = {
   'Public phone number': 'หมายเลขโทรศัพท์ที่แสดงบนเว็บไซต์', 'Public email address': 'อีเมลที่แสดงบนเว็บไซต์', 'Map link': 'ลิงก์แผนที่',
   'IMO number': 'หมายเลข IMO', 'Year built': 'ปีที่สร้าง (ค.ศ.)', 'Length overall': 'ความยาวตลอดลำเรือ', 'Beam': 'ความกว้างลำเรือ',
   'Draft': 'ระยะกินน้ำลึก', 'Vessel draft': 'ระยะกินน้ำลึก', 'Deadweight': 'ระวางบรรทุก', 'Container capacity': 'ความจุตู้คอนเทนเนอร์',
+  'LOA': 'ความยาวตลอดลำ (LOA)', 'Breadth': 'ความกว้าง', 'Depth': 'ความลึก', 'Nominal': 'ความจุตามพิกัด', 'Reefer Plug': 'จุดจ่ายไฟตู้เย็น',
+  'GRT': 'ตันกรอส (GRT)', 'NRT': 'ตันเนต (NRT)', 'DWT': 'ระวางบรรทุก (DWT)', 'DWCC': 'ความสามารถบรรทุกสินค้า (DWCC)', 'Vessel details': 'รายละเอียดเรือ',
   'English flag state': 'ประเทศที่จดทะเบียนเรือภาษาอังกฤษ', 'Thai flag state': 'ประเทศที่จดทะเบียนเรือภาษาไทย',
   'English availability': 'สถานะความพร้อมของเรือภาษาอังกฤษ', 'Thai availability': 'สถานะความพร้อมของเรือภาษาไทย',
   'Vessel specifications': 'ข้อมูลจำเพาะเรือ', 'Content': 'เนื้อหา',

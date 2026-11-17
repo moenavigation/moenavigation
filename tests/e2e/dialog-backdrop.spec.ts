@@ -1,3 +1,4 @@
+import { chooseDialogOption } from './selection-helpers';
 import { randomUUID } from 'node:crypto';
 import type { Locator, Page } from '@playwright/test';
 import { translateCms } from '../../src/lib/cms-locale';
@@ -112,7 +113,7 @@ test('an outside click closes only the nested password reset and preserves its p
   const opener = page.getByRole('button', { name: 'Edit outside-dialog-target', exact: true });
   await opener.click();
   const edit = page.getByRole('dialog', { name: 'Edit user', exact: true });
-  await edit.getByLabel('Role', { exact: true }).selectOption('Admin');
+  await chooseDialogOption(edit.getByRole('button', { name: 'Role', exact: true }), 'Admin');
   await edit.getByLabel('Your current password', { exact: true }).fill('unsaved-password');
   const resetOpener = edit.getByRole('button', { name: 'Reset password', exact: true });
   await resetOpener.click();
@@ -122,7 +123,7 @@ test('an outside click closes only the nested password reset and preserves its p
   await expect(reset).not.toBeVisible();
   await expect(edit).toBeVisible();
   await expect(resetOpener).toBeFocused();
-  await expect(edit.getByLabel('Role', { exact: true })).toHaveValue('Admin');
+  await expect(edit.getByRole('button', { name: 'Role', exact: true })).toHaveAttribute('data-selection-value', 'Admin');
   await expect(edit.getByLabel('Your current password', { exact: true })).toHaveValue('unsaved-password');
   expect(await db.collection<StoredUser>('moe_users').findOne({ _id: id })).toMatchObject({ role: 'Operator' });
   await clickOutside(page, edit);

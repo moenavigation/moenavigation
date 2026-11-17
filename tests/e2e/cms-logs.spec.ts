@@ -6,6 +6,7 @@ import type { CmsLogPage as LogPage } from '../../src/lib/cms-logs';
 import type { AuditDocument as LogDocument } from '../../src/server/db';
 import { translateCms } from '../../src/lib/cms-locale';
 import { test, expect, login, E2E_ADMIN, E2E_BASE_URL, E2E_IMAGE_ORIGIN, loginChallengeData } from './fixtures';
+import { chooseDialogOption } from './selection-helpers';
 
 type Actor = { id: string; username: string; role: CmsRole };
 type Account = { _id: string; username: string; role?: CmsRole; passwordHash: string; passwordVersion: number; createdAt: Date };
@@ -156,7 +157,7 @@ test('log search, category filters and cursor pages stay bounded and the bilingu
   await expect(rows).toHaveCount(60);
   await activity.getByRole('button', { name: 'Load more logs', exact: true }).click();
   await expect(rows).toHaveCount(61);
-  await activity.getByRole('combobox', { name: 'Activity type', exact: true }).selectOption('media');
+  await chooseDialogOption(activity.getByRole('button', { name: 'Activity type', exact: true }), 'media');
   await expect(rows).toHaveCount(30);
   await expect(activity.getByRole('button', { name: 'Load more logs', exact: true })).toHaveCount(0);
   await expect(rows.getByRole('button')).toHaveCount(0);
@@ -167,7 +168,7 @@ test('log search, category filters and cursor pages stay bounded and the bilingu
     if (locale === 'th') for (const value of ['Logs', 'Activity log', 'Search logs', 'Activity type']) expect(t(value)).not.toBe(value);
     const translated = page.getByRole('region', { name: t('Activity log'), exact: true });
     await expect(translated.getByRole('searchbox', { name: t('Search logs'), exact: true })).toBeVisible();
-    await expect(translated.getByRole('combobox', { name: t('Activity type'), exact: true })).toHaveValue('media');
+    await expect(translated.getByRole('button', { name: t('Activity type'), exact: true })).toHaveAttribute('data-selection-value', 'media');
     await expect(translated.locator('[data-log-id]')).toHaveCount(30);
     await expect(translated.getByRole('button', { name: /^(Edit|Delete|Remove|Restore|Save|แก้ไข|ลบ|กู้คืน|บันทึก)/ })).toHaveCount(0);
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);

@@ -33,7 +33,7 @@ export const test = base.extend<{ db: Db; _resetDatabase: void; cmsLocale: 'th' 
 });
 export async function loginChallengeData(request: APIRequestContext) {
   const response = await request.get('/api/cms/login/challenge');
-  expect(response.ok()).toBe(true);
+  expect(response.ok(), `Login challenge returned ${response.status()}: ${await response.text()}`).toBe(true);
   const challenge = await response.json() as { id: string; target: number };
   return { challengeId: challenge.id, challengePosition: challenge.target };
 }

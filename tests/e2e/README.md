@@ -11,10 +11,22 @@ npm run test:e2e -- --project=chromium tests/e2e/inbox.spec.ts
 
 The suite covers Chromium, Firefox and WebKit. Linux machines also need Playwright's OS dependencies (`npx playwright install --with-deps chromium firefox webkit`); CI installs them automatically. The first run downloads a pinned MongoDB binary from `fastdl.mongodb.org` into `.local/e2e/mongodb`.
 
+The default run omits duplicate narrow-page and CMS role/layout sweeps in
+Firefox and WebKit. To execute every browser/display case, set
+`MOE_FULL_BROWSER_MATRIX=1`. This changes only those two skip conditions;
+test names, fixtures and application behavior stay the same.
+
+```powershell
+$env:MOE_FULL_BROWSER_MATRIX = '1'
+npm.cmd run test:e2e
+$env:MOE_FULL_BROWSER_MATRIX = $null
+```
+
 ## Isolation
 
 - The runner creates one temporary MongoDB replica set bound to `127.0.0.1`, with database `moenavigation_e2e`. Fixture reset requires both the loopback connection and the current run's ownership marker. It never accepts a production database URL.
 - A separate production build uses `.next-e2e`. Next listens on `127.0.0.1:3011`, behind the test HTTPS proxy at `https://127.0.0.1:3010`. Both ports must be free. The temporary certificate exists only in the runner's memory; OS trust is not changed. HTTPS exercises the real Secure authentication cookie in every browser.
+- If Next stops with its security-upgrade reminder and explicitly permits retrying, the runner retries that same build once immediately. The recommendation remains visible; security checks and dependency versions stay unchanged. Other build failures still stop the run.
 - Environment-file variable names and provider variables are explicitly blanked before the test configuration is applied, preventing Next from loading live MongoDB, Cloudinary or email credentials from `.env.local`.
 - Every test receives a fresh database fixture, and one worker serializes mutations. The deterministic administrator and 130 enquiries are synthetic. The Thai and literal-regex search fixtures are older than the first two default inbox pages.
 - Fixture resets also use the authenticated `/api/cms/cache` maintenance operation to invalidate public data and pages. The data cache includes the run identity so prior runs cannot reuse old database snapshots. Direct database changes inside a test must explicitly refresh the cache when fresh public output is expected.

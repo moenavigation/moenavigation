@@ -179,6 +179,62 @@ test('editing preserves existing identities, categories, design fields, vessel d
   }
 });
 
+test.describe('category suggestion dialogs', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('existing choices apply immediately while custom categories and the other language remain editable', async ({ page }) => {
+    test.setTimeout(120_000);
+    await login(page);
+    for (const locale of ['en', 'th'] as const) {
+      if (locale === 'th') await page.locator('header [data-cms-language-switch]').click();
+      const t = (source: string) => locale === 'th' ? cmsFieldsThai[source] || cmsMainThai[source] || source : source;
+      await page.goto('/cms/fleet');
+      await page.getByRole('button', { name: t('Add vessel'), exact: true }).click();
+      const editor = page.getByRole('dialog', { name: t('Add vessel'), exact: true });
+      const title = `Category dialog vessel ${locale}`;
+      for (const language of ['English', 'Thai']) {
+        await (await showField(editor, t(`Title · ${language}`))).fill(language === 'English' ? title : `เรือทดสอบ ${locale}`);
+        await editor.getByLabel(t(`Summary · ${language}`), { exact: true }).fill(language === 'English' ? 'Bilingual category dialog test.' : 'ทดสอบตัวเลือกประเภทเรือ');
+        const label = `${t('Vessel type')} · ${t(language)}`;
+        await editor.getByLabel(label, { exact: true }).fill(language === 'English' ? 'Custom type before choosing' : 'ประเภทที่พิมพ์เอง');
+      }
+      const englishLabel = `${t('Vessel type')} · ${t('English')}`;
+      const thaiLabel = `${t('Vessel type')} · ${t('Thai')}`;
+      const english = await showField(editor, englishLabel);
+      const choose = locale === 'th' ? 'เลือกที่มีอยู่' : 'Choose existing';
+      const choiceLabel = `${choose}: ${englishLabel}`;
+      const trigger = editor.getByRole('button', { name: choiceLabel, exact: true });
+      await expect(editor.locator('datalist')).toHaveCount(0);
+      await expect(english).not.toHaveAttribute('list');
+      await trigger.click();
+      const choices = page.getByRole('dialog', { name: choiceLabel, exact: true });
+      await expect(choices).toBeVisible();
+      await choices.getByRole('button', { name: locale === 'th' ? 'ปิดตัวเลือก' : 'Close choices', exact: true }).click();
+      await expect(choices).not.toBeVisible();
+      await expect(trigger).toBeFocused();
+      await expect(english).toHaveValue('Custom type before choosing');
+      await expect(editor.getByLabel(thaiLabel, { exact: true })).toHaveValue('ประเภทที่พิมพ์เอง');
+
+      await trigger.click();
+      const option = choices.locator('[data-selection-option="Container"]');
+      await expect(option).toHaveCSS('text-align', 'center');
+      await option.click();
+      await expect(choices).not.toBeVisible();
+      await expect(english).toHaveValue('Container');
+      await expect(editor.getByLabel(thaiLabel, { exact: true })).toHaveValue('ประเภทที่พิมพ์เอง');
+      await english.fill('Free form vessel class');
+      const pending = page.waitForResponse(response => response.url().endsWith('/api/cms/content') && response.request().method() === 'POST');
+      await editor.getByRole('button', { name: t('Save'), exact: true }).click();
+      const response = await pending;
+      expect(response.status(), await response.text()).toBe(200);
+      const saved = (await response.json()).record;
+      expect(saved.category).toBe('Free form vessel class');
+      expect(saved.categoryTh).toBe('ประเภทที่พิมพ์เอง');
+      await expect(editor).not.toBeVisible();
+    }
+  });
+});
+
 test('optional vessel panels start closed and invalid hidden specifications reopen without losing text', async ({ page }) => {
   await login(page);
   const editor = await openNew(page, collections[0]);
@@ -189,7 +245,7 @@ test('optional vessel panels start closed and invalid hidden specifications reop
   const gallery = editor.getByText('More photos', { exact: true }).locator('xpath=ancestor::details[1]');
   await expect(gallery).not.toHaveAttribute('open');
   await (await showField(editor, 'Year built')).fill(String(new Date().getUTCFullYear() + 1));
-  await editor.getByLabel('Container capacity (TEU)', { exact: true }).fill('0');
+  await editor.getByLabel('Nominal (TEU)', { exact: true }).fill('0');
   await specifications.locator(':scope > summary').click();
   await editor.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(specifications).toHaveAttribute('open', '');

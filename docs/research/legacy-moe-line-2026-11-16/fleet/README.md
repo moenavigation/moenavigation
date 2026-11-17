@@ -1,5 +1,40 @@
 # Legacy fleet research
 
+## Current source policy: PDFs take priority
+
+On 17 November 2026, the user selected the vessel particulars PDFs as the main source, superseding the earlier consensus-only import below. The seven complete rendered sheets were checked again. Their dimensions, tonnage, IMO numbers, visible build years and flag agree with the earlier import. RANONG MOE now uses the PDF's **72 TEU**, and all six container vessels use **5 reefer plugs** each. No other technical values changed. Missing MOE 4 fields remain absent; DUMAI MOE has no matching sheet and stays unchanged.
+
+All eight recovered original PDFs were copied to `C:\Coding\2026\00-Files\moe-navigation\PDF`: `MOE-LINE-1-PARTICULAR.pdf` through `MOE-LINE-7-PARTICULAR.pdf`, plus `DOC-Document-of-Compliance.pdf`. Every destination file was verified byte-for-byte by SHA-256 against the archived original. The compliance document is retained as a source file; it supplies no additional vessel measurements.
+
+The current mapping in `scripts/data/legacy-vessel-particulars.ts` marks each vessel's primary source as `pdf` and supplies 91 supported particulars in total. The configured CMS database received the seven additional capacity values in a revision-checked transaction with a pre-update backup and system audit events. Exact read-back checks confirmed the saved values, unchanged unrelated content and idempotency. The PDF-policy plan, backup, saved-file manifest and applied report are under `.local/legacy-vessel-pdf-import-2026-11-17/`.
+
+PDF-policy validation: all 11 focused import/seed tests passed. Browser checks verified the nominal and reefer capacities of all eight named vessels in English and Thai across Chromium, Firefox and WebKit (3 cases). The isolated production build, app/import type checks and scoped ESLint passed. The earlier live public-cache refresh remains pending a valid CMS sign-in; no code deployment was made.
+
+## Initial consensus import on 17 November 2026
+
+This section records the earlier import before the user chose PDF precedence; its capacity blanks were subsequently filled as described above.
+
+At the user's request, the consistent legacy particulars were saved to the seven matching current CMS records. Current English/Thai names, URL IDs, categories, photos, copy and ordering were preserved. RANONG MOE was matched to the old MOE LINE 1 sheet by the shared IMO 1091434 and official registration; MOE LINE 2–7 map to the existing MOE 2–7 records. DUMAI MOE has no matching source and was left unchanged.
+
+| Current vessel | LOA / breadth / depth / draft (m) | Nominal TEU | GRT / NRT / DWT / DWCC |
+| --- | --- | ---: | --- |
+| RANONG MOE | 63.00 / 13.60 / 5.30 / 3.59 | — | 1419 / 741 / 2088 / 1800 |
+| MOE 2 | 49.98 / 12.80 / 4.50 / 3.85 | 72 | 835 / 505 / 1590 / 1550 |
+| MOE 3 | 49.98 / 12.80 / 4.20 / 3.20 | 72 | 760 / 464 / 1290 / 1250 |
+| MOE 4 | 55.00 / 19.00 / 4.00 / — | — | 1329 / — / — / — |
+| MOE 5 | 49.98 / 14.80 / 4.92 / 3.52 | 120 | 1163 / 651 / 1800 / 1750 |
+| MOE 6 | 49.98 / 14.80 / 4.62 / 3.35 | 120 | 1047 / 592 / 1800 / 1750 |
+| MOE 7 | 49.98 / 15.60 / 5.40 / 3.90 | 120 | 1266 / 687 / 2100 / 2050 |
+| DUMAI MOE | — / — / — / — | — | — / — / — / — |
+
+All reefer-plug values remain blank: the six container-vessel HTML pages say 3 and their PDFs say 5; the crane and tanker have no supported value. RANONG MOE nominal capacity remains blank because the HTML says 96 TEU and its PDF says 72. MOE 4's missing particulars, including IMO, remain absent; its official registration was not put into the IMO field. Supported IMO numbers, visible build years and bilingual Thai flag-state labels were included. Hidden stale PDF text was not treated as visible source data.
+
+The seven current PDFs were fetched again and their hashes match the visually inspected archive. Fresh detail-page checks confirmed the reviewed technical values. The exact import mapping and per-field blank reasons are in `scripts/data/legacy-vessel-particulars.ts`; the existing seed data uses the same reviewed mapping.
+
+The configured database import added 84 fields in one revision-checked transaction with seven system audit events. A complete pre-import fleet backup and the verified result are under `.local/legacy-vessel-import-2026-11-17/`. Read-back checks confirmed exact saved values, unchanged unrelated fields and DUMAI record, and zero changes on a repeated plan. The import script defaults to a read-only plan and requires its exact hash for writes.
+
+Validation: 351 backend tests and 30 Chromium/Firefox/WebKit browser cases passed, including both languages, five screen widths, missing-value display and CMS persistence. Production-build and focused lint/type checks passed. Code was not deployed. The attempted live-cache refresh could not authenticate with the saved CMS credentials (HTTP 401); browser session inspection then stopped because Computer Use could not verify the current browser URL. A valid CMS sign-in is still required for the live-cache refresh.
+
 Research date: 16 November 2026. This is a source inventory for the current Moe Navigation project, not a current fleet register or an instruction to overwrite CMS data. The old website identifies its operator as Moe Container Line; the relationship to the current Moe Navigation entity needs to stay explicit.
 
 `fleet-data.json` retains the seven legacy vessel records, their source URLs, all recovered technical fields and the primary photo link. Values are published claims from the old website, not independently checked vessel certificates. Source decimal precision and missing values are preserved.

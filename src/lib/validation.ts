@@ -16,9 +16,14 @@ export const vesselSpecsSchema = z.object({
   yearBuilt: z.number().int().min(1800).max(new Date().getUTCFullYear(), 'Use the actual completed build year.').optional(),
   lengthM: z.number().positive().max(1000).optional(),
   beamM: z.number().positive().max(500).optional(),
+  depthM: z.number().positive().max(100).optional(),
   draftM: z.number().positive().max(100).optional(),
   deadweightT: z.number().positive().max(2000000).optional(),
+  cargoCapacityT: z.number().positive().max(2000000).optional(),
+  grossTonnage: z.number().positive().max(2000000).optional(),
+  netTonnage: z.number().positive().max(2000000).optional(),
   capacityTeu: z.number().int().nonnegative().max(100000).optional(),
+  reeferPlugs: z.number().int().nonnegative().max(100000).optional(),
   flag: optionalSpecText(100), flagTh: optionalSpecText(100),
   availability: optionalSpecText(200), availabilityTh: optionalSpecText(200),
 }).superRefine((specs, context) => {
@@ -28,6 +33,24 @@ export const vesselSpecsSchema = z.object({
   }
 });
 const portSchema = z.object({ name: z.string().trim().min(1).max(150), nameTh: z.string().trim().min(1).max(150), country: z.string().trim().min(1).max(100), countryTh: z.string().trim().min(1).max(100) });
+export const routeSpecsSchema = z.object({
+  distanceNm: z.number().positive().optional(),
+  capacityMinTeu: z.number().int().positive().max(100000).optional(),
+  capacityMaxTeu: z.number().int().positive().max(100000).optional(),
+  sailingMinHours: z.number().positive().optional(),
+  sailingMaxHours: z.number().positive().optional(),
+}).superRefine((specs, context) => {
+  for (const [minimum, maximum, incomplete, reversed] of [
+    ['capacityMinTeu', 'capacityMaxTeu', 'Enter both capacity limits, or leave both blank.', 'Maximum capacity cannot be less than minimum capacity.'],
+    ['sailingMinHours', 'sailingMaxHours', 'Enter both sailing-time limits, or leave both blank.', 'Maximum sailing time cannot be less than minimum sailing time.'],
+  ] as const) {
+    if ((specs[minimum] === undefined) !== (specs[maximum] === undefined)) {
+      context.addIssue({ code: 'custom', path: [specs[minimum] === undefined ? minimum : maximum], message: incomplete });
+    } else if (specs[minimum] !== undefined && specs[maximum] !== undefined && specs[minimum] > specs[maximum]) {
+      context.addIssue({ code: 'custom', path: [maximum], message: reversed });
+    }
+  }
+});
 const dateSchema = z.string().refine(value => {
   if (!value) return true;
   const parsed = new Date(`${value}T00:00:00Z`);
@@ -59,9 +82,18 @@ export const recordSchema = z.object({
   origin: portSchema.optional(), destination: portSchema.optional(),
   waypoints: z.array(z.tuple([z.number().min(-90).max(90), z.number().min(-180).max(180)])).max(100).optional().default([]),
   vesselSpecs: vesselSpecsSchema.optional(),
+  routeSpecs: routeSpecsSchema.optional(),
+  footerStats: z.array(z.object({ label: z.string().trim().max(100), labelTh: z.string().trim().max(100), value: z.string().trim().max(30) })).max(4).optional(),
 }).superRefine((record, context) => {
+  if (record.footerStats !== undefined) {
+    if (record.type !== 'Section' || record.id !== 'footer' || record.parentId !== 'shared') context.addIssue({ code: 'custom', path: ['footerStats'], message: 'Footer statistics belong to the shared footer only.' });
+    record.footerStats.forEach((item, index) => {
+      if (item.value && (!item.label || !item.labelTh)) context.addIssue({ code: 'custom', path: ['footerStats', index], message: 'Provide both English and Thai labels for a visible statistic.' });
+    });
+  }
   if ((record.heroSlides !== undefined || record.heroSlideInterval !== undefined) && (record.type !== 'Page' || record.id !== 'home')) context.addIssue({ code: 'custom', path: ['heroSlides'], message: 'Homepage slides belong to the home page only.' });
   if (record.type !== 'Vessel' && record.vesselSpecs && Object.values(record.vesselSpecs).some(value => value !== undefined)) context.addIssue({ code: 'custom', path: ['vesselSpecs'], message: 'Vessel specifications belong to fleet records only.' });
+  if (record.type !== 'Route' && record.routeSpecs && Object.values(record.routeSpecs).some(value => value !== undefined)) context.addIssue({ code: 'custom', path: ['routeSpecs'], message: 'Route details belong to route records only.' });
   if (record.type !== 'Section') {
     if (!record.description) context.addIssue({ code: 'custom', path: ['description'], message: 'Enter an English summary.' });
     if (!record.descriptionTh) context.addIssue({ code: 'custom', path: ['descriptionTh'], message: 'Enter a Thai summary.' });

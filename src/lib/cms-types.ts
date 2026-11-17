@@ -2,15 +2,28 @@ export const contentTypes = ['Vessel', 'Project', 'News', 'Service', 'Page', 'Ro
 export type ContentType = typeof contentTypes[number];
 export type CmsCategorySuggestions = Partial<Record<ContentType, { en: string[]; th: string[] }>>;
 export type ContentImage = { url: string; alt: string; altTh: string };
+export type FooterStatistic = { label: string; labelTh: string; value: string };
 export type RoutePort = { name: string; nameTh: string; country: string; countryTh: string };
+export type RouteSpecs = {
+  distanceNm?: number;
+  capacityMinTeu?: number;
+  capacityMaxTeu?: number;
+  sailingMinHours?: number;
+  sailingMaxHours?: number;
+};
 export type VesselSpecs = {
   imo?: string;
   yearBuilt?: number;
   lengthM?: number;
   beamM?: number;
+  depthM?: number;
   draftM?: number;
   deadweightT?: number;
+  cargoCapacityT?: number;
+  grossTonnage?: number;
+  netTonnage?: number;
   capacityTeu?: number;
+  reeferPlugs?: number;
   flag?: string;
   flagTh?: string;
   availability?: string;
@@ -50,6 +63,8 @@ export type ContentRecord = {
   origin?: RoutePort;
   destination?: RoutePort;
   waypoints?: [number, number][];
+  routeSpecs?: RouteSpecs;
+  footerStats?: FooterStatistic[];
   vesselSpecs?: VesselSpecs;
   deletedAt?: string;
   updatedAt?: string;

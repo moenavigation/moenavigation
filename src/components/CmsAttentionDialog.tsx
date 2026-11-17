@@ -7,6 +7,7 @@ import { attentionTypes, type AttentionPage, type AttentionQuery } from '@/lib/c
 import { useCmsLocale } from '@/lib/cms-locale';
 import type { ContentRecord } from '@/lib/cms-types';
 import Dialog from './Dialog';
+import SelectionDialog from './SelectionDialog';
 import CmsWorkingPanel from './CmsWorkingPanel';
 import styles from './CmsAttentionDialog.module.css';
 
@@ -71,8 +72,8 @@ export default function CmsAttentionDialog({ open, onClose, onEdit, revision }: 
       <div className={styles.intro}><span className={styles.introIcon}><SlidersHorizontal size={25} aria-hidden="true" /></span><p>{t('Review missing translations, images and vessel details. Open an item to update it.')}</p></div>
       <div className={styles.filters}>
         <label className={styles.search}><Search size={20} aria-hidden="true" /><input ref={searchRef} type="search" maxLength={160} value={search} aria-label={t('Search content needing attention')} placeholder={t('Search content…')} onChange={event => setSearch(event.target.value)} /></label>
-        <div className={styles.select}><label htmlFor={typeId}>{t('Content type')}</label><select id={typeId} value={type} onChange={event => setType(event.target.value as AttentionQuery['type'])}><option value="All">{t('All content types')}</option>{attentionTypes.map(value => <option key={value} value={value}>{t(value)}</option>)}</select></div>
-        <div className={styles.select}><label htmlFor={issueId}>{t('Needs attention')}</label><select id={issueId} value={issue} onChange={event => setIssue(event.target.value as AttentionQuery['issue'])}><option value="All">{t('All missing details')}</option><option value="translation">{t('English and Thai text')}</option><option value="image">{t('Main image')}</option><option value="vessel_details">{t('Vessel details')}</option></select></div>
+        <div className={styles.select}><label htmlFor={typeId}>{t('Content type')}</label><SelectionDialog id={typeId} label={t('Content type')} value={type} onChange={value => setType(value as AttentionQuery['type'])} options={[{ value: 'All', label: t('All content types') }, ...attentionTypes.map(value => ({ value, label: t(value) }))]} closeLabel={t('Close dialog')} /></div>
+        <div className={styles.select}><label htmlFor={issueId}>{t('Needs attention')}</label><SelectionDialog id={issueId} label={t('Needs attention')} value={issue} onChange={value => setIssue(value as AttentionQuery['issue'])} options={[{ value: 'All', label: t('All missing details') }, { value: 'translation', label: t('English and Thai text') }, { value: 'image', label: t('Main image') }, { value: 'vessel_details', label: t('Vessel details') }]} closeLabel={t('Close dialog')} /></div>
       </div>
       <div className={styles.results}><span role="status">{loadingInitial ? t('Checking content…') : current ? t('Showing {count} of {total} items needing attention', { count: current.items.length, total: current.total }) : t('Content review unavailable')}</span>{filtered && <button type="button" className={styles.clear} onClick={clear}><X size={17} aria-hidden="true" />{t('Clear filters')}</button>}</div>
       {currentError && <div className={styles.error} role="alert"><p>{t(currentError)}</p><button type="button" className="button secondary" disabled={loading} onClick={() => void load(current?.nextCursor && current.items.length ? current.nextCursor : null)}>{t('Try again')}</button></div>}

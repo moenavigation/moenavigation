@@ -1,3 +1,4 @@
+import { chooseDialogOption } from './selection-helpers';
 import { createHash, randomUUID } from 'node:crypto';
 import { request as apiRequest, type APIRequestContext, type APIResponse, type Locator, type Page } from '@playwright/test';
 import type { Db } from 'mongodb';
@@ -98,7 +99,7 @@ async function mockUploads(page: Page, db: Db, owner: string, failFirst = false)
 
 async function fillNewUser(add: Locator, username: string) {
   await add.getByLabel('Username', { exact: true }).fill(username);
-  await add.getByLabel('Role', { exact: true }).selectOption('Admin');
+  await chooseDialogOption(add.getByRole('button', { name: 'Role', exact: true }), 'Admin');
   await add.getByLabel('Password', { exact: true }).fill('Private-created-user-password-2026!');
   await add.getByLabel('Confirm password', { exact: true }).fill('Private-created-user-password-2026!');
   await add.getByLabel('Your current password', { exact: true }).fill(E2E_ADMIN.password);
@@ -138,7 +139,7 @@ test('Add user keeps its library photo in the draft until authorized creation an
   await expect(trigger).toBeFocused();
   const preview = add.getByRole('region', { name: 'Profile photo', exact: true }).locator('img');
   await expect(preview).toHaveAttribute('src', image.url);
-  await expect(add.getByLabel('Role', { exact: true })).toHaveValue('Admin');
+  await expect(add.getByRole('button', { name: 'Role', exact: true })).toHaveAttribute('data-selection-value', 'Admin');
   await trigger.click();
   await photo.getByLabel('Choose profile photo', { exact: true }).setInputFiles({ name: 'discard-new-selection.png', mimeType: 'image/png', buffer: E2E_IMAGE_BUFFER });
   await expect(photo.getByRole('img', { name: 'Profile photo preview', exact: true })).toHaveAttribute('src', /^blob:/);
@@ -209,7 +210,7 @@ test('Add user defers device uploads, discards cancelled previews and reuses sta
   expect(await db.collection<Image>('moe_media').findOne({ _id: uploads[1].mediaId })).toMatchObject({ state: 'staged' });
   expect(await db.collection<Account>('moe_users').countDocuments({ username: 'created-with-device-photo' })).toBe(0);
   await expect(preview).toHaveAttribute('src', /^blob:/);
-  await expect(add.getByLabel('Role', { exact: true })).toHaveValue('Admin');
+  await expect(add.getByRole('button', { name: 'Role', exact: true })).toHaveAttribute('data-selection-value', 'Admin');
   await expect(add.getByLabel('Your current password', { exact: true })).toHaveValue(E2E_ADMIN.password);
   await add.getByRole('button', { name: 'Retry add user', exact: true }).click();
   await expect(add).not.toBeVisible();
@@ -407,7 +408,7 @@ test('failed photo uploads and saves preserve the prepared image and reuse the s
   });
   await page.getByRole('button', { name: `Edit ${target.username}`, exact: true }).click();
   const edit = page.getByRole('dialog', { name: 'Edit user', exact: true });
-  await edit.getByLabel('Role', { exact: true }).selectOption('Admin');
+  await chooseDialogOption(edit.getByRole('button', { name: 'Role', exact: true }), 'Admin');
   await edit.getByLabel('Your current password', { exact: true }).fill('unsaved-edit-authorization');
   const photoTrigger = edit.getByRole('region', { name: 'Profile photo', exact: true }).getByRole('button', { name: 'Change profile photo', exact: true });
   await photoTrigger.click();
@@ -431,7 +432,7 @@ test('failed photo uploads and saves preserve the prepared image and reuse the s
   await expect(dialog).not.toBeVisible();
   await expect(photoTrigger).toBeFocused();
   await expect(edit).toBeVisible();
-  await expect(edit.getByLabel('Role', { exact: true })).toHaveValue('Admin');
+  await expect(edit.getByRole('button', { name: 'Role', exact: true })).toHaveAttribute('data-selection-value', 'Admin');
   await expect(edit.getByLabel('Your current password', { exact: true })).toHaveValue('unsaved-edit-authorization');
   expect(profileWrites).toBe(2);
   expect(attempts).toHaveLength(2);

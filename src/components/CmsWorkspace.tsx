@@ -6,7 +6,7 @@ import useDialogBackdrop from './useDialogBackdrop';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode, type RefObject } from 'react';
-import { ArrowRight, BarChart3, Check, ChevronDown, Container, Download, FileText, Globe2, ImagePlus, Inbox, History, Link2, LoaderCircle, LogOut, Menu, Newspaper, Plus, RefreshCw, RotateCcw, Route, Search, Settings, Ship, UserRound, Trash2, UploadCloud, X } from 'lucide-react';
+import { ArrowRight, BarChart3, Check, Container, Download, FileText, Globe2, ImagePlus, Inbox, History, Link2, LoaderCircle, LogOut, Menu, Newspaper, Plus, RefreshCw, RotateCcw, Route, Search, Settings, Ship, UserRound, Trash2, UploadCloud, X } from 'lucide-react';
 import { legacyRecordKey, readLegacySnapshot, legacyRecordMatches, legacyMediaMatches, rememberLegacyRecord, rememberLegacyMedia, clearVerifiedLegacy, hasLegacyArchive, restoreLegacyArchive, getLegacySubmission, saveLegacySubmission, translateLegacyRecord, legacyImageUrl, type LegacyRecord, type LegacySnapshot } from '@/lib/cms-legacy';
 import { contentTypes, corePageIds, type CmsContentSummary, type ContentRecord, type MediaItem, type Enquiry, type SiteSettings } from '@/lib/cms-types';
 import { recordSchema, siteSettingsSchema } from '@/lib/validation';
@@ -17,6 +17,7 @@ import { CmsRequestError, cmsErrorText, cmsRequest, prepareCmsImage, resolveSubm
 import BrandMark from './BrandMark';
 import LoadingScreen, { LoadingPanel } from './LoadingScreen';
 import CmsWorkingPanel from './CmsWorkingPanel';
+import SelectionDialog from './SelectionDialog';
 import CmsContentFields, { type ImageTarget } from './CmsContentFields';
 import useCmsInbox from './useCmsInbox';
 import useCmsCollectionPage from './useCmsCollectionPage';
@@ -72,9 +73,10 @@ const emptySummary: CmsContentSummary = {
   categories: {}, nextOrder: {}, recent: [], trashCount: 0,
 };
 const MEDIA_PAGE_SIZE = 30;
-const fieldNames: Record<string, string> = { caption: 'English image caption', captionTh: 'Thai image caption', parentId: 'Parent page', order: 'Display order', eyebrow: 'English eyebrow', eyebrowTh: 'Thai eyebrow', icon: 'Icon', mobileImage: 'Mobile image', gallery: 'Gallery images', bodyHeading: 'English content heading', bodyHeadingTh: 'Thai content heading', origin: 'Origin port', destination: 'Destination port', waypoints: 'Route coordinates', id: 'URL identifier', type: 'Content type', title: 'English title', titleTh: 'Thai title', description: 'English summary', descriptionTh: 'Thai summary', image: 'Content image', category: 'English category', categoryTh: 'Thai category', status: 'Status', body: 'English content', bodyTh: 'Thai content', date: 'Date', imageAlt: 'English image description', imageAltTh: 'Thai image description', companyName: 'English company name', companyNameTh: 'Thai company name', officeAddress: 'English office address', officeAddressTh: 'Thai office address', phone: 'Public phone number', email: 'Public email address', mapUrl: 'Map link' };
-const specFieldNames: Record<string, string> = { imo: 'IMO number', yearBuilt: 'Year built', lengthM: 'Length overall', beamM: 'Beam', draftM: 'Vessel draft', deadweightT: 'Deadweight', capacityTeu: 'Container capacity', flag: 'English flag state', flagTh: 'Thai flag state', availability: 'English availability', availabilityTh: 'Thai availability' };
-const validationMessages = (issues: { path: PropertyKey[]; message: string }[]) => issues.map(issue => `${issue.path[0] === 'vesselSpecs' ? specFieldNames[String(issue.path[1])] || 'Vessel specifications' : fieldNames[String(issue.path[0])] || 'Content'}: ${issue.message}`).join(' ');
+const fieldNames: Record<string, string> = { footerStats: 'Footer statistics', caption: 'English image caption', captionTh: 'Thai image caption', parentId: 'Parent page', order: 'Display order', eyebrow: 'English eyebrow', eyebrowTh: 'Thai eyebrow', icon: 'Icon', mobileImage: 'Mobile image', gallery: 'Gallery images', bodyHeading: 'English content heading', bodyHeadingTh: 'Thai content heading', origin: 'Origin port', destination: 'Destination port', waypoints: 'Route coordinates', id: 'URL identifier', type: 'Content type', title: 'English title', titleTh: 'Thai title', description: 'English summary', descriptionTh: 'Thai summary', image: 'Content image', category: 'English category', categoryTh: 'Thai category', status: 'Status', body: 'English content', bodyTh: 'Thai content', date: 'Date', imageAlt: 'English image description', imageAltTh: 'Thai image description', companyName: 'English company name', companyNameTh: 'Thai company name', officeAddress: 'English office address', officeAddressTh: 'Thai office address', phone: 'Public phone number', email: 'Public email address', mapUrl: 'Map link' };
+const specFieldNames: Record<string, string> = { imo: 'IMO number', yearBuilt: 'Year built', lengthM: 'LOA', beamM: 'Breadth', depthM: 'Depth', draftM: 'Draft', capacityTeu: 'Nominal', reeferPlugs: 'Reefer Plug', grossTonnage: 'GRT', netTonnage: 'NRT', deadweightT: 'DWT', cargoCapacityT: 'DWCC', flag: 'English flag state', flagTh: 'Thai flag state', availability: 'English availability', availabilityTh: 'Thai availability' };
+const routeSpecFieldNames: Record<string, string> = { distanceNm: 'Route distance', capacityMinTeu: 'Minimum capacity', capacityMaxTeu: 'Maximum capacity', sailingMinHours: 'Minimum sailing time', sailingMaxHours: 'Maximum sailing time' };
+const validationMessages = (issues: { path: PropertyKey[]; message: string }[]) => issues.map(issue => `${issue.path[0] === 'vesselSpecs' ? specFieldNames[String(issue.path[1])] || 'Vessel details' : issue.path[0] === 'routeSpecs' ? routeSpecFieldNames[String(issue.path[1])] || 'Route details' : fieldNames[String(issue.path[0])] || 'Content'}: ${issue.message}`).join(' ');
 const notificationLabels = { not_configured: 'Email not configured', pending: 'Email pending', sending: 'Sending email', sent: 'Email accepted', failed: 'Email failed', review: 'Email needs review' };
 
 function notificationRetryPending(retryAt: string) { return Date.parse(retryAt) > Date.now(); }
@@ -91,7 +93,7 @@ function Modal({ open, onClose, title, children, busy = false, compact = false, 
     const fallback = fallbackFocusRef?.current;
     const overflow = document.body.style.overflow;
     if (!dialog.open) dialog.showModal();
-    document.body.style.overflow = 'hidden'; closeRef.current?.focus();
+    document.body.style.overflow = 'hidden'; closeRef.current?.focus({ preventScroll: true });
     return () => {
       if (dialog.open) dialog.close(); document.body.style.overflow = overflow;
       const target = previous?.isConnected ? previous : fallback;
@@ -854,7 +856,7 @@ export default function CmsWorkspace() {
         <div className={styles.enquiryRetention}><p className={styles.fieldHint}>{t("Enquiries expire one year after receipt.")}</p><Link className={styles.textButton} href="/cms/trash?kind=Enquiry"><Trash2 size={16} aria-hidden="true" />{t("View enquiry Trash")}</Link></div>
         <div className={styles.inboxFilters}>
           <label className={styles.search}><Search size={20} /><input ref={workspaceSearchRef} type="search" aria-label={t("Search all enquiries")} placeholder={t("Search all enquiries…")} maxLength={200} value={search} onChange={event => setSearch(event.target.value)} /></label>
-          <label className={styles.select}><span className={styles.srOnly}>{t("Enquiry status")}</span><select value={enquiryStatus} onChange={event => setEnquiryStatus(event.target.value as InboxStatus)}><option value="All">{t("All statuses")}</option>{enquiryStatuses.map(value => <option key={value} value={value}>{t(value)}</option>)}</select><ChevronDown size={17} /></label>
+          <div className={styles.select}><SelectionDialog label={t("Enquiry status")} value={enquiryStatus} onChange={value => setEnquiryStatus(value as InboxStatus)} options={[{ value: 'All', label: t("All statuses") }, ...enquiryStatuses.map(value => ({ value, label: t(value) }))]} closeLabel={t("Close dialog")} /></div>
         </div>
         <div className={styles.resultBar}><span role={inbox.searching ? undefined : 'status'}>{inbox.searching ? t("Searching all enquiries…") : inbox.total !== null ? t("Showing {shown} of {total} enquiries", { shown: inboxItems.length, total: inbox.total }) : t("Enquiries could not be loaded")}</span>{hasInboxFilters && <button type="button" className={styles.textButton} onClick={clearFilters}><X size={16} />{t("Clear filters")}</button>}</div>
         {inbox.totalAll !== null && !inbox.searching && <p className={styles.fieldHint}>{t("{total} enquiries in your inbox · {new} new. Search covers all saved enquiries.", { total: inbox.totalAll, new: inbox.newCount ?? 0 })}</p>}

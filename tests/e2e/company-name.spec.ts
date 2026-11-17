@@ -5,7 +5,7 @@ for (const locale of ['en', 'th'] as const) {
     const thai = locale === 'th';
     const prefix = thai ? '/th' : '';
     const company = thai ? 'บริษัท โม เนวิเกชั่น จำกัด' : 'Moe Navigation Co.,Ltd.';
-    const aboutTitle = thai ? `เกี่ยวกับ${company}` : `About ${company}`;
+    const aboutTitle = thai ? 'เกี่ยวกับ Moe Navigation Co.,Ltd.' : `About ${company}`;
     await page.goto(`${prefix}/about`);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(aboutTitle);
     await expect(page).toHaveTitle(`${aboutTitle} | ${company}`);

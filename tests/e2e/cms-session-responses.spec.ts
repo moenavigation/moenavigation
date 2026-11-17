@@ -1,3 +1,4 @@
+import { chooseDialogOption } from './selection-helpers';
 import { randomUUID } from 'node:crypto';
 import { test, expect, login, E2E_ADMIN } from './fixtures';
 
@@ -33,7 +34,7 @@ test('a late successful self-role change cannot revive the expired workspace or 
     await users.getByRole('button', { name: `Edit ${E2E_ADMIN.username}`, exact: true }).click();
     const edit = page.getByRole('dialog', { name: 'Edit user', exact: true });
     await expect(edit.getByLabel('Username', { exact: true })).not.toBeEditable();
-    await edit.getByLabel('Role', { exact: true }).selectOption('Operator');
+    await chooseDialogOption(edit.getByRole('button', { name: 'Role', exact: true }), 'Operator');
     await edit.getByLabel('Your current password', { exact: true }).fill(E2E_ADMIN.password);
     await edit.getByRole('button', { name: 'Save changes', exact: true }).click();
     await committed;

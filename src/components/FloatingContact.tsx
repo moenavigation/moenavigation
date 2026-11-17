@@ -41,6 +41,7 @@ export default function FloatingContact({ locale }: { locale: Locale }) {
   const actions: ContactAction[] = [{
     id: "enquiry",
     label: local(locale, "Send an enquiry", "ส่งข้อความสอบถาม"),
+    detail: local(locale, "Send an enquiry", "ส่งข้อความสอบถาม"),
     href: `${href(locale, "contact")}#contact-form`,
     icon: "/icons/Email.svg", internal: true,
   }];
@@ -55,6 +56,7 @@ export default function FloatingContact({ locale }: { locale: Locale }) {
   });
   if (settings.mapUrl) actions.push({
     id: "map", label: local(locale, "Office map", "แผนที่สำนักงาน"),
+    detail: local(locale, "Office map", "แผนที่สำนักงาน"),
     href: settings.mapUrl, icon: "/icons/Location.svg", external: true,
   });
 
@@ -82,6 +84,8 @@ export default function FloatingContact({ locale }: { locale: Locale }) {
       aria-label={open ? local(locale, "Close contact menu", "ปิดช่องทางติดต่อ") : local(locale, "Open contact menu", "เปิดช่องทางติดต่อ")}
       aria-expanded={open}
       aria-controls={itemsId}
+      // Prevent WebKit's mouse-down blur from closing the menu before click toggles it.
+      onMouseDown={event => event.preventDefault()}
       onClick={() => { triggerRef.current?.focus({ preventScroll: true }); setOpen(current => !current); }}
     >
       <Image className={styles.callIcon} src="/icons/Call-start.svg" width={64} height={64} alt="" unoptimized />
@@ -90,7 +94,7 @@ export default function FloatingContact({ locale }: { locale: Locale }) {
     <nav id={itemsId} className={styles.items} aria-label={local(locale, "Contact options", "เลือกช่องทางติดต่อ")} aria-hidden={!open} inert={!open}>
       {actions.map((action, index) => {
         const content = <>
-          <span className="sr-only">{action.label}{action.detail ? ': ' : ''}</span>
+          {action.detail !== action.label && <span className="sr-only">{action.label}{action.detail ? ': ' : ''}</span>}
           {action.detail && <span className={styles.itemText}><span className={styles.itemDetail}>{action.detail}</span></span>}
           <span className={styles.itemIcon}>
             <Image src={action.icon} width={48} height={48} alt="" unoptimized />

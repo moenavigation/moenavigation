@@ -64,7 +64,7 @@ export function selectPublicPageRecords(records: ContentRecord[], page: string, 
   // Preserve input order, including ties in editorial ordering, without mutating the cached snapshot.
   return visible.filter(record => selected.has(record)).map(record => {
     if (full.has(record)) return record;
-    if (record.type === 'Route' && pageId === 'home') return { ...summary(record), origin: record.origin, destination: record.destination, waypoints: record.waypoints };
+    if (record.type === 'Route' && pageId === 'home') return { ...summary(record), origin: record.origin, destination: record.destination, waypoints: record.waypoints, ...(record.routeSpecs ? { routeSpecs: record.routeSpecs } : {}) };
     return summary(record);
   });
 }

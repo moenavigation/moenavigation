@@ -1,5 +1,18 @@
 // Initial migration and isolated browser-test content. Never import this module into the application.
 import { clientFleetRecords, clientFleetPageCopy } from './client-fleet';
+import { legacyTradingRouteRecords, legacyRoutesPageCopy } from './legacy-trading-routes';
+import { legacyAboutDraftPatches, legacyAboutFeatureRecords, type LegacyAboutImageUrls } from './legacy-about-import-plan';
+import { defaultFooterStatistics } from '../../src/lib/footer-statistics';
+
+const localAboutImages: LegacyAboutImageUrls = {
+  hero: '/images/about/port-operations.webp',
+  overview: '/images/about/container-vessel.webp',
+  safety: '/images/about/safety-inspection.webp',
+  maintenance: '/images/about/ship-maintenance.webp',
+  crew: '/images/about/onboard-team.webp',
+  office: '/images/about/shoreside-coordination.webp',
+};
+const aboutDrafts = legacyAboutDraftPatches(localAboutImages);
 
 export const websiteContentRecords = [
   ...clientFleetRecords,
@@ -290,242 +303,7 @@ export const websiteContentRecords = [
     "body": "A useful discussion starts with a clear picture of the vessel or cargo, operating area, target dates and any constraints. These details help identify which services, partners and checks may be needed.\n\nShare your requirements through the contact form to discuss possible scope and next steps. Availability and commercial terms are confirmed for each enquiry.",
     "bodyTh": "การพูดคุยเริ่มได้ง่ายขึ้นเมื่อมีข้อมูลเรือหรือสินค้า พื้นที่ดำเนินงาน ช่วงเวลาที่ต้องการ และข้อจำกัดที่เกี่ยวข้อง ข้อมูลเหล่านี้ช่วยระบุบริการ ผู้เกี่ยวข้อง และสิ่งที่ต้องตรวจสอบเพิ่มเติม\n\nส่งรายละเอียดผ่านแบบฟอร์มติดต่อเพื่อหารือขอบเขตและขั้นตอนต่อไป ความพร้อมให้บริการและเงื่อนไขทางการค้าต้องยืนยันตามคำขอแต่ละงาน"
   },
-  {
-    "id": "laem-chabang-singapore",
-    "type": "Route",
-    "title": "Laem Chabang — Singapore",
-    "titleTh": "แหลมฉบัง — สิงคโปร์",
-    "description": "For an enquiry involving Laem Chabang and Singapore, share the cargo and preferred timing to discuss possible routing. Service availability is confirmed case by case.",
-    "descriptionTh": "หากต้องการสอบถามงานระหว่างแหลมฉบังกับสิงคโปร์ โปรดแจ้งรายละเอียดสินค้าและช่วงเวลาที่ต้องการเพื่อหารือแนวทางการขนส่ง ความพร้อมให้บริการต้องยืนยันเป็นรายกรณี",
-    "image": "/images/hero.webp",
-    "category": "Port connections",
-    "status": "Published",
-    "categoryTh": "ท่าเรือต้นทาง–ปลายทาง",
-    "order": 23,
-    "revision": 1,
-    "origin": {
-      "name": "Laem Chabang",
-      "nameTh": "แหลมฉบัง",
-      "country": "Thailand",
-      "countryTh": "ไทย"
-    },
-    "destination": {
-      "name": "Singapore",
-      "nameTh": "สิงคโปร์",
-      "country": "Singapore",
-      "countryTh": "สิงคโปร์"
-    },
-    "waypoints": [
-      [
-        13.0833,
-        100.8833
-      ],
-      [
-        11.8,
-        100.8
-      ],
-      [
-        9.8,
-        101.1
-      ],
-      [
-        7.7,
-        102
-      ],
-      [
-        5.6,
-        103.3
-      ],
-      [
-        3.4,
-        104
-      ],
-      [
-        2.1,
-        104.1
-      ],
-      [
-        1.17,
-        104.15
-      ],
-      [
-        1.16,
-        103.95
-      ],
-      [
-        1.2,
-        103.8
-      ],
-      [
-        1.2662,
-        103.7802
-      ]
-    ]
-  },
-  {
-    "id": "laem-chabang-port-klang",
-    "type": "Route",
-    "title": "Laem Chabang — Port Klang",
-    "titleTh": "แหลมฉบัง — ท่าเรือคลัง",
-    "description": "For an enquiry involving Laem Chabang and Port Klang, share the cargo and preferred timing to discuss possible routing. Service availability is confirmed case by case.",
-    "descriptionTh": "หากต้องการสอบถามงานระหว่างแหลมฉบังกับท่าเรือคลัง โปรดแจ้งรายละเอียดสินค้าและช่วงเวลาที่ต้องการเพื่อหารือแนวทางการขนส่ง ความพร้อมให้บริการต้องยืนยันเป็นรายกรณี",
-    "image": "/images/port.webp",
-    "category": "Port connections",
-    "status": "Published",
-    "categoryTh": "ท่าเรือต้นทาง–ปลายทาง",
-    "order": 24,
-    "revision": 1,
-    "origin": {
-      "name": "Laem Chabang",
-      "nameTh": "แหลมฉบัง",
-      "country": "Thailand",
-      "countryTh": "ไทย"
-    },
-    "destination": {
-      "name": "Port Klang",
-      "nameTh": "ท่าเรือคลัง",
-      "country": "Malaysia",
-      "countryTh": "มาเลเซีย"
-    },
-    "waypoints": [
-      [
-        13.0833,
-        100.8833
-      ],
-      [
-        11.8,
-        100.8
-      ],
-      [
-        9.8,
-        101.1
-      ],
-      [
-        7.7,
-        102
-      ],
-      [
-        5.6,
-        103.3
-      ],
-      [
-        3.4,
-        104
-      ],
-      [
-        2.1,
-        104.1
-      ],
-      [
-        1.17,
-        104.15
-      ],
-      [
-        1.14,
-        103.78
-      ],
-      [
-        1.2,
-        103.55
-      ],
-      [
-        1.5,
-        103.1
-      ],
-      [
-        2.15,
-        102.35
-      ],
-      [
-        2.75,
-        101.65
-      ],
-      [
-        3,
-        101.4
-      ]
-    ]
-  },
-  {
-    "id": "laem-chabang-tanjung-priok",
-    "type": "Route",
-    "title": "Laem Chabang — Tanjung Priok",
-    "titleTh": "แหลมฉบัง — ตันจุงปริอ็อก",
-    "description": "For an enquiry involving Laem Chabang and Tanjung Priok, share the cargo and preferred timing to discuss possible routing. Service availability is confirmed case by case.",
-    "descriptionTh": "หากต้องการสอบถามงานระหว่างแหลมฉบังกับตันจุงปริอ็อก โปรดแจ้งรายละเอียดสินค้าและช่วงเวลาที่ต้องการเพื่อหารือแนวทางการขนส่ง ความพร้อมให้บริการต้องยืนยันเป็นรายกรณี",
-    "image": "/images/container-vessel.webp",
-    "category": "Port connections",
-    "status": "Published",
-    "categoryTh": "ท่าเรือต้นทาง–ปลายทาง",
-    "order": 25,
-    "revision": 1,
-    "origin": {
-      "name": "Laem Chabang",
-      "nameTh": "แหลมฉบัง",
-      "country": "Thailand",
-      "countryTh": "ไทย"
-    },
-    "destination": {
-      "name": "Tanjung Priok",
-      "nameTh": "ตันจุงปริอ็อก",
-      "country": "Jakarta, Indonesia",
-      "countryTh": "จาการ์ตา อินโดนีเซีย"
-    },
-    "waypoints": [
-      [
-        13.0833,
-        100.8833
-      ],
-      [
-        11.8,
-        100.8
-      ],
-      [
-        9.8,
-        101.1
-      ],
-      [
-        7.7,
-        102
-      ],
-      [
-        5.6,
-        103.3
-      ],
-      [
-        3.4,
-        104
-      ],
-      [
-        1.6,
-        104.4
-      ],
-      [
-        0.2,
-        105.8
-      ],
-      [
-        -1.2,
-        107.4
-      ],
-      [
-        -2.8,
-        108.7
-      ],
-      [
-        -4.3,
-        108.6
-      ],
-      [
-        -5.4,
-        107.6
-      ],
-      [
-        -6.0803,
-        106.8803
-      ]
-    ]
-  },
+  ...legacyTradingRouteRecords,
   {
     "id": "about",
     "type": "Page",
@@ -875,12 +653,12 @@ export const websiteContentRecords = [
   {
     "id": "routes",
     "type": "Page",
-    "title": "Port connections",
-    "titleTh": "การเชื่อมต่อระหว่างท่าเรือ",
-    "description": "Review port pairs on the map, then enquire about routing, timing and availability for your cargo.",
-    "descriptionTh": "ดูท่าเรือต้นทางและปลายทางบนแผนที่ แล้วสอบถามเส้นทาง ช่วงเวลา และความพร้อมให้บริการสำหรับสินค้าของคุณ",
-    "eyebrow": "PORT CONNECTIONS",
-    "eyebrowTh": "ท่าเรือในภูมิภาค",
+    "title": legacyRoutesPageCopy.title,
+    "titleTh": legacyRoutesPageCopy.titleTh,
+    "description": legacyRoutesPageCopy.description,
+    "descriptionTh": legacyRoutesPageCopy.descriptionTh,
+    "eyebrow": legacyRoutesPageCopy.eyebrow,
+    "eyebrowTh": legacyRoutesPageCopy.eyebrowTh,
     "image": "/images/hero.webp",
     "category": "Website pages",
     "categoryTh": "หน้าเว็บไซต์",
@@ -1072,6 +850,9 @@ export const websiteContentRecords = [
     "titleTh": "ทีมงาน เป้าหมาย และทุกการเดินทาง",
     "description": "",
     "descriptionTh": "",
+    "caption": "At a glance",
+    "captionTh": "ข้อมูลโดยสรุป",
+    "footerStats": defaultFooterStatistics,
     "eyebrow": "",
     "eyebrowTh": "",
     "image": "",
@@ -1100,4 +881,7 @@ export const websiteContentRecords = [
     "order": 57,
     "revision": 1
   }
-];
+].map(record => {
+  const about = aboutDrafts.find(item => item.type === record.type && item.id === record.id);
+  return about ? { ...record, ...about.patch } : record;
+}).concat(legacyAboutFeatureRecords(localAboutImages));

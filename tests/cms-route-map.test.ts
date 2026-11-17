@@ -36,17 +36,68 @@ test('applying map edits rejects stale drafts, missing locations and invalid coo
   assert.equal(isMapRouteReady('0,0\n-90,-180\n90,180'), true);
 });
 
-test('adding on the map inserts before the destination and preserves existing precision and order', () => {
+test('adding on the map preserves placed precision, existing formatting and endpoint order', () => {
   const source = '13.12345678912345, 100.22222222222222\r\n12.00000,101.00000\r\n1e-7, 103.80000000000000';
   const first = addMapRoutePoint(source, 11.123456789, 102.123456789)!;
   assert.equal(first.index, 2);
-  assert.equal(first.text, '13.12345678912345, 100.22222222222222\r\n12.00000,101.00000\r\n11.123457,102.123457\r\n1e-7, 103.80000000000000');
+  assert.equal(first.text, '13.12345678912345, 100.22222222222222\r\n12.00000,101.00000\r\n11.123456789,102.123456789\r\n1e-7, 103.80000000000000');
   const second = addMapRoutePoint(first.text, 10, 103)!;
   assert.equal(second.index, 3);
-  assert.equal(second.text, '13.12345678912345, 100.22222222222222\r\n12.00000,101.00000\r\n11.123457,102.123457\r\n10,103\r\n1e-7, 103.80000000000000');
+  assert.equal(second.text, '13.12345678912345, 100.22222222222222\r\n12.00000,101.00000\r\n11.123456789,102.123456789\r\n10,103\r\n1e-7, 103.80000000000000');
   assert.equal(addMapRoutePoint(',\n,', 10, 100), null);
   assert.equal(addMapRoutePoint(source, NaN, 100), null);
   const atLimit = Array(100).fill('13,100').join('\n');
   assert.equal(addMapRoutePoint(atLimit, 12, 101), null);
   assert.equal(mapRoutePoints(addMapRoutePoint(Array(99).fill('13,100').join('\n'), 12, 101)!.text).length, 100);
+});
+
+test('a point near an early segment inserts there instead of before the destination', () => {
+  const source = '0.00000, 0.00000\r\n0,10\n10.0000,10.0000';
+  const added = addMapRoutePoint(source, .1234567891234, 3.4567891234567)!;
+  assert.equal(added.index, 1);
+  assert.equal(added.text, '0.00000, 0.00000\r\n0.1234567891234,3.4567891234567\r\n0,10\n10.0000,10.0000');
+  assert.equal(source, '0.00000, 0.00000\r\n0,10\n10.0000,10.0000');
+});
+
+test('long segments win over closer vertices on a nearby loop', () => {
+  const source = '0,-10\n0,10\n1,10\n1,0\n1,-10';
+  const added = addMapRoutePoint(source, .1, 0)!;
+  assert.equal(added.index, 1, 'The first horizontal segment is nearer than the vertex at1,0.');
+  assert.deepEqual(mapRoutePoints(added.text), [[0, -10], [.1, 0], [0, 10], [1, 10], [1, 0], [1, -10]]);
+});
+
+test('shared vertices and coincident segments use the earliest stable segment', () => {
+  assert.equal(addMapRoutePoint('0,0\n0,10\n10,10', 0, 10)!.index, 1);
+  assert.equal(addMapRoutePoint('0,0\n0,10\n0,0\n0,10', 0, 5)!.index, 1);
+  assert.equal(addMapRoutePoint('0,0\n0,0\n0,10\n10,10', 0, 5)!.index, 2);
+  assert.equal(addMapRoutePoint('0,0\n0,0\n0,10', 0, 0)!.index, 1);
+});
+
+test('two-point routes, endpoint projections and polar coordinates remain finite', () => {
+  assert.deepEqual(mapRoutePoints(addMapRoutePoint('0,0\n0,10', 1, 5)!.text), [[0, 0], [1, 5], [0, 10]]);
+  assert.equal(addMapRoutePoint('0,0\n0,1\n10,1', -1, -1)!.index, 1);
+  assert.equal(addMapRoutePoint('0,0\n0,1\n10,1', 11, 1)!.index, 2);
+  assert.equal(addMapRoutePoint('80,-10\n80,10\n0,10', 82, 0)!.index, 1);
+  const polar = addMapRoutePoint('90,0\n90,10\n80,10', 89.123456789, 1.123456789)!;
+  assert.equal(polar.index, 1);
+  assert.equal(isMapRouteReady(polar.text), true);
+});
+
+test('world-copy clicks normalize consistently without inventing dateline shortcuts', () => {
+  const added = addMapRoutePoint('0,0\n0,10\n10,10', .123456789, 361)!;
+  assert.equal(added.index, 1);
+  assert.deepEqual(mapRoutePoints(added.text)[1], [.123456789, 1]);
+  assert.deepEqual(mapRoutePoints(addMapRoutePoint('13,100\n1,103', 91, 541)!.text)[1], [90, -179]);
+  // Manual wrapped endpoints currently draw a long Leaflet segment. Match that
+  // visible geometry; automatic sea-route generation rejects date-line paths.
+  assert.equal(addMapRoutePoint('0,179\n0,-179\n10,-179', 0, 0)!.index, 1);
+});
+
+test('invalid or full routes and nonfinite clicks never insert', () => {
+  for (const source of ['', '0,0', ',\n,', '0,0\ninvalid,10', '0,0\n91,10', Array(100).fill('0,0').join('\n')]) {
+    assert.equal(addMapRoutePoint(source, 1, 1), null);
+  }
+  for (const [latitude, longitude] of [[NaN, 1], [1, NaN], [Infinity, 1], [1, -Infinity]]) {
+    assert.equal(addMapRoutePoint('0,0\n0,10', latitude, longitude), null);
+  }
 });

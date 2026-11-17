@@ -1,6 +1,7 @@
 import { copyFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { test, expect, login } from './fixtures';
+import { chooseDialogOption } from './selection-helpers';
 import type { ContentDocument } from '../../src/server/db';
 import { translateCms } from '../../src/lib/cms-locale';
 
@@ -28,8 +29,8 @@ test.describe('desktop attention review', () => {
     const dialog = page.getByRole('dialog', { name: 'Content needing attention', exact: true });
     await expect(dialog).toBeVisible();
     await dialog.getByRole('searchbox', { name: 'Search content needing attention', exact: true }).fill(marker);
-    await dialog.getByLabel('Content type', { exact: true }).selectOption('News');
-    await dialog.getByLabel('Needs attention', { exact: true }).selectOption('image');
+    await chooseDialogOption(dialog.getByRole('button', { name: 'Content type', exact: true }), 'News');
+    await chooseDialogOption(dialog.getByRole('button', { name: 'Needs attention', exact: true }), 'image');
     const edits = dialog.getByRole('button', { name: new RegExp(`^Edit ${marker}`) });
     await expect(dialog.getByRole('status')).toHaveText('Showing 12 of 15 items needing attention');
     await expect(edits).toHaveCount(12);
@@ -46,8 +47,8 @@ test.describe('desktop attention review', () => {
     await expect(dialog.getByRole('heading', { name: 'No matching items', exact: true })).toBeVisible();
     await dialog.getByRole('button', { name: 'Clear filters', exact: true }).click();
     await expect(dialog.getByRole('searchbox')).toHaveValue('');
-    await expect(dialog.getByLabel('Content type', { exact: true })).toHaveValue('All');
-    await expect(dialog.getByLabel('Needs attention', { exact: true })).toHaveValue('All');
+    await expect(dialog.getByRole('button', { name: 'Content type', exact: true })).toHaveAttribute('data-selection-value', 'All');
+    await expect(dialog.getByRole('button', { name: 'Needs attention', exact: true })).toHaveAttribute('data-selection-value', 'All');
 
     await dialog.getByRole('searchbox').fill(marker);
     await expect(edits).toHaveCount(12);

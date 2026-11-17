@@ -1,8 +1,10 @@
 import type { ContentRecord } from '../../src/lib/cms-types';
+import { applyLegacyVesselSpecs } from './legacy-vessel-particulars';
+import enhancedFleet from './enhanced-fleet-images.json';
 
 // Client-supplied vessel names and types, received 29 October 2026.
-// Keep existing URL identities. Images are illustrative; actual vessel photos and
-// technical particulars have not been supplied.
+// Keep existing URL identities. Reviewed legacy particulars use PDFs as the
+// primary source; seven vessels use the approved corrected photo pairs.
 const vessels = [
   ['ranong-moe', 'RANONG MOE', 'ระนองโม', 'Container'],
   ['moe-line-2', 'MOE 2', 'โม2', 'Container'],
@@ -32,6 +34,14 @@ const media = {
 } satisfies Record<typeof vessels[number][0], string[]>;
 
 function illustrativeMedia(id: typeof vessels[number][0], title: string, titleTh: string) {
+  const corrected = enhancedFleet.vessels.find(vessel => vessel.id === id);
+  if (corrected) return {
+    image: corrected.main.url,
+    imageAlt: corrected.main.alt,
+    imageAltTh: corrected.main.altTh,
+    mobileImage: '',
+    gallery: corrected.gallery.map(({ url, alt, altTh }) => ({ url, alt, altTh })),
+  };
   const [main, ...gallery] = media[id];
   return {
     image: `/images/${main}.webp`,
@@ -46,12 +56,12 @@ function illustrativeMedia(id: typeof vessels[number][0], title: string, titleTh
   };
 }
 
-export const clientFleetRecords: ContentRecord[] = vessels.map(([id, title, titleTh, category], index) => ({
+export const clientFleetRecords: ContentRecord[] = vessels.map(([id, title, titleTh, category], index) => applyLegacyVesselSpecs({
   id, type: 'Vessel', title, titleTh, category, ...categories[category],
   ...illustrativeMedia(id, title, titleTh),
   body: '', bodyTh: '', bodyHeading: '', bodyHeadingTh: '',
   order: index + 1, status: 'Published', revision: 1,
-}));
+}).record);
 
 export const clientFleetPageCopy = {
   description: 'Explore our container vessels, crane vessel and tanker.',

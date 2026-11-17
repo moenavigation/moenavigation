@@ -11,6 +11,7 @@ import { MAX_ROUTE_POINTS, routeCoordinateRows, updateRouteCoordinate } from '@/
 import { addMapRoutePoint, initialMapRouteText, isMapRouteReady, mapRoutePoints, moveMapRoutePoint } from '@/lib/cms-route-map';
 import type { SeaRoutePoint } from '@/lib/sea-route';
 import Dialog from './Dialog';
+import SelectionDialog from './SelectionDialog';
 import styles from './CmsRouteMapDialog.module.css';
 
 const tileUrl = process.env.NEXT_PUBLIC_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -252,11 +253,9 @@ export default function CmsRouteMapDialog({ sourceText, currentText, triggerRef,
       {stale && <p className={styles.error} role="alert">{t('The route points changed while this map was open. Close it and open the map again.')}</p>}
       {error && <p className={styles.error} role="alert">{t(error)}</p>}
       <fieldset className={styles.pointFields} disabled={stale || adding}>
-        <label className={styles.pointSelect} htmlFor={`${id}-point`}><span><MapPin size={18} aria-hidden="true" />{t('Selected point')}</span>
-          <select id={`${id}-point`} value={selected} onChange={event => select(Number(event.target.value))} aria-describedby={`${id}-hint`}>
-            {rows.map((_, index) => <option key={index} value={index}>{index + 1}. {index === 0 ? t('Origin point') : index === rows.length - 1 ? t('Destination point') : t('Intermediate point {number}', { number: index })}</option>)}
-          </select>
-        </label>
+        <div className={styles.pointSelect}><label htmlFor={`${id}-point`}><MapPin size={18} aria-hidden="true" />{t('Selected point')}</label>
+          <SelectionDialog id={`${id}-point`} label={t('Selected point')} value={String(selected)} onChange={value => select(Number(value))} disabled={stale || adding} options={rows.map((_, index) => ({ value: String(index), label: `${index + 1}. ${index === 0 ? t('Origin point') : index === rows.length - 1 ? t('Destination point') : t('Intermediate point {number}', { number: index })}` }))} closeLabel={t('Close dialog')} searchPlaceholder={t('Search points')} />
+        </div>
         {row && (['latitude', 'longitude'] as const).map(field => {
           const message = validation(field, row[field]);
           return <label key={field} htmlFor={`${id}-${field}`}>{t(field === 'latitude' ? 'Latitude' : 'Longitude')}

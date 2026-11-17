@@ -58,6 +58,7 @@ test('media usage lists active and Trash references without exposing the lookup 
   expect((await page.request.get('/api/cms/media/usage?mediaId=%24ne')).status()).toBe(400);
 
   await page.goto('/cms/media');
+  await page.getByRole('searchbox', { name: 'Search media library', exact: true }).fill(String(source!.title));
   const card = page.getByRole('region', { name: 'Saved images' }).locator('[class*="libraryGrid"] > div').filter({ hasText: String(source!.title) }).first();
   const usedButton = card.getByRole('button', { name: `Usage for ${source!.title}` });
   await expect(usedButton).toHaveText('Used');
@@ -89,6 +90,7 @@ test('media usage lists active and Trash references without exposing the lookup 
   await vesselEditor.getByRole('button', { name: 'Close Edit vessel' }).click();
 
   await page.goto('/cms/media');
+  await page.getByRole('searchbox', { name: 'Search media library', exact: true }).fill(String(source!.title));
   const cardAgain = page.getByRole('region', { name: 'Saved images' }).locator('[class*="libraryGrid"] > div').filter({ hasText: String(source!.title) }).first();
   await cardAgain.getByRole('button', { name: `Usage for ${source!.title}` }).click();
   const usageAgain = page.getByRole('dialog', { name: 'Where this image is used' });
@@ -123,6 +125,7 @@ test('media usage links open the exact page and section editors', async ({ page,
 
   for (const [index, target] of targets.entries()) {
     await page.goto('/cms/media');
+    await page.getByRole('searchbox', { name: 'Search media library', exact: true }).fill(String(source!.title));
     const card = page.getByRole('region', { name: 'Saved images' }).locator('[class*="libraryGrid"] > div').filter({ hasText: String(source!.title) }).first();
     await card.getByRole('button', { name: `Usage for ${source!.title}` }).click();
     const usageDialog = page.getByRole('dialog', { name: 'Where this image is used' });

@@ -95,16 +95,19 @@ test('page cards lead to existing Home content, save both languages, and preserv
   await expect(await showLanguage(editor, 'Title · Thai')).toHaveValue(saved.titleTh);
 });
 
-test('shared footer editing contains only its bilingual text and links contact details to Settings', async ({ page }) => {
+test('shared footer editing exposes bilingual text and statistics and links contact details to Settings', async ({ page }) => {
   await login(page);
   await page.goto('/cms/pages');
   await pageCard(page, 'Shared website content').click();
   await expect(page).toHaveURL(/\/cms\/pages\?page=shared$/);
-  await page.getByRole('button', { name: 'Edit Footer text', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit Footer and statistics', exact: true }).click();
   const editor = page.getByRole('dialog', { name: 'Edit content', exact: true });
   await showLanguage(editor, 'Title · English');
   await showLanguage(editor, 'Title · Thai');
-  await expect(editor.locator('input, textarea, select')).toHaveCount(2);
+  await showLanguage(editor, 'Statistics heading · English');
+  await showLanguage(editor, 'Statistics heading · Thai');
+  await expect(editor.getByRole('region', { name: 'Footer statistics', exact: true })).toBeVisible();
+  await expect(editor.getByLabel('Displayed value', { exact: true })).toHaveCount(4);
   await expect(editor.getByRole('region', { name: 'Pictures', exact: true })).toHaveCount(0);
   await expect(editor.getByLabel('Summary · English', { exact: true })).toHaveCount(0);
   await editor.getByRole('button', { name: 'Cancel', exact: true }).click();

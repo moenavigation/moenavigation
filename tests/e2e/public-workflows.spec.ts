@@ -113,16 +113,20 @@ test('mobile navigation returns to top and gallery keyboard focus stays containe
 
 test('route keyboard selection survives reload and language change', async ({ page }) => {
   await page.goto('/routes');
-  await page.getByRole('radio', { name: /Laem Chabang — Singapore/ }).press('ArrowDown');
-  await expect(page).toHaveURL(/route=laem-chabang-port-klang/);
-  await expect(page.getByRole('radio', { name: /Laem Chabang — Port Klang/ })).toBeChecked();
+  const firstRoute = page.locator('input[type="radio"][value="bkk-lcb"]');
+  const suratRoute = page.locator('input[type="radio"][value="bkk-lcb-suratthani"]');
+  await firstRoute.press('ArrowDown');
+  await expect(page).toHaveURL(/route=bkk-lcb-suratthani/);
+  await expect(suratRoute).toBeChecked();
+  await expect(suratRoute).toHaveAccessibleName(/Surat Thani/);
   await page.getByRole('button', { name: 'Zoom in', exact: true }).click();
   await page.getByRole('button', { name: 'Zoom out', exact: true }).click();
   await page.getByRole('button', { name: 'Fit selected route', exact: true }).click();
   await page.reload();
-  await expect(page.getByRole('radio', { name: /Laem Chabang — Port Klang/ })).toBeChecked();
+  await expect(suratRoute).toBeChecked();
   await page.getByRole('link', { name: 'Switch to Thai' }).click();
-  await expect(page.getByRole('radio', { name: /แหลมฉบัง — ท่าเรือคลัง/ })).toBeChecked();
+  await expect(suratRoute).toBeChecked();
+  await expect(suratRoute).toHaveAccessibleName(/สุราษฎร์ธานี/);
   await expect(page.getByRole('link', { name: 'สอบถามเกี่ยวกับเส้นทางนี้' })).toHaveAttribute('href', /subject=/);
 });
 

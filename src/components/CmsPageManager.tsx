@@ -41,8 +41,8 @@ export default function CmsPageManager({ records, selectedPage, onSelect, onEdit
   const preview = page ? publishedContentUrl(page, records, locale) : null;
   function item(record: ContentRecord, introduction = false) {
     const footer = record.id === 'footer' && record.parentId === 'shared';
-    const label = introduction ? t('Page introduction') : footer ? t('Footer text') : title(record);
-    const hint = introduction ? t('The heading and introduction visitors see on this page.') : detailParents[record.id] && detailParents[record.id] === record.parentId ? t('Shown on individual item pages.') : record.id === 'shared-callout' && record.parentId === 'shared' ? t('Contact message shown on About and custom pages.') : footer ? t('The short text at the bottom of the website.') : '';
+    const label = introduction ? t('Page introduction') : footer ? t('Footer and statistics') : title(record);
+    const hint = introduction ? t('The heading and introduction visitors see on this page.') : detailParents[record.id] && detailParents[record.id] === record.parentId ? t('Shown on individual item pages.') : record.id === 'shared-callout' && record.parentId === 'shared' ? t('Contact message shown on About and custom pages.') : footer ? t('Edit the footer text and the figures shown above it.') : '';
     return <article key={`${record.type}:${record.id}`} className={styles.item}>
       {thumbnail(record) ? <img className={styles.thumbnail} src={thumbnail(record)} alt="" width={160} height={110} /> : <span className={styles.placeholder}><FileText size={24} aria-hidden="true" /></span>}
       <div className={styles.itemCopy}><h3>{label}</h3>{introduction && <p className={styles.excerpt}>{title(record)}</p>}{hint && <p>{hint}</p>}{!introduction && (record.description || record.descriptionTh) && <p className={styles.excerpt}>{locale === 'th' ? record.descriptionTh || record.description : record.description || record.descriptionTh}</p>}</div>

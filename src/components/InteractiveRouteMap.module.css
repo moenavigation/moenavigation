@@ -3,9 +3,8 @@
 .viewport { width: 100%; height: 32rem; background: #dcecf3; font-family: var(--font-family); }
 .viewport:focus-visible { outline: .2rem solid #0b527f; outline-offset: -.2rem; }
 .shell :global(.leaflet-container) { font-family: var(--font-family); }
-.shell :global(.leaflet-bottom.leaflet-right) { display: block; opacity: 1; }
 .shell :global(.leaflet-tile-pane) { filter: saturate(.84) contrast(.97); }
-.shell :global(.leaflet-control-attribution) { max-width: calc(100% - .75rem); padding: .18rem .45rem; border-radius: .35rem 0 0 0; background: rgb(255 255 255 / .9); color: #28445d; font-size: var(--font-small); line-height: 1.35; text-align: right; white-space: normal; }
+.shell :global(.leaflet-control-attribution) { padding: .1rem .3rem; border-radius: 0; background: transparent; color: #28445d; font-size: var(--font-map-attribution); line-height: 1.3; text-align: right; white-space: nowrap; }
 .shell :global(.leaflet-control-attribution a) { color: #0b527f; text-decoration: underline; text-underline-offset: .12rem; }
 .shell :global(.leaflet-tooltip) { padding: .45rem .7rem; border: 1px solid #b6d3e2; border-radius: .35rem; background: #fff; box-shadow: 0 .4rem 1.2rem rgb(5 39 66 / .12); color: var(--navy); font-size: var(--font-small); font-weight: 650; }
 .portTooltip { white-space: nowrap; }
@@ -29,8 +28,9 @@
 .activeMarker .markerCenter { background: #087a9c; box-shadow: 0 0 0 .35rem rgb(8 122 156 / .2), 0 .15rem .6rem rgb(7 35 57 / .3); }
 .shell :global(.leaflet-marker-icon[role="button"]) { cursor: pointer; }
 .shell :global(.leaflet-marker-icon[role="button"]:focus-visible) { outline: .2rem solid #082b50; outline-offset: .3rem; }
-.notice { position: absolute; z-index: 500; bottom: 1rem; left: 1rem; max-width: calc(100% - 8rem); padding: .65rem .85rem; border: 1px solid rgb(184 211 226 / .85); border-radius: .4rem; background: rgb(255 255 255 / .95); box-shadow: 0 .25rem 1rem rgb(7 39 63 / .08); color: var(--navy); pointer-events: none; }
-.notice strong { font-size: var(--font-small); line-height: 1.35; font-weight: 700; }
+.notice { position: absolute; z-index: 500; bottom: 3.5rem; left: 1rem; max-width: calc(100% - 2rem); padding: .65rem .85rem; border: 1px solid rgb(184 211 226 / .85); border-radius: .4rem; background: rgb(255 255 255 / .95); box-shadow: 0 .25rem 1rem rgb(7 39 63 / .08); color: var(--navy); pointer-events: none; }
+.notice > span { display: block; margin-bottom: .2rem; color: var(--muted); font-size: var(--font-small); line-height: 1.35; }
+.notice strong { display: block; font-size: var(--font-small); line-height: 1.45; font-weight: 650; overflow-wrap: anywhere; }
 .controls { position: absolute; z-index: 500; top: 1rem; right: 1rem; display: flex; overflow: hidden; border: 1px solid #c8d8e6; border-radius: .45rem; background: #fff; box-shadow: 0 .25rem 1rem rgb(7 39 63 / .14); }
 .controls button { display: grid; place-items: center; width: 2.8rem; height: 2.8rem; padding: 0; border: 0; border-radius: 0; background: #fff; color: var(--navy); cursor: pointer; }
 .controls button + button { border-left: 1px solid #dbe5ee; }

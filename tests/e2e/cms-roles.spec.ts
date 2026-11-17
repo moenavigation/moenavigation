@@ -1,3 +1,4 @@
+import { chooseDialogOption } from './selection-helpers';
 import { randomUUID } from 'node:crypto';
 import { request as apiRequest, type APIRequestContext, type APIResponse, type Page } from '@playwright/test';
 import type { Db } from 'mongodb';
@@ -345,13 +346,13 @@ test('role-aware user controls protect Dev accounts and fit narrow screens in bo
     await expect(protectedDev.getByRole('button')).toHaveCount(0);
     await page.getByRole('button', { name: 'Add user', exact: true }).click();
     const create = page.getByRole('dialog', { name: 'Add user', exact: true });
-    await expect(create.getByLabel('Role', { exact: true }).locator('option')).toHaveText(['Admin', 'Operator']);
+    await expect(create.getByRole('button', { name: 'Role', exact: true }).locator('xpath=following-sibling::dialog[1]').locator('[data-selection-option]')).toHaveText(['Admin', 'Operator']);
     await create.getByRole('button', { name: 'Cancel', exact: true }).click();
     await users.getByRole('button', { name: `Edit ${operator.username}`, exact: true }).click();
     const edit = page.getByRole('dialog', { name: 'Edit user', exact: true });
     await expect(edit.getByLabel('Username', { exact: true })).not.toBeEditable();
     await expect(edit.getByLabel('Username', { exact: true })).toHaveValue(operator.username);
-    await edit.getByLabel('Role', { exact: true }).selectOption('Admin');
+    await chooseDialogOption(edit.getByRole('button', { name: 'Role', exact: true }), 'Admin');
     await edit.getByLabel('Your current password', { exact: true }).fill(E2E_ADMIN.password);
     await edit.getByRole('button', { name: 'Save changes', exact: true }).click();
     await expect(edit).not.toBeVisible();
@@ -373,7 +374,7 @@ test('role-aware user controls protect Dev accounts and fit narrow screens in bo
 
     await useSession(page, dev);
     await page.getByRole('button', { name: 'Add user', exact: true }).click();
-    await expect(create.getByLabel('Role', { exact: true }).locator('option')).toHaveText(['Dev', 'Admin', 'Operator']);
+    await expect(create.getByRole('button', { name: 'Role', exact: true }).locator('xpath=following-sibling::dialog[1]').locator('[data-selection-option]')).toHaveText(['Dev', 'Admin', 'Operator']);
     await create.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(users.getByRole('button', { name: `Edit ${otherDev.username}`, exact: true })).toBeVisible();
     await expect(users.getByRole('button', { name: `Move ${developer.username} to Trash`, exact: true })).toHaveCount(0);
@@ -386,7 +387,7 @@ test('role-aware user controls protect Dev accounts and fit narrow screens in bo
       await page.screenshot({ path: `test-results/cms-user-cards-${language}-${width}.png`, fullPage: true });
       await page.getByRole('button', { name: t('Add user'), exact: true }).click();
       const translatedCreate = page.getByRole('dialog', { name: t('Add user'), exact: true });
-      await expect(translatedCreate.getByLabel(t('Role'), { exact: true })).toBeVisible();
+      await expect(translatedCreate.getByRole('button', { name: t('Role'), exact: true })).toBeVisible();
       await expect(translatedCreate.getByRole('button', { name: t('Add user'), exact: true })).toBeVisible();
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
       await page.screenshot({ path: `test-results/cms-roles-${language}-${width}.png`, fullPage: true });

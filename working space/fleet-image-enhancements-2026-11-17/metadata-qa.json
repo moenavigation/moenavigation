@@ -1,0 +1,646 @@
+{
+  "reviewedAt": "2026-11-16T21:59:45.005Z",
+  "scope": "Metadata removal only; original generated files remain unchanged outside the workspace. No website or database changes.",
+  "jobs": [
+    {
+      "key": "ranong-neutral",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-580f6e07-008d-47fc-a1d8-f2d9f3a7a4b3.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\ranong-neutral.png",
+      "reusedVerifiedOutput": true,
+      "inputBytes": 2701067,
+      "outputBytes": 2677401,
+      "inputSha256": "2b7bcc40af813a97c13f68e93e5846f7fe4ddf425f94e1ba2c0fd12823511fa9",
+      "outputSha256": "bd47bd4f84b2e7a7e7cc8f487f08fb18883e89c469294a84cf2392b5167a5d3d",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1448,
+      "height": 1086,
+      "channels": 4,
+      "decodedPixelSha256": "152bd1e0c41c05782a6cd6f73eb1501eeba1525376699e58493cd3a827157884",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "ranong-warm",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-bb1121f5-72fc-4783-b230-8843427d4a26.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\ranong-warm.png",
+      "reusedVerifiedOutput": true,
+      "inputBytes": 2586153,
+      "outputBytes": 2564260,
+      "inputSha256": "a3a55c3330779da9c3593f025d5182d0cbdaf318a6558f5d02ef7732e8d5fe5a",
+      "outputSha256": "be6cf3aceeb8fb5f2b0cd52f742e90edf2da05a28c328f03e27a695d19b32664",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1448,
+      "height": 1086,
+      "channels": 4,
+      "decodedPixelSha256": "e1d37a0671157da5022410747b2114b1d91f90009b7d61da5998e2f4d364b51e",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "moe2-neutral",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-4f53c1a1-ba85-4b8b-b10b-7bd068186e8c.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\moe2-neutral.png",
+      "reusedVerifiedOutput": true,
+      "inputBytes": 2916543,
+      "outputBytes": 2894650,
+      "inputSha256": "b3f02e7503d915fae573e398f11a058ada06831709dc46090554070b62f5d993",
+      "outputSha256": "27a3d600aa78fd94b1913eab32fea5566b25d1182c3a642d8d3802aeca081527",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1614,
+      "height": 974,
+      "channels": 4,
+      "decodedPixelSha256": "a5b985697b935c63b3f1afc7e4bf85156bc5a100fae15db18a34396d4ad1c1a2",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "moe2-warm",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-5e5f0462-d236-4442-ab25-28e3a99ad567.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\moe2-warm.png",
+      "reusedVerifiedOutput": true,
+      "inputBytes": 2822716,
+      "outputBytes": 2799050,
+      "inputSha256": "d3f74c58b12794fd44f4cb89be5417d87e6c72d41e5c0be4cb9aa3d7780ce78e",
+      "outputSha256": "b3f87a269178a591b0e5bec28c64dedc85c91e1694c02d0521150cb98403ce33",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1614,
+      "height": 974,
+      "channels": 4,
+      "decodedPixelSha256": "b6510e5628fedecb21182001572663f41e1be353654b24254a77f7392648c914",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "moe3-neutral",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-44d3745c-0b9a-41d1-83f0-1a80cc81a7e0.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\moe3-neutral.png",
+      "reusedVerifiedOutput": true,
+      "inputBytes": 2820037,
+      "outputBytes": 2796371,
+      "inputSha256": "04f0426e93a8bd4d297092a99bc641fbb7ca015d903a914e14ef77f90aad2843",
+      "outputSha256": "11902117fdca89d629cf411517f8b00e8cc9ae41487b1f9ea4faef913dee4e82",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1614,
+      "height": 974,
+      "channels": 4,
+      "decodedPixelSha256": "a3d8ecb176e2ec59f411fbb8823ccfd34cb2c51a8049acd93d5a1092b80b3ee1",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "moe3-warm",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-fead4fd2-d74c-45dc-9557-8a84beff38af.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\moe3-warm.png",
+      "reusedVerifiedOutput": true,
+      "inputBytes": 2812834,
+      "outputBytes": 2790941,
+      "inputSha256": "0a55347b01818c3e3c51ed160bda14ad17adf14945a0ec01343c38901e305a1e",
+      "outputSha256": "3c92ec73e2ae1a8b05a3c8f0eea42fe56ce174f8c33d2adea125d0c758c13c5d",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1614,
+      "height": 975,
+      "channels": 4,
+      "decodedPixelSha256": "35062d1d18beb8e4d8df35f90c7b8d8ce7a2f024bb26167d1404db174866f0b1",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "moe4-neutral",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-2b189e6c-4fb9-45cc-afcc-47f7979352db.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\moe4-neutral.png",
+      "reusedVerifiedOutput": true,
+      "inputBytes": 2827131,
+      "outputBytes": 2805238,
+      "inputSha256": "5767c8989772c39c0c2388b8e351616a1fd37415cdeb48cc6af938e9927f15f0",
+      "outputSha256": "029f99b32ea62f6ae42cf883ee906cf1a11d27b953780466d81af9cd2a7175ca",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1672,
+      "height": 941,
+      "channels": 4,
+      "decodedPixelSha256": "df4fce943d797cdfb171b9f531847df7768d86fe95cb016c38a6703826aa5454",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "moe4-warm",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-f78bddb1-af95-4021-8dc4-fee8e7877083.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\moe4-warm.png",
+      "reusedVerifiedOutput": true,
+      "inputBytes": 2732297,
+      "outputBytes": 2708631,
+      "inputSha256": "67b02290c0b6433e0ec0d2da6f2651a9fe1100c49488f7087dc64a5e1ca7fcf3",
+      "outputSha256": "d498c62ec39ae58e0ed6249a0cc91e4a3c9dea17269d003a0e08113311c10681",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1672,
+      "height": 941,
+      "channels": 4,
+      "decodedPixelSha256": "41963419a3a2cd30ad51df3a3bf791c5fc8aba0104bc144bba4e0d67316aea66",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "ranong-neutral-thai-fixed",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-324d6459-d6c9-402a-b8b2-a61a837eff70.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\ranong-neutral-thai-fixed.png",
+      "reusedVerifiedOutput": true,
+      "inputBytes": 2334863,
+      "outputBytes": 2311197,
+      "inputSha256": "4b2027de2b3afabefd106a2b64d680af291d84d7e1bc5815b6fe5e8dd297bef0",
+      "outputSha256": "aa868366c5fa0c68a216cd9b2195f8e1b4d22e5ac18032ce9ef71336b2d9b62a",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1448,
+      "height": 1086,
+      "channels": 4,
+      "decodedPixelSha256": "41fb1f06fcd5a1f0330f9c102fe5d08b641abd4bb2c16e6cf950948a8ad488c5",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "ranong-warm-thai-fixed",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-597767cd-90b5-412d-be5e-0a9dd586678e.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\ranong-warm-thai-fixed.png",
+      "reusedVerifiedOutput": true,
+      "inputBytes": 2262244,
+      "outputBytes": 2238578,
+      "inputSha256": "cb35c24b6165411e4fd03110b2bf136a00c1a5d2033f375f6cef987e216f53aa",
+      "outputSha256": "ac153addfdba75602a72efa454794c8b15d90eb7f50c408d358d55976774c505",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1448,
+      "height": 1086,
+      "channels": 4,
+      "decodedPixelSha256": "19b5e9d74e389f361130714edadc45961ed949d99de780febb8aef1c80f95473",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "moe2-neutral-thai-fixed",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-6d827e45-9c2c-42b0-9a67-2d9e903d1b21.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\moe2-neutral-thai-fixed.png",
+      "reusedVerifiedOutput": true,
+      "inputBytes": 2467596,
+      "outputBytes": 2445703,
+      "inputSha256": "60c937351ae0cd5b6516664b8e5e9b7e0c234dbf8bc184c887742249be1fbc2a",
+      "outputSha256": "fbdfe2e49d3bba1676016cdb4aecdc0d61f8c754da1a3b3c6148610db2f48306",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1614,
+      "height": 974,
+      "channels": 4,
+      "decodedPixelSha256": "ec85c1ce73bcb3fbb3b021a8f3229325240866c509755bedee17d261816f54e6",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "moe2-warm-thai-fixed",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-21966bca-8738-4b74-834f-38606bd09df5.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\moe2-warm-thai-fixed.png",
+      "reusedVerifiedOutput": true,
+      "inputBytes": 2398463,
+      "outputBytes": 2376570,
+      "inputSha256": "25c07f9d683306ae41acf728dc805cd6472a49becf10aa9dcbdc8c0e0e44aca0",
+      "outputSha256": "2749a52088e916981c5ee6b0f5853818dd1b40f85c65feba33d05b77dc7fb659",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1614,
+      "height": 974,
+      "channels": 4,
+      "decodedPixelSha256": "fbf40eb1904acf855be7df726c6e989368d1e70ad75d663158212018a3810a4f",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "moe3-neutral-thai-fixed",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-d651ab37-2ad5-4cea-93b3-b2e2045c82d0.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\moe3-neutral-thai-fixed.png",
+      "reusedVerifiedOutput": true,
+      "inputBytes": 2421125,
+      "outputBytes": 2399232,
+      "inputSha256": "ab5d6670b78ce7367bb0325767ba9b8235d0c253994d7f8610a59dd5c40aaae2",
+      "outputSha256": "2b52a1b5a22efe70ead0f1a22236b7e4c2c3437dbc8e5aa6531ec34ff22ed422",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1614,
+      "height": 975,
+      "channels": 4,
+      "decodedPixelSha256": "68cc0435f4d2dab6b1500d2f997421f01ce6c21a1052cf9e1b9c08f243497b3b",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "moe3-warm-thai-fixed",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-22f1d9bd-5675-4617-b9b5-c6e30cd87f76.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\moe3-warm-thai-fixed.png",
+      "reusedVerifiedOutput": false,
+      "inputBytes": 2413423,
+      "outputBytes": 2389757,
+      "inputSha256": "00889d36dd5e48d169a8aa1280a275bd6a3d9bd090af390e937301af64682428",
+      "outputSha256": "9c7883442e94fae7129537f166b3fbe2e94a6b04fb93332fd7a4d784efe80395",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1614,
+      "height": 975,
+      "channels": 4,
+      "decodedPixelSha256": "a6e7bcdac229122f6073ad53f6e5eed76d4fa3e1023d64dbc18a658dbdc55b3d",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "moe5-neutral",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-949aabe0-447c-48d7-9022-edd3713296a1.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\moe5-neutral.png",
+      "reusedVerifiedOutput": false,
+      "inputBytes": 2475166,
+      "outputBytes": 2451500,
+      "inputSha256": "20e048878df621efe373995a9200fa4f4e3295077a9188118c325f308b9d6182",
+      "outputSha256": "b7fbd491f2280a35481bd50397e9763f1686d24fdc674f355fc13db56ff16a3a",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1614,
+      "height": 975,
+      "channels": 4,
+      "decodedPixelSha256": "c3b8be3416c59c0d3951b2f64685c3538884b122b3b6d82dda5cf77f50ab87a3",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "moe5-warm",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-6fe50e4f-fa3c-4956-a4ec-2d3dc6a9a785.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\moe5-warm.png",
+      "reusedVerifiedOutput": false,
+      "inputBytes": 2522052,
+      "outputBytes": 2500159,
+      "inputSha256": "1c80569eb21f4f9d5b3267c0e0326bcfb7902fd19215e87da9772a4b43dd90de",
+      "outputSha256": "ffbafff19785d598cd6afd0a36d7f2f0977e4ea77b0c9004f65c458f55153b9c",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1614,
+      "height": 975,
+      "channels": 4,
+      "decodedPixelSha256": "8b951d0db6f90cfdc39668f8a8e6c750970b1ffb05aec47f7da6361c75c19f27",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "moe6-neutral",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-4506fb13-9c53-41fc-b160-340c4d6fb2d8.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\moe6-neutral.png",
+      "reusedVerifiedOutput": false,
+      "inputBytes": 2522379,
+      "outputBytes": 2498713,
+      "inputSha256": "27df53390e3cf8fbb1d600d852c49b362056a41fdcbfb164f4f4eaef67a25c08",
+      "outputSha256": "4649cad8536e63b16b7327c547a936c6ff90a70f00b91c223ba0a23065d1d8ab",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1614,
+      "height": 975,
+      "channels": 4,
+      "decodedPixelSha256": "f51d0dba6c4a0f222381793383d3157b0b17cd8716b89305f27ce2b348846af5",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "moe6-warm",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-f7edafd4-6e8e-4ec9-8281-645ea777b691.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\moe6-warm.png",
+      "reusedVerifiedOutput": false,
+      "inputBytes": 2468005,
+      "outputBytes": 2444339,
+      "inputSha256": "077385a24b616f4be3fdf691a94c142f0b5673efcb3c55afd090ea53842e0e66",
+      "outputSha256": "e833c661165c002653808706fe4c7cd0d44179d2ee15f281081310e8e92a457d",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1614,
+      "height": 975,
+      "channels": 4,
+      "decodedPixelSha256": "83c407c5103a29b9f433e1f7b2169e15a2a2967efb3fdef39d2d0f3011cf09c4",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "moe7-neutral",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-d25fca05-7d4f-44ff-b612-5a87a95cf588.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\moe7-neutral.png",
+      "reusedVerifiedOutput": false,
+      "inputBytes": 2474686,
+      "outputBytes": 2451020,
+      "inputSha256": "4a554b8ad63936b61f43721fd3da00b440dcb63cadb5856681550171bcc16638",
+      "outputSha256": "193991e22019dbde7fff79aa121f7213f147fb1adc1bbe198b091d6d623f69cd",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1672,
+      "height": 940,
+      "channels": 4,
+      "decodedPixelSha256": "7cdab473dce4f3d2fe1b8c478c2c2adc3bd0bf3d475742c294edc284f3aa5c0d",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    },
+    {
+      "key": "moe7-warm",
+      "input": "C:\\Users\\poomt\\.codex\\generated_images\\01a1e274-3213-7f00-8252-4230e4f41f90\\exec-bede716e-53d5-4b0d-8be6-f67ef579f192.png",
+      "output": "C:\\Coding\\2026\\moenavigation\\working space\\fleet-image-enhancements-2026-11-17\\drafts\\moe7-warm.png",
+      "reusedVerifiedOutput": false,
+      "inputBytes": 2504196,
+      "outputBytes": 2482303,
+      "inputSha256": "0338c4fcd618955b6f221be9354d27944ac642a6be4ab462f531826b7539f3aa",
+      "outputSha256": "03bb0232839439c8a77d6fb650d0726ad9facff1a5e48d7b1c3cc915773f1c55",
+      "inputChunks": [
+        "IHDR",
+        "caBX",
+        "IDAT",
+        "IEND"
+      ],
+      "outputChunks": [
+        "IHDR",
+        "IDAT",
+        "IEND"
+      ],
+      "removedChunks": [
+        "caBX"
+      ],
+      "width": 1673,
+      "height": 940,
+      "channels": 4,
+      "decodedPixelSha256": "99d67af12b649358778e5231b991910943f5752df5027686767782ec51e95df6",
+      "allChunkCrcsValid": true,
+      "encodedImageChunksUnchanged": true,
+      "decodedPixelsUnchanged": true,
+      "reencoded": false
+    }
+  ]
+}

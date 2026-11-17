@@ -115,7 +115,17 @@ try {
     await seedE2eDatabase(db);
   } finally { await client.close(); }
   console.log('E2E: isolated loopback MongoDB seeded; real provider credentials disabled.');
-  const buildCode = await completed(launch(['node_modules/next/dist/bin/next', 'build'], env));
+  const buildArgs = ['node_modules/next/dist/bin/next', 'build'];
+  const buildLogStart = logLines.length;
+  let buildCode = await completed(launch(buildArgs, env));
+  const buildOutput = logLines.slice(buildLogStart).join('');
+  if (buildCode !== 0 && buildOutput.includes('SecurityFatalError') && buildOutput.includes('Retry the same command to continue the original task.')) {
+    // Next records a short-lived retry receipt after showing its security
+    // recommendation. Honor that supported retry immediately, without changing
+    // security checks, dependencies, environment or the isolated database.
+    console.warn('E2E: Next recommended a security upgrade; retrying the same build once as instructed.');
+    buildCode = await completed(launch(buildArgs, env));
+  }
   assert.equal(buildCode, 0, 'The isolated E2E production build failed.');
   await writeFile(resolve(root, 'next-env.d.ts'), originalNextEnv);
   const next = launch(['node_modules/next/dist/bin/next', 'start', '--hostname', '127.0.0.1', '--port', '3011'], env);

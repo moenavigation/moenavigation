@@ -13,6 +13,7 @@ import { cmsRoles, resolveCmsRole, canManageUser, canAssignRole, type CmsRole } 
 import CmsAvatar from './CmsAvatar';
 import CmsUserPhotoDialog, { type UserPhotoDraft } from './CmsUserPhotoDialog';
 import CmsPasswordField from './CmsPasswordField';
+import SelectionDialog from './SelectionDialog';
 import { CmsNewUserDraft } from './cms-new-user-draft';
 import styles from './CmsUsersManager.module.css';
 
@@ -402,7 +403,7 @@ export default function CmsUsersManager({ ref, onPendingChange, username, role, 
         <section className={styles.photoSettings} aria-label={t('Profile photo')}><span className={styles.settingsAvatar}><CmsAvatar username={createUsername || t('New user')} avatar={createPhoto.prepared?.preview || createPhoto.avatar} /></span><div><h3>{t('Profile photo')}</h3><button type="button" className="button secondary" disabled={createInputsDisabled} onClick={event => { event.currentTarget.focus({ preventScroll: true }); void openCreatePhoto(); }}><Camera size={18} aria-hidden="true" />{t('Change profile photo')}</button><p className={styles.hint}>{t('Optional. The photo is saved when you add the user.')}</p></div></section>
         <form className={styles.form} onSubmit={create} autoComplete="off" aria-busy={busy}>
           <label>{t('Username')}<input name="username" autoComplete="off" placeholder={cmsInputPlaceholder(locale, 'newUsername')} value={createUsername} onChange={event => setCreateUsername(event.target.value)} required minLength={3} maxLength={40} pattern="[a-zA-Z0-9][a-zA-Z0-9._-]{2,39}" disabled={createInputsDisabled} /></label>
-          <div className={styles.field}><label htmlFor={createRoleId}>{t('Role')}</label><select id={createRoleId} name="role" value={createRole} onChange={event => setCreateRole(event.target.value as CmsRole)} disabled={createInputsDisabled}>{allowedRoles.map(value => <option key={value} value={value}>{value}</option>)}</select></div>
+          <div className={styles.field}><label htmlFor={createRoleId}>{t('Role')}</label><SelectionDialog id={createRoleId} label={t('Role')} value={createRole} onChange={value => setCreateRole(value as CmsRole)} disabled={createInputsDisabled} options={allowedRoles.map(value => ({ value, label: value }))} closeLabel={t('Close dialog')} /></div>
           <p className={styles.hint}>{t(roleDescriptions[createRole])}</p>
           <CmsPasswordField label="Password" name="password" autoComplete="new-password" minLength={14} disabled={createInputsDisabled} />
           <CmsPasswordField label="Confirm password" name="confirmPassword" autoComplete="new-password" minLength={14} disabled={createInputsDisabled} />
@@ -420,7 +421,7 @@ export default function CmsUsersManager({ ref, onPendingChange, username, role, 
         <form className={styles.form} onSubmit={event => void manage(event, 'edit')} autoComplete="off" aria-busy={busy}>
           <label>{t('Username')}<input name="username" autoComplete="off" value={selectedUser.username} readOnly disabled={pending} /></label>
           <p className={styles.hint}>{t('Usernames cannot be changed.')}</p>
-          <div className={styles.field}><label htmlFor={editRoleId}>{t('Role')}</label><select id={editRoleId} name="role" value={editRole} onChange={event => setEditRole(event.target.value as CmsRole)} disabled={pending}>{allowedRoles.map(value => <option key={value} value={value} disabled={lastDev && value !== 'Dev' || lastManager && value === 'Operator'}>{value}</option>)}</select></div>
+          <div className={styles.field}><label htmlFor={editRoleId}>{t('Role')}</label><SelectionDialog id={editRoleId} label={t('Role')} value={editRole} onChange={value => setEditRole(value as CmsRole)} disabled={pending} options={allowedRoles.map(value => ({ value, label: value, disabled: lastDev && value !== 'Dev' || lastManager && value === 'Operator' }))} closeLabel={t('Close dialog')} /></div>
           <p className={styles.hint}>{t(roleDescriptions[editRole])}</p>
           {lastDev && <p className={styles.hint}>{t('Keep at least one Dev account.')}</p>}
           {lastManager && <p className={styles.hint}>{t('Keep at least one Dev or Admin account.')}</p>}

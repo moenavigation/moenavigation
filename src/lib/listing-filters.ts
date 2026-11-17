@@ -1,12 +1,15 @@
+import { normalizePage } from './pagination';
+
 export const listingQueryLimit = 160;
-export type ListingFilters = { query: string; category: string };
+export type ListingFilters = { query: string; category: string; page?: number };
 type SearchValues = Pick<URLSearchParams, 'get'>;
 
-export function readListingFilters(search: SearchValues, categories?: readonly string[]): ListingFilters {
+export function readListingFilters(search: SearchValues, categories?: readonly string[], paginated = false): ListingFilters {
   const category = (search.get('category') || 'All').slice(0, 100);
   return {
     query: (search.get('q') || '').slice(0, listingQueryLimit),
     category: !categories || categories.includes(category) ? category : 'All',
+    ...(paginated ? { page: normalizePage(search.get('page')) } : {}),
   };
 }
 
@@ -16,6 +19,11 @@ export function writeListingFilters(search: string, filters: ListingFilters) {
   else params.delete('q');
   if (filters.category && filters.category !== 'All') params.set('category', filters.category.slice(0, 100));
   else params.delete('category');
+  if (filters.page !== undefined) {
+    const page = normalizePage(filters.page);
+    if (page > 1) params.set('page', String(page));
+    else params.delete('page');
+  }
   const query = params.toString();
   return query ? `?${query}` : '';
 }

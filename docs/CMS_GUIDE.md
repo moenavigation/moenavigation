@@ -94,12 +94,12 @@ Open the appropriate list, then choose **Add vessel**, **Add route**, **Add proj
 
 The text card for your current CMS language opens first. Expand the other language card to enter its translation. Both languages need a title and summary. Collapsing a card keeps your unsaved text.
 
-- Fleet items include **Vessel type**; Projects and News include **Category**. Suggestions come from existing items, and you can also type a new value. Choosing or typing in one language does not overwrite the other language.
+- Fleet items include **Vessel type**; Projects and News include **Category**. **Choose existing** opens saved suggestions, and you can also type a new value. Choosing or typing in one language does not overwrite the other language.
 - **Pictures** appears below the main text, with the main image and its descriptions in both languages.
 - Services include **Service icon** above Pictures. Select a symbol, then Save to update it on the homepage, service list, and service details. Cancel keeps the saved icon. Existing icons remain unchanged until you select a replacement.
 - Open **Detailed content** inside either language card for longer copy. Services, Projects, and News also have an optional content heading.
 - Projects and News include a **Publication date** field.
-- **Vessel specifications**, **More photos**, and **Route map and ports** start collapsed. Open them when you need those details. Saved values remain intact while these panels are closed.
+- **Vessel details**, **More photos**, **Route details**, and **Route map and ports** start collapsed. Open them when you need those details. Saved values remain intact while these panels are closed.
 
 Choose **Save** when the item is ready. The same upload, unsaved-change, and recovery behavior applies as for page content.
 
@@ -107,19 +107,21 @@ Choose **Save** when the item is ready. The same upload, unsaved-change, and rec
 
 Use **Settings → Website details** at `/cms/setting` for company names and contact information. The previous `/cms/account` URL redirects here. **Refresh workspace** updates lists while preserving unsaved website details. The button pauses briefly after each use to prevent repeated refreshes; if an area fails, the CMS names it and keeps the last loaded information visible. **Refresh details** loads the current saved version and asks before replacing edits. If another tab has saved newer details, refresh and review them before trying your change again.
 
-## Vessel specifications
+## Vessel details
 
-Fleet entries include an optional **Vessel specifications** panel. Enter approved values for IMO number, completed build year, length overall, beam, draft, deadweight, container capacity, flag state, and availability statement.
+Fleet entries include an optional **Vessel details** panel. It groups approved values into vessel identity (IMO number, completed build year and flag), **Dimension** (LOA, Breadth, Depth, Draft), **Container Capacity** (Nominal, Reefer Plug), and **Tonnage** (GRT, NRT, DWT, DWCC).
 
-- Leave unknown values blank. No specification values are generated automatically.
+- Leave unknown values blank. The public profile displays a dash with an accessible missing-value label. Values are never generated automatically; zero container or reefer counts remain distinct from missing information.
 - IMO numbers use seven digits without the `IMO` prefix. The check digit is validated; passing this check does not verify that the number belongs to this vessel.
-- Dimensions are metres, deadweight is tonnes, and container capacity is whole TEU.
-- Flag state and availability statements need both English and Thai text.
-- Availability is editorial text, not live tracking or a guaranteed booking.
+- Dimensions are metres. DWT and DWCC are tonnes; GRT and NRT are separate tonnage figures, not cargo mass. Nominal capacity is whole TEU and reefer plugs are whole units.
+- Flag state needs both English and Thai text.
+- Public profiles show vessel name and type followed by the three measurement groups. The former Specifications and Availability rows are removed. Historical availability text remains stored but is no longer an editing field or public row.
 
 The current IMO number format is documented by the [International Maritime Organization](https://www.imo.org/en/ourwork/iiis/pages/imo-identification-number-schemes.aspx).
 
 ## Route maps and ports
+
+**Route details** holds distance in nautical miles, container capacity in TEU, and sailing time in hours. Enter both ends of a range, or leave both blank; repeat an exact value at both ends. Keep missing or conflicting source figures blank. These particulars appear on the public route explorer and homepage.
 
 In a route's editor, open **Route map and ports** below Pictures. Enter the origin and destination port names and countries in Thai and English. Port information is optional for a route without a map.
 
@@ -127,13 +129,15 @@ Open **Map setup** to edit the route's points. **Set up map points** provides or
 
 Existing points keep their saved values and order unless you edit, add, or remove them. Updating a route's text or images does not replace its intermediate points. Closing the map panels preserves unfinished coordinate edits along with the rest of the editor.
 
-Choose **Edit points on map** to position points visually. Drag a numbered point to update its latitude and longitude, or choose **Selected point** and click/tap the map to place it. You can also type precise coordinates in the dialog. Once all points have valid locations, choose **Add point on map** and click/tap the map to add an intermediate point before the destination; **Cancel adding point** leaves the points unchanged. Remove points using Map setup. **Use map points** updates the draft, and the normal **Save** action saves the route. Cancel, Escape, or clicking outside the dialog discards its changes.
+Choose **Edit points on map** to position points visually. Drag a numbered point to update its latitude and longitude, or choose **Selected point** and click/tap the map to place it. You can also type precise coordinates in the dialog. Once all points have valid locations, choose **Add point on map** and click/tap the map. The new intermediate point is inserted between the two points on the nearest route segment, selected automatically, and the sequence is renumbered. Existing origin and destination points keep their positions. **Cancel adding point** leaves the points unchanged. Remove points using Map setup. **Use map points** updates the draft, and the normal **Save** action saves the route. Cancel, Escape, or clicking outside the dialog discards its changes.
 
 To suggest intermediate points automatically, enter distinct, valid **Origin point** and **Destination point** coordinates, then choose **Generate sea route**. Review the map and choose **Use generated points** to replace the intermediate points in your draft. The origin, destination, port details, and other edits stay unchanged. Cancel, Escape, or clicking outside the preview leaves the draft as it was; a failed calculation can be retried. Save the route normally to publish the result.
 
 Generated routes are approximate website illustrations based on a maritime network and mapped coastlines. The generator tries to avoid land first. If it cannot find a clear path, it shows the best available network route with a land-contact note; you can still apply it and adjust the points before saving. Review coastal areas before saving; these are not navigational routes or verified vessel tracks. Uncovered areas, dateline crossings, or routes too detailed for the 100-point limit may still need manual points.
 
 For any point, choose **Use Google Maps link** and paste a link to a pin. Coordinates are extracted automatically; review them with **Open in Google Maps**, then choose **Use coordinates** to update just that point. Cancel or Escape leaves it unchanged. Full coordinate/pin links and supported Google Maps short share links work; if a named place does not include its pin coordinates or a link contains directions for several points, copy the pin's full link or enter its coordinates manually. A plain map-view link uses its center coordinates, so review the location before applying. Save the route normally when finished. Every valid coordinate row links to Google Maps. On the public map and generated-route preview, origin and destination stay visible while intermediate markers blend into the line until hovered or focused. Any point can open Google Maps, including by touch; on the public map, select a point first and use its **Open in Google Maps** link.
+
+The public map softens longer offshore bends for presentation. Port endpoints and detailed approaches retain their coordinates; offshore intermediate markers and their Google Maps links follow the displayed curve. This presentation does not rewrite the saved points in the CMS.
 
 ## Images
 

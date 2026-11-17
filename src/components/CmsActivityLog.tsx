@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Check, Database, History, Inbox, Layers, LockKeyhole, Search, SlidersHorizontal, UserRound, X } from 'lucide-react';
+import { History, LockKeyhole, Search, X } from 'lucide-react';
 import { cmsErrorText, cmsRequest } from '@/lib/cms-client';
 import { useCmsLocale } from '@/lib/cms-locale';
 import { cmsLogGroups, type CmsLogCategoryFilter, type CmsLogItem, type CmsLogPage } from '@/lib/cms-logs';
-import Dialog from './Dialog';
+import SelectionDialog from './SelectionDialog';
 import CmsWorkingPanel from './CmsWorkingPanel';
 import styles from './CmsActivityLog.module.css';
 
@@ -28,13 +28,11 @@ function ActivityLogContent({ revision, compact, initialSearch, initialCategory 
   const { t, locale } = useCmsLocale();
   const [search, setSearch] = useState(initialSearch);
   const [category, setCategory] = useState<CmsLogCategoryFilter>(initialCategory);
-  const [filterOpen, setFilterOpen] = useState(false);
   const [data, setData] = useState<(CmsLogPage & { key: string }) | null>(null);
   const [loading, setLoading] = useState(true);
   const [failure, setFailure] = useState<{ key: string; message: string } | null>(null);
   const request = useRef<AbortController | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
-  const filterTrigger = useRef<HTMLButtonElement>(null);
   const selectId = useId();
   const params = new URLSearchParams();
   if (search.trim()) params.set('q', search.trim());
@@ -67,10 +65,10 @@ function ActivityLogContent({ revision, compact, initialSearch, initialCategory 
     return () => { clearTimeout(timer); request.current?.abort(); request.current = null; };
   }, [load, revision, search]);
   function clear() { setSearch(''); setCategory('All'); searchRef.current?.focus({ preventScroll: true }); }
-  function chooseGroup(value: CmsLogCategoryFilter) { setSearch(''); setCategory(value); setFilterOpen(false); }
+  function chooseGroup(value: CmsLogCategoryFilter) { setSearch(''); setCategory(value); }
 
   if (compact) return <section className={styles.compact} aria-labelledby="dashboard-activity">
-    <div className={styles.compactHeader}><div className={styles.heading}><span className={styles.icon}><History size={21} aria-hidden="true" /></span><div><h2 id="dashboard-activity">{t('Recent activity')}</h2><p>{t('Latest entries from Logs.')}</p></div></div><button ref={filterTrigger} type="button" className={styles.filterButton} aria-label={t('Filter activity')} aria-haspopup="dialog" aria-expanded={filterOpen} onClick={event => { event.currentTarget.focus({ preventScroll: true }); setFilterOpen(true); }}><SlidersHorizontal size={18} aria-hidden="true" /><span>{t('Filter')}</span>{activeFilters > 0 && <span className={styles.filterCount} aria-hidden="true">{activeFilters}</span>}</button></div>
+    <div className={styles.compactHeader}><div className={styles.heading}><span className={styles.icon}><History size={21} aria-hidden="true" /></span><div><h2 id="dashboard-activity">{t('Recent activity')}</h2><p>{t('Latest entries from Logs.')}</p></div></div><SelectionDialog label={t('Filter activity')} value={category} options={cmsLogGroups.map(group => ({ value: group.value, label: t(group.label) }))} onChange={value => chooseGroup(value as CmsLogCategoryFilter)} closeLabel={t('Close filters')} className={styles.filterButton} /></div>
     {activeFilters > 0 && <div className={styles.filterChips}>{search.trim() && <span><Search size={15} aria-hidden="true" />{search.trim()}</span>}{category !== 'All' && <span>{t(categories.find(option => option.value === category)!.label)}</span>}<button type="button" className={styles.textButton} onClick={clear}>{t('Clear filters')}</button></div>}
     <CmsWorkingPanel active={loadingInitial || loading} title="Loading logs…" />
     {error && <div className={styles.error} role="alert">{t(error)}<button type="button" className="button secondary" disabled={loading} onClick={() => void load()}>{t('Try again')}</button></div>}
@@ -80,18 +78,12 @@ function ActivityLogContent({ revision, compact, initialSearch, initialCategory 
       <span className={styles.previewTarget}>{targetLabel(item)}</span><div className={styles.previewMeta}><span>{actorLabel(item)}</span><time dateTime={item.occurredAt}>{formatDate(item.occurredAt)}</time></div>
     </li>)}</ul>}
     <Link href={`/cms/logs${queryKey ? `?${queryKey}` : ''}`} className={styles.textButton}>{t('View all logs')}<History size={17} aria-hidden="true" /></Link>
-    <Dialog open={filterOpen} onClose={() => setFilterOpen(false)} triggerRef={filterTrigger} className={styles.choiceDialog} title={t('Filter activity')} closeLabel={t('Close filters')}>
-      <div className={styles.groupOptions}>{cmsLogGroups.map(group => {
-        const Icon = group.value === 'data_changes' ? Database : group.value === 'user_activity' ? UserRound : group.value === 'enquiry_activity' ? Inbox : Layers;
-        return <button key={group.value} type="button" aria-pressed={category === group.value} onClick={() => chooseGroup(group.value)}><span className={styles.groupIcon}><Icon size={21} aria-hidden="true" /></span><span className={styles.groupCopy}><strong>{t(group.label)}</strong><span>{t(group.description)}</span></span><Check className={styles.groupCheck} size={19} aria-hidden="true" /></button>;
-      })}</div>
-    </Dialog>
   </section>;
 
   return <section className={styles.panel} aria-labelledby="activity-log-heading">
     <div className={styles.heading}><span className={styles.icon}><History size={23} aria-hidden="true" /></span><div><h2 id="activity-log-heading">{t('Activity log')}</h2><p>{t('See who changed your website and when.')}</p></div></div>
     <p className={styles.retention}><LockKeyhole size={18} aria-hidden="true" /><span>{t('Logs are read-only for every role, including Dev. Each entry expires permanently after one year.')}</span></p>
-    <div className={styles.filters}><label className={styles.search}><Search size={20} aria-hidden="true" /><input ref={searchRef} type="search" maxLength={160} aria-label={t('Search logs')} placeholder={t('Search users or item names…')} value={search} onChange={event => setSearch(event.target.value)} /></label><div className={styles.category}><label htmlFor={selectId}>{t('Activity type')}</label><select id={selectId} value={category} onChange={event => setCategory(event.target.value as typeof category)}>{categories.map(option => <option key={option.value} value={option.value}>{t(option.label)}</option>)}</select></div></div>
+    <div className={styles.filters}><label className={styles.search}><Search size={20} aria-hidden="true" /><input ref={searchRef} type="search" maxLength={160} aria-label={t('Search logs')} placeholder={t('Search users or item names…')} value={search} onChange={event => setSearch(event.target.value)} /></label><div className={styles.category}><label htmlFor={selectId}>{t('Activity type')}</label><SelectionDialog id={selectId} label={t('Activity type')} value={category} onChange={value => setCategory(value as CmsLogCategoryFilter)} options={categories.map(option => ({ value: option.value, label: t(option.label) }))} closeLabel={t('Close dialog')} /></div></div>
     <div className={styles.results}><span role={loadingInitial ? undefined : 'status'}>{!loadingInitial && t('Showing {count} of {total} log entries', { count: current?.items.length ?? 0, total: current?.total ?? 0 })}</span>{(search || category !== 'All') && <button type="button" className={styles.textButton} onClick={clear}><X size={16} aria-hidden="true" />{t('Clear filters')}</button>}</div>
     <CmsWorkingPanel active={loadingInitial || loading} title="Loading logs…" />
     {error && <div className={styles.error} role="alert">{t(error)}<button type="button" className="button secondary" disabled={loading} onClick={() => void load()}>{t('Try again')}</button></div>}

@@ -1,3 +1,4 @@
+import { chooseDialogOption } from './selection-helpers';
 import type { Page } from '@playwright/test';
 import { test, expect, login, E2E_ADMIN, E2E_BASE_URL, loginChallengeData } from './fixtures';
 import { cmsMainThai } from '../../src/lib/cms-main-th';
@@ -20,7 +21,7 @@ test('administrators can be added, reset and removed without exposing or retaini
   await page.getByRole('button', { name: 'Add user', exact: true }).click();
   const add = page.getByRole('dialog', { name: 'Add user', exact: true });
   await add.getByRole('textbox', { name: 'Username' }).fill('second-admin');
-  await add.getByLabel('Role', { exact: true }).selectOption('Admin');
+  await chooseDialogOption(add.getByRole('button', { name: 'Role', exact: true }), 'Admin');
   await add.getByLabel('Password', { exact: true }).fill('A-strong-new-admin-password-2026');
   await add.getByLabel('Confirm password', { exact: true }).fill('A-strong-new-admin-password-2026');
   await add.getByLabel('Your current password', { exact: true }).fill(E2E_ADMIN.password);

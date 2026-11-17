@@ -16,6 +16,9 @@
 .pictureHeading h3 { margin: 0; font-size: var(--font-lead); }
 .pictureHeading svg { color: var(--blue); flex-shrink: 0; }
 .pictures > p { margin: .6rem 0 0; }
+.statisticsFields { display: grid; gap: 1rem; min-width: 0; }
+.statisticCard { display: grid; min-width: 0; gap: 1rem; padding: 1.1rem; margin: 0; border: 1px solid var(--line); border-radius: .6rem; background: #fff; }
+.statisticCard legend { padding-inline: .35rem; color: var(--navy); font-weight: 600; }
 .imageDescriptions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 .language > summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 @media (hover: hover) and (pointer: fine) { .language > summary:hover { background: #edf4ff; } }

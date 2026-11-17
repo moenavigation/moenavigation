@@ -1,0 +1,17 @@
+.trigger { display: inline-flex; align-items: center; justify-content: center; width: 100%; min-width: 0; min-height: var(--target-size); padding: .75rem .9rem; border: 1px solid var(--line); border-radius: .4rem; background: var(--white); color: var(--navy); font: inherit; text-align: center; line-height: 1.5; overflow-wrap: anywhere; cursor: pointer; transition: background-color .12s ease, border-color .12s ease; }
+.trigger:disabled { opacity: .55; cursor: not-allowed; }
+.dialog { width: min(32rem,calc(100% - 2rem)); opacity: 0; transform: translateY(.45rem) scale(.985); transition: opacity .14s ease, transform .14s ease, overlay .14s allow-discrete, display .14s allow-discrete; }
+.dialog[open] { width: min(32rem,calc(100% - 2rem)); opacity: 1; transform: translateY(0) scale(1); }
+.dialog::backdrop { opacity: 0; transition: opacity .14s ease, overlay .14s allow-discrete, display .14s allow-discrete; }
+.dialog[open]::backdrop { opacity: 1; }
+.choices { display: grid; gap: .75rem; min-width: 0; }
+.search { width: 100%; min-width: 0; min-height: var(--target-size); }
+.options { display: grid; gap: .6rem; min-width: 0; max-height: min(58dvh,30rem); overflow-y: auto; overscroll-behavior: contain; padding: .2rem; }
+.option { position: relative; display: grid; place-items: center; width: 100%; min-width: 0; min-height: var(--target-size); padding: .85rem 2.5rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--white); color: var(--navy); font: inherit; line-height: 1.5; text-align: center; overflow-wrap: anywhere; cursor: pointer; transition: background-color .12s ease, border-color .12s ease; }
+.option[aria-pressed="true"] { border-color: var(--blue); background: var(--pale); font-weight: 600; }
+.option:disabled { opacity: .45; cursor: not-allowed; }
+.check { position: absolute; inset-inline-end: .85rem; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.trigger:focus-visible, .option:focus-visible, .search:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+@starting-style { .dialog[open] { opacity: 0; transform: translateY(.45rem) scale(.985); } .dialog[open]::backdrop { opacity: 0; } }
+@media (hover: hover) and (pointer: fine) { .trigger:not(:disabled):hover, .option:not(:disabled):hover { border-color: var(--blue); background: var(--pale); } }
+@media (prefers-reduced-motion: reduce) { .trigger, .option, .dialog, .dialog::backdrop { transition: none; } }

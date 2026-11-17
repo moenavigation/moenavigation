@@ -19,7 +19,7 @@
   border: 0;
   border-radius: 50%;
   overflow: hidden;
-  background: var(--white);
+  background: transparent;
   box-shadow: 0 .35rem 1.25rem rgb(7 31 64 / .2), 0 0 0 1px rgb(8 43 80 / .08);
   pointer-events: auto;
   transition: box-shadow .2s ease, background-color .2s ease;
@@ -39,6 +39,7 @@
   right: -.5rem;
   bottom: calc(100% + .4rem);
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   justify-items: end;
   gap: .65rem;
   width: max-content;
@@ -73,7 +74,8 @@
 }
 .itemText {
   min-width: 0;
-  max-width: 15rem;
+  width: max-content;
+  max-width: calc(100vw - var(--fab-size) - 5rem);
   padding: .65rem .9rem;
   border: 1px solid var(--line);
   border-radius: .7rem;
@@ -102,7 +104,6 @@
 }
 .itemIcon img { width: 100%; height: 100%; object-fit: contain; border-radius: inherit; }
 .trigger:focus-visible, .item:focus-visible { outline: 3px solid #588ac3; outline-offset: 3px; }
-.trigger:active { background: var(--pale); }
 .item:active .itemText { background: var(--pale); }
 
 :global(body:has(dialog[open])) .root,

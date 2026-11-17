@@ -1,5 +1,11 @@
 {
   "reviewDate": "2026-11-16",
+  "currentUsePolicy": {
+    "selectedByUserOn": "2026-11-17",
+    "primarySource": "Visible vessel-particulars PDF values take priority over conflicting legacy HTML values.",
+    "savedOriginalsDirectory": "C:\\Coding\\2026\\00-Files\\moe-navigation\\PDF",
+    "appliedDifferences": "RANONG MOE nominal capacity is 72 TEU; each of the six container vessels has 5 reefer plugs. Missing PDF fields remain blank."
+  },
   "discovery": "Public WordPress media API; these PDFs were not linked in the seven vessel detail-page link sets.",
   "scope": "Historical company-published ship-particulars sheets, not independently authenticated current vessel certificates.",
   "method": "All seven PDFs downloaded with HTTP 200, text extracted with pypdf and complete one-page Poppler renderings visually inspected. Visible technical fields were compared with the direct HTML tables. Stray hidden text was excluded from the interpreted values.",

@@ -8,7 +8,7 @@ export type MappedRoute = ContentRecord & {
   waypoints: [number, number][];
 };
 
-export const ROUTE_PAGE_SIZE = 6;
+export const ROUTE_PAGE_SIZE = 10;
 export type RouteFilters = { query: string; origin: string; destination: string; page: number };
 export const emptyRouteFilters: RouteFilters = { query: '', origin: '', destination: '', page: 1 };
 

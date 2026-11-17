@@ -10,6 +10,7 @@ import type * as Leaflet from "leaflet";
 import type { MappedRoute } from "@/lib/route-explorer";
 import { contentText } from "@/lib/public-content";
 import { googleMapsPointUrl } from "@/lib/google-maps";
+import { createRouteDisplayGeometry } from "@/lib/route-curve";
 
 const tileUrl = process.env.NEXT_PUBLIC_MAP_TILE_URL || "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const osmAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>';
@@ -75,7 +76,7 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
     map.fitBounds(leaflet.latLngBounds(route.waypoints), {
       paddingTopLeft: compact ? [24, 24] : [36, 36],
       paddingBottomRight: compact ? [24, 80] : [36, 60],
-      maxZoom: 7,
+      maxZoom: 9,
       animate: animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     });
   };
@@ -238,7 +239,10 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
     if (selected) {
       const originName = local(locale, selected.origin.name, selected.origin.nameTh);
       const points = selected.waypoints;
-      points.slice(0, -1).forEach((point, index) => {
+      const display = createRouteDisplayGeometry(points);
+      // Offshore control points follow the visible curve. Popup coordinates and
+      // Google Maps links use that same position; stored CMS geometry is intact.
+      display.markerPoints.slice(0, -1).forEach((point, index) => {
         const isOrigin = index === 0;
         const label = isOrigin ? originName : local(locale, `Intermediate point ${index}`, `จุดระหว่างทางที่ ${index}`);
         const action = local(locale, `View map point: ${label}`, `ดูจุดบนแผนที่: ${label}`);
@@ -281,8 +285,9 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
           if (focusedPointKey === pointKey) element.focus({ preventScroll: true });
         }
       });
-      leaflet.polyline(points, { color: "#fff", weight: 10, opacity: 0.92, interactive: false, lineCap: "round", lineJoin: "round" }).addTo(overlays);
-      leaflet.polyline(points, { color: "#0b527f", weight: 4, opacity: 0.96, interactive: false, lineCap: "round", lineJoin: "round" }).addTo(overlays);
+      const displayPoints = display.path;
+      leaflet.polyline(displayPoints, { color: "#fff", weight: 10, opacity: 0.92, interactive: false, lineCap: "round", lineJoin: "round", smoothFactor: 0 }).addTo(overlays);
+      leaflet.polyline(displayPoints, { color: "#0b527f", weight: 4, opacity: 0.96, interactive: false, lineCap: "round", lineJoin: "round", smoothFactor: 0 }).addTo(overlays);
       const lastFitted = lastFittedRef.current;
       const geometry = JSON.stringify(points);
       if (!lastFitted || lastFitted.id !== selectedId || lastFitted.mapVersion !== mapVersion || lastFitted.geometry !== geometry) {
@@ -312,7 +317,7 @@ export default function InteractiveRouteMap({ locale, selectedId, routes, onSele
       <div ref={containerRef} className={styles.viewport} role="region" aria-label={mapLabel} aria-describedby={descriptionId} />
       {!mapVersion && !mapFailed && <p className={styles.loading} role="status">{local(locale, "Loading map…", "กำลังโหลดแผนที่…")}</p>}
       <div className={styles.notice} aria-hidden="true">
-        <strong>{originName} → {selectedName}</strong>
+        <span>{local(locale, "Illustrative connection", "ภาพประกอบเส้นทางเชื่อมต่อ")}</span><strong>{originName} · {selectedName}</strong>
       </div>
       <div className={styles.controls} role="group" aria-label={local(locale, "Map controls", "ตัวควบคุมแผนที่")}>
         <button type="button" disabled={controlsDisabled || zoom >= 12} onClick={() => mapRef.current?.zoomIn()} aria-label={local(locale, "Zoom in", "ขยายแผนที่")}><Plus size={20} aria-hidden="true" /></button>

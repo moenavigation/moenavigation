@@ -30,7 +30,7 @@
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .mapFrame :global(.leaflet-container) { font-family: var(--font-family); }
 .mapFrame :global(.leaflet-tooltip) { padding: .3rem .55rem; border: 1px solid #b6d3e2; color: var(--navy); font-size: var(--font-small); font-weight: 600; }
-.mapFrame :global(.leaflet-control-attribution) { max-width: calc(100% - .5rem); padding: .2rem .4rem; font-size: var(--font-small); line-height: 1.4; white-space: normal; }
+.mapFrame :global(.leaflet-control-attribution) { padding: .1rem .3rem; background: transparent; font-size: var(--font-map-attribution); line-height: 1.3; white-space: nowrap; }
 .mapFrame :global(.leaflet-control-attribution a) { color: #0b527f; text-decoration: underline; text-underline-offset: .12rem; }
 .mapControls { position: absolute; z-index: 500; top: .75rem; right: .75rem; display: flex; overflow: hidden; border: 1px solid #c8d8e6; border-radius: .45rem; background: #fff; box-shadow: 0 .25rem 1rem #07273f14; }
 .mapControls button { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; padding: 0; border: 0; background: #fff; color: var(--navy); }

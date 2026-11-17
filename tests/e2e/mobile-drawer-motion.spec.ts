@@ -8,6 +8,8 @@ test('mobile menu enters from the right on first open and reopen', async ({ page
   const drawer = page.getByRole('dialog', { name: 'Menu', exact: true });
 
   for (let cycle = 0; cycle < 2; cycle++) {
+    const canvas = (await page.locator('[data-site-header]').boundingBox())!;
+    const canvasRight = canvas.x + canvas.width;
     // Start before the real click: waiting for a stable dialog first would miss
     // showModal autofocus scrolling an offscreen panel into view instantly.
     const recording = await page.evaluateHandle(() => {
@@ -44,12 +46,15 @@ test('mobile menu enters from the right on first open and reopen', async ({ page
     expect(frames.length, 'capture the entrance, not only the final position').toBeGreaterThan(8);
     const first = frames[0];
     const last = frames.at(-1)!;
-    const viewportWidth = page.viewportSize()!.width;
-    expect(first.left, 'the panel begins beyond the right edge').toBeGreaterThanOrEqual(viewportWidth - 2);
-    expect(last.right, 'the open panel rests at the right edge').toBeCloseTo(viewportWidth, 0);
-    expect(last.left).toBeCloseTo(viewportWidth - last.width, 0);
+    // Anchor to the independently rendered page canvas. Chromium's clientWidth
+    // can include its reserved scrollbar gutter while the header/dialog do not.
+    const openCanvas = (await page.locator('[data-site-header]').boundingBox())!;
+    expect(openCanvas.x + openCanvas.width, 'opening preserves the page canvas').toBeCloseTo(canvasRight, 0);
+    expect(first.left, 'the panel begins beyond the right edge').toBeGreaterThanOrEqual(canvasRight - 2);
+    expect(last.right, 'the open panel rests at the page canvas right edge').toBeCloseTo(canvasRight, 0);
+    expect(last.left).toBeCloseTo(canvasRight - last.width, 0);
     expect(first.left - last.left, 'the panel visibly travels into place').toBeGreaterThan(last.width * 0.9);
-    expect(frames.some(frame => frame.left > last.left + 20 && frame.left < viewportWidth - 20), 'capture visible intermediate positions').toBe(true);
+    expect(frames.some(frame => frame.left > last.left + 20 && frame.left < canvasRight - 20), 'capture visible intermediate positions').toBe(true);
     for (const [index, frame] of frames.entries()) {
       expect(frame.scrollLeft, 'autofocus must not horizontally scroll the dialog').toBe(0);
       expect(frame.left, 'the panel never overshoots its resting position').toBeGreaterThanOrEqual(last.left - 1);

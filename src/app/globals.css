@@ -3,6 +3,7 @@
   --line: #dbe5ee; --pale: #f1f6fa; --white: #fff; --radius: .65rem;
   --font-small: 1rem; --font-body: 1rem; --font-lead: 1.2rem;
   --font-h3: 1.25rem; --font-h2: 2rem; --font-h1: 2.25rem; --font-hero: 2.6rem; --font-map: 1.2rem;
+  --font-map-attribution: .625rem;
   --gutter: 5vw; --content-width: 88rem; --header-height: 5.5rem;
   --space-section: 4.5rem; --target-size: 2.75rem;
   --shadow-card: 0 .5rem 1.9rem rgb(18 48 77 / .08);
@@ -10,8 +11,9 @@
   color-scheme: light;
 }
 * { box-sizing: border-box; }
-html { font-size: 100%; scroll-behavior: smooth; scroll-padding-top: 7rem; }
-html:has([data-cms-root]) { scrollbar-gutter: stable; }
+/* Modal scroll locks must preserve the same layout width on public pages and CMS. */
+html { font-size: 100%; scroll-behavior: smooth; scroll-padding-top: 7rem; scrollbar-gutter: stable; }
+html:has(dialog[open]) { background: color-mix(in srgb, #071f40 72%, var(--white)); }
 /* Keep the reserved gutter from flashing white beside a CMS modal backdrop. */
 html:has([data-cms-root] dialog[open]) { background: color-mix(in srgb, #071d43 56%, var(--pale)); }
 body { margin: 0; font-family: var(--font-family); font-size: var(--font-body); line-height: 1.6; color: var(--ink); background: #fff; }
@@ -57,9 +59,3 @@ textarea { resize: vertical; min-height: 8rem; }
 @media (min-width:3840px) { html { font-size:212.5%; } }
 @media (min-width:4800px) { html { font-size:250%; } }
 @media (prefers-reduced-motion:reduce) { html { scroll-behavior: auto; } *,*::before,*::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
-
-.leaflet-bottom { opacity: 0 !important; }
-.leaflet-bottom { display: none !important; }
-/* .leaflet-bottom { opacity: 0 !important; }
-.leaflet-bottom { display: none !important; }
- */

@@ -24,7 +24,10 @@ test('confirmed fleet names, categories, order and all detail URLs work in both 
       await expect(cards.nth(index)).toHaveAttribute('href', `${prefix}/fleet/${id}`);
       await expect(cards.nth(index)).toContainText(locale === 'en' ? en : th);
       await expect(cards.nth(index)).toContainText(locale === 'en' ? category : categoryTh);
-      await expect(cards.nth(index).getByRole('img')).toHaveAttribute('alt', locale === 'en' ? /illustrative.+not a photograph of this vessel/ : /ภาพประกอบ.+ไม่ใช่ภาพถ่ายของเรือลำนี้/);
+      const imageDescription = id === 'dumai-moe'
+        ? (locale === 'en' ? /illustrative.+not a photograph of this vessel/ : /ภาพประกอบ.+ไม่ใช่ภาพถ่ายของเรือลำนี้/)
+        : (locale === 'en' ? /AI-enhanced vessel photograph/ : /ภาพถ่ายเรือที่ปรับปรุงด้วย AI/);
+      await expect(cards.nth(index).getByRole('img')).toHaveAttribute('alt', imageDescription);
       const response = await request.get(`${prefix}/fleet/${id}`);
       expect(response.status()).toBe(200);
       const html = await response.text();
@@ -40,7 +43,7 @@ test('confirmed fleet names, categories, order and all detail URLs work in both 
   }
 });
 
-test('Thai mobile search opens the new crane vessel and its illustrative gallery without overflow', async ({ page }, testInfo) => {
+test('Thai mobile search opens the crane vessel and its corrected photo gallery without overflow', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 320, height: 780 });
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -50,16 +53,16 @@ test('Thai mobile search opens the new crane vessel and its illustrative gallery
   await expect(page.getByRole('status')).toHaveText('1 ลำ');
   await page.getByRole('main').getByRole('link', { name: /โม4/ }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('โม4');
-  const illustration = page.getByRole('img', { name: /โม4 — ภาพประกอบ/ });
-  await expect(illustration).toBeVisible();
-  await expect.poll(() => illustration.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+  const photograph = page.getByRole('img', { name: /โมไลน์ 4 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI/ });
+  await expect(photograph).toBeVisible();
+  await expect.poll(() => photograph.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
   const galleryTrigger = page.getByRole('button', { name: 'เปิดแกลเลอรีภาพ', exact: true });
   await galleryTrigger.click();
   const gallery = page.getByRole('dialog');
   await expect(gallery).toBeVisible();
   await gallery.getByRole('button', { name: 'ภาพถัดไป', exact: true }).click();
   await expect(gallery).toContainText('2 / 2');
-  await expect(gallery.getByRole('img')).toHaveAttribute('alt', /ภาพประกอบ.+ไม่ใช่ภาพถ่ายของเรือลำนี้/);
+  await expect(gallery.getByRole('img')).toHaveAttribute('alt', /โมไลน์ 4 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI ในแสงแดดโทนอุ่น/);
   await gallery.press('Escape');
   await expect(gallery).not.toBeVisible();
   await expect(galleryTrigger).toBeFocused();

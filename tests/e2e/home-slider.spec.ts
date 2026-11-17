@@ -20,7 +20,8 @@ async function expectHeroLayout(page: Page, ratio: number, thai = false) {
   const title = (await heading.boundingBox())!;
   expect(frame.width / frame.height).toBeCloseTo(ratio, 2);
   expect(title.y, 'introductory copy follows the image').toBeGreaterThanOrEqual(frame.y + frame.height);
-  expect(title.x + title.width / 2, 'headline is horizontally centered').toBeCloseTo(page.viewportSize()!.width / 2, 0);
+  // The stable scrollbar gutter reserves space outside the rendered canvas.
+  expect(title.x + title.width / 2, 'headline is horizontally centered within the banner canvas').toBeCloseTo(frame.x + frame.width / 2, 0);
   await expect(heading).toHaveCSS('text-align', 'center');
   await expect(image).toHaveCSS('object-fit', 'cover');
   await expect(image).toHaveCSS('object-position', '50% 50%');

@@ -18,6 +18,9 @@ All 245 discovered media URLs, including 86 responsive image variants, downloade
 | Seven PDF comparisons and discrepancies | [fleet/pdf-particulars.json](fleet/pdf-particulars.json) |
 | Compliance document and annual endorsement inspection | [fleet/doc-inspection.json](fleet/doc-inspection.json) |
 | Five routes, corporate profile and contact evidence | [routes-company.json](routes-company.json) |
+| Reviewed route pins, path provenance and geography limitations | [route-geography.json](route-geography.json) |
+| Applied About copy, original photos and migration provenance | [about/README.md](about/README.md) |
+| About draft, original photographs and guarded import scope | [about/README.md](about/README.md) |
 | Every public media-library item | [media-library.json](media-library.json) |
 | Download URLs, local paths, file sizes and hashes | [media-inventory.json](media-inventory.json) |
 | HTML counter values, contact links and metadata observations | [additional-findings.json](additional-findings.json) |
@@ -77,6 +80,16 @@ The following figures are published on the [old route overview](https://www.moe-
 The Surat Thani and Songkhla headings say BKK/LCB, but their endpoint rows specify Laem Chabang. Do not apply these figures to a separate Bangkok-origin service without confirmation. Ranong–Yangon and Laem Chabang–Sihanoukville cross national borders even though the old category calls them coastal routes.
 
 Unused library maps also depict Laem Chabang connections with Mae Klong, Samut Sakhon and Bang Pakong, plus a Ranong–Chittagong connection. These are additional historical leads from `map1.jpg`, `map2.jpg`, `map4.jpg`, and `map9.jpg`; they have no accompanying confirmed timetable or capacity record. Their schematic lines should not be imported as route coordinates.
+
+## Route migration completed on 17 November 2026
+
+The reviewed maintenance import added all five route records, retained the three previous sample routes as Draft, and updated only the Routes page title, description and eyebrow in both languages. Existing page bodies, images, unrelated records and fleet research were preserved. The applied plan hash was `f9997aeb8df55c3e661b8ef990e770468e9064d7a4074014820b8088782cbc65`; the pre-import canonical BSON EJSON backup is `.local/legacy-route-import-2026-11-17/before-1794861479070.json`. Saved-content readback and an identical no-op replay were verified. Local `/routes` displayed five routes without JavaScript errors; this does not establish a deployed release or current service availability.
+
+The imported particulars match the source figures above, except that **Surat Thani sailing time remains blank** because the overview and detail pages disagree. The bilingual maintenance data is in `scripts/data/legacy-trading-routes.ts`; the guarded, repeatable import planner is `scripts/data/legacy-route-import-plan.ts`.
+
+The maps use documented port-area reference pins and reviewed illustrative paths rather than the old schematic map coordinates. Thai pins come from Royal Thai Navy Hydrographic Department tide-station publications; Yangon uses Myanmar Port Authority and World Port Index references, and Sihanoukville uses the World Port Index. Surat Thani identifies the Ko Prap / Bandon Bay approach area, Ranong a harbour-area station, and Yangon an inner-harbour reference. These references do not identify the service's operating berth; converted decimal digits do not imply survey precision.
+
+Paths combine a maritime network, OpenStreetMap river geometry and reviewed broad approaches, with 60, 10, 14, 39 and 5 points respectively in the table's route order. The coarse land mask lacks Bangkok river cutouts and flags the final Yangon harbour-reference connector. These limitations are retained in [route-geography.json](route-geography.json), alongside source URLs, rejected malformed coordinates and attribution. The paths illustrate geographic connections; they are not verified navigation, sailing-distance measurements, terminal assignments or live vessel positions. Supporting PDFs, map extracts and review images are archived in `.local/route-geography-2026-11-17`.
 
 ## Facts to reconcile before reuse
 

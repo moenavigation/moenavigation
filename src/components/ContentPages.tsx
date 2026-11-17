@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "./NavigationLink";
 import { usePublicSearchParams } from "@/lib/use-public-search-params";
-import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
-import { Anchor, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Compass, Container, Fuel, LifeBuoy, MapPin, Maximize2, RotateCcw, Search, ShieldCheck, Ship, X } from "lucide-react";
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
+import { Anchor, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Maximize2, RotateCcw, Search, Ship, X } from "lucide-react";
 import { href, local, type Locale } from "@/lib/content";
 import type { ContentImage } from "@/lib/cms-types";
 import { categoryName } from "@/lib/category-name";
@@ -12,6 +12,7 @@ import { contentText } from "@/lib/public-content";
 import { usePublicContent } from "@/lib/use-public-content";
 import { listingHref, listingQueryLimit, matchesListingSearch, readListingFilters } from "@/lib/listing-filters";
 import { useListingFilters } from "@/lib/use-listing-filters";
+import { paginateItems } from "@/lib/pagination";
 import { ServiceIcon } from "@/lib/service-icons";
 import { AdditionalSections, ContentBody } from "./EditorialContent";
 import Dialog from "./Dialog";
@@ -19,11 +20,14 @@ import RoutesPage from "./RoutesPage";
 import ContactPage from "./ContactPage";
 import PrivacyPage from "./PrivacyPage";
 import VesselPhotoPlaceholder from "./VesselPhotoPlaceholder";
+import VesselParticulars from "./VesselParticulars";
+import Pagination from "./Pagination";
+import AboutPage from "./AboutPage";
+import GalleryImage from "./GalleryImage";
 import styles from "./ContentPages.module.css";
 
 type PageProps = { locale: Locale; page: string; slug?: string };
 type Article = { id: string; title: { en: string; th: string }; description: { en: string; th: string }; body: { en: string; th: string }; bodyHeading: { en: string; th: string }; imageAlt: { en: string; th: string }; image: string; category: string; categoryTh?: string; date?: string };
-const serviceIcons = { Ship, Fuel, Container, Compass, Anchor, LifeBuoy, ShieldCheck, MapPin };
 
 function Action({ locale, to = "contact", children, secondary = false }: { locale: Locale; to?: string; children: ReactNode; secondary?: boolean }) {
   return <Link className={`button ${secondary ? "secondary" : ""}`} href={href(locale, to)}>{children}<ArrowRight aria-hidden="true" size={20} /></Link>;
@@ -42,19 +46,6 @@ function Callout({ locale }: { locale: Locale }) {
   const section = sections.find((entry) => entry.id === "shared-callout" && entry.parentId === "shared");
   if (!section) return null;
   return <section className={styles.callout}>{section.image && <Image src={section.image} alt="" fill sizes="100vw" />}<div className={styles.calloutContent}><p className="eyebrow">{contentText(section,"eyebrow",locale)}</p><h2>{contentText(section,"title",locale)}</h2><p>{contentText(section,"description",locale)}</p><ContentBody text={contentText(section,"body",locale)} /><Action locale={locale}>{local(locale, "Contact our team", "ติดต่อทีมงาน")}</Action></div></section>;
-}
-
-function About({ locale }: { locale: Locale }) {
-  const { pages, sections } = usePublicContent();
-  const page = pages.find((item) => item.id === "about");
-  const intro = sections.find((section) => section.id === "about-intro" && section.parentId === "about");
-  const valueIds = ["about-vision", "about-mission", "about-values"];
-  const values = sections.filter((section) => section.parentId === "about" && valueIds.includes(section.id));
-  if (!page) return null;
-  return <><section className={styles.aboutHero}><Image src={page.image} alt={contentText(page,"imageAlt",locale) || contentText(page,"title",locale)} fill loading="eager" fetchPriority="high" sizes="100vw" /><div className={`container ${styles.heroCopy}`}><p className="eyebrow">{contentText(page,"eyebrow",locale)}</p><h1>{contentText(page,"title",locale)}</h1><p>{contentText(page,"description",locale)}</p></div></section><div className="container section">
-    {intro && <section className={styles.aboutIntro}><div className={styles.aboutPhoto}>{intro.image && <Image src={intro.image} alt={contentText(intro,"imageAlt",locale) || contentText(intro,"title",locale)} fill loading="eager" sizes="(max-width: 760px) 100vw, 50vw" />}</div><div className={styles.aboutCopy}><p className="eyebrow">{contentText(intro,"eyebrow",locale)}</p><h2>{contentText(intro,"title",locale)}</h2><p>{contentText(intro,"description",locale)}</p><ContentBody text={contentText(intro,"body",locale)} /><Link className={styles.textLink} href={href(locale,"services")}>{local(locale,"Explore our services","ดูบริการของเรา")}<ArrowRight size={20} aria-hidden="true" /></Link></div></section>}
-    {values.length>0 && <section className={styles.values} aria-label={local(locale,"Vision, mission and values","วิสัยทัศน์ พันธกิจ และค่านิยม")}>{values.map((value) => { const Icon=serviceIcons[value.icon as keyof typeof serviceIcons] || Compass; return <article key={value.id}><span className={styles.valueIcon}><Icon aria-hidden="true" /></span><div><h3>{contentText(value,"title",locale)}</h3><p>{contentText(value,"description",locale)}</p><ContentBody text={contentText(value,"body",locale)} /></div></article>; })}</section>}
-    <ContentBody text={contentText(page,"body",locale)} /><AdditionalSections pageId="about" locale={locale} exclude={["about-intro",...valueIds]} /><Callout locale={locale} /></div></>;
 }
 
 function Services({ locale, slug }: { locale: Locale; slug?: string }) {
@@ -134,30 +125,53 @@ function Empty({ locale, reset }: { locale: Locale; reset: () => void }) {
 function Fleet({ locale, slug }: { locale: Locale; slug?: string }) {
   const { vessels, pages } = usePublicContent();
   const page = pages.find((item) => item.id === "fleet");
-  const categories = ["All", ...new Set(vessels.map((item) => item.type))];
-  const { category, query, setCategory, setQuery, reset } = useListingFilters(categories);
+  const categories = useMemo(() => ["All", ...new Set(vessels.map((item) => item.type))], [vessels]);
+  const { category, query, page: requestedPage = 1, setCategory, setQuery, setPage, replacePage, reset } = useListingFilters(categories, true);
   const searchRef = useRef<HTMLInputElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const scrollToPage = useRef(false);
+  const filtered = vessels.filter((item) => (category === "All" || category === item.type) && matchesListingSearch(query, [item.name, item.nameTh, item.type, categoryName("th", item.type, item.typeTh), item.description.en, item.description.th]));
+  const result = paginateItems(filtered, requestedPage, 18);
+  useEffect(() => {
+    if (slug) return;
+    const actual = new URLSearchParams(window.location.search);
+    const current = readListingFilters(actual, categories, true);
+    // Wait for query hydration before normalizing an entrance URL against its filtered result count.
+    if (current.query !== query || current.category !== category || current.page !== requestedPage) return;
+    const canonicalPage = result.page > 1 ? String(result.page) : null;
+    if (actual.get('page') !== canonicalPage) replacePage(result.page);
+  }, [slug, categories, category, query, requestedPage, result.page, replacePage]);
+  useEffect(() => {
+    if (!scrollToPage.current) return;
+    scrollToPage.current = false;
+    gridRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
+  }, [result.page]);
+  function changePage(nextPage: number) {
+    if (nextPage === result.page) return;
+    scrollToPage.current = true;
+    setPage(nextPage);
+  }
   function resetFilters() {
     reset();
     searchRef.current?.focus();
   }
   if (slug) return <VesselDetail locale={locale} slug={slug} />;
   const categoryTranslations = Object.fromEntries(categories.map((type) => [type, vessels.find((item) => item.type === type && item.typeTh)?.typeTh]));
-  const filtered = vessels.filter((item) => (category === "All" || category === item.type) && matchesListingSearch(query, [item.name, item.nameTh, item.type, categoryName("th", item.type, item.typeTh), item.description.en, item.description.th]));
   return <div className="container section">
     <Heading eyebrow={contentText(page,"eyebrow",locale)} title={contentText(page,"title",locale)} description={contentText(page,"description",locale)} action={<Action locale={locale} to={`contact?subject=${encodeURIComponent(local(locale,"Vessel enquiry","สอบถามข้อมูลเรือ"))}`} secondary>{local(locale,"Discuss vessel needs","แจ้งความต้องการใช้เรือ")}</Action>} />
     <Filters locale={locale} categories={categories} categoryTranslations={categoryTranslations} selected={category} onSelect={setCategory} query={query} onQuery={setQuery} searchRef={searchRef} placeholder={local(locale, "Search vessels", "ค้นหาเรือ")} />
     <ResultsSummary locale={locale} active={category !== "All" || Boolean(query)} reset={resetFilters}>{local(locale, `${filtered.length} ${filtered.length === 1 ? "vessel" : "vessels"}`, `${filtered.length} ลำ`)}</ResultsSummary>
-    {filtered.length ? <div className={styles.fleetGrid}>{filtered.map((item, index) => <Link href={listingHref(href(locale, `fleet/${item.id}`), { query, category })} key={item.id} className={styles.fleetCard}>
+    {filtered.length ? <div className={styles.fleetGrid} ref={gridRef}>{result.items.map((item, index) => <Link href={listingHref(href(locale, `fleet/${item.id}`), { query, category, page: result.page })} key={item.id} className={styles.fleetCard}>
       <div className={styles.fleetImage}>{item.image ? <Image src={item.image} alt={item.imageAlt[locale] || local(locale, item.name, item.nameTh)} fill loading={index < 3 ? "eager" : "lazy"} sizes="(max-width: 650px) 100vw, (max-width: 1100px) 50vw, 33vw" /> : <VesselPhotoPlaceholder locale={locale} />}</div>
       <span className={styles.fleetCardInfo}><span className={styles.fleetIdentity}><span className={styles.fleetType}><CategoryName locale={locale} category={item.type} categoryTh={item.typeTh} /></span><strong>{local(locale, item.name, item.nameTh)}</strong></span><span className={styles.fleetAction}>{local(locale, "View vessel", "ดูข้อมูลเรือ")}<ChevronRight aria-hidden="true" size={19} /></span></span>
     </Link>)}</div> : <Empty locale={locale} reset={resetFilters} />}
+    {result.total > 0 && <Pagination page={result.page} totalPages={result.totalPages} onPageChange={changePage} label={local(locale, "Fleet pages", "หน้ากองเรือ")} previousLabel={local(locale, "Previous fleet page", "หน้ากองเรือก่อนหน้า")} nextLabel={local(locale, "Next fleet page", "หน้ากองเรือถัดไป")} />}
     <ContentBody text={contentText(page,"body",locale)} /><AdditionalSections pageId="fleet" locale={locale} exclude={["vessel-planning"]} />
   </div>;
 }
 
 function BackLink({ locale, page }: { locale: Locale; page: string }) {
-  const filters = readListingFilters(usePublicSearchParams());
+  const filters = readListingFilters(usePublicSearchParams(), undefined, page === "fleet");
   const names: Record<string, [string, string]> = { fleet: ["Back to fleet", "กลับไปยังกองเรือ"], services: ["Back to services", "กลับไปยังบริการ"], projects: ["Back to topics", "กลับไปยังหัวข้อทั้งหมด"], news: ["Back to articles", "กลับไปยังบทความ"] };
   return <Link className={styles.back} href={listingHref(href(locale, page), filters)}><ArrowLeft size={20} aria-hidden="true" />{local(locale, ...(names[page] || ["Back", "กลับ"] as [string, string]))}</Link>;
 }
@@ -176,7 +190,7 @@ function Gallery({ locale, images, title }: { locale: Locale; images: ContentIma
   }, [open, images.length]);
   if (!images.length) return <div className={styles.gallery}><div className={styles.galleryMain}><VesselPhotoPlaceholder locale={locale} /></div></div>;
   const controls = images.length > 1 ? <><button className={`${styles.galleryControl} ${styles.prev}`} type="button" onClick={() => change(-1)} aria-label={local(locale, "Previous image", "ภาพก่อนหน้า")}><ChevronLeft aria-hidden="true" /></button><button className={`${styles.galleryControl} ${styles.next}`} type="button" onClick={() => change(1)} aria-label={local(locale, "Next image", "ภาพถัดไป")}><ChevronRight aria-hidden="true" /></button><span className={styles.counter} aria-live="polite">{activeIndex + 1} / {images.length}</span></> : null;
-  return <div className={styles.gallery}><div className={styles.galleryMain}><Image src={images[activeIndex].url} alt={local(locale, images[activeIndex].alt, images[activeIndex].altTh) || title} fill loading="eager" fetchPriority="high" sizes="(max-width: 850px) 100vw, 65vw" /><button ref={triggerRef} className={`${styles.galleryControl} ${styles.expand}`} type="button" onClick={() => setOpen(true)} aria-label={local(locale, "Open image gallery", "เปิดแกลเลอรีภาพ")}><Maximize2 size={21} aria-hidden="true" /></button>{controls}</div>{images.length > 1 && <div className={styles.thumbnails}>{images.map((src, thumbnail) => <button type="button" key={`${src.url}-${thumbnail}`} aria-label={local(locale, `Show image ${thumbnail + 1}`, `แสดงภาพที่ ${thumbnail + 1}`)} aria-pressed={activeIndex === thumbnail} onClick={() => setIndex(thumbnail)}><Image src={src.url} alt="" fill sizes="(max-width: 850px) 25vw, 16vw" /></button>)}</div>}<Dialog open={open} onClose={() => setOpen(false)} triggerRef={triggerRef} title={title} closeLabel={local(locale, "Close gallery", "ปิดแกลเลอรี")}><div className={styles.lightbox}>{open && <Image src={images[activeIndex].url} alt={local(locale, images[activeIndex].alt, images[activeIndex].altTh) || title} fill loading="eager" sizes="95vw" />}{controls}</div><p className={styles.lightboxCaption}>{images.length > 1 ? local(locale, "Use the arrows or arrow keys to explore. Press Escape to close.", "เลื่อนดูด้วยปุ่มลูกศรหรือแป้นลูกศร กด Escape เพื่อปิด") : local(locale, "Press Escape to close.", "กด Escape เพื่อปิด")}</p></Dialog></div>;
+  return <div className={styles.gallery}><div className={styles.galleryMain}><GalleryImage src={images[activeIndex].url} alt={local(locale, images[activeIndex].alt, images[activeIndex].altTh) || title} locale={locale} highPriority sizes="(max-width: 850px) 100vw, 65vw" /><button ref={triggerRef} className={`${styles.galleryControl} ${styles.expand}`} type="button" onClick={() => setOpen(true)} aria-label={local(locale, "Open image gallery", "เปิดแกลเลอรีภาพ")}><Maximize2 size={21} aria-hidden="true" /></button>{controls}</div>{images.length > 1 && <div className={styles.thumbnails}>{images.map((src, thumbnail) => <button type="button" key={`${src.url}-${thumbnail}`} aria-label={local(locale, `Show image ${thumbnail + 1}`, `แสดงภาพที่ ${thumbnail + 1}`)} aria-pressed={activeIndex === thumbnail} onClick={() => setIndex(thumbnail)}><Image src={src.url} alt="" fill sizes="(max-width: 850px) 25vw, 16vw" /></button>)}</div>}<Dialog open={open} onClose={() => setOpen(false)} triggerRef={triggerRef} title={title} closeLabel={local(locale, "Close gallery", "ปิดแกลเลอรี")}><div className={styles.lightbox}>{open && <GalleryImage src={images[activeIndex].url} alt={local(locale, images[activeIndex].alt, images[activeIndex].altTh) || title} locale={locale} sizes="95vw" />}{controls}</div><p className={styles.lightboxCaption}>{images.length > 1 ? local(locale, "Use the arrows or arrow keys to explore. Press Escape to close.", "เลื่อนดูด้วยปุ่มลูกศรหรือแป้นลูกศร กด Escape เพื่อปิด") : local(locale, "Press Escape to close.", "กด Escape เพื่อปิด")}</p></Dialog></div>;
 }
 
 function VesselDetail({ locale, slug }: { locale: Locale; slug: string }) {
@@ -187,17 +201,10 @@ function VesselDetail({ locale, slug }: { locale: Locale; slug: string }) {
   const images = [{url:vessel.image,alt:vessel.imageAlt.en || vessel.name,altTh:vessel.imageAlt.th || vessel.nameTh},...vessel.gallery].filter((image,index,all) => image.url.trim() && all.findIndex((item) => item.url === image.url) === index);
   const vesselName = local(locale, vessel.name, vessel.nameTh);
   const specs = vessel.specs;
-  const number = (value: number) => new Intl.NumberFormat(locale === "th" ? "th-TH" : "en-GB", { maximumFractionDigits: 2 }).format(value);
-  const specificationRows: [string, string][] = [];
-  if (specs?.imo) specificationRows.push([local(locale, "IMO number", "หมายเลข IMO"), specs.imo]);
-  if (specs?.yearBuilt) specificationRows.push([local(locale, "Year built (CE)", "ปีที่สร้าง (ค.ศ.)"), String(specs.yearBuilt)]);
-  if (specs?.lengthM) specificationRows.push([local(locale, "Length", "ความยาว"), `${number(specs.lengthM)} ${local(locale, "m", "ม.")}`]);
-  if (specs?.beamM) specificationRows.push([local(locale, "Beam", "ความกว้าง"), `${number(specs.beamM)} ${local(locale, "m", "ม.")}`]);
-  if (specs?.draftM) specificationRows.push([local(locale, "Draft", "ระยะกินน้ำลึก"), `${number(specs.draftM)} ${local(locale, "m", "ม.")}`]);
-  if (specs?.deadweightT) specificationRows.push([local(locale, "Deadweight", "ระวางบรรทุก"), `${number(specs.deadweightT)} ${local(locale, "tonnes", "ตัน")}`]);
-  if (specs?.capacityTeu !== undefined) specificationRows.push([local(locale, "Container capacity", "ความจุตู้คอนเทนเนอร์"), `${number(specs.capacityTeu)} TEU`]);
-  if (specs?.flag || specs?.flagTh) specificationRows.push([local(locale, "Flag", "ประเทศที่จดทะเบียนเรือ"), local(locale, specs.flag || specs.flagTh || "", specs.flagTh || specs.flag || "")]);
-  const availability = specs && local(locale, specs.availability || specs.availabilityTh || "", specs.availabilityTh || specs.availability || "");
+  const identityRows: [string, string][] = [];
+  if (specs?.imo) identityRows.push([local(locale, "IMO number", "หมายเลข IMO"), specs.imo]);
+  if (specs?.yearBuilt) identityRows.push([local(locale, "Year built (CE)", "ปีที่สร้าง (ค.ศ.)"), String(specs.yearBuilt)]);
+  if (specs?.flag || specs?.flagTh) identityRows.push([local(locale, "Flag", "ประเทศที่จดทะเบียนเรือ"), local(locale, specs.flag || specs.flagTh || "", specs.flagTh || specs.flag || "")]);
   return <div className="container section">
     <BackLink locale={locale} page="fleet" />
     <section className={styles.vesselDetail}>
@@ -207,15 +214,14 @@ function VesselDetail({ locale, slug }: { locale: Locale; slug: string }) {
         <div className={styles.specifications}><h2>{local(locale, "Vessel details", "รายละเอียดเรือ")}</h2><dl>
           <div><dt>{local(locale, "Vessel name", "ชื่อเรือ")}</dt><dd>{vesselName}</dd></div>
           <div><dt>{local(locale, "Vessel type", "ประเภทเรือ")}</dt><dd><CategoryName locale={locale} category={vessel.type} categoryTh={vessel.typeTh} /></dd></div>
-          {specificationRows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
-          {!specificationRows.length && <div><dt>{local(locale, "Specifications", "ข้อมูลทางเทคนิค")}</dt><dd>{local(locale, "Pending verification", "รอการยืนยัน")}</dd></div>}
-          <div><dt>{local(locale, "Availability", "ความพร้อมให้บริการ")}</dt><dd>{availability || local(locale, "Pending confirmation", "รอการยืนยัน")}</dd></div>
+          {identityRows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
         </dl></div>
         <p className={styles.vesselDescription}>{vessel.description[locale]}</p>
         <ContentBody text={vessel.body[locale]} />
         <Action locale={locale} to={`contact?subject=${encodeURIComponent(vesselName)}`}>{local(locale, "Enquire about this vessel", "สอบถามเกี่ยวกับเรือลำนี้")}</Action>
       </div>
     </section>
+    <VesselParticulars locale={locale} specs={specs} />
     {planning && <section className={styles.vesselPlanning} aria-label={local(locale, "Planning a vessel enquiry", "ข้อมูลสำหรับสอบถามเรื่องเรือ")}><div><p className="eyebrow">{contentText(planning,"eyebrow",locale)}</p><h2>{contentText(planning,"title",locale)}</h2></div><div><p>{contentText(planning,"description",locale)}</p><ContentBody text={contentText(planning,"body",locale)} /></div></section>}
   </div>;
 }
@@ -316,7 +322,7 @@ function CustomPage({ locale, page }: { locale: Locale; page: string }) {
 }
 
 export function ContentPage({ locale, page, slug }: PageProps) {
-  if (page === "about") return <About locale={locale} />;
+  if (page === "about") return <AboutPage locale={locale} />;
   if (page === "services") return <Services locale={locale} slug={slug} />;
   if (page === "fleet") return <Fleet locale={locale} slug={slug} />;
   if (page === "routes") return <RoutesPage locale={locale} />;

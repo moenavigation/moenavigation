@@ -54,11 +54,25 @@ test('activity selector has four simple options and Escape preserves the view an
   await expect(dialog.getByRole('searchbox')).toHaveCount(0);
   await expect(dialog.getByRole('combobox')).toHaveCount(0);
   await expect(dialog.getByRole('button', { name: 'Apply filters', exact: true })).toHaveCount(0);
+  await expect(dialog.locator('p, footer')).toHaveCount(0);
   for (const label of ['All activities', 'Data changes', 'User activity', 'Enquiry activity']) {
-    await expect(dialog.getByRole('button', { name: new RegExp(`^${label}`) })).toBeVisible();
+    const option = dialog.getByRole('button', { name: label, exact: true });
+    await expect(option).toBeVisible();
+    expect(await option.evaluate(element => getComputedStyle(element).textAlign)).toBe('center');
   }
   await expect(dialog.getByRole('button', { name: /^All activities/ })).toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.press('Escape');
+  await expect(dialog).not.toBeVisible();
+  await expect(trigger).toBeFocused();
+  expect(await rowIds(page)).toEqual(original);
+  expect(requests).toBe(0);
+  await trigger.click();
+  await dialog.getByRole('button', { name: 'Close filters', exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+  await expect(trigger).toBeFocused();
+  await trigger.click();
+  await expect(dialog).toBeVisible();
+  await page.mouse.click(5, 5);
   await expect(dialog).not.toBeVisible();
   await expect(trigger).toBeFocused();
   expect(await rowIds(page)).toEqual(original);
@@ -110,7 +124,7 @@ test('choosing a group applies immediately across the full history and carries i
   expect(new URL(page.url()).searchParams.get('category')).toBe('data_changes');
   expect(new URL(page.url()).searchParams.has('q')).toBe(false);
   const full = page.getByRole('region', { name: 'Activity log', exact: true });
-  await expect(full.getByRole('combobox', { name: 'Activity type', exact: true })).toHaveValue('data_changes');
+  await expect(full.getByRole('button', { name: 'Activity type', exact: true })).toHaveAttribute('data-selection-value', 'data_changes');
   await expect(full.locator('[data-log-id]')).toHaveCount(9);
   expect(await full.locator('[data-log-id]').evaluateAll(rows => rows.map(row => row.getAttribute('data-log-id')))).toEqual(dataIds);
   await expect(full.locator('tbody button')).toHaveCount(0);

@@ -30,7 +30,7 @@
 .capabilityCopy h2 { font-size: var(--font-h3); margin: 0; min-width: 0; overflow-wrap: anywhere; }
 .capabilityCopy p { color: var(--muted); line-height: 1.5; font-size: var(--font-small); }
 .capabilityCopy .cardAction { margin-top: auto; padding-top: .75rem; }
-.fleetGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.15rem; }
+.fleetGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.15rem; scroll-margin-top: calc(var(--header-height) + 1.5rem); }
 .fleetCard { min-width: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: white; color: var(--navy); transition: border-color .2s, box-shadow .2s; }
 .fleetImage { position: relative; aspect-ratio: 1.65; overflow: hidden; background: var(--pale); }
 .fleetImage img { object-fit: cover; object-position: center 55%; transition: transform .45s ease; }
@@ -63,25 +63,7 @@
 .newsListItem :global(.eyebrow) { margin-bottom: .35rem; }
 .newsListItem h2 { font-size: var(--font-h3); margin-bottom: .5rem; }
 .newsListItem .cardAction { margin-top: auto; }
-.aboutHero { min-height: 26rem; position: relative; isolation: isolate; display: flex; align-items: center; overflow: hidden; background: var(--navy); }
-.aboutHero > img { object-fit: cover; object-position: center 53%; z-index: -2; }
-.aboutHero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgb(0 32 68 / .84), rgb(0 32 68 / .25) 55%, transparent); }
-.heroCopy { padding-block: 4rem; color: white; }
-.heroCopy h1 { margin: .7rem 0 .6rem; }
-.heroCopy > p:last-child { font-size: var(--font-lead); max-width: 30rem; color: white; }
-.heroCopy :global(.eyebrow) { color: #d5e3f3; }
-.aboutIntro { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: center; }
-.aboutPhoto { position: relative; aspect-ratio: 1.95; border-radius: var(--radius); overflow: hidden; }
-.aboutPhoto img, .detailPhoto img, .contactPhoto img { object-fit: cover; }
-.aboutCopy h2 { white-space: pre-line; margin: .65rem 0 1.2rem; }
-.aboutCopy p:not(:global(.eyebrow)) { color: var(--muted); line-height: 1.65; font-size: var(--font-body); }
-.textLink { display: inline-flex; align-items: center; gap: .75rem; color: var(--navy); font-weight: 650; text-underline-offset: .3rem; margin-top: .6rem; }
-.values { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; margin-top: 2rem; }
-.values article { border-radius: var(--radius); background: var(--pale); padding: 1.8rem; display: flex; align-items: center; gap: 1.3rem; }
-.valueIcon { width: 4.7rem; height: 4.7rem; border-radius: 50%; flex-shrink: 0; background: #e1edf8; display: grid; place-items: center; }
-.valueIcon svg { width: 2.5rem; height: 2.5rem; stroke-width: 1.5; }
-.values h3 { font-size: var(--font-h3); margin: 0 0 .45rem; }
-.values p { color: var(--muted); line-height: 1.5; font-size: var(--font-small); margin: 0; }
+.detailPhoto img, .contactPhoto img { object-fit: cover; }
 .callout { position: relative; isolation: isolate; overflow: hidden; border-radius: var(--radius); margin-top: 3.5rem; min-height: 17rem; background: var(--navy); color: white; }
 .callout > img { object-fit: cover; object-position: center 60%; z-index: -2; }
 .callout::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgb(0 36 74 / .97), rgb(0 36 74 / .75) 50%, rgb(0 36 74 / .12)); }
@@ -287,14 +269,13 @@
   .filterButtons button:not(.activeFilter):hover { background: #e2edf8; }
   .routeOptions button:hover { background: #e8f2fa; }
   .galleryControl:hover { background: rgb(0 23 47 / .82); }
-  .textLink:hover, .back:hover, .clearDraft:hover { color: var(--blue); }
+  .back:hover, .clearDraft:hover { color: var(--blue); }
 }
 @media (max-width: 1100px) {
   .grid, .fleetGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .capabilityCard { grid-template-columns: 9rem minmax(0, 1fr); }
   .newsListItem { grid-template-columns: 9rem minmax(0, 1fr); }
   .articleEditorial { gap: 2.5rem; }
-  .values article { padding: 1.5rem; flex-direction: column; align-items: flex-start; }
   .vesselDetail { gap: 1rem 1.5rem; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); }
   .routesLayout { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
   .routePanel { padding: 1.25rem; }
@@ -318,16 +299,6 @@
   .formGrid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 760px) {
-  .aboutHero { min-height: 26rem; align-items: flex-start; }
-  .aboutHero > img { object-position: 62% center; }
-  .aboutHero::after { background: linear-gradient(90deg, rgb(0 32 68 / .77), rgb(0 32 68 / .15)), linear-gradient(0deg, transparent, rgb(0 32 68 / .22)); }
-  .heroCopy { padding-top: 3rem; padding-bottom: 3rem; }
-  .heroCopy > p:last-child { max-width: 24rem; }
-  .aboutIntro { grid-template-columns: 1fr; gap: 1.7rem; }
-  .aboutCopy { grid-row: 1; }
-  .aboutPhoto { aspect-ratio: 1.85; }
-  .values { grid-template-columns: 1fr; }
-  .values article { flex-direction: row; align-items: center; }
   .calloutContent { padding: 2rem; }
   .filters { flex-direction: column; gap: 1rem; }
   .search { order: -1; width: 100%; min-width: 0; }
@@ -365,9 +336,6 @@
   .heading { margin-bottom: 1.5rem; }
   .filterButtons { gap: .55rem; }
   .filterButtons button { flex: 1 1 auto; }
-  .aboutHero { min-height: 25rem; }
-  .heroCopy > p:last-child { max-width: 18rem; }
-  .values article { padding: 1.5rem; gap: 1.2rem; }
   .callout { margin-top: 2.5rem; }
   .calloutContent { padding: 1.75rem; }
   .callout::after { background: rgb(0 36 74 / .82); }
@@ -402,8 +370,6 @@
 @media (max-width: 380px) {
   .fleetCardInfo { align-items: flex-start; flex-direction: column; gap: .4rem; }
   .filterButtons button { padding-inline: .65rem; }
-  .values article { padding: 1.25rem; }
-  .valueIcon { width: 3.7rem; height: 3.7rem; }
   .contactForm { padding: 1.15rem; }
   .routePanel { padding: 1rem; }
 }

@@ -9,8 +9,8 @@
 .search input[type='search'] { width: 100%; min-width: 0; min-height: 1.75rem; padding: 0; border: 0; outline: none; color: var(--navy); background: transparent; }
 .select { display: grid; gap: .35rem; flex: 1 1 12rem; min-width: 0; }
 .select label { font-weight: 600; }
-.select select { width: 100%; min-width: 0; min-height: 3.25rem; padding: .7rem .75rem; border: 1px solid var(--line); border-radius: .45rem; color: var(--navy); background: #fff; }
-.search:focus-within, .select select:focus-visible, .clear:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.select > button { width: 100%; min-width: 0; min-height: 3.25rem; padding: .7rem .75rem; border: 1px solid var(--line); border-radius: .45rem; color: var(--navy); background: #fff; }
+.search:focus-within, .select > button:focus-visible, .clear:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 .results { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; min-height: 2.5rem; color: var(--muted); }
 .clear { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.75rem; padding: .35rem .2rem; border: 0; color: var(--navy); background: transparent; font-weight: 600; cursor: pointer; }
 .list, .loading { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; gap: 1rem; list-style: none; padding: 0; margin: 0; }

@@ -1,0 +1,962 @@
+{
+  "reviewedDate": "2026-11-17",
+  "scope": "Source-backed port-area pins and reviewed illustrative geographic paths; not vessel navigation, a berth assignment, current schedules or confirmation of active operations.",
+  "coordinateOrder": "latitude, longitude; WGS84-style geographic display. DMS source values converted and rounded to six decimal places; numerical digits do not imply that positional accuracy.",
+  "primaryStationIndex": "https://hydro.navy.mi.th/waterlaveltable",
+  "ports": {
+    "bangkok": {
+      "name": "Bangkok Port",
+      "nameTh": "ท่าเรือกรุงเทพ",
+      "country": "Thailand",
+      "countryTh": "ไทย",
+      "coordinates": [
+        13.701667,
+        100.58
+      ],
+      "reference": "Bangkok Port hydrographic tide station: 13°42′06″N 100°34′48″E",
+      "locationScope": "Named port-area hydrographic reference; exact operating berth unconfirmed.",
+      "sourceUrls": [
+        "https://hydro.navy.mi.th/storage/frontend/article/22986/file/th/BH2026.pdf"
+      ]
+    },
+    "laemChabang": {
+      "name": "Laem Chabang Port",
+      "nameTh": "ท่าเรือแหลมฉบัง",
+      "country": "Thailand",
+      "countryTh": "ไทย",
+      "coordinates": [
+        13.056111,
+        100.887222
+      ],
+      "reference": "Laem Chabang hydrographic tide station: 13°03′22″N 100°53′14″E",
+      "locationScope": "Named port-area hydrographic reference; no terminal is assigned to the legacy service.",
+      "sourceUrls": [
+        "https://hydro.navy.mi.th/storage/frontend/article/22996/file/th/LC2026.pdf"
+      ]
+    },
+    "suratThani": {
+      "name": "Surat Thani port area",
+      "nameTh": "พื้นที่ท่าเรือสุราษฎร์ธานี",
+      "country": "Thailand",
+      "countryTh": "ไทย",
+      "coordinates": [
+        9.265,
+        99.434444
+      ],
+      "reference": "Ko Prap (Surat Thani) hydrographic tide station: 09°15′54″N 99°26′04″E",
+      "locationScope": "Bandon Bay / Tapi approach-area reference at Ko Prap. The legacy source does not identify a terminal; this is not a claim that Ko Prap is the loading berth.",
+      "sourceUrls": [
+        "https://hydro.navy.mi.th/storage/frontend/article/23018/file/th/KP2026.pdf"
+      ]
+    },
+    "songkhla": {
+      "name": "Songkhla Port",
+      "nameTh": "ท่าเรือสงขลา",
+      "country": "Thailand",
+      "countryTh": "ไทย",
+      "coordinates": [
+        7.216944,
+        100.58
+      ],
+      "reference": "Songkhla hydrographic tide station: 07°13′01″N 100°34′48″E",
+      "locationScope": "Named harbour-area hydrographic reference; exact operating berth unconfirmed.",
+      "sourceUrls": [
+        "https://hydro.navy.mi.th/storage/frontend/article/23024/file/th/SK2026.pdf"
+      ]
+    },
+    "ranong": {
+      "name": "Ranong port area",
+      "nameTh": "พื้นที่ท่าเรือระนอง",
+      "country": "Thailand",
+      "countryTh": "ไทย",
+      "coordinates": [
+        10.006944,
+        98.608056
+      ],
+      "reference": "Pak Nam Ranong hydrographic tide station: 10°00′25″N 98°36′29″E",
+      "locationScope": "Documented Ranong port-area hydrographic reference; exact operating berth unconfirmed.",
+      "sourceUrls": [
+        "https://hydro.navy.mi.th/storage/frontend/article/23030/file/th/RN2026.pdf"
+      ]
+    },
+    "yangon": {
+      "name": "Yangon port area",
+      "nameTh": "พื้นที่ท่าเรือย่างกุ้ง",
+      "country": "Myanmar",
+      "countryTh": "เมียนมา",
+      "coordinates": [
+        16.766667,
+        96.166667
+      ],
+      "reference": "MPA Yangon (Rangoon) hydrographic reference: 16°46′N 96°10′E; WPI 49650.",
+      "locationScope": "Yangon Inner Harbour area reference at one-arcminute source precision. The old service does not identify an inner-harbour or Thilawa terminal.",
+      "sourceUrls": [
+        "https://www.mpa.gov.mm/wp-content/uploads/2025/04/မြန်မာ-ကိုးရီးယား-ဒလတံတား-လက်ကမ်းကြော်ငြာစာ-3-2025.pdf",
+        "https://www.mpa.gov.mm/yangon-ports/",
+        "https://arcgis.netl.doe.gov/server/rest/services/Hosted/CCS_EJ_SJ_Data/FeatureServer/17/query?where=wpinumber%3D49650&outFields=wpinumber,main_port_name,alternate_name,unlocode&outSR=4326&f=json"
+      ]
+    },
+    "sihanoukville": {
+      "name": "Sihanoukville Port",
+      "nameTh": "ท่าเรือสีหนุวิลล์",
+      "country": "Cambodia",
+      "countryTh": "กัมพูชา",
+      "coordinates": [
+        10.633333,
+        103.5
+      ],
+      "reference": "NGA World Port Index 57485: Kampong Saom, alternate name Sihanoukville, KH KOS.",
+      "locationScope": "Published harbour-area reference at one-arcminute source precision, not a confirmed individual terminal or berth.",
+      "sourceUrls": [
+        "https://arcgis.netl.doe.gov/server/rest/services/Hosted/CCS_EJ_SJ_Data/FeatureServer/17/query?where=wpinumber%3D57485&outFields=wpinumber,main_port_name,alternate_name,unlocode&outSR=4326&f=json",
+        "https://vcps.nga.mil/nauticalpubs-feature/rest/services/WPI/World_Port_Index_Viewer/MapServer"
+      ]
+    }
+  },
+  "routes": [
+    {
+      "id": "bkk-lcb",
+      "title": "Bangkok – Laem Chabang",
+      "origin": {
+        "name": "Laem Chabang Port",
+        "nameTh": "ท่าเรือแหลมฉบัง",
+        "country": "Thailand",
+        "countryTh": "ไทย"
+      },
+      "destination": {
+        "name": "Bangkok Port",
+        "nameTh": "ท่าเรือกรุงเทพ",
+        "country": "Thailand",
+        "countryTh": "ไทย"
+      },
+      "routeSpecs": {
+        "distanceNm": 58,
+        "capacityMinTeu": 72,
+        "capacityMaxTeu": 120,
+        "sailingMinHours": 8,
+        "sailingMaxHours": 10
+      },
+      "pointCount": 60,
+      "first": [
+        13.056111,
+        100.887222
+      ],
+      "last": [
+        13.701667,
+        100.58
+      ],
+      "landMaskContactSegments": [
+        {
+          "index": 5,
+          "from": [
+            13.54927,
+            100.584821
+          ],
+          "to": [
+            13.552051,
+            100.581508
+          ]
+        },
+        {
+          "index": 6,
+          "from": [
+            13.552051,
+            100.581508
+          ],
+          "to": [
+            13.554496,
+            100.579468
+          ]
+        },
+        {
+          "index": 7,
+          "from": [
+            13.554496,
+            100.579468
+          ],
+          "to": [
+            13.556891,
+            100.578019
+          ]
+        },
+        {
+          "index": 8,
+          "from": [
+            13.556891,
+            100.578019
+          ],
+          "to": [
+            13.562105,
+            100.576358
+          ]
+        },
+        {
+          "index": 9,
+          "from": [
+            13.562105,
+            100.576358
+          ],
+          "to": [
+            13.565535,
+            100.576305
+          ]
+        },
+        {
+          "index": 10,
+          "from": [
+            13.565535,
+            100.576305
+          ],
+          "to": [
+            13.568409,
+            100.576698
+          ]
+        },
+        {
+          "index": 11,
+          "from": [
+            13.568409,
+            100.576698
+          ],
+          "to": [
+            13.572299,
+            100.577852
+          ]
+        },
+        {
+          "index": 12,
+          "from": [
+            13.572299,
+            100.577852
+          ],
+          "to": [
+            13.574649,
+            100.579067
+          ]
+        },
+        {
+          "index": 13,
+          "from": [
+            13.574649,
+            100.579067
+          ],
+          "to": [
+            13.577468,
+            100.581068
+          ]
+        },
+        {
+          "index": 14,
+          "from": [
+            13.577468,
+            100.581068
+          ],
+          "to": [
+            13.586464,
+            100.588245
+          ]
+        },
+        {
+          "index": 19,
+          "from": [
+            13.601745,
+            100.592494
+          ],
+          "to": [
+            13.605361,
+            100.591508
+          ]
+        },
+        {
+          "index": 20,
+          "from": [
+            13.605361,
+            100.591508
+          ],
+          "to": [
+            13.607376,
+            100.590295
+          ]
+        },
+        {
+          "index": 21,
+          "from": [
+            13.607376,
+            100.590295
+          ],
+          "to": [
+            13.60845,
+            100.589211
+          ]
+        },
+        {
+          "index": 22,
+          "from": [
+            13.60845,
+            100.589211
+          ],
+          "to": [
+            13.610018,
+            100.585816
+          ]
+        },
+        {
+          "index": 23,
+          "from": [
+            13.610018,
+            100.585816
+          ],
+          "to": [
+            13.610757,
+            100.581053
+          ]
+        },
+        {
+          "index": 24,
+          "from": [
+            13.610757,
+            100.581053
+          ],
+          "to": [
+            13.610463,
+            100.573558
+          ]
+        },
+        {
+          "index": 25,
+          "from": [
+            13.610463,
+            100.573558
+          ],
+          "to": [
+            13.611361,
+            100.565306
+          ]
+        },
+        {
+          "index": 26,
+          "from": [
+            13.611361,
+            100.565306
+          ],
+          "to": [
+            13.611945,
+            100.563165
+          ]
+        },
+        {
+          "index": 27,
+          "from": [
+            13.611945,
+            100.563165
+          ],
+          "to": [
+            13.613817,
+            100.559054
+          ]
+        },
+        {
+          "index": 28,
+          "from": [
+            13.613817,
+            100.559054
+          ],
+          "to": [
+            13.617238,
+            100.553045
+          ]
+        },
+        {
+          "index": 29,
+          "from": [
+            13.617238,
+            100.553045
+          ],
+          "to": [
+            13.618565,
+            100.551273
+          ]
+        },
+        {
+          "index": 30,
+          "from": [
+            13.618565,
+            100.551273
+          ],
+          "to": [
+            13.623945,
+            100.545491
+          ]
+        },
+        {
+          "index": 31,
+          "from": [
+            13.623945,
+            100.545491
+          ],
+          "to": [
+            13.628472,
+            100.541458
+          ]
+        },
+        {
+          "index": 32,
+          "from": [
+            13.628472,
+            100.541458
+          ],
+          "to": [
+            13.630431,
+            100.54018
+          ]
+        },
+        {
+          "index": 33,
+          "from": [
+            13.630431,
+            100.54018
+          ],
+          "to": [
+            13.63563,
+            100.537471
+          ]
+        },
+        {
+          "index": 34,
+          "from": [
+            13.63563,
+            100.537471
+          ],
+          "to": [
+            13.640445,
+            100.53547
+          ]
+        },
+        {
+          "index": 35,
+          "from": [
+            13.640445,
+            100.53547
+          ],
+          "to": [
+            13.648715,
+            100.534052
+          ]
+        },
+        {
+          "index": 36,
+          "from": [
+            13.648715,
+            100.534052
+          ],
+          "to": [
+            13.65218,
+            100.534033
+          ]
+        },
+        {
+          "index": 37,
+          "from": [
+            13.65218,
+            100.534033
+          ],
+          "to": [
+            13.65585,
+            100.535138
+          ]
+        },
+        {
+          "index": 38,
+          "from": [
+            13.65585,
+            100.535138
+          ],
+          "to": [
+            13.659373,
+            100.537326
+          ]
+        },
+        {
+          "index": 39,
+          "from": [
+            13.659373,
+            100.537326
+          ],
+          "to": [
+            13.660587,
+            100.539279
+          ]
+        },
+        {
+          "index": 40,
+          "from": [
+            13.660587,
+            100.539279
+          ],
+          "to": [
+            13.660823,
+            100.542144
+          ]
+        },
+        {
+          "index": 41,
+          "from": [
+            13.660823,
+            100.542144
+          ],
+          "to": [
+            13.660593,
+            100.543769
+          ]
+        },
+        {
+          "index": 42,
+          "from": [
+            13.660593,
+            100.543769
+          ],
+          "to": [
+            13.658041,
+            100.549919
+          ]
+        },
+        {
+          "index": 43,
+          "from": [
+            13.658041,
+            100.549919
+          ],
+          "to": [
+            13.655983,
+            100.556002
+          ]
+        },
+        {
+          "index": 44,
+          "from": [
+            13.655983,
+            100.556002
+          ],
+          "to": [
+            13.655714,
+            100.558945
+          ]
+        },
+        {
+          "index": 45,
+          "from": [
+            13.655714,
+            100.558945
+          ],
+          "to": [
+            13.656308,
+            100.563258
+          ]
+        },
+        {
+          "index": 46,
+          "from": [
+            13.656308,
+            100.563258
+          ],
+          "to": [
+            13.657711,
+            100.566485
+          ]
+        },
+        {
+          "index": 47,
+          "from": [
+            13.657711,
+            100.566485
+          ],
+          "to": [
+            13.660389,
+            100.570471
+          ]
+        },
+        {
+          "index": 48,
+          "from": [
+            13.660389,
+            100.570471
+          ],
+          "to": [
+            13.663725,
+            100.574247
+          ]
+        },
+        {
+          "index": 49,
+          "from": [
+            13.663725,
+            100.574247
+          ],
+          "to": [
+            13.669198,
+            100.579342
+          ]
+        },
+        {
+          "index": 50,
+          "from": [
+            13.669198,
+            100.579342
+          ],
+          "to": [
+            13.676025,
+            100.584871
+          ]
+        },
+        {
+          "index": 51,
+          "from": [
+            13.676025,
+            100.584871
+          ],
+          "to": [
+            13.679752,
+            100.587328
+          ]
+        },
+        {
+          "index": 52,
+          "from": [
+            13.679752,
+            100.587328
+          ],
+          "to": [
+            13.68419,
+            100.589125
+          ]
+        },
+        {
+          "index": 53,
+          "from": [
+            13.68419,
+            100.589125
+          ],
+          "to": [
+            13.686874,
+            100.589243
+          ]
+        },
+        {
+          "index": 54,
+          "from": [
+            13.686874,
+            100.589243
+          ],
+          "to": [
+            13.690042,
+            100.588549
+          ]
+        },
+        {
+          "index": 55,
+          "from": [
+            13.690042,
+            100.588549
+          ],
+          "to": [
+            13.69422,
+            100.586095
+          ]
+        },
+        {
+          "index": 56,
+          "from": [
+            13.69422,
+            100.586095
+          ],
+          "to": [
+            13.698042,
+            100.581873
+          ]
+        },
+        {
+          "index": 57,
+          "from": [
+            13.698042,
+            100.581873
+          ],
+          "to": [
+            13.700006,
+            100.578191
+          ]
+        },
+        {
+          "index": 58,
+          "from": [
+            13.700006,
+            100.578191
+          ],
+          "to": [
+            13.701667,
+            100.58
+          ]
+        }
+      ],
+      "sourceFacts": {
+        "distanceNm": 58,
+        "capacityMinTeu": 72,
+        "capacityMaxTeu": 120,
+        "sailingMinHours": 8,
+        "sailingMaxHours": 10,
+        "sources": [
+          "https://www.moe-line.com/trading-routes/",
+          "https://www.moe-line.com/th/trading-routes/",
+          "https://www.moe-line.com/trading-routes/bkk-lcb/",
+          "https://www.moe-line.com/th/trading-routes/bkk-lcb/"
+        ],
+        "reviewNotes": [
+          "Heading order is BKK–LCB; endpoint text is Laem Chabang to Bangkok. Direction and schedule remain subject to confirmation."
+        ]
+      }
+    },
+    {
+      "id": "bkk-lcb-suratthani",
+      "title": "Laem Chabang – Surat Thani",
+      "origin": {
+        "name": "Laem Chabang Port",
+        "nameTh": "ท่าเรือแหลมฉบัง",
+        "country": "Thailand",
+        "countryTh": "ไทย"
+      },
+      "destination": {
+        "name": "Surat Thani port area",
+        "nameTh": "พื้นที่ท่าเรือสุราษฎร์ธานี",
+        "country": "Thailand",
+        "countryTh": "ไทย"
+      },
+      "routeSpecs": {
+        "distanceNm": 261,
+        "capacityMinTeu": 72,
+        "capacityMaxTeu": 120
+      },
+      "pointCount": 10,
+      "first": [
+        13.056111,
+        100.887222
+      ],
+      "last": [
+        9.265,
+        99.434444
+      ],
+      "landMaskContactSegments": [],
+      "sourceFacts": {
+        "distanceNm": 261,
+        "capacityMinTeu": 72,
+        "capacityMaxTeu": 120,
+        "sources": [
+          "https://www.moe-line.com/trading-routes/",
+          "https://www.moe-line.com/th/trading-routes/",
+          "https://www.moe-line.com/trading-routes/bkk-lcb-suratthani/",
+          "https://www.moe-line.com/th/trading-routes/bkk-lcb-suratthani/"
+        ],
+        "reviewNotes": [
+          "Sailing time intentionally omitted: listing says 34–36 hours; both EN/TH detail pages say 8–10 hours.",
+          "Heading says BKK/LCB, but the endpoint row identifies Laem Chabang. No separate Bangkok-origin figures are inferred.",
+          "Surat Thani terminal is unidentified; marker is the documented Ko Prap approach-area reference."
+        ]
+      }
+    },
+    {
+      "id": "bkk-lcb-songkhla",
+      "title": "Laem Chabang – Songkhla",
+      "origin": {
+        "name": "Laem Chabang Port",
+        "nameTh": "ท่าเรือแหลมฉบัง",
+        "country": "Thailand",
+        "countryTh": "ไทย"
+      },
+      "destination": {
+        "name": "Songkhla Port",
+        "nameTh": "ท่าเรือสงขลา",
+        "country": "Thailand",
+        "countryTh": "ไทย"
+      },
+      "routeSpecs": {
+        "distanceNm": 361,
+        "capacityMinTeu": 72,
+        "capacityMaxTeu": 120,
+        "sailingMinHours": 52,
+        "sailingMaxHours": 54
+      },
+      "pointCount": 14,
+      "first": [
+        13.056111,
+        100.887222
+      ],
+      "last": [
+        7.216944,
+        100.58
+      ],
+      "landMaskContactSegments": [],
+      "sourceFacts": {
+        "distanceNm": 361,
+        "capacityMinTeu": 72,
+        "capacityMaxTeu": 120,
+        "sailingMinHours": 52,
+        "sailingMaxHours": 54,
+        "sources": [
+          "https://www.moe-line.com/trading-routes/",
+          "https://www.moe-line.com/th/trading-routes/",
+          "https://www.moe-line.com/trading-routes/bkk-lcb-songkhla/",
+          "https://www.moe-line.com/th/trading-routes/bkk-lcb-songkhla/"
+        ],
+        "reviewNotes": [
+          "Published legacy particulars do not establish a current sailing schedule."
+        ]
+      }
+    },
+    {
+      "id": "ranong-yangon",
+      "title": "Ranong – Yangon",
+      "origin": {
+        "name": "Ranong port area",
+        "nameTh": "พื้นที่ท่าเรือระนอง",
+        "country": "Thailand",
+        "countryTh": "ไทย"
+      },
+      "destination": {
+        "name": "Yangon port area",
+        "nameTh": "พื้นที่ท่าเรือย่างกุ้ง",
+        "country": "Myanmar",
+        "countryTh": "เมียนมา"
+      },
+      "routeSpecs": {
+        "distanceNm": 459,
+        "capacityMinTeu": 72,
+        "capacityMaxTeu": 120,
+        "sailingMinHours": 65,
+        "sailingMaxHours": 65
+      },
+      "pointCount": 39,
+      "first": [
+        10.006944,
+        98.608056
+      ],
+      "last": [
+        16.766667,
+        96.166667
+      ],
+      "landMaskContactSegments": [
+        {
+          "index": 37,
+          "from": [
+            16.765,
+            96.183
+          ],
+          "to": [
+            16.766667,
+            96.166667
+          ]
+        }
+      ],
+      "sourceFacts": {
+        "distanceNm": 459,
+        "capacityMinTeu": 72,
+        "capacityMaxTeu": 120,
+        "sailingMinHours": 65,
+        "sailingMaxHours": 65,
+        "sources": [
+          "https://www.moe-line.com/trading-routes/",
+          "https://www.moe-line.com/th/trading-routes/",
+          "https://www.moe-line.com/trading-routes/ranong-yangon/",
+          "https://www.moe-line.com/th/trading-routes/ranong-yangon/"
+        ],
+        "reviewNotes": [
+          "Published legacy particulars do not establish a current sailing schedule."
+        ]
+      }
+    },
+    {
+      "id": "lcb-sihanoukville",
+      "title": "Laem Chabang – Sihanoukville",
+      "origin": {
+        "name": "Laem Chabang Port",
+        "nameTh": "ท่าเรือแหลมฉบัง",
+        "country": "Thailand",
+        "countryTh": "ไทย"
+      },
+      "destination": {
+        "name": "Sihanoukville Port",
+        "nameTh": "ท่าเรือสีหนุวิลล์",
+        "country": "Cambodia",
+        "countryTh": "กัมพูชา"
+      },
+      "routeSpecs": {
+        "distanceNm": 248,
+        "capacityMinTeu": 72,
+        "capacityMaxTeu": 120,
+        "sailingMinHours": 31,
+        "sailingMaxHours": 33
+      },
+      "pointCount": 5,
+      "first": [
+        13.056111,
+        100.887222
+      ],
+      "last": [
+        10.633333,
+        103.5
+      ],
+      "landMaskContactSegments": [],
+      "sourceFacts": {
+        "distanceNm": 248,
+        "capacityMinTeu": 72,
+        "capacityMaxTeu": 120,
+        "sailingMinHours": 31,
+        "sailingMaxHours": 33,
+        "sources": [
+          "https://www.moe-line.com/trading-routes/",
+          "https://www.moe-line.com/th/trading-routes/",
+          "https://www.moe-line.com/trading-routes/lcb-sihanoukville/",
+          "https://www.moe-line.com/th/trading-routes/lcb-sihanoukville/"
+        ],
+        "reviewNotes": [
+          "Published legacy particulars do not establish a current sailing schedule."
+        ]
+      }
+    }
+  ],
+  "pathSources": {
+    "maritimeNetwork": "Existing pinned searoute-ts2.3.1/marnet-20km; provenance and licences in docs/SEA_ROUTE_DATA.md",
+    "bangkokRiver": "https://api.openstreetmap.org/api/0.6/relation/227317/full.json",
+    "kraburiRiver": "https://api.openstreetmap.org/api/0.6/way/594913494/full",
+    "yangonRiver": "https://api.openstreetmap.org/api/0.6/way/390077691/full",
+    "songkhlaCoast": "https://api.openstreetmap.org/api/0.6/map?bbox=100.56,7.21,100.61,7.25",
+    "ranongCoast": "https://api.openstreetmap.org/api/0.6/map?bbox=98.57,9.93,98.62,10.02",
+    "yangonGeometry": "https://api.openstreetmap.org/api/0.6/map?bbox=96.20,16.59,96.35,16.74",
+    "osmAttribution": "© OpenStreetMap contributors, ODbL1.0; https://www.openstreetmap.org/copyright"
+  },
+  "methods": {
+    "bangkok": "Existing generated offshore path combined with OSMmain_stream ChaoPhraya centerline, simplified approximately22m, preserving station endpoint with short harbour connector.",
+    "suratThani": "Generated offshore Gulf path with broad BandonBay approach controlpoints north/west of Samui/Phangan, ending at documented KoPrap reference. This does not identify a loading terminal.",
+    "songkhla": "Generated offshore path with coast-reviewed controlpoints around RatIsland and through harbour entrance to hydrographic reference.",
+    "ranongYangon": "OSMKraburi downstream centerline, coast-reviewed open-water connector around islands to the packaged network, generated offshore Andaman path, OSMYangon centerline and short harbour reference connector. The unmodified generator cannot reach the Ranong pin because the nearest packaged graph segment is about176km offshore; no modified graph or successful full automatic route is claimed.",
+    "sihanoukville": "Existing sea-route generator path preserving both documented endpoint pins."
+  },
+  "limitations": [
+    "The NaturalEarth1:10million mask omits detailed inland river openings. It flags50Bangkok river/reference segments despite their following actualOSMwater geometry; keep the river line rather than move it over urban land.",
+    "The same coarse mask flags one short Yangon harbour-reference connector. This is documented, not a false land-free guarantee.",
+    "SuratThani terminal is unknown; KoPrap is an approach-area reference, not a confirmed berth or proof of service at that island.",
+    "Yangon terminal is unknown; the point represents inner-harbour geography, not an assignment to any specific inner/outer harbour terminal.",
+    "Ranong is a documented port-area tide station; southern fishery/customs-pier or AIScity pins are not silently substituted.",
+    "Legacy distance and sailing figures are preserved as source facts. Illustrated polyline length is not used to replace those values.",
+    "Exact depths, safe clearances, tides, traffic restrictions and current conditions are outside this website illustration."
+  ],
+  "rejectedCoordinateSources": [
+    {
+      "url": "https://www.port.co.th/port_en/wp-content/file/PowerResources-1.pdf",
+      "reason": "Ranong latitude printed10°00′72″ is malformed; do not silently repair it. Bangkok and LaemChabang values in the same form differ from the named2026hydro stations and repeat a site reference for many terminals, so they are not used to imply berth precision."
+    }
+  ],
+  "oldMapReview": [
+    "Legacy nmap1/2and mp001–005 are broad geographic diagrams with labels, not surveyed berth coordinates or voyage tracks.",
+    "BKK/LCB headings for SuratandSongkhla do not establish separate Bangkok-origin distances/times. Imported source endpoint rows use LaemChabang.",
+    "Surat sailing omitted: both listings34–36h versus both details8–10h."
+  ],
+  "archive": ".local/route-geography-2026-11-17"
+}

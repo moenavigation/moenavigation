@@ -1,10 +1,23 @@
+import { chooseDialogOption } from './selection-helpers';
+import type { Locator } from '@playwright/test';
 import type { Db } from 'mongodb';
 import type { ContentRecord } from '../../src/lib/cms-types';
+import { createRouteDisplayGeometry } from '../../src/lib/route-curve';
 import { test, expect, assertOwnedDatabase, E2E_IMAGE_URL, refreshPublicCache } from './fixtures';
 import { clickClippedMapPoint } from './map-point-helpers';
 
 const routeCount = 126;
 const connectionName = (number: number) => `Connection ${String(number).padStart(3, '0')}`;
+
+async function expectPointLink(link: Locator, coordinates: string) {
+  await expect(link).toHaveAttribute('href', /^https:\/\/www\.google\.com\/maps\/search\/\?api=1&query=/);
+  const url = new URL((await link.getAttribute('href'))!);
+  const actual = url.searchParams.get('query')!.split(',').map(Number);
+  const expected = coordinates.split(',').map(Number);
+  expect(actual).toHaveLength(2);
+  // Browser and Node transcendental functions can differ at the last bit.
+  for (let index = 0; index < 2; index++) expect(actual[index]).toBeCloseTo(expected[index], 10);
+}
 
 async function manyRoutes(db: Db) {
   await assertOwnedDatabase(db);
@@ -27,50 +40,58 @@ async function manyRoutes(db: Db) {
   await refreshPublicCache();
 }
 
-test('many routes stay paginated and shared destinations use one map control', async ({ page, db }) => {
+test('many routes stay paginated and shared destinations use one map control', async ({ page, db }, testInfo) => {
   await manyRoutes(db);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/routes?from=removed-origin&to=removed-destination&route=connection-001&tracking=kept');
   const finder = page.getByRole('region', { name: 'Find a route', exact: true });
   const details = page.getByRole('region', { name: 'Selected route details', exact: true });
-  await expect(finder.getByRole('radio')).toHaveCount(6);
+  await expect(finder.getByRole('radio')).toHaveCount(10);
+  const pagination = finder.getByRole('navigation', { name: 'Route result pages', exact: true });
+  await expect(pagination.getByRole('button', { name: 'Previous routes', exact: true })).toHaveText('<');
+  await expect(pagination.getByRole('button', { name: 'Previous routes', exact: true })).toBeDisabled();
+  await expect(pagination.getByRole('button', { name: 'Next routes', exact: true })).toHaveText('>');
+  await expect(pagination.locator('[aria-current="page"]')).toHaveText('1');
   await expect(finder.getByRole('status')).toHaveText('126 routes');
-  await expect(finder.getByRole('combobox', { name: 'Origin', exact: true })).toHaveValue('');
-  await expect(finder.getByRole('combobox', { name: 'Destination', exact: true })).toHaveValue('');
+  await expect(finder.getByRole('button', { name: 'Origin', exact: true })).toHaveAttribute('data-selection-value', '');
+  await expect(finder.getByRole('button', { name: 'Destination', exact: true })).toHaveAttribute('data-selection-value', '');
   await expect(details.getByRole('heading')).toHaveText(connectionName(1));
-  await expect(page.locator('[data-port-key]')).toHaveCount(3);
-  await expect(page.locator('.leaflet-marker-icon')).toHaveCount(4);
+  await expect(page.locator('[data-port-key]')).toHaveCount(5);
+  await expect(page.locator('.leaflet-marker-icon')).toHaveCount(6);
+  await finder.screenshot({ path: testInfo.outputPath('routes-pagination-desktop.png'), animations: 'disabled' });
 
   await finder.getByRole('button', { name: 'Next routes', exact: true }).click();
   await expect(page).toHaveURL(/routePage=2/);
   expect(new URL(page.url()).searchParams.has('from')).toBe(false);
   expect(new URL(page.url()).searchParams.has('to')).toBe(false);
   expect(new URL(page.url()).searchParams.get('tracking')).toBe('kept');
-  await expect(finder.getByRole('radio')).toHaveCount(6);
-  await expect(finder.getByRole('radio').first()).toHaveValue('connection-007');
+  await expect(finder.getByRole('radio')).toHaveCount(10);
+  await expect(finder.getByRole('radio').first()).toHaveValue('connection-011');
+  await expect(pagination.locator('[aria-current="page"]')).toHaveText('2');
   await expect(details.getByRole('heading')).toHaveText(connectionName(1));
   await expect(finder.getByRole('button', { name: 'Show selected route in list' })).toBeVisible();
-  // The selected connection remains visible alongside the current six results.
-  await expect(page.locator('.leaflet-marker-icon')).toHaveCount(5);
+  // The selected connection remains visible alongside the current ten results.
+  await expect(page.locator('[data-port-key]')).toHaveCount(6);
+  await expect(page.locator('.leaflet-marker-icon')).toHaveCount(7);
 
-  const groupedPort = page.getByRole('button', { name: '2 connections to Port 004', exact: true });
+  const groupedPort = page.getByRole('button', { name: '2 connections to Port 006', exact: true });
   await groupedPort.press('Enter');
-  const routeChoices = page.getByRole('dialog', { name: '2 connections to Port 004', exact: true });
+  const routeChoices = page.getByRole('dialog', { name: '2 connections to Port 006', exact: true });
   await expect(routeChoices).toBeVisible();
-  await expect(routeChoices.getByRole('button', { name: connectionName(7), exact: true })).toBeFocused();
-  await expect(routeChoices.getByRole('link', { name: /Open in Google Maps/ })).toHaveAttribute('href', 'https://www.google.com/maps/search/?api=1&query=10.06%2C104');
-  await page.getByRole('button', { name: connectionName(8), exact: true }).click();
-  await expect(page).toHaveURL(/route=connection-008/);
-  await expect(details.getByRole('heading')).toHaveText(connectionName(8));
-  await expect(finder.getByRole('radio', { name: /Connection 008/ })).toBeChecked();
-  await expect(page.locator('.leaflet-marker-icon')).toHaveCount(4);
+  await expect(routeChoices.getByRole('button', { name: connectionName(11), exact: true })).toBeFocused();
+  await expect(routeChoices.getByRole('link', { name: /Open in Google Maps/ })).toHaveAttribute('href', 'https://www.google.com/maps/search/?api=1&query=10.1%2C104');
+  await page.getByRole('button', { name: connectionName(12), exact: true }).click();
+  await expect(page).toHaveURL(/route=connection-012/);
+  await expect(details.getByRole('heading')).toHaveText(connectionName(12));
+  await expect(finder.getByRole('radio', { name: /Connection 012/ })).toBeChecked();
+  await expect(page.locator('.leaflet-marker-icon')).toHaveCount(6);
   await expect(routeChoices).not.toBeVisible();
   await expect(groupedPort).toBeFocused();
 
   await groupedPort.press('Enter');
   await expect(routeChoices).toBeVisible();
-  await expect(routeChoices.getByRole('button', { name: connectionName(7), exact: true })).toBeFocused();
-  await routeChoices.getByRole('button', { name: connectionName(7), exact: true }).press('Escape');
+  await expect(routeChoices.getByRole('button', { name: connectionName(11), exact: true })).toBeFocused();
+  await routeChoices.getByRole('button', { name: connectionName(11), exact: true }).press('Escape');
   await expect(routeChoices).not.toBeVisible();
   await expect(groupedPort).toBeFocused();
 
@@ -79,17 +100,50 @@ test('many routes stay paginated and shared destinations use one map control', a
   await routeChoices.getByRole('button', { name: 'Close route choices', exact: true }).click();
   await expect(routeChoices).not.toBeVisible();
   await expect(groupedPort).toBeFocused();
+
+  await pagination.getByRole('button', { name: '13', exact: true }).click();
+  await expect(page).toHaveURL(/routePage=13/);
+  await expect(pagination.locator('[aria-current="page"]')).toHaveText('13');
+  await expect(pagination.getByRole('button', { name: 'Next routes', exact: true })).toBeDisabled();
+  await expect(finder.getByRole('radio')).toHaveCount(6);
+  await expect(finder.getByRole('radio').first()).toHaveValue('connection-121');
+  await expect(finder.getByRole('radio').last()).toHaveValue('connection-126');
+  await expect(page.locator('[data-port-key]')).toHaveCount(4);
+  await expect(page.locator('.leaflet-marker-icon')).toHaveCount(5);
+  await page.reload();
+  await expect(pagination.locator('[aria-current="page"]')).toHaveText('13');
+  await expect(details.getByRole('heading')).toHaveText(connectionName(12));
+
+  await chooseDialogOption(finder.getByRole('button', { name: 'Origin', exact: true }), { label: 'Bangkok · Thailand' });
+  await expect(pagination.locator('[aria-current="page"]')).toHaveText('1');
+  await expect(finder.getByRole('status')).toHaveText('63 routes');
+  await expect(finder.getByRole('radio')).toHaveCount(10);
+  await expect(finder.getByRole('radio', { name: /Connection 012/ })).toBeChecked();
+  const outOfRange = new URL(page.url());
+  outOfRange.searchParams.set('routePage', '999');
+  await page.goto(outOfRange.toString());
+  await expect(pagination.locator('[aria-current="page"]')).toHaveText('7');
+  await expect(finder.getByRole('radio')).toHaveCount(3);
+  await expect(finder.getByRole('radio').first()).toHaveValue('connection-122');
+  await expect(finder.getByRole('radio').last()).toHaveValue('connection-126');
+  await expect(details.getByRole('heading')).toHaveText(connectionName(12));
+  await finder.getByRole('button', { name: 'Show selected route in list', exact: true }).click();
+  await expect(pagination.locator('[aria-current="page"]')).toHaveText('1');
+  await expect(finder.getByRole('radio', { name: /Connection 012/ })).toBeChecked();
+  expect(new URL(page.url()).searchParams.get('route')).toBe('connection-012');
+  expect(new URL(page.url()).searchParams.get('tracking')).toBe('kept');
 });
 
 for (const locale of ['en', 'th'] as const) {
   test.describe(`route point interactions · ${locale}`, () => {
-  test.use({ hasTouch: locale === 'th' });
-  test(`intermediate points reveal on interaction and every point links to its exact Google Maps location`, async ({ page, db }, testInfo) => {
+  test.use({ hasTouch: locale === 'th', viewport: { width: locale === 'en' ? 1280 : 320, height: 900 } });
+  test(`intermediate points reveal on interaction and every displayed point links to its exact Google Maps location`, async ({ page, db }, testInfo) => {
     await manyRoutes(db);
     await db.collection('moe_content').deleteMany({ type: 'Route', id: { $ne: 'connection-001' } });
-    await db.collection('moe_content').updateOne({ id: 'connection-001' }, { $set: { waypoints: [[13, 100], [11.5, 102.25], [10, 104]] } });
+    const waypoints: [number, number][] = [[13, 100], [11.5, 102.25], [10, 104]];
+    const intermediateCoordinates = createRouteDisplayGeometry(waypoints).markerPoints[1].join(',');
+    await db.collection('moe_content').updateOne({ id: 'connection-001' }, { $set: { waypoints } });
     await refreshPublicCache();
-    await page.setViewportSize({ width: locale === 'en' ? 1280 : 320, height: 900 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto(locale === 'en' ? '/routes' : '/th/routes');
     const map = page.getByRole('region', { name: locale === 'en' ? 'Interactive map of a connection between Laem Chabang and Port 001' : 'แผนที่แสดงการเชื่อมต่อระหว่างแหลมฉบังกับท่าเรือ 001', exact: true });
@@ -123,14 +177,14 @@ for (const locale of ['en', 'th'] as const) {
       await expect(dot).toHaveCSS('opacity', '0');
       await clickClippedMapPoint(page, map, intermediate);
       const edgePopup = page.getByRole('dialog', { name: 'Intermediate point 1', exact: true });
-      await expect(edgePopup.getByRole('link', { name: /Open in Google Maps/ })).toHaveAttribute('href', 'https://www.google.com/maps/search/?api=1&query=11.5%2C102.25');
+      await expectPointLink(edgePopup.getByRole('link', { name: /Open in Google Maps/ }), intermediateCoordinates);
       await edgePopup.getByRole('link').press('Escape');
       await page.getByRole('button', { name: 'Fit selected route', exact: true }).click();
       await expect.poll(markerSpacing).toBeCloseTo(originalSpacing, 1);
     }
     const points = [
       { action: locale === 'en' ? 'View map point: Laem Chabang' : 'ดูจุดบนแผนที่: แหลมฉบัง', title: locale === 'en' ? 'Laem Chabang' : 'แหลมฉบัง', query: '13,100' },
-      { action: locale === 'en' ? 'View map point: Intermediate point 1' : 'ดูจุดบนแผนที่: จุดระหว่างทางที่ 1', title: locale === 'en' ? 'Intermediate point 1' : 'จุดระหว่างทางที่ 1', query: '11.5,102.25' },
+      { action: locale === 'en' ? 'View map point: Intermediate point 1' : 'ดูจุดบนแผนที่: จุดระหว่างทางที่ 1', title: locale === 'en' ? 'Intermediate point 1' : 'จุดระหว่างทางที่ 1', query: intermediateCoordinates },
       { action: locale === 'en' ? 'Select connection to Port 001' : 'เลือกเส้นทางเชื่อมต่อไปท่าเรือ 001', title: locale === 'en' ? 'Port 001' : 'ท่าเรือ 001', query: '10,104' },
     ];
     for (const [index, point] of points.entries()) {
@@ -141,7 +195,7 @@ for (const locale of ['en', 'th'] as const) {
       const link = popup.getByRole('link', { name: locale === 'en' ? /Open in Google Maps/ : /เปิดใน Google Maps/ });
       await expect(popup).toBeVisible();
       await expect(link).toBeFocused();
-      await expect(link).toHaveAttribute('href', `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(point.query)}`);
+      await expectPointLink(link, point.query);
       await expect(link).toHaveAttribute('target', '_blank');
       await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
       // Rapid taps on separate points must not become a map double-tap zoom.
@@ -165,10 +219,14 @@ test('bilingual search and port filters preserve selection through reload and la
   await manyRoutes(db);
   await page.goto('/routes');
   const finder = page.getByRole('region', { name: 'Find a route', exact: true });
-  await finder.getByRole('combobox', { name: 'Origin', exact: true }).selectOption({ label: 'Bangkok · Thailand' });
-  await finder.getByRole('combobox', { name: 'Destination', exact: true }).selectOption({ label: 'Port 012 · Vietnam' });
+  await chooseDialogOption(finder.getByRole('button', { name: 'Origin', exact: true }), { label: 'Bangkok · Thailand' });
+  await chooseDialogOption(finder.getByRole('button', { name: 'Destination', exact: true }), { label: 'Port 012 · Vietnam' });
   await finder.getByRole('searchbox', { name: 'Search routes', exact: true }).fill('ท่าเรือ 012');
   await expect(finder.getByRole('radio')).toHaveCount(1);
+  const singlePage = finder.getByRole('navigation', { name: 'Route result pages', exact: true });
+  await expect(singlePage.locator('[aria-current="page"]')).toHaveText('1');
+  await expect(singlePage.getByRole('button', { name: 'Previous routes', exact: true })).toBeDisabled();
+  await expect(singlePage.getByRole('button', { name: 'Next routes', exact: true })).toBeDisabled();
   await finder.getByRole('radio', { name: /Connection 024/ }).check();
   await expect(page.getByRole('region', { name: 'Selected route details' }).getByRole('heading')).toHaveText(connectionName(24));
   const before = new URL(page.url());
@@ -183,35 +241,39 @@ test('bilingual search and port filters preserve selection through reload and la
   await page.getByRole('link', { name: 'Switch to Thai' }).click();
   const thaiFinder = page.getByRole('region', { name: 'ค้นหาเส้นทาง', exact: true });
   await expect(thaiFinder.getByRole('searchbox')).toHaveValue('ท่าเรือ 012');
-  await expect(thaiFinder.getByRole('combobox', { name: 'ต้นทาง', exact: true })).toHaveValue(before.searchParams.get('from')!);
-  await expect(thaiFinder.getByRole('combobox', { name: 'ปลายทาง', exact: true })).toHaveValue(before.searchParams.get('to')!);
+  await expect(thaiFinder.getByRole('button', { name: 'ต้นทาง', exact: true })).toHaveAttribute('data-selection-value', before.searchParams.get('from')!);
+  await expect(thaiFinder.getByRole('button', { name: 'ปลายทาง', exact: true })).toHaveAttribute('data-selection-value', before.searchParams.get('to')!);
   await expect(thaiFinder.getByRole('radio', { name: /เส้นทาง 024/ })).toBeChecked();
 
   await thaiFinder.getByRole('searchbox').fill('unmatched-route-result');
   await expect(thaiFinder.getByRole('heading', { name: 'ไม่พบเส้นทางที่ตรงกัน' })).toBeVisible();
   await expect(thaiFinder.getByRole('radio')).toHaveCount(0);
+  await expect(thaiFinder.getByRole('navigation', { name: 'หน้ารายการเส้นทาง', exact: true })).toHaveCount(0);
   await expect(page.getByRole('region', { name: 'รายละเอียดเส้นทางที่เลือก' }).getByRole('heading')).toHaveText('เส้นทาง 024');
   await expect(page.locator('.leaflet-marker-icon')).toHaveCount(2);
   await thaiFinder.getByRole('button', { name: 'แสดงเส้นทางที่เลือกในรายการ', exact: true }).click();
   await expect(thaiFinder.getByRole('searchbox')).toHaveValue('');
   await expect(thaiFinder.getByRole('radio', { name: /เส้นทาง 024/ })).toBeChecked();
-  await expect(page).toHaveURL(/routePage=4/);
+  await expect(page).toHaveURL(/routePage=3/);
   expect(new URL(page.url()).searchParams.has('q')).toBe(false);
   await thaiFinder.getByRole('searchbox').fill('another-unmatched-route');
   await thaiFinder.getByRole('button', { name: 'ล้างตัวกรองทั้งหมด', exact: true }).click();
   await expect(thaiFinder.getByRole('searchbox')).toBeFocused();
-  await expect(thaiFinder.getByRole('radio')).toHaveCount(6);
+  await expect(thaiFinder.getByRole('radio')).toHaveCount(10);
   await expect(thaiFinder.getByRole('status')).toHaveText('126 เส้นทาง');
 });
 
 test.describe('mobile route explorer', () => {
-  test.use({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+  test.use({ viewport: { width: 320, height: 844 }, reducedMotion: 'reduce' });
 
-  test('route selection and the map shortcut remain usable with many results', async ({ page, db }) => {
+  test('route selection and the map shortcut remain usable with many results', async ({ page, db }, testInfo) => {
     await manyRoutes(db);
     await page.goto('/routes?route=connection-003');
     const finder = page.getByRole('region', { name: 'Find a route', exact: true });
-    await expect(finder.getByRole('radio')).toHaveCount(6);
+    await expect(finder.getByRole('radio')).toHaveCount(10);
+    const pagination = finder.getByRole('navigation', { name: 'Route result pages', exact: true });
+    await expect.poll(() => pagination.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
+    await finder.screenshot({ path: testInfo.outputPath('routes-pagination-320.png'), animations: 'disabled' });
     // Selecting a route updates the URL and can replace the radio before
     // Playwright's immediate check() verification runs in WebKit.
     await finder.getByRole('radio', { name: /Connection 004/ }).click();
@@ -226,6 +288,6 @@ test.describe('mobile route explorer', () => {
     await expect(page.getByRole('button', { name: 'Fit selected route', exact: true })).toBeEnabled();
     await expect(page.getByRole('link', { name: 'OpenStreetMap contributors', exact: true })).toBeVisible();
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await expect(page.locator('.leaflet-marker-icon')).toHaveCount(4);
+    await expect(page.locator('.leaflet-marker-icon')).toHaveCount(6);
   });
 });

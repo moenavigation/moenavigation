@@ -4,6 +4,16 @@ const indexed=process.argv.includes('--indexed');
 const queue=['/','/th','/cms'];
 const seen=new Set();
 const assets=new Set();
+// The commissioned fallback banners in src/lib/home-slides.ts are bundled
+// deliberately. Every other /images/ content reference must be migrated.
+const bundledHomeSlides=new Set([
+  '/images/hero/01-open-water.webp',
+  '/images/hero/02-harbor-tug.webp',
+  '/images/hero/03-blue-hour-port.webp',
+  '/images/hero/04-ocean-carrier.webp',
+  '/images/hero/05-coastal-passage.webp',
+]);
+const bundledAssets=new Set();
 const errors=[];
 const fetchHeaders=async(input,options)=>{
   const response=await fetch(input,options);
@@ -12,7 +22,7 @@ const fetchHeaders=async(input,options)=>{
   return result;
 };
 const attr=(html,name)=>[...html.matchAll(new RegExp(`${name}="([^"]+)"`,'g'))].map(m=>m[1].replaceAll('&amp;','&'));
-const documentLanguage=path=>path==='/cms'||path==='/th'||path.startsWith('/th/')?'th':'en';
+const documentLanguage=path=>path==='/th'||path.startsWith('/th/')?'th':'en';
 const linkPath=(html,rel,language)=>{
   const tag=(html.match(/<link\b[^>]*>/g)||[]).find(value=>attr(value,'rel').includes(rel)&&(!language||attr(value,'hrefLang').includes(language)));
   assert.ok(tag,`${rel}${language?` ${language}`:''} link exists`);
@@ -37,7 +47,7 @@ while(queue.length) {
       // Authentication resolves in the browser. SSR intentionally sends its
       // localized live loading region; browser workflows check the login h1.
       assert.match(html,/<title>Moe Navigation Co\.,Ltd\.[^<]+<\/title>/,`${path} CMS title`);
-      assert.match(html,/data-cms-language="th"/,`${path} Thai-default CMS locale`);
+      assert.match(html,/data-cms-language="en"/,`${path} English-default CMS locale`);
       assert.match(html,/data-loading-screen="cms"/,`${path} session loading screen`);
       assert.match(html,/role="status"[^>]*aria-live="polite"/,`${path} accessible session loading status`);
     }else assert.equal((html.match(/<h1(?:\s|>)/g)||[]).length,1,`${path} one primary heading`);
@@ -60,7 +70,10 @@ while(queue.length) {
     }
     const mediaSources = ['src','srcSet','srcset','content'].flatMap(name => attr(html,name));
     for(const src of mediaSources) {
-      assert(!src.startsWith('/images/'),`${path} still references a local content image`);
+      if(src.startsWith('/images/')) {
+        assert(bundledHomeSlides.has(src),`${path} still references an unapproved local content image: ${src}`);
+        bundledAssets.add(src);
+      }
       if(src.startsWith('https://res.cloudinary.com/')) for(const candidate of src.split(/,\s*(?=https?:)/)) {
         const url=candidate.split(/\s+/)[0];
         // Verify each original plus one responsive size, without generating every srcset derivative.
@@ -76,7 +89,7 @@ while(queue.length) {
     }
   }catch(error){errors.push(error.message);}
 }
-for(const path of assets) {
+for(const path of [...assets,...bundledAssets]) {
   try{const response=await fetchHeaders(new URL(path,base));assert.equal(response.status,200,`${path} available`);assert.match(response.headers.get('content-type')||'',/^image\//,`${path} image content type`);}catch(error){errors.push(error.message);}
 }
 for(const path of ['/missing-page','/th/missing-page','/about/unsupported','/th/routes/unsupported']){
@@ -99,4 +112,4 @@ try{
 }catch(error){errors.push(error.message);}
 assert.match(await (await fetch(new URL('/robots.txt',base))).text(),indexed ? /Allow: \// : /Disallow: \/(?:\r?\n|$)/);
 assert.match(await (await fetch(new URL('/sitemap.xml',base))).text(),/<xhtml:link/);
-if(errors.length){console.error(errors.join('\n'));process.exitCode=1;}else{console.log(`PASS: ${seen.size} linked routes, ${assets.size} Cloudinary image URLs (originals and responsive deliveries), zero local content images, localized HTML/metadata/navigation, 4 invalid routes, legacy and preference redirects, robots and sitemap.`);}
+if(errors.length){console.error(errors.join('\n'));process.exitCode=1;}else{console.log(`PASS: ${seen.size} linked routes, ${assets.size} Cloudinary image URLs (originals and responsive deliveries), ${bundledAssets.size} approved bundled banners, zero unapproved local content images, localized HTML/metadata/navigation, 4 invalid routes, legacy and preference redirects, robots and sitemap.`);}
