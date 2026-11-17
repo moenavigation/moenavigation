@@ -87,7 +87,7 @@ export function SiteHeader({locale}:{locale:Locale}) {
   </>;
 }
 export default function SiteShell({locale,children}:{locale:Locale;children:ReactNode}) {
-  const { sections, settings }=usePublicContent();
+  const { sections, settings, fleetCount }=usePublicContent();
   const footer=sections.find(section=>section.id==="footer" && section.parentId==="shared");
   const path=usePathname();
   useEffect(()=>{
@@ -111,7 +111,7 @@ export default function SiteShell({locale,children}:{locale:Locale;children:Reac
     <SiteHeader locale={locale}/>
     <main id="main" tabIndex={-1}>{children}<div className="container"><AdditionalSections pageId="shared" locale={locale} exclude={["shared-callout","footer","footer-contact"]} /></div></main>
     <footer className={styles.footer} onClickCapture={scrollCurrentPageToTop}>
-      <div className="container"><FooterStatistics record={footer} locale={locale}/></div>
+      <div className="container"><FooterStatistics record={footer} locale={locale} fleetCount={fleetCount}/></div>
       <div className={`container ${styles.footerTop}`}><div><Link href={href(locale)}><Brand locale={locale}/></Link><p>{contentText(footer,"title",locale)}</p></div><ContactsBox locale={locale} settings={settings}/></div>
       <div className={`container ${styles.footerBottom}`}><span>© {new Date().getFullYear()} {local(locale,settings.companyName,settings.companyNameTh)}</span><Link href={href(locale,"privacy")}>{local(locale,"Privacy policy","นโยบายความเป็นส่วนตัว")}</Link></div>
       <FloatingContact key={path} locale={locale}/>

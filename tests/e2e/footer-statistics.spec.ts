@@ -4,7 +4,7 @@ import { test, expect, login } from './fixtures';
 for (const viewport of [{ width: 1440, height: 1000 }, { width: 320, height: 900 }]) {
   test.describe(`Footer statistics · ${viewport.width}`, () => {
     test.use({ viewport, reducedMotion: 'reduce' });
-    test('CMS edits save all four bilingual figures and blank values hide their cards', async ({ page }, testInfo) => {
+    test('CMS edits preserve automatic Fleet count and save the other bilingual figures', async ({ page }, testInfo) => {
       await page.goto('/about');
       const footer = page.getByRole('contentinfo');
       const statistics = footer.getByRole('region', { name: 'Company at a glance', exact: true });
@@ -21,13 +21,14 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 320, height: 900
       const cards = editor.getByRole('region', { name: 'Footer statistics', exact: true }).getByRole('group');
       await expect(cards).toHaveCount(4);
       const expected = [
-        { label: 'Fixture fleet', labelTh: 'กองเรือตัวอย่าง', value: '9' },
+        { label: 'Fixture fleet', labelTh: 'กองเรือตัวอย่าง', value: '8' },
         { label: 'Fixture cargo', labelTh: 'สินค้าตัวอย่าง', value: '12,345' },
         { label: 'Fixture crew', labelTh: 'ลูกเรือตัวอย่าง', value: '88' },
         { label: 'Fixture voyages', labelTh: 'เที่ยวเรือตัวอย่าง', value: '1,234' },
       ];
       for (let index = 0; index < expected.length; index++) {
-        await cards.nth(index).getByLabel('Displayed value', { exact: true }).fill(expected[index].value);
+        if (index === 0) await expect(cards.nth(index).getByLabel('Displayed value', { exact: true })).toHaveCount(0);
+        else await cards.nth(index).getByLabel('Displayed value', { exact: true }).fill(expected[index].value);
         await cards.nth(index).getByLabel('Label · English', { exact: true }).fill(expected[index].label);
         await cards.nth(index).getByLabel('Label · Thai', { exact: true }).fill(expected[index].labelTh);
       }
@@ -50,14 +51,14 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 320, height: 900
       await page.goto('/cms/pages?page=shared');
       await page.getByRole('button', { name: 'Edit Footer and statistics', exact: true }).click();
       editor = page.getByRole('dialog', { name: 'Edit content', exact: true });
-      await expect(editor.getByLabel('Displayed value', { exact: true }).nth(1)).toHaveValue('12,345');
-      await editor.getByLabel('Displayed value', { exact: true }).nth(1).fill('');
+      await expect(editor.getByLabel('Displayed value', { exact: true }).nth(0)).toHaveValue('12,345');
+      await editor.getByLabel('Displayed value', { exact: true }).nth(0).fill('');
       const cleared = page.waitForResponse(response => response.url().endsWith('/api/cms/content') && response.request().method() === 'POST');
       await editor.getByRole('button', { name: 'Save', exact: true }).click();
       expect((await cleared).status()).toBe(200);
       await page.goto('/about');
       const updated = page.getByRole('contentinfo').getByRole('region', { name: 'Company at a glance', exact: true });
-      await expect(updated.locator('dd')).toHaveText(['9', '88', '1,234']);
+      await expect(updated.locator('dd')).toHaveText(['8', '88', '1,234']);
       await expect(updated.getByText('Fixture cargo', { exact: true })).toHaveCount(0);
     });
   });

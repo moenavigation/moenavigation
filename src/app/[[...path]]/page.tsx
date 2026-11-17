@@ -14,6 +14,7 @@ import { PublicSearchParamsProvider } from '@/lib/use-public-search-params';
 import { indexingEnabled, siteOrigin } from '@/lib/site-config';
 import { idSchema } from '@/lib/validation';
 import { companyNameEn } from '@/lib/company';
+import { countPublicVessels } from '@/lib/footer-statistics';
 
 export const revalidate = 86400;
 // Generate public URLs on first visit, then reuse their rendered output. New
@@ -79,6 +80,8 @@ export default async function Page({ params }: { params: Promise<{ path?: string
 async function PublicPage({ locale, page, slug, pieces }: { locale: Locale; page: string; slug?: string; pieces: string[] }) {
   const [published, settings] = await Promise.all([getPublicRecords(), getPublicSettings()]);
   const records = selectPublicPageRecords(published, page, slug);
+  // The footer needs the whole fleet, even when this page includes only a few cards or none.
+  const fleetCount = countPublicVessels(published);
   // A record can be trashed while the remaining data is loading. Still use the
   // framework's noindex recovery page if it disappeared after the route check.
   if (!records.some(record => record.type === (slug ? detailTypes[page] : 'Page') && record.id === (slug || page || 'home'))) notFound();
@@ -88,5 +91,5 @@ async function PublicPage({ locale, page, slug, pieces }: { locale: Locale; page
     ...(settings.phone ? { telephone: settings.phone } : {}), ...(settings.email ? { email: settings.email } : {}),
     ...(local(locale, settings.officeAddress, settings.officeAddressTh) ? { address: local(locale, settings.officeAddress, settings.officeAddressTh) } : {}),
   } : null;
-  return <PublicContentProvider records={records} settings={settings}>{organization && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization).replace(/</g, '\\u003c') }} />}<SiteShell locale={locale}>{page ? <ContentPage key={`${locale}/${pieces.join("/")}`} locale={locale} page={page} slug={slug} /> : <Home locale={locale} />}</SiteShell></PublicContentProvider>;
+  return <PublicContentProvider records={records} settings={settings} fleetCount={fleetCount}>{organization && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization).replace(/</g, '\\u003c') }} />}<SiteShell locale={locale}>{page ? <ContentPage key={`${locale}/${pieces.join("/")}`} locale={locale} page={page} slug={slug} /> : <Home locale={locale} />}</SiteShell></PublicContentProvider>;
 }

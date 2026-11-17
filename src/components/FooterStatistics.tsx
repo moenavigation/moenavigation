@@ -8,8 +8,8 @@ import styles from './FooterStatistics.module.css';
 
 const icons = [Ship, Boxes, Users, Route];
 
-export default function FooterStatistics({ record, locale }: { record?: ContentRecord; locale: Locale }) {
-  const items = visibleFooterStatistics(record);
+export default function FooterStatistics({ record, locale, fleetCount }: { record?: ContentRecord; locale: Locale; fleetCount: number }) {
+  const items = visibleFooterStatistics(record, fleetCount);
   if (!items.length) return null;
   return <section className={styles.statistics} aria-label={local(locale, 'Company at a glance', 'ข้อมูลบริษัทโดยสรุป')}>
     <div className={styles.heading}>
@@ -18,7 +18,7 @@ export default function FooterStatistics({ record, locale }: { record?: ContentR
     </div>
     <dl className={styles.figures}>
       {items.map(item => {
-        const sourceIndex = record?.footerStats?.indexOf(item) ?? 0;
+        const sourceIndex = item.sourceIndex;
         const Icon = icons[sourceIndex] || Ship;
         return <div className={styles.figure} key={`${sourceIndex}-${item.label}`}>
           <Icon className={styles.icon} aria-hidden="true" />

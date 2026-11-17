@@ -107,7 +107,8 @@ test('shared footer editing exposes bilingual text and statistics and links cont
   await showLanguage(editor, 'Statistics heading · English');
   await showLanguage(editor, 'Statistics heading · Thai');
   await expect(editor.getByRole('region', { name: 'Footer statistics', exact: true })).toBeVisible();
-  await expect(editor.getByLabel('Displayed value', { exact: true })).toHaveCount(4);
+  await expect(editor.getByLabel('Displayed value', { exact: true })).toHaveCount(3);
+  await expect(editor.getByText('Automatically counts vessels shown on the website. Adding, removing or restoring a vessel updates this number.', { exact: true })).toBeVisible();
   await expect(editor.getByRole('region', { name: 'Pictures', exact: true })).toHaveCount(0);
   await expect(editor.getByLabel('Summary · English', { exact: true })).toHaveCount(0);
   await editor.getByRole('button', { name: 'Cancel', exact: true }).click();

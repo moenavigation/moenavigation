@@ -1,6 +1,20 @@
 # Legacy fleet research
 
-## Current source policy: PDFs take priority
+## Current source policy: dedicated website particulars take priority
+
+Later on 17 November 2026, the user changed the vessel-detail source from PDFs to the old website. A fresh read-only check fetched all fourteen English/Thai vessel detail pages, both fleet listings and the homepage successfully (17 HTTP 200 responses). The two languages' detail tables are identical for all seven vessels, both listing tables agree, and all 58 shared measurement/capacity/tonnage listing fields agree with the corresponding detail tables. Every detail table still matches the earlier archive after whitespace normalization.
+
+Use the dedicated vessel pages and matching fleet listing as the current particulars source. RANONG MOE gives **96 TEU** and the six container vessels each give **3 reefer plugs**. Other current-schema particulars are unchanged. Keep the published gaps for MOE 4 blank; its official registration is not an IMO. Keep DUMAI MOE unchanged because no matching old-website record exists.
+
+The homepage still describes the 2022 launch of the first MOE LINE 1 as a 72 TEU vessel. This is preserved as historical source context, while the dedicated RANONG MOE particulars and fleet listing supply the selected 96 TEU. The website does not document when or why capacity changed. RANONG MOE's general-details name remains MOE LINE 1, matched by IMO 1091434 and registration 5300-02061; current CMS names and photos stay intact.
+
+Source verification is recorded in `website-primary-verification-2026-11-17.json`; raw fetched HTML and parsed tables are under `.local/legacy-website-policy-2026-11-17/`. The active CMS subset during this change is RANONG MOE, MOE 4, MOE 5, MOE 6 and DUMAI MOE. Do not restore the removed MOE 2, MOE 3 or MOE 7 records to perform this source change. Retain their reviewed source definitions for future use.
+
+The guarded website-source import updated **four values across three active vessels**: RANONG MOE nominal capacity 72 → 96 TEU, and reefer plugs 5 → 3 for RANONG MOE, MOE 5 and MOE 6. MOE 4, DUMAI MOE and all three trashed vessel records were preserved exactly. The revision-checked transaction, pre-change backup and exact record read-back are recorded in `.local/legacy-vessel-website-import-2026-11-17/applied.json`; the verified plan hash is `dac6bc08dcec554a8ccba782843a91bfd7f03dc15b152226e834586b838c210f`. A repeated plan has no remaining changes.
+
+The footer Fleet figure now derives from the five active public vessels, independent of which page is open. Live local Chromium checks covered 32 pages in English/Thai at 1440px and 320px, including 20 vessel detail views and 200 exact numeric-or-missing particulars rows. All footer values were 5, all five fleet cards and their main images loaded, and no horizontal overflow or JavaScript errors occurred. Desktop/mobile particulars and footer screenshots were inspected. Evidence is under `.local/fleet-website-auto-count-2026-11-17/`. These checks validate the local website and saved data; no production code deployment was performed.
+
+## Earlier policy: PDFs take priority (superseded)
 
 On 17 November 2026, the user selected the vessel particulars PDFs as the main source, superseding the earlier consensus-only import below. The seven complete rendered sheets were checked again. Their dimensions, tonnage, IMO numbers, visible build years and flag agree with the earlier import. RANONG MOE now uses the PDF's **72 TEU**, and all six container vessels use **5 reefer plugs** each. No other technical values changed. Missing MOE 4 fields remain absent; DUMAI MOE has no matching sheet and stays unchanged.
 

@@ -35,7 +35,7 @@ test('fresh migration and browser fixtures share corrected vessel photos, Dumai 
     }
     const source = legacyVesselParticulars.find(item => item.id === record.id);
     assert.deepEqual(record.vesselSpecs, source?.specs);
-    assert.equal(record.vesselSpecs?.reeferPlugs, record.category === 'Container' ? 5 : undefined);
+    assert.equal(record.vesselSpecs?.reeferPlugs, record.category === 'Container' ? 3 : undefined);
   }
   const fleet = websiteContentRecords.find(record => record.type === 'Page' && record.id === 'fleet');
   assert.equal(fleet?.description, clientFleetPageCopy.description);

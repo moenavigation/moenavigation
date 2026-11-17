@@ -1,0 +1,487 @@
+{
+  "checkedAt": "2026-11-17T08:59:28.532Z",
+  "sourcePolicy": "Legacy website HTML, per latest user instruction. Do not use PDFs to fill or override website values.",
+  "scope": "Read-only verification of published source claims, not independent operational certification.",
+  "sourceArchive": ".local/legacy-website-policy-2026-11-17",
+  "freshHttpPages": 17,
+  "allHttp200": true,
+  "detailPages": 14,
+  "listingPages": 2,
+  "englishThaiDetailTablesIdentical": true,
+  "englishThaiListingTablesIdentical": true,
+  "listingDetailFieldComparisons": 58,
+  "listingDetailDiscrepancies": 0,
+  "detailTablesMatchArchivedResearch": true,
+  "pages": [
+    {
+      "url": "https://www.moe-line.com/fleet-list/",
+      "finalUrl": "https://www.moe-line.com/fleet-list/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:27.945Z",
+      "htmlSha256": "572c701f49822a6908c4fd331c0a86c4329d44025474d8079bbc621c3771c6d4",
+      "tableCount": 21
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/ranong-moe/",
+      "finalUrl": "https://www.moe-line.com/fleet-list/ranong-moe/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:27.944Z",
+      "htmlSha256": "f5bd9ecc2036210183cd31943de9bc0f65be47b805b89516ffb4279fd5abcc13",
+      "tableCount": 10
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-2/",
+      "finalUrl": "https://www.moe-line.com/fleet-list/moe-line-2/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:27.943Z",
+      "htmlSha256": "87745913002c95b4eac8c5b1fa68f6af4815d0890568b81ed31e45b6f9763a57",
+      "tableCount": 10
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-3/",
+      "finalUrl": "https://www.moe-line.com/fleet-list/moe-line-3/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:27.970Z",
+      "htmlSha256": "d2f98fc2d7f3e2956c4e335eb84110d9b4b02bd718ed2b446c79ef541bda6b9c",
+      "tableCount": 10
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-4/",
+      "finalUrl": "https://www.moe-line.com/fleet-list/moe-line-4/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:27.971Z",
+      "htmlSha256": "b8f063052c2db3f5bf573c9449d0d64bd1412767850d38bbcdeddbceea6e4f98",
+      "tableCount": 7
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-5/",
+      "finalUrl": "https://www.moe-line.com/fleet-list/moe-line-5/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:27.971Z",
+      "htmlSha256": "ac70893c5de5f017bbabeaf826882337491406e3e9d45b6308a08d8bbda4ce8f",
+      "tableCount": 10
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-6/",
+      "finalUrl": "https://www.moe-line.com/fleet-list/moe-line-6/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:27.989Z",
+      "htmlSha256": "63fbb56c1149e7cc2aba10893bd0c630e644f70aa74958d6bf9375a831298598",
+      "tableCount": 10
+    },
+    {
+      "url": "https://www.moe-line.com/fleet-list/moe-line-7/",
+      "finalUrl": "https://www.moe-line.com/fleet-list/moe-line-7/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:27.991Z",
+      "htmlSha256": "5de0828c8c88247e05a7209d3357112654cbc04d0debc60d34990c97675f63f1",
+      "tableCount": 10
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/",
+      "finalUrl": "https://www.moe-line.com/th/fleet-list/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:27.989Z",
+      "htmlSha256": "c7a3da694a7e607975b86dc1e65b082b282c43a71bff1bb99d555e04e001ec25",
+      "tableCount": 21
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+      "finalUrl": "https://www.moe-line.com/th/fleet-list/ranong-moe/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:28.005Z",
+      "htmlSha256": "99eef3f2d0b32f12f71659024853aeba591fdf4d469217d95aca67b9d628c76a",
+      "tableCount": 10
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+      "finalUrl": "https://www.moe-line.com/th/fleet-list/moe-line-2/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:28.006Z",
+      "htmlSha256": "a1b8cb3b01179f2eddb4bd06681142365a80100c63dd4fc25d71b18eaa803f9a",
+      "tableCount": 10
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+      "finalUrl": "https://www.moe-line.com/th/fleet-list/moe-line-3/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:28.005Z",
+      "htmlSha256": "2d13cde83fd06eaa1052a19cca52805541f9066e986a1ed487dc3325b28192a8",
+      "tableCount": 10
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+      "finalUrl": "https://www.moe-line.com/th/fleet-list/moe-line-4/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:28.026Z",
+      "htmlSha256": "7fad1d036304cfc9397b7d6072ef864107510c47833f47288965255fdc54ea65",
+      "tableCount": 7
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+      "finalUrl": "https://www.moe-line.com/th/fleet-list/moe-line-5/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:28.027Z",
+      "htmlSha256": "315b125e5c3dc267913767410bac543e9ed9ad53880f8a2ea68375c26303cc90",
+      "tableCount": 10
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+      "finalUrl": "https://www.moe-line.com/th/fleet-list/moe-line-6/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:28.025Z",
+      "htmlSha256": "064380e48ee0630cb7c4e7dbc054c758bac703593da5f5039a9a8771e7c3b580",
+      "tableCount": 10
+    },
+    {
+      "url": "https://www.moe-line.com/th/fleet-list/moe-line-7/",
+      "finalUrl": "https://www.moe-line.com/th/fleet-list/moe-line-7/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:28.041Z",
+      "htmlSha256": "c6439660da60a0b048f38ca3a8d9df85e6f3bc5cb225f2ada5ad8a40b7987917",
+      "tableCount": 10
+    },
+    {
+      "url": "https://www.moe-line.com/",
+      "finalUrl": "https://www.moe-line.com/",
+      "httpStatus": 200,
+      "fetchedAt": "2026-11-17T08:59:28.042Z",
+      "htmlSha256": "6e649485da9e66ccd5e5e02f88fdf508201ac6b426dd91dc5f54a49823927be1",
+      "tableCount": 0
+    }
+  ],
+  "currentSchemaDeltasFromPdf": [
+    {
+      "id": "ranong-moe",
+      "field": "capacityTeu",
+      "pdf": 72,
+      "websiteDetail": 96,
+      "websiteListing": 96,
+      "websiteHomeHistorical": 72,
+      "status": "Use 96 from the dedicated vessel particulars and matching fleet listing. The 72 TEU homepage sentence is explicitly historical launch context; preserve that difference in research rather than importing it as a current particular."
+    },
+    {
+      "id": "ranong-moe",
+      "field": "reeferPlugs",
+      "pdf": 5,
+      "websiteDetail": 3,
+      "websiteListing": 3,
+      "status": "Website detail and listing agree. Use 3 under website-source policy."
+    },
+    {
+      "id": "moe-line-2",
+      "field": "reeferPlugs",
+      "pdf": 5,
+      "websiteDetail": 3,
+      "websiteListing": 3,
+      "status": "Website detail and listing agree. Use 3 under website-source policy."
+    },
+    {
+      "id": "moe-line-3",
+      "field": "reeferPlugs",
+      "pdf": 5,
+      "websiteDetail": 3,
+      "websiteListing": 3,
+      "status": "Website detail and listing agree. Use 3 under website-source policy."
+    },
+    {
+      "id": "moe-line-5",
+      "field": "reeferPlugs",
+      "pdf": 5,
+      "websiteDetail": 3,
+      "websiteListing": 3,
+      "status": "Website detail and listing agree. Use 3 under website-source policy."
+    },
+    {
+      "id": "moe-line-6",
+      "field": "reeferPlugs",
+      "pdf": 5,
+      "websiteDetail": 3,
+      "websiteListing": 3,
+      "status": "Website detail and listing agree. Use 3 under website-source policy."
+    },
+    {
+      "id": "moe-line-7",
+      "field": "reeferPlugs",
+      "pdf": 5,
+      "websiteDetail": 3,
+      "websiteListing": 3,
+      "status": "Website detail and listing agree. Use 3 under website-source policy."
+    }
+  ],
+  "vesselDetails": [
+    {
+      "id": "ranong-moe",
+      "legacyDisplayName": "RANONG MOE",
+      "legacyDetailNameField": "MOE LINE 1",
+      "sourceUrls": {
+        "en": "https://www.moe-line.com/fleet-list/ranong-moe/",
+        "th": "https://www.moe-line.com/th/fleet-list/ranong-moe/"
+      },
+      "identity": {
+        "imo": "1091434",
+        "officialNo": "5300-02061",
+        "flag": "THAI",
+        "builtYear": 2010,
+        "typeAsPublished": "CONTAINER CARRIER"
+      },
+      "dimensionsMetres": {
+        "loa": "63.00",
+        "lbp": null,
+        "breadth": "13.60",
+        "depth": "5.30",
+        "draft": "3.59"
+      },
+      "containerCapacity": {
+        "nominalTeu": 96,
+        "reeferPlugs": 3
+      },
+      "tonnageAsPublished": {
+        "grt": 1419,
+        "nrt": 741,
+        "dwt": 2088,
+        "dwcc": 1800
+      }
+    },
+    {
+      "id": "moe-line-2",
+      "legacyDisplayName": "MOE LINE 2",
+      "legacyDetailNameField": "MOE LINE 2",
+      "sourceUrls": {
+        "en": "https://www.moe-line.com/fleet-list/moe-line-2/",
+        "th": "https://www.moe-line.com/th/fleet-list/moe-line-2/"
+      },
+      "identity": {
+        "imo": "8359184",
+        "officialNo": "660000333",
+        "flag": "THAI",
+        "builtYear": 2008,
+        "typeAsPublished": "RIVER-SEA CONTAINER FEEDER"
+      },
+      "dimensionsMetres": {
+        "loa": "49.98",
+        "lbp": "47.24",
+        "breadth": "12.80",
+        "depth": "4.50",
+        "draft": "3.85"
+      },
+      "containerCapacity": {
+        "nominalTeu": 72,
+        "reeferPlugs": 3
+      },
+      "tonnageAsPublished": {
+        "grt": 835,
+        "nrt": 505,
+        "dwt": 1590,
+        "dwcc": 1550
+      }
+    },
+    {
+      "id": "moe-line-3",
+      "legacyDisplayName": "MOE LINE 3",
+      "legacyDetailNameField": "MOE LINE 3",
+      "sourceUrls": {
+        "en": "https://www.moe-line.com/fleet-list/moe-line-3/",
+        "th": "https://www.moe-line.com/th/fleet-list/moe-line-3/"
+      },
+      "identity": {
+        "imo": "8359172",
+        "officialNo": "660000765",
+        "flag": "THAI",
+        "builtYear": 2011,
+        "typeAsPublished": "RIVER-SEA CONTAINER FEEDER"
+      },
+      "dimensionsMetres": {
+        "loa": "49.98",
+        "lbp": "40.716",
+        "breadth": "12.80",
+        "depth": "4.20",
+        "draft": "3.20"
+      },
+      "containerCapacity": {
+        "nominalTeu": 72,
+        "reeferPlugs": 3
+      },
+      "tonnageAsPublished": {
+        "grt": 760,
+        "nrt": 464,
+        "dwt": 1290,
+        "dwcc": 1250
+      }
+    },
+    {
+      "id": "moe-line-4",
+      "legacyDisplayName": "MOE LINE 4",
+      "legacyDetailNameField": "MOE LINE 4",
+      "sourceUrls": {
+        "en": "https://www.moe-line.com/fleet-list/moe-line-4/",
+        "th": "https://www.moe-line.com/th/fleet-list/moe-line-4/"
+      },
+      "identity": {
+        "imo": null,
+        "officialNo": "4800-00377",
+        "flag": "THAI",
+        "builtYear": 1988,
+        "typeAsPublished": "FLOATING CRANE BARGE (NON SELFPROPELLED)"
+      },
+      "dimensionsMetres": {
+        "loa": "55.00",
+        "lbp": null,
+        "breadth": "19.00",
+        "depth": "4.00",
+        "draft": null
+      },
+      "containerCapacity": null,
+      "tonnageAsPublished": {
+        "grt": 1329,
+        "nrt": null,
+        "dwt": null,
+        "dwcc": null
+      }
+    },
+    {
+      "id": "moe-line-5",
+      "legacyDisplayName": "MOE LINE 5",
+      "legacyDetailNameField": "MOE LINE 5",
+      "sourceUrls": {
+        "en": "https://www.moe-line.com/fleet-list/moe-line-5/",
+        "th": "https://www.moe-line.com/th/fleet-list/moe-line-5/"
+      },
+      "identity": {
+        "imo": "1042457",
+        "officialNo": "670000335",
+        "flag": "THAI",
+        "builtYear": 2009,
+        "typeAsPublished": "COASTAL CONTAINER"
+      },
+      "dimensionsMetres": {
+        "loa": "49.98",
+        "lbp": "40.716",
+        "breadth": "14.80",
+        "depth": "4.92",
+        "draft": "3.52"
+      },
+      "containerCapacity": {
+        "nominalTeu": 120,
+        "reeferPlugs": 3
+      },
+      "tonnageAsPublished": {
+        "grt": 1163,
+        "nrt": 651,
+        "dwt": 1800,
+        "dwcc": 1750
+      }
+    },
+    {
+      "id": "moe-line-6",
+      "legacyDisplayName": "MOE LINE 6",
+      "legacyDetailNameField": "MOE LINE 6",
+      "sourceUrls": {
+        "en": "https://www.moe-line.com/fleet-list/moe-line-6/",
+        "th": "https://www.moe-line.com/th/fleet-list/moe-line-6/"
+      },
+      "identity": {
+        "imo": "1042469",
+        "officialNo": "670000953",
+        "flag": "THAI",
+        "builtYear": 2006,
+        "typeAsPublished": "LOCAL TRADE/CONTAINER"
+      },
+      "dimensionsMetres": {
+        "loa": "49.98",
+        "lbp": "47.80",
+        "breadth": "14.80",
+        "depth": "4.62",
+        "draft": "3.35"
+      },
+      "containerCapacity": {
+        "nominalTeu": 120,
+        "reeferPlugs": 3
+      },
+      "tonnageAsPublished": {
+        "grt": 1047,
+        "nrt": 592,
+        "dwt": 1800,
+        "dwcc": 1750
+      }
+    },
+    {
+      "id": "moe-line-7",
+      "legacyDisplayName": "MOE LINE 7",
+      "legacyDetailNameField": "MOE LINE 7",
+      "sourceUrls": {
+        "en": "https://www.moe-line.com/fleet-list/moe-line-7/",
+        "th": "https://www.moe-line.com/th/fleet-list/moe-line-7/"
+      },
+      "identity": {
+        "imo": "1065837",
+        "officialNo": "670001551",
+        "flag": "THAI",
+        "builtYear": 2003,
+        "typeAsPublished": "LOCAL TRADE/CONTAINER"
+      },
+      "dimensionsMetres": {
+        "loa": "49.98",
+        "lbp": "47.20",
+        "breadth": "15.60",
+        "depth": "5.40",
+        "draft": "3.90"
+      },
+      "containerCapacity": {
+        "nominalTeu": 120,
+        "reeferPlugs": 3
+      },
+      "tonnageAsPublished": {
+        "grt": 1266,
+        "nrt": 687,
+        "dwt": 2100,
+        "dwcc": 2050
+      }
+    }
+  ],
+  "missing": {
+    "moe-line-4": [
+      "imo",
+      "draftM",
+      "capacityTeu",
+      "reeferPlugs",
+      "netTonnage",
+      "deadweightT",
+      "cargoCapacityT"
+    ],
+    "dumai-moe": "No matching listed vessel; preserve the existing record, including corrected-image exclusion and any client data."
+  },
+  "conflicts": [
+    {
+      "id": "ranong-moe",
+      "field": "capacityTeu",
+      "detailsAndListing": 96,
+      "historicalHome": 72,
+      "description": "Dedicated vessel page and fleet listing give 96 TEU. The homepage describes the 2022 launch of the first MOE LINE 1 as 2,088 DWT and 72 TEU. No HTML evidence explains a capacity change."
+    },
+    {
+      "id": "ranong-moe",
+      "field": "name",
+      "heading": "RANONG MOE",
+      "generalDetails": "MOE LINE 1",
+      "resolution": "Match existing RANONG MOE record by IMO1091434 and registration5300-02061; preserve current name and slug."
+    }
+  ],
+  "applicationScope": {
+    "activeVesselsReportedByParent": [
+      "dumai-moe",
+      "moe-line-4",
+      "moe-line-5",
+      "moe-line-6",
+      "ranong-moe"
+    ],
+    "removedVesselsReportedByParent": [
+      "moe-line-2",
+      "moe-line-3",
+      "moe-line-7"
+    ],
+    "instruction": "Do not restore missing or trashed vessels. Update the seven source definitions for future use; apply changes only to existing eligible active matches.",
+    "databaseMutationPerformedByThisVerification": false
+  },
+  "exclusions": "No PDF-only values, vessel-name edits, photo changes, historical legal-entity data, machinery or unsupported new schema fields are authorized by this source-policy change."
+}

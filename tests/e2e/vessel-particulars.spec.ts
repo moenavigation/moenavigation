@@ -118,10 +118,10 @@ test('CMS saves, reopens and clears optional particulars while preserving hidden
   }
 });
 
-test('PDF-sourced container capacities match each named vessel in both languages and missing capacities stay blank', async ({ page }) => {
+test('Website-sourced container capacities match each named vessel in both languages and missing capacities stay blank', async ({ page }) => {
   test.setTimeout(120_000);
   const vessels = [
-    { id: 'ranong-moe', en: 'RANONG MOE', th: 'ระนองโม', nominal: 72 },
+    { id: 'ranong-moe', en: 'RANONG MOE', th: 'ระนองโม', nominal: 96 },
     { id: 'moe-line-2', en: 'MOE 2', th: 'โม2', nominal: 72 },
     { id: 'moe-line-3', en: 'MOE 3', th: 'โม3', nominal: 72 },
     { id: 'moe-line-4', en: 'MOE 4', th: 'โม4', nominal: undefined },
@@ -142,7 +142,7 @@ test('PDF-sourced container capacities match each named vessel in both languages
       const reefers = valueFor(capacity, group.labels[1]);
       if (vessel.nominal !== undefined) {
         await expect(nominal).toHaveText(`${vessel.nominal} TEU`);
-        await expect(reefers).toHaveText(locale === 'en' ? '5 units' : '5 จุด');
+        await expect(reefers).toHaveText(locale === 'en' ? '3 units' : '3 จุด');
       } else {
         for (const missing of [nominal, reefers]) {
           await expect(missing).toContainText('—');

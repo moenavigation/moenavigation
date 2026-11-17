@@ -9,12 +9,12 @@ import { appendAuditEvent } from '../src/server/audit';
 import { vesselSpecsSchema } from '../src/lib/validation';
 import { buildLegacyVesselParticularsPlan } from './data/legacy-vessel-particulars';
 
-// Narrow, reviewed PDF-first content import. Default mode reads only; never run the full
+// Narrow, reviewed website-first content import. Default mode reads only; never run the full
 // website migration to populate vessel particulars on an existing website.
 nextEnv.loadEnvConfig(process.cwd());
 const apply = process.argv.includes('--apply');
 const expectedPlan = process.argv.find(value => value.startsWith('--expected-plan='))?.slice('--expected-plan='.length);
-const directory = resolve('.local/legacy-vessel-pdf-import-2026-11-17');
+const directory = resolve('.local/legacy-vessel-website-import-2026-11-17');
 let client: MongoClient | undefined;
 
 function canonical(value: unknown): unknown {
@@ -31,13 +31,13 @@ try {
   await client.connect();
   const db = client.db(process.env.MONGODB_DB_NAME);
   const content = db.collection<ContentDocument>('moe_content');
-  const filter = { type: 'Vessel' as const, deletedAt: { $exists: false } };
+  const filter = { type: 'Vessel' as const };
   const before = await content.find(filter).sort({ id: 1 }).toArray();
-  const plan = buildLegacyVesselParticularsPlan(before);
+  const plan = buildLegacyVesselParticularsPlan(before, { replaceReviewedPdfValues: true, allowCurrentFleet: true });
   const planHash = hash({ target: hash([process.env.MONGODB_URI, process.env.MONGODB_DB_NAME]), before, plan });
   await mkdir(directory, { recursive: true });
   await writeFile(resolve(directory, 'plan.json'), JSON.stringify({ reviewedAt: new Date().toISOString(), planHash, ...plan }, null, 2) + '\n');
-  console.log(JSON.stringify({ mode: apply ? 'apply' : 'dry-run', planHash, changes: plan.changes.map(change => ({ id: change.id, expectedRevision: change.expectedRevision, addedFields: change.addedFields, removedFields: change.removedFields })), unchanged: plan.unchanged, unmatched: plan.unmatched, conflicts: plan.conflicts }, null, 2));
+  console.log(JSON.stringify({ mode: apply ? 'apply' : 'dry-run', planHash, changes: plan.changes.map(change => ({ id: change.id, expectedRevision: change.expectedRevision, addedFields: change.addedFields, replacedFields: change.replacedFields, removedFields: change.removedFields, fieldDifferences: change.fieldDifferences })), unchanged: plan.unchanged, unmatched: plan.unmatched, conflicts: plan.conflicts }, null, 2));
   if (apply) assert.equal(plan.conflicts.length, 0, 'Existing CMS values conflict with the legacy source. Review the plan before applying.');
   if (apply && plan.changes.length) {
     assert.equal(expectedPlan, planHash, 'The reviewed plan or current records changed. Run the dry-run again.');
@@ -71,8 +71,8 @@ try {
         assert.deepEqual(withoutChangedFields(saved), withoutChangedFields(original), `Unrelated content changed for ${original.id}.`);
       } else assert.deepEqual(saved, original, `Untargeted vessel changed: ${original.id}.`);
     }
-    assert.equal(buildLegacyVesselParticularsPlan(after).changes.length, 0, 'Import is not idempotent.');
-    await writeFile(resolve(directory, 'applied.json'), JSON.stringify({ appliedAt: new Date().toISOString(), primarySource: 'pdf', planHash, backup, updatedVessels: plan.changes.map(change => change.id), content: after, verification: { exactSavedSpecs: true, unrelatedContentPreserved: true, idempotent: true }, cacheRefreshRequired: true }, null, 2) + '\n', { mode: 0o600 });
+    assert.equal(buildLegacyVesselParticularsPlan(after, { allowCurrentFleet: true }).changes.length, 0, 'Import is not idempotent.');
+    await writeFile(resolve(directory, 'applied.json'), JSON.stringify({ appliedAt: new Date().toISOString(), primarySource: 'website', planHash, backup, updatedVessels: plan.changes.map(change => change.id), content: after, verification: { exactSavedSpecs: true, unrelatedContentPreserved: true, idempotent: true }, cacheRefreshRequired: true }, null, 2) + '\n', { mode: 0o600 });
     console.log(JSON.stringify({ applied: true, updatedVessels: plan.changes.length, backup, verified: true, cacheRefreshRequired: true }));
   } else if (apply) console.log(JSON.stringify({ applied: false, updatedVessels: 0, reason: 'All reviewed particulars are already stored.' }));
 } catch (error) {

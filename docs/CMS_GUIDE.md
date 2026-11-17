@@ -187,6 +187,12 @@ The unified list described above contains removed content, images, and permitted
 Earlier browser-based content is preserved for maintenance and recovery. Import and browser-storage cleanup are not part of the client settings screen; ask the website maintainer to review older data before using it.
 
 
+The **Pages → Shared website content → Footer and statistics** editor keeps the
+Fleet label editable in English and Thai. Its number is calculated automatically
+from the vessels visible on the website, including on pages that do not show
+fleet cards. Adding, removing or restoring a vessel updates the count. The other
+three statistics retain manually entered values; a blank value hides that card.
+
 ## Data usage
 
 Dev and Admin can open **Data usage** at `/cms/usage` to check Vercel, MongoDB

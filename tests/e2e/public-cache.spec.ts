@@ -44,6 +44,16 @@ test('warm public HTML is cached and new routes share the published database sna
 
 test('CMS saves, Trash and restore refresh cached pages, metadata, sitemap and missing URLs immediately', async ({ request, db }) => {
   await signIn(request);
+  const initialCount = await db.collection('moe_content').countDocuments({ type: 'Vessel', status: 'Published', deletedAt: { $exists: false } });
+  const checkFleetCount = async (count: number) => {
+    // Home has only three vessel cards, About has none, and a detail page has one.
+    for (const path of ['/', '/about', '/fleet', '/fleet/moe-line-2', '/th', '/th/about']) {
+      const response = await request.get(path);
+      expect(response.status(), path).toBe(200);
+      expect(await response.text(), path).toMatch(new RegExp(`<dt>(?:Fleet|กองเรือ)</dt><dd>${count}</dd>`));
+    }
+  };
+  await checkFleetCount(initialCount);
   const id = 'e2e-cache-publish';
   const paths = [`/th/fleet/${id}`, `/fleet/${id}`];
   for (const path of paths) expect((await request.get(path)).status()).toBe(404);
@@ -66,6 +76,7 @@ test('CMS saves, Trash and restore refresh cached pages, metadata, sitemap and m
 
   record = await save(null);
   await checkPublished(record.title, record.titleTh);
+  await checkFleetCount(initialCount + 1);
   record = { ...record, title: 'Updated published vessel', titleTh: 'เรือที่แก้ไขแล้ว' };
   record = await save(1);
   await checkPublished(record.title, record.titleTh);
@@ -74,10 +85,12 @@ test('CMS saves, Trash and restore refresh cached pages, metadata, sitemap and m
   expect(trashed.status(), await trashed.text()).toBe(200);
   for (const path of paths) expect((await request.get(path)).status()).toBe(404);
   expect(await (await request.get('/sitemap.xml')).text()).not.toContain(`/fleet/${id}`);
+  await checkFleetCount(initialCount);
 
   const restored = await request.post('/api/cms/content/action', { headers, data: { id, type: 'Vessel', action: 'restore', expectedRevision: 3 } });
   expect(restored.status(), await restored.text()).toBe(200);
   await checkPublished(record.title, record.titleTh);
+  await checkFleetCount(initialCount + 1);
 });
 
 test('saving website details refreshes cached contact text and metadata in both languages', async ({ request }) => {

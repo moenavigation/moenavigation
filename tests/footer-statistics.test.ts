@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { defaultFooterStatistics, visibleFooterStatistics } from '../src/lib/footer-statistics';
+import { countPublicVessels, defaultFooterStatistics, visibleFooterStatistics } from '../src/lib/footer-statistics';
 import { recordSchema } from '../src/lib/validation';
 import { buildFooterStatisticsPlan } from '../scripts/data/footer-statistics-import-plan';
 import { websiteContentRecords } from '../scripts/data/website-content';
@@ -48,10 +48,23 @@ test('footer repair fills only the exact previous imported defaults and is idemp
 });
 
 test('public statistics hide incomplete or blank values without showing misleading zeros', () => {
-  assert.deepEqual(visibleFooterStatistics(undefined), []);
-  assert.equal(visibleFooterStatistics({ footerStats: defaultFooterStatistics }).length, 4);
-  assert.deepEqual(visibleFooterStatistics({ footerStats: [{ label: 'Missing Thai', labelTh: '', value: '3' }, { label: 'Blank', labelTh: 'ว่าง', value: ' ' }] }), []);
-  assert.equal(visibleFooterStatistics({ footerStats: [{ label: 'Verified zero', labelTh: 'ศูนย์ที่ยืนยันแล้ว', value: '0' }] })[0].value, '0');
+  assert.deepEqual(visibleFooterStatistics(undefined, 8), []);
+  assert.equal(visibleFooterStatistics({ footerStats: defaultFooterStatistics }, 8).length, 4);
+  assert.deepEqual(visibleFooterStatistics({ footerStats: [{ label: 'Missing Thai', labelTh: '', value: '3' }, { label: 'Blank', labelTh: 'ว่าง', value: ' ' }] }, 8), []);
+  assert.equal(visibleFooterStatistics({ footerStats: defaultFooterStatistics }, 0)[0].value, '0');
+});
+
+test('Fleet always uses the visible vessel count, while other values and icon positions are preserved', () => {
+  const before = structuredClone(defaultFooterStatistics);
+  const vessels = seededRecords.filter(record => record.type === 'Vessel');
+  const records = [...vessels, { ...vessels[0], id: 'draft-copy', status: 'Draft' as const }, { ...vessels[0], id: 'trashed-copy', deletedAt: '2026-11-17' }, footer];
+  assert.equal(countPublicVessels(records), vessels.length);
+  const stats = defaultFooterStatistics.map((item, index) => ({ ...item, value: index === 0 ? '999' : index === 1 ? '' : item.value }));
+  const visible = visibleFooterStatistics({ footerStats: stats }, countPublicVessels(records));
+  assert.deepEqual(visible.map(item => [item.sourceIndex, item.value]), [[0, String(vessels.length)], [2, '89'], [3, '1,119']]);
+  stats[0].value = '';
+  assert.equal(visibleFooterStatistics({ footerStats: stats }, 0)[0].value, '0');
+  assert.deepEqual(defaultFooterStatistics, before);
 });
 
 test('statistics validate ownership, bilingual labels and bounded values at the API boundary', () => {

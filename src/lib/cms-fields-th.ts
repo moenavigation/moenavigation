@@ -6,6 +6,8 @@ export const cmsFieldsThai: Record<string, string> = {
   'Enter verified figures only. Leave a value blank to hide that statistic.': 'กรอกเฉพาะตัวเลขที่ตรวจสอบแล้ว เว้นค่าว่างเพื่อซ่อนสถิตินั้น',
   'Statistic {number}': 'สถิติ {number}',
   'Displayed value': 'ค่าที่แสดง',
+  'Fleet is counted automatically. Enter verified figures for the other statistics; leave a value blank to hide it.': 'จำนวนกองเรือคำนวณอัตโนมัติ กรอกเฉพาะตัวเลขที่ตรวจสอบแล้วสำหรับสถิติอื่น และเว้นค่าว่างเพื่อซ่อนสถิตินั้น',
+  'Automatically counts vessels shown on the website. Adding, removing or restoring a vessel updates this number.': 'นับจำนวนเรือที่แสดงบนเว็บไซต์โดยอัตโนมัติ จำนวนจะอัปเดตเมื่อเพิ่ม ลบ หรือกู้คืนเรือ',
   'Label · English': 'ชื่อสถิติ · ภาษาอังกฤษ',
   'Label · Thai': 'ชื่อสถิติ · ภาษาไทย',
   'Statistics heading · English': 'หัวข้อสถิติ · ภาษาอังกฤษ',
