@@ -17,8 +17,9 @@
 .expertise { padding-block: 3rem; }
 .expertiseGrid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1rem; }
 .expertiseCard { min-width: 0; background: var(--pale); border: 1px solid #eaf0f5; border-radius: var(--radius); padding: 1.5rem; display: flex; flex-direction: column; align-items: flex-start; position: relative; transition: border-color .2s, box-shadow .2s; }
-.serviceIcon { width: 2.6rem; height: 2.6rem; stroke-width: 1.4; margin-bottom: 1.3rem; }
-.expertiseCard h3 { margin-bottom: .5rem; }
+.serviceIcon { width: 1.75rem; height: 1.75rem; flex-shrink: 0; stroke-width: 1.6; }
+.expertiseTitle { display: flex; align-items: flex-start; gap: .75rem; width: 100%; min-width: 0; margin-bottom: .75rem; line-height: 1.4; }
+.expertiseTitle span { min-width: 0; overflow-wrap: anywhere; }
 .expertiseCard p { font-size: var(--font-small); }
 .trust { position: relative; background: var(--navy); color: #fff; }
 .trust>img { object-fit: cover; opacity: .15; }
@@ -71,8 +72,6 @@
 @media(max-width:420px) { .heroActions { display: grid; grid-template-columns: 1fr; } .heroActions :global(.button) { width: 100%; } }
 @media(max-width:540px) {
   .expertiseGrid { grid-template-columns: 1fr; gap: .75rem; }
-  .expertiseCard { display: grid; grid-template-columns: 2.3rem minmax(0,1fr); align-items: start; gap: 1rem; padding: 1.2rem; }
-  .serviceIcon { width: 2.3rem; height: 2.3rem; margin: .15rem 0 0; }
 }
 .homeBody { padding-top: 2.5rem; max-width: 65rem; line-height: 1.85; color: var(--muted); overflow-wrap: anywhere; }
 .homeBody p { white-space: pre-line; }
