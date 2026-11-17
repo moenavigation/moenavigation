@@ -10,7 +10,6 @@ for (const viewport of [{ name: 'mobile', width: 320, height: 900 }, { name: 'de
     for (const locale of ['en', 'th'] as const) {
       test(`saved company story, six photographs and current contacts remain usable · ${locale}`, async ({ page, db }, testInfo) => {
         const records = await db.collection<ContentRecord>('moe_content').find({ status: 'Published', deletedAt: { $exists: false } }).toArray();
-        const about = records.find(record => record.type === 'Page' && record.id === 'about')!;
         const settings = await db.collection<SiteSettings & { _id: string }>('moe_settings').findOne({ _id: 'website' });
         const titleField = locale === 'en' ? 'title' : 'titleTh';
         const descriptionField = locale === 'en' ? 'description' : 'descriptionTh';
@@ -18,7 +17,7 @@ for (const viewport of [{ name: 'mobile', width: 320, height: 900 }, { name: 'de
         const prefix = locale === 'th' ? '/th' : '';
         await page.goto(`${prefix}/about`);
         const main = page.getByRole('main');
-        await expect(main.getByRole('heading', { level: 1 })).toHaveText(about[titleField]);
+        await expect(main.getByRole('heading', { level: 1 })).toHaveText(settings!.companyName);
         await expect(main.getByRole('heading', { level: 1 })).toContainText('Moe Navigation Co.,Ltd.');
 
         for (const id of ['about-intro', 'about-mission', 'about-vision', ...featureIds]) {

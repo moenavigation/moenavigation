@@ -51,7 +51,7 @@ export default function AboutPage({ locale }: { locale: Locale }) {
       <div className={`container ${styles.heroGrid} ${!page.image ? styles.heroWithoutImage : ""}`}>
         <div className={styles.heroCopy}>
           {contentText(page, "eyebrow", locale) && <p className="eyebrow">{contentText(page, "eyebrow", locale)}</p>}
-          <h1>{contentText(page, "title", locale)}</h1>
+          <h1 lang="en">{companyName}</h1>
           {contentText(page, "description", locale) && <p className={styles.heroDescription}>{contentText(page, "description", locale)}</p>}
           <div className={styles.heroActions}>
             <Link href={href(locale, "fleet")}>{local(locale, "Our fleet", "กองเรือของเรา")}</Link>

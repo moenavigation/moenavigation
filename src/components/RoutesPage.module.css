@@ -56,9 +56,8 @@
 .missing { color: var(--muted); }
 .ports { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; margin: 0 0 1.25rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--line); }
 .ports > div { min-width: 0; }
-.ports dt { display: flex; align-items: center; gap: .55rem; margin-bottom: .7rem; color: var(--muted); font-size: var(--font-small); }
-.ports dt > span { display: grid; place-items: center; width: 1.7rem; height: 1.7rem; flex-shrink: 0; border: 1px solid #c2d5e3; border-radius: 50%; color: var(--blue); background: var(--pale); font-variant-numeric: tabular-nums; }
-.ports dd { margin: 0; padding-left: 2.25rem; line-height: 1.55; overflow-wrap: anywhere; }
+.ports dt { margin-bottom: .7rem; color: var(--muted); font-size: var(--font-small); }
+.ports dd { margin: 0; line-height: 1.55; overflow-wrap: anywhere; }
 .ports dd strong { display: block; color: var(--navy); font-weight: 650; }
 .ports dd > span { display: block; margin-top: .15rem; color: var(--muted); font-size: var(--font-small); }
 .ports a { display: inline-flex; align-items: center; gap: .35rem; min-height: var(--target-size); margin-top: .25rem; color: var(--blue); font-size: var(--font-small); text-decoration: underline; text-underline-offset: .2rem; }
@@ -69,5 +68,5 @@
 @media (max-width: 1050px) { .layout { grid-template-columns: minmax(0, 1.2fr) minmax(19rem, 1fr); gap: 1rem; } .finderHeading, .finderBody { padding: 1.1rem; } .metrics { grid-template-columns: 1fr; } .metrics > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .8rem; } .metrics dt { margin: 0; } .metrics dd { text-align: end; } .metricUnit { display: inline; margin-left: .3rem; } }
 @media (max-width: 850px) { .layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: "finder" "map"; } .mobileMapLink { display: flex; align-items: center; justify-content: center; gap: .45rem; width: 100%; min-height: 3rem; margin-top: 1rem; padding: .6rem; border: 1px solid #b9ccdc; border-radius: .4rem; background: var(--white); color: var(--navy); font-weight: 600; } }
 @media (max-width: 650px) { .pageHeading { grid-template-columns: minmax(0, 1fr); gap: 1.1rem; margin-bottom: 1.5rem; } .networkStat { justify-self: start; padding: .8rem 1.1rem; } .networkStat > div { display: flex; align-items: center; gap: .8rem; } .networkStat strong { font-size: var(--font-h3); } .details { padding: 1.25rem; } }
-@media (max-width: 430px) { .finderHeading, .finderBody, .details { padding: 1rem; } .option { gap: .6rem; padding: .75rem .6rem; } .check { width: 1.1rem; } .portFilters { gap: .5rem; } .ports { grid-template-columns: minmax(0, 1fr); gap: 1rem; } .ports dd { padding-left: 2.25rem; } .metrics dt svg { display: none; } .metrics dd { font-size: var(--font-lead); } }
+@media (max-width: 430px) { .finderHeading, .finderBody, .details { padding: 1rem; } .option { gap: .6rem; padding: .75rem .6rem; } .check { width: 1.1rem; } .portFilters { gap: .5rem; } .ports { grid-template-columns: minmax(0, 1fr); gap: 1rem; } .metrics dt svg { display: none; } .metrics dd { font-size: var(--font-lead); } }
 @media (prefers-reduced-motion: reduce) { .option { transition: none; } }

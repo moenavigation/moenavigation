@@ -3,9 +3,9 @@
 .heroGrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); min-height: 32rem; }
 .heroCopy { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 4rem 3.5rem 4rem 0; min-width: 0; }
 .heroCopy :global(.eyebrow) { color: #b8d4ea; }
-.heroCopy h1 { font-size: var(--font-hero); max-width: 17ch; line-height: 1.22; }
+.heroCopy h1 { font-size: var(--font-hero); line-height: 1.22; text-wrap: wrap; }
 .heroCopy h1:lang(th) { line-height: 1.45; }
-.heroDescription { font-size: var(--font-lead); color: #d5e2ed; max-width: 37ch; margin-top: 1.5rem; line-height: 1.7; }
+.heroDescription { font-size: var(--font-lead); color: #d5e2ed; margin-top: 1.5rem; line-height: 1.7; overflow-wrap: anywhere; }
 .heroActions { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; margin-top: 2rem; }
 .heroActions a, .textLink { display: inline-flex; align-items: center; gap: .8rem; min-height: var(--target-size); font-weight: 600; text-decoration: underline; text-underline-offset: .35rem; text-decoration-thickness: 1px; }
 .heroActions a { color: var(--white); }
@@ -13,7 +13,6 @@
 .heroPhoto::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgb(8 43 80 / .12), transparent 35%); pointer-events: none; }
 .heroPhoto img { object-fit: cover; object-position: 53% center; }
 .heroWithoutImage { grid-template-columns: 1fr; min-height: 23rem; }
-.heroWithoutImage h1 { max-width: 25ch; }
 .story { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1fr); align-items: center; gap: 5rem; padding-block: var(--space-section); }
 .storyPhoto { position: relative; width: 100%; aspect-ratio: .95; max-height: 34rem; border-radius: var(--radius); overflow: hidden; background: var(--pale); }
 .storyPhoto img { object-fit: cover; object-position: center 57%; }
@@ -67,8 +66,6 @@
 @media (max-width: 850px) {
   .heroGrid { grid-template-columns: 1fr; }
   .heroCopy { padding: 3rem 0; }
-  .heroCopy h1 { max-width: 25ch; }
-  .heroDescription { max-width: 48ch; }
   .heroPhoto { margin-inline: calc(var(--gutter) * -1); aspect-ratio: 1.7; }
   .heroPhoto img { object-position: center 54%; }
   .heroPhoto::after { display: none; }

@@ -7,7 +7,7 @@ for (const locale of ['en', 'th'] as const) {
     const company = thai ? 'บริษัท โม เนวิเกชั่น จำกัด' : 'Moe Navigation Co.,Ltd.';
     const aboutTitle = thai ? 'เกี่ยวกับ Moe Navigation Co.,Ltd.' : `About ${company}`;
     await page.goto(`${prefix}/about`);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(aboutTitle);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Moe Navigation Co.,Ltd.');
     await expect(page).toHaveTitle(`${aboutTitle} | ${company}`);
     await expect(page.locator('meta[property="og:site_name"]')).toHaveAttribute('content', company);
     await expect(page.locator('footer')).toContainText(`© ${new Date().getFullYear()} ${company}`);
