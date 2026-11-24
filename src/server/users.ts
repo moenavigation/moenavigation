@@ -8,6 +8,7 @@ import { collections, type UserDocument } from './db';
 import { digest, rateLimit, requireUser, verifyPassword } from './auth';
 import { HttpError, sameOrigin } from './http';
 import { lockMediaSubmission } from './media';
+import { isRetiredMedia } from './retired-photos';
 
 type Actor = Pick<UserDocument, '_id' | 'passwordVersion'>;
 type NewUser = { username: string; role: CmsRole; passwordHash: string; avatar?: string; submissionId?: string; passwordForReplay?: string };
@@ -110,7 +111,7 @@ export async function createUserInTransaction(actor: Actor, input: NewUser, db: 
 async function commitUserPhoto(actor: UserDocument, avatar: string, submissionId: string, db: Db, session: ClientSession) {
   const c = collections(db);
   const media = await c.media.findOne({ url: avatar }, { session });
-  if (!media || media.kind === 'video' || !['staged', 'committed'].includes(media.state)) throw new HttpError(400, 'Choose a library image or upload a photo before saving.');
+  if (!media || isRetiredMedia(media) || media.kind === 'video' || !['staged', 'committed'].includes(media.state)) throw new HttpError(400, 'Choose a library image or upload a photo before saving.');
   if (media.state === 'staged' && (media.owner !== actor._id || media.submissionId !== submissionId)) throw new HttpError(403, 'This upload belongs to a different save. Please choose the image again.');
   // Touch existing library images too: save and cleanup must conflict on this row.
   const touchedAt = new Date(Math.max(Date.now(), media.touchedAt.getTime() + 1));

@@ -4,7 +4,7 @@ import { currentPdfVesselParticulars } from './current-pdf-vessel-particulars';
 import { fleetPhotos } from '../../src/lib/fleet-photos';
 
 // Preserve each vessel URL when the client updates a display name.
-// Client sheets supplement and supersede the earlier published particulars.
+// Each vessel with a client sheet gets its particulars directly from that sheet.
 const vessels = [
   ['ranong-moe', 'RANONG MOE', 'ระนองโม', 'Container'],
   ['moe-line-2', 'MOE LINE 2', 'โมไลน์ 2', 'Container'],
@@ -27,14 +27,15 @@ function vesselMedia(id: keyof typeof fleetPhotos) {
   return { image: main.url, imageAlt: main.alt, imageAltTh: main.altTh, mobileImage: '', gallery };
 }
 
-export const clientFleetRecords: ContentRecord[] = vessels.map(([id, title, titleTh, category], index) => applyLegacyVesselSpecs({
-  id, type: 'Vessel', title, titleTh, category, ...categories[category],
-  ...vesselMedia(id),
-  body: '', bodyTh: '', bodyHeading: '', bodyHeadingTh: '',
-  order: index + 1, status: 'Published', revision: 1,
-}).record).map(record => {
-  const sheet = currentPdfVesselParticulars.find(source => source.id === record.id);
-  return sheet ? { ...record, vesselSpecs: { ...record.vesselSpecs, ...sheet.specs } } : record;
+export const clientFleetRecords: ContentRecord[] = vessels.map(([id, title, titleTh, category], index) => {
+  const record: ContentRecord = {
+    id, type: 'Vessel', title, titleTh, category, ...categories[category],
+    ...vesselMedia(id),
+    body: '', bodyTh: '', bodyHeading: '', bodyHeadingTh: '',
+    order: index + 1, status: 'Published', revision: 1,
+  };
+  const sheet = currentPdfVesselParticulars.find(source => source.id === id);
+  return sheet ? { ...record, vesselSpecs: { ...sheet.specs } } : applyLegacyVesselSpecs(record).record;
 });
 
 export const clientFleetPageCopy = {

@@ -41,9 +41,9 @@ function valueFor(region: Locator, label: string) {
   return region.locator('dt').filter({ hasText: exact }).locator('xpath=following-sibling::dd');
 }
 
-async function openVesselEditor(page: Page) {
+async function openVesselEditor(page: Page, vesselName = 'RANONG MOE') {
   await page.goto('/cms/fleet');
-  await page.getByRole('button', { name: 'Edit RANONG MOE', exact: true }).click();
+  await page.getByRole('button', { name: `Edit ${vesselName}`, exact: true }).click();
   const editor = page.getByRole('dialog', { name: 'Edit vessel', exact: true });
   await expect(editor).toBeVisible();
   const details = editor.getByLabel('LOA (m)', { exact: true }).locator('xpath=ancestor::details[1]');
@@ -156,6 +156,42 @@ test('each vessel shows its reviewed capacity in the appropriate units in both l
       }
     }
   }
+});
+
+test('client-sheet particulars appear in both languages and retain edits from the normal vessel editor', async ({ page }) => {
+  test.setTimeout(120_000);
+  for (const locale of ['en', 'th'] as const) {
+    const thai = locale === 'th';
+    for (const [id, specType, equipment] of [
+      ['moe-line-4', thai ? 'เรือบาร์จเครนลอยน้ำ ไม่มีระบบขับเคลื่อนในตัว' : 'Non-self-propelled floating crane barge', /Sumitomo SG1500 HDS/],
+      ['moe-line-5', thai ? 'เรือคอนเทนเนอร์ชายฝั่ง' : 'Coastal container vessel', /50\.378/],
+      ['moe-line-6', thai ? 'เรือคอนเทนเนอร์สำหรับการขนส่งภายในประเทศ' : 'Local-trade container vessel', /492\.328/],
+      ['dumai-moe', thai ? 'เรือบรรทุกน้ำมันและสารเคมี' : 'Oil/chemical tanker', /SUS316/],
+    ] as const) {
+      await page.goto(`${thai ? '/th' : ''}/fleet/${id}`);
+      const main = page.getByRole('main');
+      await expect(valueFor(main, thai ? 'ประเภทเรือ' : 'Vessel type')).toHaveText(specType);
+      await expect(main.getByText(equipment)).toBeVisible();
+      await expect(main.getByRole('region', { name: thai ? 'เครื่องจักร' : 'Machinery', exact: true })).toBeVisible();
+    }
+  }
+  await login(page);
+  const { editor } = await openVesselEditor(page, 'MOE LINE 5');
+  await editor.locator('summary').filter({ hasText: /^Machinery$/ }).click();
+  const machinery = editor.getByRole('textbox', { name: 'Machinery · English', exact: true });
+  const thaiMachinery = await editor.getByRole('textbox', { name: 'Machinery · Thai', exact: true }).inputValue();
+  const original = await machinery.inputValue();
+  await machinery.fill(original + '\nSynthetic equipment update.');
+  const saved = await saveVessel(page, editor);
+  expect(thaiMachinery).toContain('Cummins KTA 19M');
+  expect(saved.vesselSpecs?.machineryTh).toBe(thaiMachinery);
+  expect(saved.vesselSpecs?.reeferPlugs).toBe(4);
+  await page.goto('/fleet/moe-line-5');
+  await expect(page.getByRole('main').getByText('Synthetic equipment update.')).toBeVisible();
+  const reopened = await openVesselEditor(page, 'MOE LINE 5');
+  await reopened.editor.locator('summary').filter({ hasText: /^Machinery$/ }).click();
+  await expect(reopened.editor.getByRole('textbox', { name: 'Machinery · English', exact: true })).toHaveValue(original + '\nSynthetic equipment update.');
+  await expect(reopened.editor.getByRole('textbox', { name: 'Machinery · Thai', exact: true })).toHaveValue(thaiMachinery);
 });
 
 test('existing vessels without particulars show accessible blanks rather than invented zero values', async ({ page, db }) => {

@@ -1,7 +1,7 @@
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { Page } from '@playwright/test';
-import { test, expect, refreshPublicCache, E2E_IMAGE_BUFFER } from './fixtures';
+import { test, expect, refreshPublicCache, E2E_IMAGE_BUFFER, E2E_BASE_URL } from './fixtures';
 import { defaultHomeSlides } from '../../src/lib/home-slides';
 
 test.use({ reducedMotion: 'no-preference' });
@@ -42,8 +42,9 @@ test('desktop banner is 3:1 with centered copy and actions underneath', async ({
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   const carousel = await expectHeroLayout(page, 3);
-  const sharedPhoto = await page.locator('meta[property="og:image"]').getAttribute('content');
-  expect(new URL(sharedPhoto!).pathname).toBe(defaultHomeSlides[0].url);
+  const shareUrl = E2E_BASE_URL + '/images/fleet-originals/moe-line-3.webp';
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', shareUrl);
+  await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute('content', shareUrl);
   await expect(carousel.locator('img')).toHaveCount(5);
   await expect(carousel.getByRole('group')).toHaveCount(1);
   await expect(carousel.getByRole('button')).toHaveCount(5);

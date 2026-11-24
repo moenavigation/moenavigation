@@ -1,6 +1,8 @@
 # Legacy fleet research
 
-## Current source policy: dedicated website particulars take priority
+## Historical source policy on 17 November 2026
+
+The client subsequently supplied newer sheets for MOE LINE 4, MOE LINE 5, MOE LINE 6 and DUMAI MOE. See the 24 November revision in [Content approval](../../../CONTENT_APPROVAL.md) for the current source policy. The following paragraphs record the earlier comparison for historical reference.
 
 Later on 17 November 2026, the user changed the vessel-detail source from PDFs to the old website. A fresh read-only check fetched all fourteen English/Thai vessel detail pages, both fleet listings and the homepage successfully (17 HTTP 200 responses). The two languages' detail tables are identical for all seven vessels, both listing tables agree, and all 58 shared measurement/capacity/tonnage listing fields agree with the corresponding detail tables. Every detail table still matches the earlier archive after whitespace normalization.
 

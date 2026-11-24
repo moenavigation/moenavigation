@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { ContentRecord } from '../src/lib/cms-types';
 import { recordSchema } from '../src/lib/validation';
+import { companyPhotos } from '../src/lib/company-photo-replacements';
 import { buildLegacyRouteImportPlan, legacyRouteSampleBaselines, legacyRoutesPageBaseline, legacyRoutesPageCopy, type LegacyRouteImportPlan } from '../scripts/data/legacy-route-import-plan';
 import { legacyTradingRouteRecords } from '../scripts/data/legacy-trading-routes';
 
@@ -22,15 +23,16 @@ function applyPlan(records: ContentRecord[], plan: LegacyRouteImportPlan): Conte
   }), ...structuredClone(plan.inserts)];
 }
 
-test('the import plans five reviewed routes using the existing saved image and only four narrow updates', () => {
+test('the import plans five reviewed routes with the documented company terminal photo and only four narrow updates', () => {
   const records = fixture();
   const before = structuredClone(records);
   const plan = buildLegacyRouteImportPlan(records);
   assert.deepEqual(plan.conflicts, []);
   assert.deepEqual(plan.inserts.map(record => record.id), ['bkk-lcb', 'bkk-lcb-suratthani', 'bkk-lcb-songkhla', 'ranong-yangon', 'lcb-sihanoukville']);
-  const portImage = records.find(record => record.id === 'laem-chabang-port-klang')!.image;
   for (const [index, record] of plan.inserts.entries()) {
-    assert.equal(record.image, portImage);
+    assert.equal(record.image, companyPhotos.containerTerminal.url);
+    assert.equal(record.imageAlt, companyPhotos.containerTerminal.alt);
+    assert.equal(record.imageAltTh, companyPhotos.containerTerminal.altTh);
     assert.notEqual(record.image, '/images/port.webp');
     assert.deepEqual(record.origin, legacyTradingRouteRecords[index].origin);
     assert.deepEqual(record.destination, legacyTradingRouteRecords[index].destination);

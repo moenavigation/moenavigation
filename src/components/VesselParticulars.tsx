@@ -2,6 +2,7 @@ import { Container, Construction, Droplets, Ruler, Weight } from 'lucide-react';
 import { useId } from 'react';
 import type { VesselSpecs } from '@/lib/cms-types';
 import { local, type Locale } from '@/lib/content';
+import { technicalSections } from '@/lib/vessel-technical-sections';
 import styles from './VesselParticulars.module.css';
 
 type Particular = { label: string; value: number | undefined; unit?: string; dimension?: boolean };
@@ -43,7 +44,12 @@ export default function VesselParticulars({ locale, specs }: { locale: Locale; s
     else groups.push(capacity);
   }
 
-  return <div className={styles.groups}>
+  const technical = technicalSections.map(section => ({
+    key: section.key, title: section[locale],
+    lines: (specs?.[locale === 'th' ? section.keyTh : section.key] ?? '').split(/\r?\n/).map(line => line.trim()).filter(Boolean),
+  })).filter(section => section.lines.length > 0);
+
+  return <><div className={styles.groups}>
     {groups.map(({ key, title, icon: Icon, rows }) => <section className={styles.group} key={key} aria-labelledby={`${id}-${key}`}>
       <header className={styles.heading}><span className={styles.icon}><Icon aria-hidden="true" /></span><h2 id={`${id}-${key}`}>{title}</h2></header>
       <dl className={styles.rows}>
@@ -56,5 +62,12 @@ export default function VesselParticulars({ locale, specs }: { locale: Locale; s
         </div>)}
       </dl>
     </section>)}
-  </div>;
+  </div>
+    {technical.length > 0 && <div className={styles.technicalGroups}>
+      {technical.map(section => <section key={section.key} aria-labelledby={`${id}-${section.key}`} className={styles.group}>
+        <header className={styles.heading}><h2 id={`${id}-${section.key}`}>{section.title}</h2></header>
+        <ul className={styles.technicalLines}>{section.lines.map((line, index) => <li key={index}>{line}</li>)}</ul>
+      </section>)}
+    </div>}
+  </>;
 }

@@ -7,6 +7,7 @@ import { BSON, MongoClient } from 'mongodb';
 import type { ContentDocument } from '../src/server/db';
 import { appendAuditEvent } from '../src/server/audit';
 import { recordSchema } from '../src/lib/validation';
+import { companyPhotos } from '../src/lib/company-photo-replacements';
 import { buildLegacyRouteImportPlan } from './data/legacy-route-import-plan';
 
 // A narrow import, not a full website migration. Dry-run first, review its hash,
@@ -59,11 +60,8 @@ try {
       await session.withTransaction(async () => {
         const current = await content.find(filter, { session }).sort({ _id: 1 }).toArray();
         assert.equal(hash(current), hash(before), 'Route content changed after the backup. Nothing was imported.');
-        for (const url of new Set(additions.map(record => record.image))) {
-          const media = await db.collection('moe_media').findOne({ url, state: 'committed' }, { session, projection: { _id: 1 } });
-          assert(media, 'A reused route image is no longer committed in the image library. Nothing was imported.');
-        }
         for (const record of additions) {
+          assert.equal(record.image, companyPhotos.containerTerminal.url, 'Unexpected route photograph.');
           await content.insertOne(record, { session });
           await appendAuditEvent(db, session, { action: 'content.created', actor: { system: true }, target: { type: 'Route', id: record.id, label: record.title } });
         }

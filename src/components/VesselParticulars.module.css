@@ -11,4 +11,9 @@
 .row dd { margin: 0; text-align: end; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .unit { font-weight: 400; color: var(--muted); white-space: nowrap; }
 .missing { color: var(--muted); font-weight: 400; }
+.technicalGroups { columns: 28rem 2; column-gap: 1.25rem; margin-top: 1.25rem; }
+.technicalGroups > section { break-inside: avoid; margin-bottom: 1.25rem; }
+.technicalLines { list-style: none; margin: 0; padding: 0 1.25rem; }
+.technicalLines li { padding: .8rem 0; overflow-wrap: anywhere; }
+.technicalLines li + li { border-top: 1px solid var(--line); }
 @media (max-width: 600px) { .groups { margin-top: 1.5rem; gap: 1rem; } .heading { padding: 1rem; } .rows { padding: 0 1rem; } .row { gap: .65rem; } }

@@ -2,13 +2,17 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 const base=process.argv[2]||'http://localhost:3005';
 const indexed=process.argv.includes('--indexed');
-const queue=['/','/th','/cms'];
+const queue=['/','/th','/projects','/th/projects','/news','/th/news','/cms'];
 const seen=new Set();
 const assets=new Set();
 const videoAssets=new Set();
-const fleetManifest = JSON.parse(readFileSync(new URL('./data/media-manifest.json', import.meta.url), 'utf8'));
+const photoManifest = JSON.parse(readFileSync(new URL('./data/media-manifest.json', import.meta.url), 'utf8'));
+const retiredIdentities = JSON.parse(readFileSync(new URL('../src/server/retired-photo-identities.json', import.meta.url), 'utf8'));
+const cloudAssetKey = url => new URL(url).pathname.replace(/\/image\/upload\/.*?v\d+\//, '/image/upload/');
+const retiredCloudPhotos = new Set(retiredIdentities.map(item => item.url || item.source)
+  .filter(url => url.startsWith('https://res.cloudinary.com/')).map(cloudAssetKey));
 const bundledPhotos = new Set([
-  ...fleetManifest.map(asset => asset.sourcePath).filter(url => url.startsWith('/images/fleet-originals/')),
+  ...photoManifest.map(asset => asset.sourcePath),
   ...['moe-line-3', 'moe-line-4', 'moe-line-5', 'ranong-moe', 'moe-line-7']
     .flatMap(name => [`/images/hero/${name}.webp`, `/images/hero/${name}-mobile.webp`]),
 ]);
@@ -41,6 +45,8 @@ while(queue.length) {
     assert.equal(response.status,200,`${path} HTTP status`);
     const html=await response.text();
     const lang=documentLanguage(path);
+    const canonicalTag = html.match(/<link\b[^>]*rel="canonical"[^>]*>/i)?.[0];
+    const siteOrigin = canonicalTag ? new URL(attr(canonicalTag,'href')[0],base).origin : new URL(base).origin;
     assert.match(html,new RegExp(`<html[^>]*lang="${lang}"`),`${path} document language`);
     if(path==='/cms') {
       // Authentication resolves in the browser. SSR intentionally sends its
@@ -61,6 +67,11 @@ while(queue.length) {
       assert.equal(linkPath(html,'alternate','en'),english,`${path} English alternate path`);
       assert.equal(linkPath(html,'alternate','th'),thai,`${path} Thai alternate path`);
       assert.equal(linkPath(html,'alternate','x-default'),english,`${path} default alternate path`);
+      const shareImages = (html.match(/<meta\b[^>]*>/gi) || []).filter(tag => /(?:property="og:image"|name="twitter:image")/i.test(tag));
+      for (const tag of shareImages) {
+        const url = new URL(attr(tag, 'content')[0]);
+        assert(url.origin === siteOrigin || url.origin === 'https://res.cloudinary.com', `${path} approved absolute social photo URL`);
+      }
       // Completed React streams include both the loading fallback and the
       // hidden replacement before browser scripts remove the fallback.
       const headers=sharedHeaderCount(html), fallbacks=completedHeaderFallbacks(html);
@@ -71,13 +82,16 @@ while(queue.length) {
       .split(/,\s*(?=https?:\/\/|\/images\/|\/_next\/)/i)
       .map(candidate => candidate.trim().split(/\s+/)[0]));
     const mediaSources = [...['src','poster','content'].flatMap(name => attr(html,name)), ...sourceSets];
-    for(const src of mediaSources) {
-      if(src.startsWith('/images/')) {
-        assert(bundledPhotos.has(src),`${path} still references an unapproved local content image: ${src}`);
-        bundledAssets.add(src);
+    for(let src of mediaSources) {
+      if (src.startsWith('/_next/image?')) src = new URL(src,base).searchParams.get('url') || '';
+      if(src.startsWith('/images/') || src.startsWith(siteOrigin+'/images/')) {
+        const pathname = new URL(src,base).pathname;
+        assert(bundledPhotos.has(pathname),`${path} still references an unapproved local content image: ${pathname}`);
+        bundledAssets.add(pathname);
       }
       if(src.startsWith('https://res.cloudinary.com/')) {
         const url=src;
+        assert(!retiredCloudPhotos.has(cloudAssetKey(url)), `${path} still references a retired Cloudinary photo`);
         if (new URL(url).pathname.includes('/video/upload/') && /\.(mp4|webm)$/i.test(new URL(url).pathname)) {
           videoAssets.add(url);
           continue;

@@ -14,12 +14,19 @@ test('media search finds older images and binds cursors to the search', async ({
       touchedAt: new Date(), bytes: source!.bytes,
     };
   }));
+  const retired = {
+    _id: 'retired-fixture', id: 'retired-fixture', title: 'Map [special] retired',
+    url: 'https://example.test/retired-archive.webp', sourcePath: '/images/bridge.webp',
+    state: 'committed', createdAt: new Date(Date.now() + 100000).toISOString(),
+  };
+  await db.collection<{ _id: string }>('moe_media').insertOne(retired);
   await login(page);
   const query = encodeURIComponent('  MAP [SPECIAL]  ');
   const first = await page.request.get(`/api/cms/media?q=${query}`);
   expect(first.status()).toBe(200);
   const firstPage = await first.json();
   expect(firstPage.media).toHaveLength(50);
+  expect(firstPage.media.map((item: { id: string }) => item.id)).not.toContain('retired-fixture');
   expect(firstPage.media.every((item: { title: string }) => item.title.startsWith('Map [special] '))).toBe(true);
   expect(firstPage.nextCursor).toBeTruthy();
 

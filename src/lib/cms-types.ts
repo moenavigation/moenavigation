@@ -1,4 +1,5 @@
 import type { HomeCharterCopy } from './homepage-chartering';
+import type { TechnicalTextField } from './vessel-technical-sections';
 
 export const contentTypes = ['Vessel', 'Project', 'News', 'Service', 'Page', 'Route', 'Section'] as const;
 export type ContentType = typeof contentTypes[number];
@@ -15,7 +16,9 @@ export type RouteSpecs = {
   sailingMinHours?: number;
   sailingMaxHours?: number;
 };
-export type VesselSpecs = {
+export type VesselSpecs = Partial<Record<TechnicalTextField, string>> & {
+  designType?: string;
+  designTypeTh?: string;
   imo?: string;
   officialNumber?: string;
   callSign?: string;

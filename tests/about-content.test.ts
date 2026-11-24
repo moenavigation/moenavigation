@@ -12,14 +12,15 @@ const imageTargets = {
   safety: { id: 'about-safety', path: '/images/about/safety-inspection.webp' },
   maintenance: { id: 'about-maintenance', path: '/images/about/ship-maintenance.webp' },
   crew: { id: 'about-crew', path: '/images/about/onboard-team.webp' },
-  office: { id: 'about-office', path: '/images/about/shoreside-coordination.webp' },
+  office: { id: 'about-office', path: '/images/company-originals/office-meeting.webp' },
 };
 
 test('About seeds pair reviewed bilingual copy with the six correct photographs and preserve existing values', () => {
-  const about = websiteContentRecords.filter(record => record.id === 'about' && record.type === 'Page' || record.type === 'Section' && record.parentId === 'about');
+  const about = websiteContentRecords
+    .filter(record => record.id === 'about' && record.type === 'Page' || record.type === 'Section' && record.parentId === 'about')
+    .map(record => recordSchema.parse(record));
   assert.equal(about.length, 9);
   assert.equal(new Set(websiteContentRecords.map(record => `${record.type}:${record.id}`)).size, websiteContentRecords.length);
-  for (const record of about) assert.equal(recordSchema.safeParse(record).success, true, `Invalid About record: ${record.id}`);
   for (const image of legacyAboutImages) {
     const target = imageTargets[image.key];
     const record = about.find(item => item.id === target.id)!;
@@ -48,7 +49,8 @@ test('About photographs are registered original WebP pixels with no metadata chu
     const target = imageTargets[source.key].path;
     const assets = manifest.filter(asset => asset.sourcePath === target);
     assert.equal(assets.length, 1, `Register one migration asset for ${target}`);
-    assert.deepEqual(assets[0], { sourcePath: target, sha256: source.sha256, bytes: source.bytes, width: source.width, height: source.height, format: source.format });
+    assert.deepEqual(assets[0], { sourcePath: target, sha256: source.sha256, bytes: source.bytes, width: source.width, height: source.height, format: source.format,
+      ...(source.key === 'office' ? { sourceUrl: source.sourceUrl } : {}) });
     const bytes = readFileSync(new URL(`../public${target}`, import.meta.url));
     assert.equal(bytes.length, source.bytes);
     assert.equal(createHash('sha256').update(bytes).digest('hex'), source.sha256);

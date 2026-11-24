@@ -1,9 +1,9 @@
 # Website experience and content boundaries
 
 The website has a working MongoDB and Cloudinary backend. The client supplied
-eight vessel names and types; project examples, generated vessel imagery, and
-other unverified company details remain illustrative until the business
-confirms the final content. See [BACKEND.md](BACKEND.md) for
+eight vessel names and types, vessel sheets and company photographs. Project
+examples and outstanding business details remain subject to editorial review.
+See [BACKEND.md](BACKEND.md) for
 configuration, administration, uploads, enquiries, and verification commands.
 
 ## Interim published content
@@ -11,8 +11,8 @@ configuration, administration, uploads, enquiries, and verification commands.
 Existing Project, News, and Route records remain public while approved
 materials are gathered. Their generic descriptions avoid claiming completed
 company projects, reported events, live schedules, or confirmed service
-availability. The records and images are still illustrative, and route lines
-are approximate rather than navigation guidance. Replace them through the CMS
+availability. Real company photographs accompany the records. Route lines
+are approximate. Update the records through the CMS
 when verified material is supplied. Their continued visibility does not
 approve the content for indexing.
 
@@ -218,13 +218,12 @@ visible.
 
 ## Imagery and factual review
 
-The original 15 optimized WebP assets were migrated to Cloudinary and registered
-in the MongoDB media library. Five later generated vessel illustrations are
-included in `scripts/data/media-manifest.json` and the fleet migration recipe;
-verify their committed media records in each target environment. These images
-illustrate vessel types and operations; they do not document the company's
-actual vessels or work. Home keeps separate
-desktop and portrait hero URLs in its Page record, preserving the mobile crop.
+The active photo manifest in `scripts/data/media-manifest.json` identifies the
+vessel, operations and office photos used across the website. Fleet photographs
+come from the client’s vessel sheets and company archive. The CMS replaces
+historical illustrations and retouched files with the corresponding originals
+when opening earlier content and excludes retired files from its image picker.
+The five bundled homepage photos have individual desktop and mobile crops.
 The Home hero and connection image have separate bilingual caption fields;
 categories stay separate from image captions. Vessel records store supporting
 gallery images. The supplied `Design/` files

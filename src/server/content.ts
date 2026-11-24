@@ -13,8 +13,7 @@ import { lockMediaSubmission } from './media';
 import { contentMediaUrls } from './media-references';
 import { assertCmsContentAction, assertCmsContentEdit } from './cms-content-policy';
 import { isBundledHomeSlide } from '@/lib/home-slides';
-import { isBundledVesselPhoto } from '@/lib/fleet-photos';
-import { replaceLegacyFleetPhotos } from './fleet-photo-replacements';
+import { isBundledContentPhoto, isRetiredMedia, replaceRetiredContentPhotos } from './retired-photos';
 import { enquiryRetainedFilter } from './enquiry-retention';
 import { fleetNameSearchFilters, normalizeFleetNames, numberedFleetNames } from '@/lib/fleet-names';
 import { applyHomepageCopy, hasRevisedHomepageCopy } from '@/lib/homepage-chartering';
@@ -23,7 +22,7 @@ export const contentKey = (record: Pick<ContentRecord, 'type' | 'id'>) => `${rec
 export function cleanContentRecord(record: ContentDocument): ContentRecord {
   const { _id, purgeAt, fleetNamesReviewed, homepageCopyReviewed, ...value } = normalizeFleetNames(record);
   void _id; void purgeAt; void fleetNamesReviewed;
-  return replaceLegacyFleetPhotos(homepageCopyReviewed ? value : applyHomepageCopy(value));
+  return replaceRetiredContentPhotos(homepageCopyReviewed ? value : applyHomepageCopy(value));
 }
 export const getPublishedRecords = cache(async (): Promise<ContentRecord[]> => {
   const c = collections(await getDb());
@@ -144,7 +143,7 @@ export async function saveContentInTransaction(input: z.infer<typeof saveSchema>
   const prior = await c.operations.findOne({ _id: operationId }, { session });
   if (prior) {
     if (prior.fingerprint !== fingerprint) throw new HttpError(409, 'This save identifier was already used. Start a new save after refreshing.');
-    return prior.result;
+    return replaceRetiredContentPhotos(prior.result);
   }
   await lockMediaSubmission(db, session, owner, input.submissionId);
   const existing = await c.content.findOne({ _id: key }, { session });
@@ -161,6 +160,7 @@ export async function saveContentInTransaction(input: z.infer<typeof saveSchema>
   if (existing?.homeCharters && !input.record.homeCharters) {
     input = { ...input, record: { ...input.record, homeCharters: existing.homeCharters } };
   }
+  input = { ...input, record: replaceRetiredContentPhotos(input.record) };
   if (input.record.type === 'Section' && input.record.parentId !== 'shared') {
     const parent = await c.content.findOne({ _id: contentKey({ type: 'Page', id: input.record.parentId }) }, { session });
     if (!parent || parent.deletedAt || parent.purgeAt) throw new HttpError(400, 'Choose an existing page for this section. Restore pages in Trash before adding or editing their sections.');
@@ -170,10 +170,10 @@ export async function saveContentInTransaction(input: z.infer<typeof saveSchema>
     // These exact, versioned app assets need no Cloudinary upload. All other
     // slide URLs still pass through the normal library/ownership validation.
     const slide = input.record.heroSlides?.find(item => item.url === url);
-    if (slide && slide.kind !== 'video' && isBundledHomeSlide(url) && !imageFields.has(url)) continue;
-    if (!slide && isBundledVesselPhoto(input.record.type, input.record.id, url)) continue;
+    if (slide?.kind !== 'video' && (isBundledContentPhoto(input.record.type, input.record.id, url)
+      || (slide && isBundledHomeSlide(url) && !imageFields.has(url)))) continue;
     const media = await c.media.findOne({ url }, { session });
-    if (!media || !['staged', 'committed'].includes(media.state)) throw new HttpError(400, 'Choose a library file or upload a file before saving.');
+    if (!media || isRetiredMedia(media) || !['staged', 'committed'].includes(media.state)) throw new HttpError(400, 'Choose a library file or upload a file before saving.');
     if ((media.kind ?? 'image') !== (slide?.kind ?? 'image') || (media.kind === 'video' && imageFields.has(url))) {
       throw new HttpError(400, 'Choose a matching image or video for this field.');
     }

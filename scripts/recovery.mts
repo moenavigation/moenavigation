@@ -70,7 +70,7 @@ function assetCounts(backup: Backup) {
 async function create() {
   const secret = await passphrase(); assert(secret.length >= 20, 'Set BACKUP_PASSPHRASE or BACKUP_PASSPHRASE_FILE to a secret of at least 20 characters.');
   const backup: Backup = { schema: 1, id: randomUUID(), createdAt: new Date().toISOString(), sourceDatabase: activeDatabase, ...await snapshot(activeDatabase), assets: [] };
-  assert(backup.collections.moe_media.every(media => media.state === 'committed'), 'Finish pending uploads or use the CMS Cleanup tool before creating a full backup.');
+  assert(backup.collections.moe_media.every(media => ['committed', 'trashed'].includes(media.state)), 'Finish pending uploads or deletions before creating a full backup.');
   let totalBytes = 0, videoBytes = 0;
   for (const media of backup.collections.moe_media) {
     const kind = recoveryMediaKind(media.kind);

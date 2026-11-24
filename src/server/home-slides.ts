@@ -6,6 +6,7 @@ import { getCmsContentRecord, saveContentInTransaction } from './content';
 import { collections, transaction, type UserDocument } from './db';
 import { HttpError } from './http';
 import { saveHomeSlidesSchema, saveSchema } from './validation';
+import { replaceRetiredContentPhotos } from './retired-photos';
 
 export async function getCmsHomeSlides() {
   const record = await getCmsContentRecord('Page', 'home');
@@ -25,7 +26,7 @@ export async function saveHomeSlidesInTransaction(input: z.infer<typeof saveHome
   const prior = await c.operations.findOne({ _id: `${actor._id}:${input.submissionId}` }, { session });
   if (prior) {
     if (prior.fingerprint !== fingerprint) throw new HttpError(409, 'This save identifier was already used. Start a new save after refreshing.');
-    return prior.result;
+    return replaceRetiredContentPhotos(prior.result);
   }
   const existing = await c.content.findOne({ _id: 'Page:home' }, { session });
   if (!existing || existing.deletedAt) throw new HttpError(404, 'The home page is not available.');

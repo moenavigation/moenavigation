@@ -10,6 +10,7 @@ import { ArrowRight, BarChart3, Check, Container, Download, FileText, Globe2, Im
 import { legacyRecordKey, readLegacySnapshot, legacyRecordMatches, legacyMediaMatches, rememberLegacyRecord, rememberLegacyMedia, clearVerifiedLegacy, hasLegacyArchive, restoreLegacyArchive, getLegacySubmission, saveLegacySubmission, translateLegacyRecord, legacyImageUrl, type LegacyRecord, type LegacySnapshot } from '@/lib/cms-legacy';
 import { contentTypes, corePageIds, type CmsContentSummary, type ContentRecord, type MediaItem, type Enquiry, type SiteSettings } from '@/lib/cms-types';
 import { recordSchema, siteSettingsSchema } from '@/lib/validation';
+import { technicalSections } from '@/lib/vessel-technical-sections';
 import { cmsPageLabel, publishedContentUrl } from '@/lib/cms-navigation';
 import { cmsPathForView, cmsViewFromPathname } from '@/lib/cms-routes';
 import { containDialogFocus } from '@/lib/dialog-focus';
@@ -75,6 +76,8 @@ const emptySummary: CmsContentSummary = {
 const MEDIA_PAGE_SIZE = 30;
 const fieldNames: Record<string, string> = { footerStats: 'Footer statistics', caption: 'English image caption', captionTh: 'Thai image caption', parentId: 'Parent page', order: 'Display order', eyebrow: 'English eyebrow', eyebrowTh: 'Thai eyebrow', icon: 'Icon', mobileImage: 'Mobile image', gallery: 'Gallery images', bodyHeading: 'English content heading', bodyHeadingTh: 'Thai content heading', origin: 'Origin port', destination: 'Destination port', waypoints: 'Route coordinates', id: 'URL identifier', type: 'Content type', title: 'English title', titleTh: 'Thai title', description: 'English summary', descriptionTh: 'Thai summary', image: 'Content image', category: 'English category', categoryTh: 'Thai category', status: 'Status', body: 'English content', bodyTh: 'Thai content', date: 'Date', imageAlt: 'English image description', imageAltTh: 'Thai image description', companyName: 'English company name', companyNameTh: 'Thai company name', officeAddress: 'English office address', officeAddressTh: 'Thai office address', phone: 'Public phone number', email: 'Public email address', mapUrl: 'Map link' };
 const specFieldNames: Record<string, string> = {
+  ...Object.fromEntries(technicalSections.flatMap(section => [[section.key, `${section.en} · English`], [section.keyTh, `${section.en} · Thai`]])),
+  designType: 'Vessel type on particulars sheet · English', designTypeTh: 'Vessel type on particulars sheet · Thai',
   imo: 'IMO number', officialNumber: 'Official number', callSign: 'Call sign', mmsi: 'MMSI', yearBuilt: 'Year built',
   lengthM: 'LOA', lbpM: 'Length between perpendiculars (m)', beamM: 'Breadth', depthM: 'Depth', draftM: 'Draft',
   capacityTeu: 'Nominal', reeferPlugs: 'Reefer Plug', grossTonnage: 'Gross tonnage', netTonnage: 'Net tonnage',

@@ -5,7 +5,7 @@ The CMS JSON export is useful for editing and inspection. For recovery, use the 
 ## What is preserved
 
 - `moe_content`, including Draft and Trash records and their deletion dates.
-- `moe_media`, with one hash-verified original file for every registered committed asset.
+- `moe_media`, with one hash-verified original file for each saved asset, including retained Media Trash. Restored records keep their original media state.
 - `moe_users`, including password hashes; account passwords are not exported in plain text.
 - `moe_enquiries`, including private notification delivery state.
 - `moe_settings` and the source collections' index definitions.

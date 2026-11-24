@@ -1,173 +1,5 @@
 [
   {
-    "sourcePath": "/images/bridge.webp",
-    "sha256": "092e19511e5560da3685e345c8b7276780589bc11fa410adeb4254616123e088",
-    "bytes": 136676,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/bunkering.webp",
-    "sha256": "bf902627fc2e1ec40e3d02a7ae9f91ac3ed29cc923f01b27bfa89a8d8e5cb04b",
-    "bytes": 232938,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/consulting.webp",
-    "sha256": "32821066d8a46c7e5302c91e83b8a4b5d8ed33fb81361f2c7f8b2d8e89cdad42",
-    "bytes": 119366,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/container-deck-detail.webp",
-    "sha256": "b8bc1405d3f2c150de327f65f8c9055a53f41f8f94ba805fa0e026e4be943cb4",
-    "bytes": 193576,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/container-vessel.webp",
-    "sha256": "15c2222f580a9621f307a0bfa64cedc1a6eb64caf38b4928b156d88e02c1a4e3",
-    "bytes": 227298,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/crane-lift-detail.webp",
-    "sha256": "935ef2a3d23f465b722dd20131fe476a3bcb5bdf7791f0c85d5d7c8f338c66e4",
-    "bytes": 186738,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/crane.webp",
-    "sha256": "5c442a3dcbb68060cff9875e2a9fa1bda6895276d759db6a2c300a9c1f65708d",
-    "bytes": 216414,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/hero-mobile.webp",
-    "sha256": "d752b2ad7417bff419191820740bb22ffb6df083001230cb1598eb9c5b6401cb",
-    "bytes": 181086,
-    "width": 941,
-    "height": 1672,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/hero.webp",
-    "sha256": "6c2f556625f7536f8a3942c36687c39277453bb181bbe0b58faaee302553cd55",
-    "bytes": 258360,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/logistics.webp",
-    "sha256": "595769e9a3b33e0d63341b7471a56e296f0174c596ee4e66915c0eeecfe4aa1c",
-    "bytes": 262388,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/port.webp",
-    "sha256": "7db6750e9234effd2ac7e2fd27b5b2fedf007c25a1bb4da7deea894ed4cc5389",
-    "bytes": 223810,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/tanker-deck-detail.webp",
-    "sha256": "2d91c66a976ee43f48694bc78ad256a3af80917896a6e783a1a8d5f7a19d9cb7",
-    "bytes": 271098,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/tanker.webp",
-    "sha256": "41cd71a06de321aa5baa36fc34b34bc04ede5fd9e7192a5085387453fc9d74c9",
-    "bytes": 227968,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/tugboat.webp",
-    "sha256": "581a08e146ae5247b6db90c35bb9254ae3b16e9ccca90574b127c116a54b4b86",
-    "bytes": 216956,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/vessel-deck.webp",
-    "sha256": "8bf1eca094a80e9b67a4ad8a04ed528cda2ca89db1e7eb60dbb1003aeb578c6f",
-    "bytes": 223402,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet/moe-3-container-illustration.webp",
-    "sha256": "a5a98f6f6174b5bfdbc54fef75b25afd688010c25f5d67a337008020fd149b24",
-    "bytes": 276802,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet/moe-4-crane-illustration.webp",
-    "sha256": "aa6b7e010e533d5a6593c04d44dda6d0b796a20488da8d530c75989d6ec7f364",
-    "bytes": 296868,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet/moe-6-container-illustration.webp",
-    "sha256": "def80116288176dd7c6fde320172214e458491c7a0eeb90b36af44f1182855cf",
-    "bytes": 264480,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet/moe-7-container-illustration.webp",
-    "sha256": "88ae5c8cbbfe9fdb90ced14543075e1da9e391e71bed13eb527f8a9409538ea8",
-    "bytes": 216362,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet/dumai-moe-tanker-illustration.webp",
-    "sha256": "0e263328de33436ea58834a0a365e4e46303ea8218ef756a294b93635ba53386",
-    "bytes": 251964,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/contact-thai-planning.webp",
-    "sha256": "bcbde0905894c17515bb7c20ead7e3e8556eb0951521d57b05ba0c83478ff1e5",
-    "bytes": 116500,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
     "sourcePath": "/images/about/port-operations.webp",
     "sha256": "00ab71ccf564c828bdf3833c28ddcd5795c1d698cca5aea327c13e838555d4b9",
     "bytes": 177870,
@@ -205,126 +37,6 @@
     "bytes": 105468,
     "width": 1396,
     "height": 1047,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/about/shoreside-coordination.webp",
-    "sha256": "17976bb7b950b5fbc663f4e1dea0c110e30664288972302d3c271063026fba58",
-    "bytes": 24602,
-    "width": 800,
-    "height": 608,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet-enhanced/ranong-moe-neutral.webp",
-    "sha256": "6c239ce4943284fd7c141fd77a2ee2ba19e7422f3d276c55e6fdd1120d8ca65d",
-    "bytes": 398868,
-    "width": 1448,
-    "height": 1086,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet-enhanced/ranong-moe-warm.webp",
-    "sha256": "b6ddc2be37b9a268d1261febebd0305b234c9c93b4e4e64f7584102b581e0b58",
-    "bytes": 361732,
-    "width": 1448,
-    "height": 1086,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet-enhanced/moe-line-2-neutral.webp",
-    "sha256": "658174ef67b2efb0e40413523cbc9c3c62cdbf0c849ec3960ed35705dc7343a2",
-    "bytes": 445080,
-    "width": 1614,
-    "height": 974,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet-enhanced/moe-line-2-warm.webp",
-    "sha256": "d30a61f060a9f982de7fed2e3d885a647696ebd72e64b4199aec691a11099c8d",
-    "bytes": 439714,
-    "width": 1614,
-    "height": 974,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet-enhanced/moe-line-3-neutral.webp",
-    "sha256": "4245703f7dafddd9111593e7af41329a632b21c06d07010eb2e0cc06201221f4",
-    "bytes": 420376,
-    "width": 1614,
-    "height": 975,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet-enhanced/moe-line-3-warm.webp",
-    "sha256": "5ba9097a561368d68c72b9071532995c6f283cd4ebe553e9cb8f01bcd3fe6d36",
-    "bytes": 419404,
-    "width": 1614,
-    "height": 975,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet-enhanced/moe-line-4-neutral.webp",
-    "sha256": "d0dfe1b019f47e9bf804db754ccb03ce057dac4e9fdcb9062c0364319576ed5f",
-    "bytes": 516804,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet-enhanced/moe-line-4-warm.webp",
-    "sha256": "638cb6970dfdd64eb1b5ab414aa3a8af2f2f08b7d26771515225520f9aca74e8",
-    "bytes": 491846,
-    "width": 1672,
-    "height": 941,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet-enhanced/moe-line-5-neutral.webp",
-    "sha256": "ced8910c9dc68411be58a9b877086ebde4e3a1ff5122e78dfabe2ce5a8b8b1be",
-    "bytes": 382500,
-    "width": 1614,
-    "height": 975,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet-enhanced/moe-line-5-warm.webp",
-    "sha256": "04a834cd7591f19f58658f2688a7870ec6aba2748bba918c6232ac739ea3b135",
-    "bytes": 404068,
-    "width": 1614,
-    "height": 975,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet-enhanced/moe-line-6-neutral.webp",
-    "sha256": "6ac450977775a12f18e6445d30072338fc6fea45920c50c5cdaff7cb5e30b5ae",
-    "bytes": 446120,
-    "width": 1614,
-    "height": 975,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet-enhanced/moe-line-6-warm.webp",
-    "sha256": "4f3641fdc81a105d811ebff600b90f9d6a53879e7e15ecd935308c01ccd41426",
-    "bytes": 428220,
-    "width": 1614,
-    "height": 975,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet-enhanced/moe-line-7-neutral.webp",
-    "sha256": "80840f8d1ec7f5dd587c6ea38f9aecf6fc4e912d19e72de35b66bebb7fa8c720",
-    "bytes": 429260,
-    "width": 1672,
-    "height": 940,
-    "format": "webp"
-  },
-  {
-    "sourcePath": "/images/fleet-enhanced/moe-line-7-warm.webp",
-    "sha256": "84284543a283743742f2c448791e21fcafcf93dd217b6ebd001fc58a9469511b",
-    "bytes": 444606,
-    "width": 1673,
-    "height": 940,
     "format": "webp"
   },
   {
@@ -438,5 +150,86 @@
     "width": 1920,
     "height": 1440,
     "format": "webp"
+  },
+  {
+    "sourcePath": "/images/company-originals/coastal-berth.webp",
+    "sha256": "8de6bd4568f17d9fdc252f8c9e143974d4546ce67f182b9b265f23c80427ee40",
+    "bytes": 69822,
+    "width": 1141,
+    "height": 854,
+    "format": "webp",
+    "sourceUrl": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-010.webp"
+  },
+  {
+    "sourcePath": "/images/company-originals/container-deck.webp",
+    "sha256": "f4d2831a719d2fc60da16d0354c5912fb786722451424b0b03183a15bdd16189",
+    "bytes": 189030,
+    "width": 1320,
+    "height": 1200,
+    "format": "webp",
+    "sourceUrl": "https://www.moe-line.com/wp-content/uploads/2025/02/contactimg7.webp"
+  },
+  {
+    "sourcePath": "/images/company-originals/container-terminal.webp",
+    "sha256": "dd946f9463332ded1354eac3f7b92ce484fa6fbb148d02270a0ed35f4691ed85",
+    "bytes": 210514,
+    "width": 1920,
+    "height": 1159,
+    "format": "webp",
+    "sourceUrl": "https://www.moe-line.com/wp-content/uploads/2025/01/moe-4.webp"
+  },
+  {
+    "sourcePath": "/images/company-originals/mooring-lines.webp",
+    "sha256": "8b9700a5322bb73201797958c6fe5ff0f94ae47e45d911a4f98a1c923b253f9c",
+    "bytes": 90044,
+    "width": 1246,
+    "height": 854,
+    "format": "webp",
+    "sourceUrl": "https://www.moe-line.com/wp-content/uploads/2025/06/sld-012.webp"
+  },
+  {
+    "sourcePath": "/images/company-originals/office-exterior.webp",
+    "sha256": "4cbb7c468aa3932faf718a351b647c4a2ec0e35da298f599dcc5a5799d6771cf",
+    "bytes": 93408,
+    "width": 802,
+    "height": 1080,
+    "format": "webp",
+    "sourceUrl": "https://www.moe-line.com/wp-content/uploads/2025/09/contact-001.webp"
+  },
+  {
+    "sourcePath": "/images/company-originals/office-meeting.webp",
+    "sha256": "c1f9411a250981467fea2466df503fdd85dafeaa76330a4423764a4f60466d82",
+    "bytes": 81002,
+    "width": 1200,
+    "height": 800,
+    "format": "webp",
+    "sourceUrl": "https://www.moe-line.com/wp-content/uploads/2025/02/nnnnbanner-0013.webp"
+  },
+  {
+    "sourcePath": "/images/company-originals/quayside-inspection.webp",
+    "sha256": "ced14e1ec458ddbba61b245a76ba48bf4db7b2c2160f6e275291de9931728bb8",
+    "bytes": 131304,
+    "width": 1920,
+    "height": 1080,
+    "format": "webp",
+    "sourceUrl": "https://www.moe-line.com/wp-content/uploads/2025/08/sld-0230.webp"
+  },
+  {
+    "sourcePath": "/images/company-originals/river-passage.webp",
+    "sha256": "77ad92a2baa79b0cb695a42bd751f20a4ad734bd886cde09bc2fc0224c54abe2",
+    "bytes": 248348,
+    "width": 1920,
+    "height": 1080,
+    "format": "webp",
+    "sourceUrl": "https://www.moe-line.com/wp-content/uploads/2025/02/sld-002.webp"
+  },
+  {
+    "sourcePath": "/images/company-originals/wheelhouse.webp",
+    "sha256": "6da5854354534514bfc24f348cdaba119fb7416e5da9ef9fc7e77b3fbcaab0f6",
+    "bytes": 87254,
+    "width": 1396,
+    "height": 1047,
+    "format": "webp",
+    "sourceUrl": "https://www.moe-line.com/wp-content/uploads/2025/07/sld-029.webp"
   }
 ]

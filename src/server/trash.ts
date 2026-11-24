@@ -9,6 +9,7 @@ import { collections, ensureIndexes, getDb, type UserDocument } from './db';
 import { digest } from './auth';
 import { HttpError } from './http';
 import { mediaFolder } from './media';
+import { isRetiredMedia, retiredPhotoSource } from './retired-photos';
 import { enquiryRetainedFilter } from './enquiry-retention';
 import { fleetNameSearchFilters, normalizeFleetNames } from '@/lib/fleet-names';
 
@@ -127,7 +128,9 @@ export async function getCmsTrashPage(query: CmsTrashQuery, actor: UserDocument)
   const referencedImages = new Set([...referencedImageUrls.map(item => item._id), ...profileImageUrls]);
   const items: CmsTrashItem[] = rows.map(row => {
     const { title, titleTh } = normalizeFleetNames({ ...row, type: row.kind });
-    const base = { id: row.id, key: row.key, title, ...(titleTh ? { titleTh } : {}), ...(row.image ? { image: row.image } : {}), deletedAt: row.deletedAt, ...(row.purgeAt ? { purgeAt: row.purgeAt } : {}) };
+    const showImage = row.image && !retiredPhotoSource(row.image)
+      && (row.kind !== 'Image' || !isRetiredMedia({ url: row.image, id: row.id }));
+    const base = { id: row.id, key: row.key, title, ...(titleTh ? { titleTh } : {}), ...(showImage ? { image: row.image } : {}), deletedAt: row.deletedAt, ...(row.purgeAt ? { purgeAt: row.purgeAt } : {}) };
     let restoreBlockedReason: string | undefined;
     let deleteBlockedReason: string | undefined = canPermanentlyDelete(role) ? undefined : 'Only Dev and Admin can permanently delete items from Trash.';
     if (row.kind === 'User') {

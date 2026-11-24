@@ -95,6 +95,22 @@ test('a legacy included banner saves through the dedicated CMS action with its v
   assert.deepEqual(saved.heroSlides, [defaultHomeSlides[0]]);
 });
 
+test('saving an older page with retired non-fleet images persists company photos and keeps separately managed slides', async () => {
+  const state = harness();
+  const initial = { ...home(), image: '/images/bridge.webp', imageAlt: 'Old scene', mobileImage: '/images/bridge.webp',
+    gallery: [{ url: '/images/bridge.webp', alt: 'Old gallery', altTh: '' }],
+    heroSlides: [{ url: '/images/hero/01-open-water.webp', alt: '', altTh: '' }] };
+  state.content.set(initial._id, initial);
+  const candidate = { ...initial, heroSlides: undefined };
+  const input = saveSchema.parse({ record: candidate, expectedRevision: initial.revision, submissionId: state.submissionId });
+  const saved = await saveContentInTransaction(input, actor._id, state.db, session, 'cms', actor);
+  assert.equal(saved.image, '/images/company-originals/wheelhouse.webp');
+  assert.equal(saved.mobileImage, saved.image);
+  assert.equal(saved.gallery?.[0].url, saved.image);
+  assert.deepEqual(saved.heroSlides, [defaultHomeSlides[0]]);
+  assert.deepEqual(cleanContentRecord(state.content.get(initial._id)!).gallery, saved.gallery);
+});
+
 test('slider validation bounds interval, count, duplicate URLs and home-only fields', () => {
   const valid = { slides: getHomeSlides(), intervalSeconds: 3, expectedRevision: 4, submissionId: randomUUID() };
   assert.equal(saveHomeSlidesSchema.safeParse(valid).success, true);

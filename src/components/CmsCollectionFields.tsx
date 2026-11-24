@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, ClipboardList, ImagePlus, Languages, MapPin, Plus, 
 import type { CmsCategorySuggestions, ContentImage, ContentRecord, RouteSpecs, VesselSpecs } from '@/lib/cms-types';
 import { useCmsLocale } from '@/lib/cms-locale';
 import { cmsContentPlaceholder } from '@/lib/cms-content-placeholders';
+import { technicalSections, technicalTextLimit } from '@/lib/vessel-technical-sections';
 import CmsRouteFields from './CmsRouteFields';
 import CmsServiceIconPicker from './CmsServiceIconPicker';
 import SelectionDialog from './SelectionDialog';
@@ -52,7 +53,7 @@ export default function CmsCollectionFields({ record, records = [], categories, 
   onRouteText: (text: string) => void;
 }) {
   const { locale, t } = useCmsLocale();
-  const categoryId = useId();
+  const fieldId = useId();
   const languages: ('th' | 'en')[] = locale === 'th' ? ['th', 'en'] : ['en', 'th'];
   const hasCategory = ['Vessel', 'Project', 'News'].includes(record.type);
   const hasHeading = ['Service', 'Project', 'News'].includes(record.type);
@@ -75,8 +76,8 @@ export default function CmsCollectionFields({ record, records = [], categories, 
     const suggestions = categories?.[record.type]?.[language] ?? [...new Set(records.filter(item => !item.deletedAt && item.type === record.type).map(item => item[key]).filter((value): value is string => Boolean(value?.trim())))];
     const label = `${t(categoryLabel)} · ${languageName(language)}`;
     const chooseExisting = locale === 'th' ? 'เลือกที่มีอยู่' : 'Choose existing';
-    return <div className={styles.field}><label htmlFor={`${categoryId}-${language}`}>{label}</label><div className={styles.categoryInput}>
-      <input id={`${categoryId}-${language}`} lang={language} placeholder={cmsContentPlaceholder(record.type === 'Vessel' ? 'vesselType' : record.type === 'Project' ? 'projectCategory' : 'newsCategory', language)} required={language === 'en'} maxLength={100} value={record[key] || ''} onChange={event => onChange({ [key]: event.target.value })} />
+    return <div className={styles.field}><label htmlFor={`${fieldId}-${language}`}>{label}</label><div className={styles.categoryInput}>
+      <input id={`${fieldId}-${language}`} lang={language} placeholder={cmsContentPlaceholder(record.type === 'Vessel' ? 'vesselType' : record.type === 'Project' ? 'projectCategory' : 'newsCategory', language)} required={language === 'en'} maxLength={100} value={record[key] || ''} onChange={event => onChange({ [key]: event.target.value })} />
       {suggestions.length > 0 && <SelectionDialog label={`${chooseExisting}: ${label}`} triggerLabel={chooseExisting} value={record[key] || ''} options={suggestions.map(value => ({ value, label: value }))} onChange={value => onChange({ [key]: value })} disabled={disabled} closeLabel={locale === 'th' ? 'ปิดตัวเลือก' : 'Close choices'} searchPlaceholder={locale === 'th' ? 'ค้นหาตัวเลือก' : 'Search choices'} className={styles.categoryChoices} />}
     </div></div>;
   }
@@ -130,6 +131,14 @@ export default function CmsCollectionFields({ record, records = [], categories, 
       <summary><span className={styles.cardTitle}><Ship size={20} aria-hidden="true" />{t('Vessel details')}</span><span className={styles.hint}>{t('Optional')}</span></summary>
       <div className={styles.cardBody}><p className={styles.hint}>{t('Enter approved vessel information only. Leave unknown values blank.')}</p>
         <fieldset className={styles.detailsGroup}><legend>{t('Vessel identity')}</legend>
+          <div className={styles.twoColumns}>{languages.map(language => {
+            const key = language === 'th' ? 'designTypeTh' : 'designType';
+            return <label className={styles.field} key={key}>{locale === 'th' ? 'ประเภทเรือตามเอกสาร' : 'Vessel type on particulars sheet'} · {languageName(language)}
+              <input lang={language} maxLength={160} value={record.vesselSpecs?.[key] ?? ''}
+                placeholder={language === 'th' ? 'เช่น เรือบรรทุกน้ำมันและสารเคมี' : 'e.g. Oil/chemical tanker'}
+                onChange={event => updateSpec(key, event.target.value)} />
+            </label>;
+          })}</div>
           <div className={styles.twoColumns}>
             <label className={styles.field}>{t('Official number')}<input maxLength={40} value={record.vesselSpecs?.officialNumber ?? ''} onChange={event => updateSpec('officialNumber', event.target.value)} /></label>
             <label className={styles.field}>{t('Call sign')}<input maxLength={20} value={record.vesselSpecs?.callSign ?? ''} onChange={event => updateSpec('callSign', event.target.value)} /></label>
@@ -153,6 +162,20 @@ export default function CmsCollectionFields({ record, records = [], categories, 
             return <label className={styles.field} key={field.key}>{label}<input type="number" placeholder={cmsContentPlaceholder(field.key, locale)} min={field.whole ? 0 : 0.01} max={field.max} step={field.whole ? 1 : 'any'} value={record.vesselSpecs?.[field.key] ?? ''} onChange={event => updateSpec(field.key, event.target.value === '' ? undefined : Number(event.target.value))} /></label>;
           })}
         </div></fieldset>)}
+        {technicalSections.map(section => <details className={styles.moreText} key={section.key}>
+          <summary>{section[locale]}</summary>
+          <div>{languages.map(language => {
+            const key = language === 'th' ? section.keyTh : section.key;
+            const id = `${fieldId}-${key}`;
+            return <div key={key} className={styles.field}>
+              <label htmlFor={id}>{section[locale]} · {languageName(language)}</label>
+              <textarea id={id} lang={language} rows={4} maxLength={technicalTextLimit}
+                value={record.vesselSpecs?.[key] ?? ''}
+                placeholder={language === 'th' ? 'ระบุรายละเอียดที่ยืนยันแล้ว บรรทัดละหนึ่งรายการ' : 'Enter one confirmed detail per line'}
+                onChange={event => updateSpec(key, event.target.value)} />
+            </div>;
+          })}</div>
+        </details>)}
       </div>
     </details>}
     {record.type === 'Vessel' && <details className={styles.card}>

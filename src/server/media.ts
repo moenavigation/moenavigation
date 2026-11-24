@@ -15,6 +15,7 @@ import { nextCursor, readCursor } from './pagination';
 import { contentMediaReferenceFilter, hasMediaReferences, userMediaReferenceFilter } from './media-references';
 import { authorizeTrashDeletion } from './trash-permissions';
 import { appendAuditEvent, auditActor, mediaAuditTarget } from './audit';
+import { isRetiredMedia, selectableMediaFilter } from './retired-photos';
 
 const uploadLeaseMs = 120000;
 const submissionKey = (owner: string, submissionId: string) => `media-submission:${digest(`${owner}:${submissionId}`)}`;
@@ -45,7 +46,7 @@ export function mediaProvider() {
   return cloudinary;
 }
 function clean(media: MediaDocument): MediaItem {
-  return { id: media.id, title: media.title, url: media.url, publicId: media.publicId, ...(media.kind ? { kind: media.kind } : {}), state: media.state === 'trashed' ? 'trashed' : media.state === 'committed' ? 'committed' : 'staged', createdAt: media.createdAt, ...(media.trashedAt ? { trashedAt: media.trashedAt } : {}), ...(media.sourcePath ? { sourcePath: media.sourcePath } : {}) };
+  return { id: media.id, title: media.title, url: isRetiredMedia(media) ? '' : media.url, publicId: media.publicId, ...(media.kind ? { kind: media.kind } : {}), state: media.state === 'trashed' ? 'trashed' : media.state === 'committed' ? 'committed' : 'staged', createdAt: media.createdAt, ...(media.trashedAt ? { trashedAt: media.trashedAt } : {}), ...(media.sourcePath ? { sourcePath: media.sourcePath } : {}) };
 }
 function imageType(data: Buffer) {
   if (data.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10]))) return 'image/png';
@@ -97,8 +98,10 @@ export async function uploadMedia(request: Request, owner: string, actor?: UserD
   await rateLimit(`upload:${owner}`, 100, 60 * 60);
   const data = Buffer.from(await file.arrayBuffer());
   const kind = await validatePreparedMedia(data, file.type);
+  const sourceSha256 = createHash('sha256').update(data).digest('hex');
+  if (isRetiredMedia({ url: '', sourceSha256 })) throw new HttpError(400, 'Choose an original company photograph.');
   const title = file.name.replace(/\.[^.]+$/, '').slice(0, 160) || `Uploaded ${kind}`;
-  const id = digest(`${owner}:${submissionId}:${createHash('sha256').update(data).digest('hex')}`);
+  const id = digest(`${owner}:${submissionId}:${sourceSha256}`);
   const publicId = `${mediaFolder()}/${id}`;
   const c = collections(await getDb());
   const reservation = await transaction(async (db, session) => {
@@ -158,7 +161,7 @@ export async function uploadMedia(request: Request, owner: string, actor?: UserD
   return clean(updated);
 }
 export async function getMedia() {
-  return (await collections(await getDb()).media.find({ state: 'committed' }).sort({ createdAt: -1 }).toArray()).map(clean);
+  return (await collections(await getDb()).media.find({ state: 'committed', ...selectableMediaFilter }).sort({ createdAt: -1 }).toArray()).map(clean);
 }
 const mediaCursorSchema = z.strictObject({ id: z.string().min(1).max(100), createdAt: z.string().datetime(), search: z.string().regex(/^[a-f0-9]{16}$/) });
 function mediaSearchCursor(record: { id: string; createdAt: string }, query: string) {
@@ -185,6 +188,7 @@ export async function getMediaPage(rawCursor: string | null, rawQuery: string | 
   const cursor = readMediaCursor(rawCursor, cursorScope);
   const filter: Filter<MediaDocument> = {
     state,
+    ...(state === 'committed' && selectableMediaFilter),
     ...(includeVideos ? {} : { kind: { $ne: 'video' as const } }),
     ...(query ? { title: { $regex: escapeInboxSearch(query), $options: 'i' } } : {}),
     ...(cursor ? { $or: [{ createdAt: { $lt: cursor.createdAt } }, { createdAt: cursor.createdAt, _id: { $lt: cursor.id } }] } : {}),
@@ -355,7 +359,7 @@ export async function commitMedia(mediaId: string, submissionId: string, title: 
   return transaction(async (db, session) => {
     const c = collections(db);
     const media = await c.media.findOne({ _id: mediaId, owner, submissionId, state: { $in: ['staged', 'committed'] } }, { session });
-    if (!media) throw new HttpError(403, 'This upload is not available for this save.');
+    if (!media || isRetiredMedia(media)) throw new HttpError(403, 'This upload is not available for this save.');
     if (media.state === 'committed' && media.pinned) return clean(media);
     await lockMediaSubmission(db, session, owner, submissionId);
     media.state = 'committed'; media.pinned = true; media.title = title; media.touchedAt = new Date();

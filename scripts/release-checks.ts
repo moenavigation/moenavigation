@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { enquiryRecipientList } from '../src/lib/enquiry-email';
 import { indexingEnabled, publicHttpsOrigin } from '../src/lib/site-config';
-import { isBundledHomeSlide } from '../src/lib/home-slides';
+import { isBundledContentPhoto } from '../src/server/retired-photos';
 
 export type ReleaseCheck = { name: string; status: 'pass' | 'blocked' | 'review'; detail: string };
 type Environment = Readonly<Record<string, string | undefined>>;
@@ -68,7 +68,12 @@ export function contentReadiness(records: readonly ReleaseRecord[], media: reado
     ...slides(record).flatMap(image => [image.alt, image.altTh]),
   ].join(' ')));
   const urls = new Set(media.filter(item => item.state === 'committed' && !item.trashedAt).map(item => item.url));
-  const references = records.flatMap(record => [record.image, record.mobileImage, ...gallery(record).map(image => image.url), ...slides(record).filter(image => !(record.type === 'Page' && record.id === 'home' && typeof image.url === 'string' && isBundledHomeSlide(image.url))).map(image => image.url)]).filter(Boolean);
+  const references = records.flatMap(record => {
+    const bundled = (url: unknown) => typeof url === 'string' && isBundledContentPhoto(String(record.type), String(record.id), url);
+    const images = [record.image, record.mobileImage, ...gallery(record).map(image => image.url)].filter(url => url && !bundled(url));
+    const mediaSlides = slides(record).filter(slide => slide.kind === 'video' || !bundled(slide.url));
+    return [...images, ...mediaSlides.map(slide => slide.url)];
+  });
   const unfinished = media.filter(item => ['uploading', 'staged', 'deleting'].includes(String(item.state)) && !item.trashedAt);
   const failedTrash = media.filter(item => item.state === 'deleting' && Boolean(item.trashedAt));
   return [

@@ -40,6 +40,17 @@ test('integrity validation rejects missing images, changed bytes and unknown col
   }
   const external = fixture(); external.collections.moe_content[0].image = '/images/unbacked.webp'; assert.throws(() => validateBackup(external));
 });
+test('backup retains recoverable Media Trash bytes and verifies current company photos and historical bundled source paths', () => {
+  const backup = fixture();
+  backup.collections.moe_content[0] = { type: 'News', id: 'voyage', image: '/images/company-originals/wheelhouse.webp', gallery: [{ url: '/images/bridge.webp' }] };
+  backup.collections.moe_media[0].state = 'trashed';
+  validateBackup(backup);
+  backup.collections.moe_content[0].image = backup.assets[0].url;
+  assert.throws(() => validateBackup(backup), /image missing/);
+  backup.collections.moe_content[0].image = '';
+  backup.collections.moe_media[0].state = 'deleting';
+  assert.throws(() => validateBackup(backup), /metadata differs/);
+});
 test('backup validates and remaps custom slides while retaining bundled homepage artwork', () => {
   const backup = fixture();
   const original = backup.assets[0].url;

@@ -1,3 +1,5 @@
+import { technicalSections } from './vessel-technical-sections';
+
 // Only application-authored messages belong here. Record text, filenames and
 // customer enquiries are never passed through a general translation service.
 export const cmsMessagesThai: Record<string, string> = {
@@ -364,6 +366,7 @@ export const cmsMessagesThai: Record<string, string> = {
   "Updated profile photo": "เปลี่ยนรูปโปรไฟล์",
   "This profile photo changed elsewhere. Refresh the user and try again.": "รูปโปรไฟล์ถูกเปลี่ยนจากที่อื่น กรุณาโหลดข้อมูลผู้ใช้งานใหม่แล้วลองอีกครั้ง",
   "Choose a library image or upload a photo before saving.": "เลือกรูปจากคลังหรืออัปโหลดรูปก่อนบันทึก",
+  "Choose an original company photograph.": "กรุณาเลือกภาพถ่ายต้นฉบับของบริษัท",
   "This image changed elsewhere. Choose it again before saving.": "รูปภาพถูกเปลี่ยนจากที่อื่น กรุณาเลือกรูปอีกครั้งก่อนบันทึก",
   "Enter your current password to change another user’s profile photo.": "กรอกรหัสผ่านปัจจุบันของคุณเพื่อเปลี่ยนรูปโปรไฟล์ของผู้ใช้งานอื่น",
   "This image is used by content or a user profile, including Trash. Replace it there before removing it.": "รูปนี้ใช้ในเนื้อหาหรือโปรไฟล์ผู้ใช้งาน รวมถึงรายการในถังขยะ กรุณาเปลี่ยนรูปในรายการเหล่านั้นก่อนนำออก",
@@ -617,6 +620,9 @@ export const cmsMessagesThai: Record<string, string> = {
 };
 
 const validationFieldsThai: Record<string, string> = {
+  ...Object.fromEntries(technicalSections.flatMap(section => [[`${section.en} · English`, `${section.th} · ภาษาอังกฤษ`], [`${section.en} · Thai`, `${section.th} · ภาษาไทย`]])),
+  'Vessel type on particulars sheet · English': 'ประเภทเรือตามเอกสาร · ภาษาอังกฤษ',
+  'Vessel type on particulars sheet · Thai': 'ประเภทเรือตามเอกสาร · ภาษาไทย',
   'Footer statistics': 'สถิติส่วนท้ายเว็บไซต์',
   'English image caption': 'คำบรรยายใต้ภาพภาษาอังกฤษ', 'Thai image caption': 'คำบรรยายใต้ภาพภาษาไทย',
   'Parent page': 'หน้าที่แสดงส่วนเนื้อหานี้', 'Display order': 'ลำดับการแสดงผล',

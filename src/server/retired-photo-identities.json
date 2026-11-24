@@ -1,0 +1,262 @@
+[
+  {
+    "source": "/images/bridge.webp",
+    "sha256": "092e19511e5560da3685e345c8b7276780589bc11fa410adeb4254616123e088",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694740/moe-navigation/library/bridge-092e19511e5560da3685.webp",
+    "id": "642a38c9f5bfb8da89de9d5ad20998f5352cfd0ed65666cdb464e1b8aa9a92e2"
+  },
+  {
+    "source": "/images/bunkering.webp",
+    "sha256": "bf902627fc2e1ec40e3d02a7ae9f91ac3ed29cc923f01b27bfa89a8d8e5cb04b",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694743/moe-navigation/library/bunkering-bf902627fc2e1ec40e3d.webp",
+    "id": "fff612c4566b36f0a0483cbc2e796acc1f5d65be19c64bb73cb854a9c08d2a0c"
+  },
+  {
+    "source": "/images/consulting.webp",
+    "sha256": "32821066d8a46c7e5302c91e83b8a4b5d8ed33fb81361f2c7f8b2d8e89cdad42",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694745/moe-navigation/library/consulting-32821066d8a46c7e5302.webp",
+    "id": "99f9d626f7f7f354794f1a0ac57db9a53eef9a70c1ae0f2d5bf70294f2382b63"
+  },
+  {
+    "source": "/images/container-deck-detail.webp",
+    "sha256": "b8bc1405d3f2c150de327f65f8c9055a53f41f8f94ba805fa0e026e4be943cb4",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694747/moe-navigation/library/container-deck-detail-b8bc1405d3f2c150de32.webp",
+    "id": "711c4092f006a8136ccbfe1700a3c8246a809c9c9419e5c9fb382931f511de03"
+  },
+  {
+    "source": "/images/container-vessel.webp",
+    "sha256": "15c2222f580a9621f307a0bfa64cedc1a6eb64caf38b4928b156d88e02c1a4e3",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694748/moe-navigation/library/container-vessel-15c2222f580a9621f307.webp",
+    "id": "280119a291a3a06f1e08d6d4fbfc59751a84f364d481bb41df5e652cb4e28892"
+  },
+  {
+    "source": "/images/crane-lift-detail.webp",
+    "sha256": "935ef2a3d23f465b722dd20131fe476a3bcb5bdf7791f0c85d5d7c8f338c66e4",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694750/moe-navigation/library/crane-lift-detail-935ef2a3d23f465b722d.webp",
+    "id": "aa6f50e4649894c98f8d74e96d819f3597cd2150b2311185082f199b7fa8e5d2"
+  },
+  {
+    "source": "/images/crane.webp",
+    "sha256": "5c442a3dcbb68060cff9875e2a9fa1bda6895276d759db6a2c300a9c1f65708d",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694752/moe-navigation/library/crane-5c442a3dcbb68060cff9.webp",
+    "id": "c6ce8739de86f123756cc85ccfa17518313fc2c22e7a9451d5f5cb57ef75ca10"
+  },
+  {
+    "source": "/images/hero-mobile.webp",
+    "sha256": "d752b2ad7417bff419191820740bb22ffb6df083001230cb1598eb9c5b6401cb",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694753/moe-navigation/library/hero-mobile-d752b2ad7417bff41919.webp",
+    "id": "7995890810c0bf47b3c4e8967c96d85b4b14cc1a8137ec85836ce8e24ceececd"
+  },
+  {
+    "source": "/images/hero.webp",
+    "sha256": "6c2f556625f7536f8a3942c36687c39277453bb181bbe0b58faaee302553cd55",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694754/moe-navigation/library/hero-6c2f556625f7536f8a39.webp",
+    "id": "5d5c5ebf12b85962e5c5db3d7ae66f5d8fd7f30600506b8cc1f8d2a438a65043"
+  },
+  {
+    "source": "/images/logistics.webp",
+    "sha256": "595769e9a3b33e0d63341b7471a56e296f0174c596ee4e66915c0eeecfe4aa1c",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694756/moe-navigation/library/logistics-595769e9a3b33e0d6334.webp",
+    "id": "56873f85ed218567f249cb08c06c33d0354f7bb2e12b59bbf3597a69b53d54e3"
+  },
+  {
+    "source": "/images/port.webp",
+    "sha256": "7db6750e9234effd2ac7e2fd27b5b2fedf007c25a1bb4da7deea894ed4cc5389",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694758/moe-navigation/library/port-7db6750e9234effd2ac7.webp",
+    "id": "f2754910bb3e6395fb3804ba4cfbb2829ae9c8880e1f081baf30add478c8c2e4"
+  },
+  {
+    "source": "/images/tanker-deck-detail.webp",
+    "sha256": "2d91c66a976ee43f48694bc78ad256a3af80917896a6e783a1a8d5f7a19d9cb7",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694759/moe-navigation/library/tanker-deck-detail-2d91c66a976ee43f4869.webp",
+    "id": "bd9311301a7dc5a6ddc8b9cc207e98e101eba5b27b7eef395478a2a0568f278c"
+  },
+  {
+    "source": "/images/tanker.webp",
+    "sha256": "41cd71a06de321aa5baa36fc34b34bc04ede5fd9e7192a5085387453fc9d74c9",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694760/moe-navigation/library/tanker-41cd71a06de321aa5baa.webp",
+    "id": "2681393cfb08522ac4fd556d009e16c93ddcb2e4a707402bc6371276cf1376af"
+  },
+  {
+    "source": "/images/tugboat.webp",
+    "sha256": "581a08e146ae5247b6db90c35bb9254ae3b16e9ccca90574b127c116a54b4b86",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694762/moe-navigation/library/tugboat-581a08e146ae5247b6db.webp",
+    "id": "d18951d61ddaee69f5208c8b51c6eee437fabd4a7932db19f9d7278f7948e9c3"
+  },
+  {
+    "source": "/images/vessel-deck.webp",
+    "sha256": "8bf1eca094a80e9b67a4ad8a04ed528cda2ca89db1e7eb60dbb1003aeb578c6f",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694763/moe-navigation/library/vessel-deck-8bf1eca094a80e9b67a4.webp",
+    "id": "7f32d37cb6935146ad7af5726b7adf8bd9a4c3bd1bae8a476b6edcb6c73ad067"
+  },
+  {
+    "source": "/images/fleet/moe-3-container-illustration.webp",
+    "sha256": "a5a98f6f6174b5bfdbc54fef75b25afd688010c25f5d67a337008020fd149b24",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1793272471/moe-navigation/75b222dfcba0858348e4b58a208f9595da2c037de65c109c48dfaa3826151de4.webp",
+    "id": "75b222dfcba0858348e4b58a208f9595da2c037de65c109c48dfaa3826151de4",
+    "vessel": "moe-line-3"
+  },
+  {
+    "source": "/images/fleet/moe-4-crane-illustration.webp",
+    "sha256": "aa6b7e010e533d5a6593c04d44dda6d0b796a20488da8d530c75989d6ec7f364",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1793272473/moe-navigation/59a5ba94ce39480820b77f62d79185d1d900b742b51463fa479be439a51bc82a.webp",
+    "id": "59a5ba94ce39480820b77f62d79185d1d900b742b51463fa479be439a51bc82a",
+    "vessel": "moe-line-4"
+  },
+  {
+    "source": "/images/fleet/moe-6-container-illustration.webp",
+    "sha256": "def80116288176dd7c6fde320172214e458491c7a0eeb90b36af44f1182855cf",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1793272476/moe-navigation/216f0e8574bbd40a5436e435dc3e9fe0f2115f4a5cd121d5cb2cede8c032236a.webp",
+    "id": "216f0e8574bbd40a5436e435dc3e9fe0f2115f4a5cd121d5cb2cede8c032236a",
+    "vessel": "moe-line-6"
+  },
+  {
+    "source": "/images/fleet/moe-7-container-illustration.webp",
+    "sha256": "88ae5c8cbbfe9fdb90ced14543075e1da9e391e71bed13eb527f8a9409538ea8",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1793272478/moe-navigation/b39e52b0fae1182f24009d8055f7fb7e2db45cf83da2d6c112499a428477e704.webp",
+    "id": "b39e52b0fae1182f24009d8055f7fb7e2db45cf83da2d6c112499a428477e704",
+    "vessel": "moe-line-7"
+  },
+  {
+    "source": "/images/fleet/dumai-moe-tanker-illustration.webp",
+    "sha256": "0e263328de33436ea58834a0a365e4e46303ea8218ef756a294b93635ba53386",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1793272480/moe-navigation/606a71b4ca7fe784ba66ca246b35696ae275a3397bcf77c9731d68c878584640.webp",
+    "id": "606a71b4ca7fe784ba66ca246b35696ae275a3397bcf77c9731d68c878584640",
+    "vessel": "dumai-moe"
+  },
+  {
+    "source": "/images/contact-thai-planning.webp",
+    "sha256": "bcbde0905894c17515bb7c20ead7e3e8556eb0951521d57b05ba0c83478ff1e5",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1793273068/moe-navigation/4a31c89593b661dcb833a2ecc2dff0e6b1fa9b9c27f33a3bfdc2eb9a0ed82f20.webp",
+    "id": "4a31c89593b661dcb833a2ecc2dff0e6b1fa9b9c27f33a3bfdc2eb9a0ed82f20"
+  },
+  {
+    "source": "/images/about/shoreside-coordination.webp",
+    "sha256": "17976bb7b950b5fbc663f4e1dea0c110e30664288972302d3c271063026fba58",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1794863855/moe-navigation/2a0cbb0390102675f4c180df4880bddfc47c3c93e679aee0c5d954e1aa8adc15.webp",
+    "id": "2a0cbb0390102675f4c180df4880bddfc47c3c93e679aee0c5d954e1aa8adc15"
+  },
+  {
+    "source": "/images/fleet-enhanced/ranong-moe-neutral.webp",
+    "sha256": "6c239ce4943284fd7c141fd77a2ee2ba19e7422f3d276c55e6fdd1120d8ca65d",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867279/moe-navigation/ee7afb8b77d113bb7922382ecfdc9f221cd6c2abb1e9226c46468b616a5c06ce.webp",
+    "id": "ee7afb8b77d113bb7922382ecfdc9f221cd6c2abb1e9226c46468b616a5c06ce",
+    "vessel": "ranong-moe"
+  },
+  {
+    "source": "/images/fleet-enhanced/ranong-moe-warm.webp",
+    "sha256": "b6ddc2be37b9a268d1261febebd0305b234c9c93b4e4e64f7584102b581e0b58",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867281/moe-navigation/9463f932190eadab7ebdfafaca672d1197f988de7b103b457a412d609e27fce6.webp",
+    "id": "9463f932190eadab7ebdfafaca672d1197f988de7b103b457a412d609e27fce6",
+    "vessel": "ranong-moe"
+  },
+  {
+    "source": "/images/fleet-enhanced/moe-line-2-neutral.webp",
+    "sha256": "658174ef67b2efb0e40413523cbc9c3c62cdbf0c849ec3960ed35705dc7343a2",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867283/moe-navigation/eeff07f52ad685cc728698f80c82bdb323f968d5c668903fcc892ac48ea23228.webp",
+    "id": "eeff07f52ad685cc728698f80c82bdb323f968d5c668903fcc892ac48ea23228",
+    "vessel": "moe-line-2"
+  },
+  {
+    "source": "/images/fleet-enhanced/moe-line-2-warm.webp",
+    "sha256": "d30a61f060a9f982de7fed2e3d885a647696ebd72e64b4199aec691a11099c8d",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867285/moe-navigation/e67cd8a6185983c07a8e90d08580a72c5e89e1a0f72335d21b72d130e5db3e53.webp",
+    "id": "e67cd8a6185983c07a8e90d08580a72c5e89e1a0f72335d21b72d130e5db3e53",
+    "vessel": "moe-line-2"
+  },
+  {
+    "source": "/images/fleet-enhanced/moe-line-3-neutral.webp",
+    "sha256": "4245703f7dafddd9111593e7af41329a632b21c06d07010eb2e0cc06201221f4",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867287/moe-navigation/ddaefbf1566884b04fbb1ff32a1845aa3a0148423b4a4e798dd957fb339b0c97.webp",
+    "id": "ddaefbf1566884b04fbb1ff32a1845aa3a0148423b4a4e798dd957fb339b0c97",
+    "vessel": "moe-line-3"
+  },
+  {
+    "source": "/images/fleet-enhanced/moe-line-3-warm.webp",
+    "sha256": "5ba9097a561368d68c72b9071532995c6f283cd4ebe553e9cb8f01bcd3fe6d36",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867290/moe-navigation/f0e361558057b5d3fcdd0487dd1388110c083f34a0f3bac4bcd25ea84f6a378b.webp",
+    "id": "f0e361558057b5d3fcdd0487dd1388110c083f34a0f3bac4bcd25ea84f6a378b",
+    "vessel": "moe-line-3"
+  },
+  {
+    "source": "/images/fleet-enhanced/moe-line-4-neutral.webp",
+    "sha256": "d0dfe1b019f47e9bf804db754ccb03ce057dac4e9fdcb9062c0364319576ed5f",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867292/moe-navigation/61816e08ca95f4d9229070293765e973968be5a7fa7c3a58c975594dae146e06.webp",
+    "id": "61816e08ca95f4d9229070293765e973968be5a7fa7c3a58c975594dae146e06",
+    "vessel": "moe-line-4"
+  },
+  {
+    "source": "/images/fleet-enhanced/moe-line-4-warm.webp",
+    "sha256": "638cb6970dfdd64eb1b5ab414aa3a8af2f2f08b7d26771515225520f9aca74e8",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867294/moe-navigation/ded1092e5b456d7dfc36e38ffa60e827d9f34167968e5b16b5288cb3ce92504c.webp",
+    "id": "ded1092e5b456d7dfc36e38ffa60e827d9f34167968e5b16b5288cb3ce92504c",
+    "vessel": "moe-line-4"
+  },
+  {
+    "source": "/images/fleet-enhanced/moe-line-5-neutral.webp",
+    "sha256": "ced8910c9dc68411be58a9b877086ebde4e3a1ff5122e78dfabe2ce5a8b8b1be",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867297/moe-navigation/210615f8e79322ace31df0475aa0d07840146154da81e6669741a3113c42eb64.webp",
+    "id": "210615f8e79322ace31df0475aa0d07840146154da81e6669741a3113c42eb64",
+    "vessel": "moe-line-5"
+  },
+  {
+    "source": "/images/fleet-enhanced/moe-line-5-warm.webp",
+    "sha256": "04a834cd7591f19f58658f2688a7870ec6aba2748bba918c6232ac739ea3b135",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867299/moe-navigation/cfe424ad007c3b9750b92758a1c3f42a614fcb3fd5d491dc636cd644bcb0d24b.webp",
+    "id": "cfe424ad007c3b9750b92758a1c3f42a614fcb3fd5d491dc636cd644bcb0d24b",
+    "vessel": "moe-line-5"
+  },
+  {
+    "source": "/images/fleet-enhanced/moe-line-6-neutral.webp",
+    "sha256": "6ac450977775a12f18e6445d30072338fc6fea45920c50c5cdaff7cb5e30b5ae",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867301/moe-navigation/c6cc2221adbf49a8d50087fb8ef2a0080a48c920596f56c43400a5d8e78c07dc.webp",
+    "id": "c6cc2221adbf49a8d50087fb8ef2a0080a48c920596f56c43400a5d8e78c07dc",
+    "vessel": "moe-line-6"
+  },
+  {
+    "source": "/images/fleet-enhanced/moe-line-6-warm.webp",
+    "sha256": "4f3641fdc81a105d811ebff600b90f9d6a53879e7e15ecd935308c01ccd41426",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867303/moe-navigation/b7c8145da12d2500585cd7210eed65de9c0420ac84a214c63a8ccd4975b107a2.webp",
+    "id": "b7c8145da12d2500585cd7210eed65de9c0420ac84a214c63a8ccd4975b107a2",
+    "vessel": "moe-line-6"
+  },
+  {
+    "source": "/images/fleet-enhanced/moe-line-7-neutral.webp",
+    "sha256": "80840f8d1ec7f5dd587c6ea38f9aecf6fc4e912d19e72de35b66bebb7fa8c720",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867305/moe-navigation/1f9baa9a19952c63b79584fd42c76f7977efb5321302cfbe779804f0d3c3be27.webp",
+    "id": "1f9baa9a19952c63b79584fd42c76f7977efb5321302cfbe779804f0d3c3be27",
+    "vessel": "moe-line-7"
+  },
+  {
+    "source": "/images/fleet-enhanced/moe-line-7-warm.webp",
+    "sha256": "84284543a283743742f2c448791e21fcafcf93dd217b6ebd001fc58a9469511b",
+    "url": "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867308/moe-navigation/10cae47456729c0eb836f37433fd302d73b8a96f4ebd4db7152f9b4239d24914.webp",
+    "id": "10cae47456729c0eb836f37433fd302d73b8a96f4ebd4db7152f9b4239d24914",
+    "vessel": "moe-line-7"
+  },
+  {
+    "source": "/images/hero/01-open-water.webp",
+    "sha256": "01831dfcb8c04b5d2dc96344093a67566160fec0bc4faa67bf8369238628bae8"
+  },
+  {
+    "source": "/images/hero/02-harbor-tug.webp",
+    "sha256": "c4f02bc79446d2634e8dc8923bf3d8b177d4bf5df994efcc397078380846d6a9"
+  },
+  {
+    "source": "/images/hero/03-blue-hour-port.webp",
+    "sha256": "b2aa9fd8d2effc51bd2e22f9ab1efd320042976c00f10adf30a7d0e12026afc4"
+  },
+  {
+    "source": "/images/hero/04-ocean-carrier.webp",
+    "sha256": "eb9b46256531cac37ccbb6802406bc9837f1ed1f077d0e0f232c17fdd2d60767"
+  },
+  {
+    "source": "/images/hero/05-coastal-passage.webp",
+    "sha256": "7b5a120baad4da8cebb1c6dae60d4c2ad35322ba28aaa3a6468799af66502b3d"
+  },
+  {
+    "source": "https://res.cloudinary.com/yod4qzgu/image/upload/v1795492687/moe-navigation/5402285d79e4849c3d8e0d839aa7bc55fdd5abfabe1bf522159271c015098a68.webp",
+    "id": "5402285d79e4849c3d8e0d839aa7bc55fdd5abfabe1bf522159271c015098a68",
+    "sha256": "70ecc70f0c3cec36d432a60f2b32f1fdec3eff326eeb5974d6f3b5f325057ea5"
+  }
+]

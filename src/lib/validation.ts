@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { contentTypes, corePageIds } from '@/lib/cms-types';
+import { technicalSections, technicalTextLimit } from './vessel-technical-sections';
 import { contactFieldLimits } from '@/lib/contact-draft';
 import { isContactEmail } from '@/lib/contact-validation';
 import { MAX_HOME_SLIDES, MAX_HOME_SLIDE_INTERVAL, MIN_HOME_SLIDE_INTERVAL } from '@/lib/home-slides';
@@ -8,10 +9,12 @@ export const submissionSchema = z.string().uuid();
 export const idSchema = z.string().min(1).max(100).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase letters, numbers and single hyphens.');
 const optionalText = (max: number) => z.string().trim().max(max).optional().default('');
 const optionalSpecText = (max: number) => z.string().trim().max(max).optional().transform(value => value || undefined);
+const technicalText = optionalSpecText(technicalTextLimit);
 // Existing IMO ship numbers use six digits followed by a weighted check digit.
 // https://www.imo.org/en/ourwork/iiis/pages/imo-identification-number-schemes.aspx
 const imoSchema = z.string().trim().refine(value => !value || (/^[1-9]\d{6}$/.test(value) && [...value.slice(0, 6)].reduce((sum, digit, index) => sum + Number(digit) * (7 - index), 0) % 10 === Number(value[6])), 'Enter the seven-digit IMO ship number with its correct check digit.').optional().transform(value => value || undefined);
 export const vesselSpecsSchema = z.object({
+  designType: optionalSpecText(160), designTypeTh: optionalSpecText(160),
   imo: imoSchema,
   officialNumber: optionalSpecText(40),
   callSign: optionalSpecText(20),
@@ -34,9 +37,17 @@ export const vesselSpecsSchema = z.object({
   reeferPlugs: z.number().int().nonnegative().max(100000).optional(),
   flag: optionalSpecText(100), flagTh: optionalSpecText(100),
   availability: optionalSpecText(200), availabilityTh: optionalSpecText(200),
+  construction: technicalText, constructionTh: technicalText,
+  machinery: technicalText, machineryTh: technicalText,
+  performance: technicalText, performanceTh: technicalText,
+  tankCapacities: technicalText, tankCapacitiesTh: technicalText,
+  cargoHandling: technicalText, cargoHandlingTh: technicalText,
+  loadLines: technicalText, loadLinesTh: technicalText,
+  mooringSafety: technicalText, mooringSafetyTh: technicalText,
 }).superRefine((specs, context) => {
   if (specs.lengthM !== undefined && specs.beamM !== undefined && specs.beamM > specs.lengthM) context.addIssue({ code: 'custom', path: ['beamM'], message: 'Beam cannot exceed the vessel length.' });
-  for (const [english, thai] of [['flag', 'flagTh'], ['availability', 'availabilityTh']] as const) {
+  const pairs = [['flag', 'flagTh'], ['availability', 'availabilityTh'], ['designType', 'designTypeTh'], ...technicalSections.map(section => [section.key, section.keyTh] as const)] as const;
+  for (const [english, thai] of pairs) {
     if (Boolean(specs[english]) !== Boolean(specs[thai])) context.addIssue({ code: 'custom', path: [specs[english] ? thai : english], message: 'Provide both English and Thai text, or leave both blank.' });
   }
 });

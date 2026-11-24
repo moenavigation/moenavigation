@@ -1,5 +1,7 @@
 import type { ContentRecord } from '../../src/lib/cms-types';
 import { recordSchema } from '../../src/lib/validation';
+import { companyPhotos } from '../../src/lib/company-photo-replacements';
+import { replaceRetiredContentPhotos } from '../../src/server/retired-photos';
 import { legacyRoutesPageCopy, legacyTradingRouteRecords } from './legacy-trading-routes';
 
 export { legacyRoutesPageCopy };
@@ -63,7 +65,7 @@ function currentIdentity(record: ContentRecord) {
     && (!('_id' in record) || record._id === `${record.type}:${record.id}`);
 }
 function sameContent(left: ContentRecord, right: ContentRecord, ignoreStatus = false) {
-  const normalize = (record: ContentRecord) => recordSchema.safeParse(ignoreStatus ? { ...record, status: 'Published' } : record);
+  const normalize = (record: ContentRecord) => recordSchema.safeParse(replaceRetiredContentPhotos(ignoreStatus ? { ...record, status: 'Published' } : record));
   const a = normalize(left), b = normalize(right);
   return a.success && b.success && canonical(a.data) === canonical(b.data);
 }
@@ -100,8 +102,8 @@ export function buildLegacyRouteImportPlan(records: readonly ContentRecord[]): L
       continue;
     }
     if (record.id === 'laem-chabang-port-klang') {
-      if (savedImage(record.image)) portImage = record.image;
-      else plan.conflicts.push('The saved Port Klang image is not a managed HTTPS image.');
+      if (savedImage(record.image) || record.image === companyPhotos.containerTerminal.url) portImage = companyPhotos.containerTerminal.url;
+      else plan.conflicts.push('The saved Port Klang image does not have a reviewed source.');
     }
     if (record.status === 'Published') plan.updates.push({ type: 'Route', id: record.id, expectedRevision: record.revision, patch: { status: 'Draft' } });
   }

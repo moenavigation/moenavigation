@@ -22,7 +22,7 @@ Created on 31 October 2026 with the built-in `image_gen` tool, using one generat
 
 The images are illustrative, fictional maritime scenes. They are not evidence of Moe Navigation vessel ownership, port ownership, fleet specifications, or service locations.
 
-| Banner | Public asset | Dimensions | WebP size |
+| Banner | Retired asset address | Dimensions | WebP size |
 | --- | --- | --- | --- |
 | Open water at sunrise | `/images/hero/01-open-water.webp` | 2172 × 724 | 366,546 bytes |
 | Harbor tug | `/images/hero/02-harbor-tug.webp` | 2172 × 724 | 363,504 bytes |
@@ -34,7 +34,7 @@ All sources are exactly 3:1. Their full ship silhouettes and principal subjects 
 
 All five generated outputs were visually inspected at full width. Main vessels remain within the mobile-safe center. The blue-hour port retains the docked ship and three principal cranes. Surrounding sea, sky, and peripheral port structures form expendable side areas.
 
-Original PNGs are preserved under `output/hero-banners/originals/`. The public WebP copies were converted with `sharp`, quality 90, without resize, crop, compositing, or color changes. `manifest.json` contains the complete prompts, source paths, dimensions, file sizes, and suggested English/Thai alt text. `prepare-assets.mjs` records the reproducible format-conversion step.
+The historical generation manifest records the original prompts, source paths, dimensions and file sizes. The public directory contains the verified company banner photos only.
 
 ## Homepage and CMS integration
 

@@ -1,5 +1,6 @@
 import type { ContentRecord } from '../../src/lib/cms-types';
 import type { MigrationAsset } from '../lib/migration-media';
+import { companyPhotos } from '../../src/lib/company-photo-replacements';
 
 export const legacyAboutSourceUrls = ['https://www.moe-line.com/about-us/', 'https://www.moe-line.com/th/about-us/'] as const;
 export const legacyAboutMediaSubmission = '6b3b756e-a6a6-41c1-9b95-507a38dd5d98';
@@ -18,7 +19,7 @@ export const legacyAboutImages: readonly LegacyAboutImage[] = [
   { key: 'safety', sourcePath: archive + 'c24795a4ec-sld-026.webp', sourceUrl: uploads + '07/sld-026.webp', sha256: '085176a7434745daf0474d6a9887f41134161890ad6e6189bcbeddff21869c29', bytes: 135666, width: 1396, height: 1047, format: 'webp', title: 'About — onboard inspection', alt: 'People in hard hats inspecting a vessel beside containers', altTh: 'ผู้สวมหมวกนิรภัยตรวจงานบนเรือข้างตู้คอนเทนเนอร์' },
   { key: 'maintenance', sourcePath: archive + 'f13751dbee-sld-023.webp', sourceUrl: uploads + '06/sld-023.webp', sha256: '255e137219244399ad380a91e6a94db726d30d9f8cc1f0fa6a478295ef3a8a55', bytes: 107468, width: 1396, height: 1047, format: 'webp', title: 'About — machinery care', alt: 'A person inspecting machinery and wire-rope drums', altTh: 'ผู้ปฏิบัติงานตรวจเครื่องจักรและดรัมลวดสลิง' },
   { key: 'crew', sourcePath: archive + '664a3773b3-sld-0231.webp', sourceUrl: uploads + '08/sld-0231.webp', sha256: '6c3437091194d9c96da74f1054fe4c1b66782d15ef99f67884cb1d64d52243e4', bytes: 105468, width: 1396, height: 1047, format: 'webp', title: 'About — vessel team', alt: 'Six people in workwear and hard hats beside a moored vessel', altTh: 'ผู้สวมชุดปฏิบัติงานและหมวกนิรภัยหกคนยืนข้างเรือที่เทียบท่า' },
-  { key: 'office', sourcePath: archive + '1f483a7015-sld-019.webp', sourceUrl: uploads + '06/sld-019.webp', sha256: '17976bb7b950b5fbc663f4e1dea0c110e30664288972302d3c271063026fba58', bytes: 24602, width: 800, height: 608, format: 'webp', title: 'About — shoreside coordination', alt: 'People in hard hats reviewing a tablet beside a port', altTh: 'ผู้สวมหมวกนิรภัยดูข้อมูลบนแท็บเล็ตบริเวณท่าเรือ' },
+  { key: 'office', sourcePath: archive + '3c2cf4eb6f-nnnnbanner-0013.webp', sourceUrl: uploads + '02/nnnnbanner-0013.webp', sha256: 'c1f9411a250981467fea2466df503fdd85dafeaa76330a4423764a4f60466d82', bytes: 81002, width: 1200, height: 800, format: 'webp', title: 'About — shoreside coordination', alt: companyPhotos.officeMeeting.alt, altTh: companyPhotos.officeMeeting.altTh },
 ];
 
 // Source themes adapted for the current identity. Deliberately excludes legacy

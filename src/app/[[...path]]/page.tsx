@@ -13,7 +13,7 @@ import { selectPublicPageRecords } from '@/lib/public-page-content';
 import { PublicSearchParamsProvider } from '@/lib/use-public-search-params';
 import { indexingEnabled, siteOrigin } from '@/lib/site-config';
 import { idSchema } from '@/lib/validation';
-import { defaultHomeSlides, getHomeSlides, homeSlideVideoPoster } from '@/lib/home-slides';
+import { defaultHomeSlides, getHomeSlides, homeSlideSharePhoto, homeSlideVideoPoster } from '@/lib/home-slides';
 import { companyNameEn } from '@/lib/company';
 import { footerVesselLinks } from '@/lib/footer-statistics';
 
@@ -54,9 +54,11 @@ export async function generateMetadata({ params }: { params: Promise<{ path?: st
   const pageTitle = sameCompanyName ? title : `${title} | ${company}`;
   const siteUrl = siteOrigin();
   const banner = item.type === 'Page' && item.id === 'home' ? getHomeSlides(item)[0] : undefined;
-  const image = banner?.kind === 'video' ? homeSlideVideoPoster(banner.url) ?? defaultHomeSlides[0].url : banner?.url ?? item.image;
+  const image = banner?.kind === 'video'
+    ? homeSlideVideoPoster(banner.url) ?? homeSlideSharePhoto(defaultHomeSlides[0].url)
+    : banner ? homeSlideSharePhoto(banner.url) : item.image;
   const imageAlt = banner ? local(locale, banner.alt, banner.altTh) || title : local(locale, item.imageAlt || item.title, item.imageAltTh || item.titleTh);
-  const images = image ? [{ url: image, alt: imageAlt }] : [];
+  const images = image ? [{ url: new URL(image, siteUrl).href, alt: imageAlt }] : [];
   return {
     metadataBase: new URL(siteUrl),
     title: pageTitle,

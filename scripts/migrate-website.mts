@@ -7,6 +7,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import type { ContentRecord } from '../src/lib/cms-types';
 import { recordSchema } from '../src/lib/validation';
 import { isBundledHomeSlide } from '../src/lib/home-slides';
+import { replaceRetiredContentPhotos } from '../src/server/retired-photos';
 import { companyPhone } from '../src/lib/company';
 import { websiteContentRecords } from './data/website-content';
 import { findReusableMedia, metadataMatches, type MigrationAsset, type MigrationProviderAsset } from './lib/migration-media';
@@ -37,7 +38,7 @@ const sourcePaths = new Set(manifest.map(asset => asset.sourcePath));
 const imageUrls = (record: Partial<ContentRecord>) => [record.image, record.mobileImage, ...(record.gallery || []).map(image => image.url), ...(record.heroSlides || []).map(image => image.url).filter(url => !isBundledHomeSlide(url))].filter((url): url is string => Boolean(url));
 function replaceImages(record: ContentRecord, urls: Map<string, string>): ContentRecord {
   const replace = (url: string) => {
-    if (!url.startsWith('/images/')) return url;
+    if (!url.startsWith('/images/') || isBundledHomeSlide(url)) return url;
     assert(urls.has(url), `Unrecognized local image: ${url}`);
     return urls.get(url)!;
   };
@@ -132,9 +133,9 @@ try {
     const merged = { ...seeds.get(id), ...before };
     const validation = recordSchema.safeParse(merged);
     assert(validation.success, `Invalid migration record ${id}: ${validation.error?.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join('; ')}`);
-    const parsed = validation.data;
+    const parsed = replaceRetiredContentPhotos(validation.data);
     const next: ContentRecord = { ...parsed, revision: before?.revision || 1, ...(before?.deletedAt ? { deletedAt: before.deletedAt } : {}) };
-    for (const url of imageUrls(next)) if (url.startsWith('/images/')) assert(sourcePaths.has(url), `Unmapped image in ${id}`);
+    for (const url of imageUrls(next)) if (url.startsWith('/images/')) assert(sourcePaths.has(url) || isBundledHomeSlide(url), `Unmapped image in ${id}`);
     return next;
   });
   const changes = desired.map(record => {

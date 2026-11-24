@@ -3,7 +3,7 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes, scryptSync }
 import { gzipSync, gunzipSync } from 'node:zlib';
 import { BSON, type Document } from 'mongodb';
 import { isBundledHomeSlide } from '../../src/lib/home-slides';
-import { isBundledVesselPhoto } from '../../src/lib/fleet-photos';
+import { isBundledContentPhoto, retiredPhotoSource } from '../../src/server/retired-photos';
 import type { MediaKind } from '../../src/lib/cms-types';
 
 const MAGIC = Buffer.from('MOEBACKUP1\n');
@@ -74,16 +74,17 @@ export function validateBackup(backup: Backup) {
     if (kind === 'video') assert(['mp4', 'webm'].includes(asset.format), 'Unsupported video format in backup.');
     const bytes = Buffer.from(asset.content, 'base64');
     assert(bytes.length === asset.bytes && sha256(bytes) === asset.sha256, 'Media integrity check failed.');
-    assert(backup.collections.moe_media.some(media => media._id === asset.mediaId && media.publicId === asset.publicId && media.url === asset.url && media.state === 'committed' && recoveryMediaKind(media.kind) === kind), 'Media metadata differs from backup asset.');
-    mediaKinds.set(asset.url, kind);
+    const media = backup.collections.moe_media.find(item => item._id === asset.mediaId);
+    assert(media && media.publicId === asset.publicId && media.url === asset.url && ['committed', 'trashed'].includes(media.state) && recoveryMediaKind(media.kind) === kind, 'Media metadata differs from backup asset.');
+    if (media.state === 'committed') mediaKinds.set(asset.url, kind);
   }
   for (const record of backup.collections.moe_content) {
     for (const url of [record.image, record.mobileImage, ...(record.gallery || []).map((image: Document) => image.url)]) {
-      if (url) assert(isBundledVesselPhoto(record.type, record.id, url) || mediaKinds.get(url) === 'image', 'Content references an image missing from the backup.');
+      if (url) assert(isBundledContentPhoto(record.type, record.id, url) || (url.startsWith('/images/') && retiredPhotoSource(url)) || mediaKinds.get(url) === 'image', 'Content references an image missing from the backup.');
     }
     for (const slide of record.heroSlides || []) {
       const kind = recoveryMediaKind(slide.kind);
-      const bundled = kind === 'image' && record.type === 'Page' && record.id === 'home' && isBundledHomeSlide(slide.url);
+      const bundled = kind === 'image' && record.type === 'Page' && record.id === 'home' && (isBundledHomeSlide(slide.url) || isBundledContentPhoto(record.type, record.id, slide.url));
       assert(bundled || mediaKinds.get(slide.url) === kind, 'Homepage slides reference media missing from the backup.');
     }
   }

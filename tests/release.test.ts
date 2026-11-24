@@ -120,3 +120,11 @@ test('passing automated checks does not falsely attest external launch readiness
   assert(report.requiresExternalVerification.length > 0);
   assert.equal(releaseReport([{ name: 'Content review', status: 'review', detail: 'Pending.' }], false).automatedChecksPassed, false);
 });
+test('release checks accept bundled company photographs on their supported content records', () => {
+  const records = [{ type: 'News', id: 'voyage', image: '/images/company-originals/wheelhouse.webp' },
+    { type: 'Vessel', id: 'dumai-moe', image: '/images/fleet-originals/dumai-moe.webp' }];
+  const registered = () => contentReadiness(records, []).find(check => check.name === 'Registered content images')?.status;
+  assert.equal(registered(), 'pass');
+  records[1].id = 'moe-line-6';
+  assert.equal(registered(), 'blocked');
+});

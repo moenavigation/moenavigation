@@ -12,7 +12,10 @@ const customPage: ContentRecord = {
   revision: 1, updatedAt: '2026-01-01T00:00:00.000Z',
 };
 
-test('the conventional favicon URL returns a complete icon instead of an HTML page', async ({ request }) => {
+test('the MOE favicon serves a transparent logo in SVG and every ICO size', async ({ request, page }) => {
+  const svg = await request.get('/icon.svg');
+  expect(svg.ok()).toBe(true);
+  const images = ['data:image/svg+xml;base64,' + (await svg.body()).toString('base64')];
   const response = await request.get('/favicon.ico');
   expect(response.status()).toBe(200);
   expect(response.headers()['content-type']).toMatch(/^image\/(?:x-icon|vnd\.microsoft\.icon)(?:;|$)/);
@@ -31,6 +34,31 @@ test('the conventional favicon URL returns a complete icon instead of an HTML pa
     expect(length).toBeGreaterThan(0);
     expect(offset).toBeGreaterThanOrEqual(directoryEnd);
     expect(offset + length).toBeLessThanOrEqual(icon.length);
+    images.push('data:image/png;base64,' + icon.subarray(offset, offset + length).toString('base64'));
+  }
+  for (const src of images) {
+    const pixels = await page.evaluate(async source => {
+      const logo = new Image();
+      logo.src = source;
+      await logo.decode();
+      const canvas = document.createElement('canvas');
+      canvas.width = logo.naturalWidth;
+      canvas.height = logo.naturalHeight;
+      const context = canvas.getContext('2d')!;
+      context.drawImage(logo, 0, 0);
+      const { data } = context.getImageData(0, 0, canvas.width, canvas.height);
+      let red = false;
+      let blue = false;
+      let white = false;
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i + 3] < 192) continue;
+        red ||= data[i] > data[i + 2] * 2;
+        blue ||= data[i + 2] > data[i] * 2;
+        white ||= Math.min(data[i], data[i + 1], data[i + 2]) > 248;
+      }
+      return { cornerAlpha: data[3], red, blue, white };
+    }, src);
+    expect(pixels).toEqual({ cornerAlpha: 0, red: true, blue: true, white: false });
   }
 });
 

@@ -23,6 +23,8 @@ const formerBanners = new Map([
 const bundledUrls = new Set(defaultHomeSlides.map(slide => slide.url));
 export const isBundledHomeSlide = (url: string) => bundledUrls.has(url) || formerBanners.has(url);
 export const mobileHomeSlidePhoto = (url: string) => bundledUrls.has(url) ? url.replace('.webp', '-mobile.webp') : undefined;
+// Share cards need the full photograph instead of the panoramic homepage crop.
+export const homeSlideSharePhoto = (url: string) => bundledUrls.has(url) ? url.replace('/images/hero/', '/images/fleet-originals/') : url;
 // The uploaded wider rendition depicts this MOE LINE 3 scene. Use the documented company original.
 const previousCoastalPhoto = 'https://res.cloudinary.com/yod4qzgu/image/upload/v1795492687/moe-navigation/5402285d79e4849c3d8e0d839aa7bc55fdd5abfabe1bf522159271c015098a68.webp';
 

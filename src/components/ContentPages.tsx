@@ -217,7 +217,7 @@ function VesselDetail({ locale, slug }: { locale: Locale; slug: string }) {
       <div className={styles.vesselInfo}>
         <div className={styles.specifications}><h2>{local(locale, "Vessel details", "รายละเอียดเรือ")}</h2><dl>
           <div><dt>{local(locale, "Vessel name", "ชื่อเรือ")}</dt><dd>{vesselName}</dd></div>
-          <div><dt>{local(locale, "Vessel type", "ประเภทเรือ")}</dt><dd><CategoryName locale={locale} category={vessel.type} categoryTh={vessel.typeTh} /></dd></div>
+          <div><dt>{local(locale, "Vessel type", "ประเภทเรือ")}</dt><dd>{specs?.[locale === "th" ? "designTypeTh" : "designType"] || <CategoryName locale={locale} category={vessel.type} categoryTh={vessel.typeTh} />}</dd></div>
           {identityRows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
         </dl></div>
         <p className={styles.vesselDescription}>{vessel.description[locale]}</p>

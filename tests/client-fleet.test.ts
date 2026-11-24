@@ -8,8 +8,7 @@ import { legacyVesselParticulars } from '../scripts/data/legacy-vessel-particula
 import { currentPdfVesselParticulars } from '../scripts/data/current-pdf-vessel-particulars';
 import { normalizeFleetNames } from '../src/lib/fleet-names';
 import { fleetPhotos } from '../src/lib/fleet-photos';
-import { replaceLegacyFleetPhotos } from '../src/server/fleet-photo-replacements';
-import previousPhotos from '../src/server/legacy-fleet-photo-urls.json';
+import { replaceRetiredContentPhotos } from '../src/server/retired-photos';
 
 test('fleet preserves client names, corrected types, order and existing URLs', () => {
   assert.deepEqual(clientFleetRecords.map(({ id, titleTh, category, order }) => [id, titleTh, category, order]), [
@@ -54,7 +53,7 @@ test('fresh migration and browser fixtures share actual company vessel photograp
     assert.deepEqual(record.gallery, gallery);
     const website = legacyVesselParticulars.find(item => item.id === record.id);
     const pdf = currentPdfVesselParticulars.find(item => item.id === record.id);
-    assert.deepEqual(record.vesselSpecs, { ...website?.specs, ...pdf?.specs });
+    assert.deepEqual(record.vesselSpecs, pdf?.specs ?? website?.specs);
     if (record.category === 'Container') assert.equal(record.vesselSpecs?.reeferPlugs, pdf ? 4 : 3);
   }
   const fleet = websiteContentRecords.find(record => record.type === 'Page' && record.id === 'fleet');
@@ -84,12 +83,11 @@ test('all fleet seed assets are tracked and optimized image checksums match thei
 test('fleet display replaces only known prior artwork and retains client gallery order', () => {
   const record = clientFleetRecords.find(item => item.id === 'moe-line-5')!;
   const custom = { url: 'https://example.com/client-photo.webp', alt: 'Deck', altTh: 'ดาดฟ้า' };
-  const old = previousPhotos['moe-line-5'];
-  const legacy = { ...record, image: old.at(-1)!, gallery: [custom, { ...custom, url: old[0] }] };
-  const updated = replaceLegacyFleetPhotos(legacy);
+  const legacy = { ...record, image: '/images/fleet-enhanced/moe-line-5-warm.webp', gallery: [custom, { ...custom, url: '/images/vessel-deck.webp' }] };
+  const updated = replaceRetiredContentPhotos(legacy);
   assert.equal(updated.image, record.image);
   assert.deepEqual(updated.gallery, [custom, ...record.gallery!]);
-  assert.deepEqual(replaceLegacyFleetPhotos({ ...legacy, gallery: [] }).gallery, record.gallery);
-  assert.equal(replaceLegacyFleetPhotos({ ...legacy, image: custom.url }).image, custom.url);
-  assert.equal(replaceLegacyFleetPhotos(updated), updated);
+  assert.deepEqual(replaceRetiredContentPhotos({ ...legacy, gallery: [] }).gallery, record.gallery);
+  assert.equal(replaceRetiredContentPhotos({ ...legacy, image: custom.url }).image, custom.url);
+  assert.equal(replaceRetiredContentPhotos(updated), updated);
 });

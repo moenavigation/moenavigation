@@ -1,4 +1,5 @@
 import 'server-only';
+import { retiredPhotoSource } from './retired-photos';
 import { appendAuditEvent, auditActor } from './audit';
 import { randomBytes, createHash, scrypt, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
@@ -44,7 +45,7 @@ async function consumeLoginChallenge(id: string, position: number) {
   if (!challenge || Math.abs(Number(challenge.value) - position) > 3) throw new HttpError(400, 'Slide verification expired or did not match. Try a new slide.');
 }
 export function publicUser(user: UserDocument): CmsUser {
-  return { id: user._id, username: user.username, role: resolveCmsRole(user.role), ...(user.avatar ? { avatar: user.avatar } : {}), profileRevision: user.profileRevision ?? 0 };
+  return { id: user._id, username: user.username, role: resolveCmsRole(user.role), ...(user.avatar && !retiredPhotoSource(user.avatar) ? { avatar: user.avatar } : {}), profileRevision: user.profileRevision ?? 0 };
 }
 export async function currentUser(): Promise<(UserDocument & { role: CmsRole }) | null> {
   const token = (await cookies()).get(cookieName)?.value;

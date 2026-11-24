@@ -1,6 +1,7 @@
 // Source-backed legacy route content for reviewed maintenance imports and
 // isolated fixtures. Do not import this module into the public application.
 import type { ContentRecord, RoutePort, RouteSpecs } from '../../src/lib/cms-types';
+import { companyPhotos, contentPhotoFields } from '../../src/lib/company-photo-replacements';
 
 type Point = [number, number];
 type LegacyPort = RoutePort & {
@@ -644,7 +645,7 @@ export const legacyTradingRouteRecords: ContentRecord[] = definitions.map((route
   return {
     id: route.id, type: 'Route', title: route.title, titleTh: route.titleTh,
     description: route.description, descriptionTh: route.descriptionTh,
-    image: '/images/port.webp', imageAlt: 'Illustrative port image', imageAltTh: 'ภาพประกอบท่าเรือ',
+    ...contentPhotoFields(companyPhotos.containerTerminal),
     category: route.international ? 'Regional connections' : 'Domestic connections', categoryTh: route.international ? 'เส้นทางภูมิภาค' : 'เส้นทางในประเทศ',
     body: '', bodyTh: '',
     origin: portText(origin), destination: portText(destination), routeSpecs,
