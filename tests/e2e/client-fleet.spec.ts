@@ -61,9 +61,16 @@ test('Thai mobile search opens the crane vessel and its corrected photo gallery 
   await galleryTrigger.click();
   const gallery = page.getByRole('dialog');
   await expect(gallery).toBeVisible();
-  await gallery.getByRole('button', { name: 'ภาพถัดไป', exact: true }).click();
-  await expect(gallery).toContainText('2 / 2');
-  await expect(gallery.getByRole('img')).toHaveAttribute('alt', fleetPhotos['moe-line-4'][1].altTh);
+  const cranePhotos = fleetPhotos['moe-line-4'];
+  expect(cranePhotos.some(photo => photo.url.includes('/owner-media/'))).toBe(true);
+  const next = gallery.getByRole('button', { name: 'ภาพถัดไป', exact: true });
+  for (const [index, photo] of cranePhotos.entries()) {
+    await expect(gallery).toContainText(`${index + 1} / ${cranePhotos.length}`);
+    const enlarged = gallery.getByRole('img', { name: photo.altTh, exact: true });
+    await expect.poll(() => enlarged.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+    await next.click();
+  }
+  await expect(gallery.getByRole('img')).toHaveAttribute('alt', cranePhotos[0].altTh);
   await gallery.press('Escape');
   await expect(gallery).not.toBeVisible();
   await expect(galleryTrigger).toBeFocused();
@@ -75,14 +82,24 @@ test('Thai mobile search opens the crane vessel and its corrected photo gallery 
   expect(errors).toEqual([]);
 });
 
-test('CMS saves a vessel with no photo and immediately refreshes its public profile', async ({ request, page }) => {
+test('the tanker album is populated and clearing a test vessel’s photos refreshes its public placeholder', async ({ request, page }) => {
   const headers = { origin: E2E_BASE_URL };
   expect((await request.post('/api/cms/login', { headers, data: { ...E2E_ADMIN, ...await loginChallengeData(request) } })).ok()).toBe(true);
-  const records = (await (await request.get('/api/cms/content')).json()).records;
-  const vessel = records.find((record: { id: string }) => record.id === 'dumai-moe');
-  expect(vessel.image).toBeTruthy();
-  expect(vessel.gallery).toHaveLength(0);
+  const { records }: { records: ContentRecord[] } = await (await request.get('/api/cms/content', { params: { type: 'Vessel', q: 'DUMAI' } })).json();
+  const tanker = records.find(record => record.id === 'dumai-moe')!;
+  expect(tanker.imageAlt).toBe(fleetPhotos['dumai-moe'][0].alt);
+  expect(tanker.gallery?.map(photo => photo.alt)).toEqual(fleetPhotos['dumai-moe'].slice(1).map(photo => photo.alt));
   await page.goto('/fleet/dumai-moe');
+  await expect(page.getByRole('button', { name: /^Show image \d+$/ })).toHaveCount(fleetPhotos['dumai-moe'].length);
+
+  const created = await request.post('/api/cms/content', { headers, data: {
+    record: { ...tanker, id: 'e2e-tanker-photographs', title: 'Test tanker', titleTh: 'เรือทดสอบ' },
+    expectedRevision: null, submissionId: randomUUID(),
+  } });
+  expect(created.status(), await created.text()).toBe(200);
+  const { record: vessel }: { record: ContentRecord } = await created.json();
+  await page.goto(`/fleet/${vessel.id}`);
+  await expect(page.getByRole('button', { name: 'Open image gallery', exact: true })).toBeVisible();
   const saved = await request.post('/api/cms/content', { headers, data: {
     record: { ...vessel, description: 'Updated tanker profile from the CMS.', image: '', imageAlt: '', imageAltTh: '', mobileImage: '', gallery: [] },
     expectedRevision: vessel.revision, submissionId: randomUUID(),
@@ -91,6 +108,7 @@ test('CMS saves a vessel with no photo and immediately refreshes its public prof
   await page.reload();
   await expect(page.getByText('Updated tanker profile from the CMS.', { exact: true })).toBeVisible();
   await expect(page.getByText('Vessel photo not yet available', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Open image gallery', exact: true })).toHaveCount(0);
   await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary');
 });
 

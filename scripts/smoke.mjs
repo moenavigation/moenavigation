@@ -5,18 +5,33 @@ const indexed=process.argv.includes('--indexed');
 const queue=['/','/th','/projects','/th/projects','/news','/th/news','/cms'];
 const seen=new Set();
 const assets=new Set();
-const videoAssets=new Set();
 const photoManifest = JSON.parse(readFileSync(new URL('./data/media-manifest.json', import.meta.url), 'utf8'));
+const ownerVideos = JSON.parse(readFileSync(new URL('../src/lib/owner-videos.json', import.meta.url), 'utf8'));
+const bundledVideos = new Set(ownerVideos.map(video => video.url));
+const videoAssets = new Set(bundledVideos);
+const mobileOwnerPhotos = [
+  '/images/owner-media/mobile-archive-moe-line-3-underway.webp',
+  '/images/owner-media/mobile-dumai-moe-anchorage.webp',
+];
+const ownerPhotos = [
+  ...mobileOwnerPhotos,
+  ...photoManifest.map(asset => asset.sourcePath).filter(path => path.startsWith('/images/owner-media/')),
+  ...ownerVideos.map(video => video.poster),
+];
 const retiredIdentities = JSON.parse(readFileSync(new URL('../src/server/retired-photo-identities.json', import.meta.url), 'utf8'));
 const cloudAssetKey = url => new URL(url).pathname.replace(/\/image\/upload\/.*?v\d+\//, '/image/upload/');
 const retiredCloudPhotos = new Set(retiredIdentities.map(item => item.url || item.source)
   .filter(url => url.startsWith('https://res.cloudinary.com/')).map(cloudAssetKey));
 const bundledPhotos = new Set([
+  ...mobileOwnerPhotos,
   ...photoManifest.map(asset => asset.sourcePath),
+  ...ownerVideos.map(video => video.poster),
   ...['moe-line-3', 'moe-line-4', 'moe-line-5', 'ranong-moe', 'moe-line-7']
     .flatMap(name => [`/images/hero/${name}.webp`, `/images/hero/${name}-mobile.webp`]),
 ]);
-const bundledAssets=new Set();
+// Inactive videos are mounted only when selected, so verify all included
+// files even when a saved homepage opens with another banner.
+const bundledAssets = new Set(ownerPhotos);
 const errors=[];
 const fetchHeaders=async(input,options)=>{
   const response=await fetch(input,options);
@@ -77,6 +92,7 @@ while(queue.length) {
       for (const tag of shareImages) {
         const url = new URL(attr(tag, 'content')[0]);
         assert(url.origin === siteOrigin || url.origin === 'https://res.cloudinary.com', `${path} approved absolute social photo URL`);
+        assert(!/\.(mp4|webm)$/i.test(url.pathname), `${path} social card must use a photograph or video poster`);
       }
       // Completed React streams include both the loading fallback and the
       // hidden replacement before browser scripts remove the fallback.
@@ -88,10 +104,15 @@ while(queue.length) {
       .split(/,\s*(?=https?:\/\/|\/images\/|\/_next\/)/i)
       .map(candidate => candidate.trim().split(/\s+/)[0]));
     const mediaSources = [...['src','poster','content'].flatMap(name => attr(html,name)), ...sourceSets];
+    const videoSources = new Set((html.match(/<video\b[^>]*>/gi) || []).flatMap(tag => attr(tag, 'src')));
     for(let src of mediaSources) {
       if (src.startsWith('/_next/image?')) src = new URL(src,base).searchParams.get('url') || '';
       if(src.startsWith('/images/') || src.startsWith(siteOrigin+'/images/')) {
         const pathname = new URL(src,base).pathname;
+        if (bundledVideos.has(pathname)) {
+          assert(videoSources.has(src), `${path} bundled clips must be rendered as video`);
+          continue;
+        }
         assert(bundledPhotos.has(pathname),`${path} still references an unapproved local content image: ${pathname}`);
         bundledAssets.add(pathname);
       }
@@ -120,7 +141,7 @@ for(const path of [...assets,...bundledAssets]) {
 }
 for (const url of videoAssets) {
   try {
-    const response = await fetchHeaders(url);
+    const response = await fetchHeaders(new URL(url, base), { method: 'HEAD' });
     assert.equal(response.status, 200, `${url} available`);
     assert.match(response.headers.get('content-type') || '', /^video\//, `${url} video content type`);
   } catch (error) { errors.push(error.message); }
@@ -145,4 +166,4 @@ try{
 }catch(error){errors.push(error.message);}
 assert.match(await (await fetch(new URL('/robots.txt',base))).text(),indexed ? /Allow: \// : /Disallow: \/(?:\r?\n|$)/);
 assert.match(await (await fetch(new URL('/sitemap.xml',base))).text(),/<xhtml:link/);
-if(errors.length){console.error(errors.join('\n'));process.exitCode=1;}else{console.log(`PASS: ${seen.size} linked routes, ${assets.size} Cloudinary image URLs (originals and responsive deliveries), ${bundledAssets.size} approved bundled photos, zero unapproved local content images, localized HTML/metadata/navigation, 4 invalid routes, legacy and preference redirects, robots and sitemap.`);}
+if(errors.length){console.error(errors.join('\n'));process.exitCode=1;}else{console.log(`PASS: ${seen.size} linked routes, ${assets.size} Cloudinary image URLs (originals and responsive deliveries), ${bundledAssets.size} approved bundled images, ${videoAssets.size} video files, localized HTML/metadata/navigation, 4 invalid routes, legacy and preference redirects, robots and sitemap.`);}

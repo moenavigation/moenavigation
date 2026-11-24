@@ -69,6 +69,8 @@ export const cmsMainThai: Record<string, string> = {
   "Route ports": "ท่าเรือต้นทางและปลายทาง",
   "{count} photos": "{count} รูป",
   "More photos": "รูปภาพเพิ่มเติม",
+  "Add up to 12 photos. Images upload when you save.": "เพิ่มรูปภาพได้สูงสุด 12 ภาพ ระบบจะอัปโหลดเมื่อบันทึก",
+  "Company photo archive": "ภาพจากคลังของบริษัท",
   "Optional": "ไม่จำเป็นต้องกรอก",
   "Edit news": "แก้ไขข่าว",
   "Add news": "เพิ่มข่าว",

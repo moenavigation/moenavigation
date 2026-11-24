@@ -18,8 +18,9 @@
 @media(hover:hover) and (pointer:fine) { .dot:hover span { background: #fff; } }
 @media(max-width:700px) {
   .slider { aspect-ratio: 16 / 9; }
-  /* Keep a 3:1 image canvas, revealing only its centered 16:9 slice. */
-  .slide:not([data-mobile-photo]) { inset-inline: -34.375%; }
+  /* Uploaded banners retain a centered slice of their 3:1 design. The
+     supplied full-frame footage and photos are composed for both viewports. */
+  .slide:not([data-native-crop]) { inset-inline: -34.375%; }
   .controls { inset: auto .75rem .75rem; }
   .dots { padding-inline: .2rem; }
   .dot { width: 2.2rem; }

@@ -28,7 +28,7 @@ if (live) {
         eyebrow: 1, eyebrowTh: 1, bodyHeading: 1, bodyHeadingTh: 1, category: 1, categoryTh: 1, caption: 1, captionTh: 1,
         imageAlt: 1, imageAltTh: 1, image: 1, mobileImage: 1, gallery: 1, heroSlides: 1,
       }, maxTimeMS: 10_000 }).toArray();
-      const media = await db.collection('moe_media').find({}, { projection: { _id: 0, state: 1, url: 1, trashedAt: 1 }, maxTimeMS: 10_000 }).toArray();
+      const media = await db.collection('moe_media').find({}, { projection: { _id: 0, state: 1, kind: 1, url: 1, trashedAt: 1 }, maxTimeMS: 10_000 }).toArray();
       checks.push(...contentReadiness(records, media));
     } catch {
       checks.push({ name: 'MongoDB live checks', status: 'blocked', detail: 'A read-only database check could not complete. Provider messages, credentials and private data are omitted.' });

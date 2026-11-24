@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import type { ContentImage, ContentRecord, HomeSlide } from '@/lib/cms-types';
 import { companyPhotoReplacements } from '@/lib/company-photo-replacements';
 import { fleetPhotos, isBundledVesselPhoto } from '@/lib/fleet-photos';
-import { defaultHomeSlides, getHomeSlides } from '@/lib/home-slides';
+import { fleetPhotoSlides, getHomeSlides } from '@/lib/home-slides';
 import { replaceLegacyFleetPhotos } from './fleet-photo-replacements';
 import identities from './retired-photo-identities.json';
 import manifest from '../../scripts/data/media-manifest.json';
@@ -45,7 +45,7 @@ export const selectableMediaFilter = {
 };
 
 const verifiedPhotos = new Set([
-  ...manifest.map(photo => photo.sourcePath), ...defaultHomeSlides.map(photo => photo.url),
+  ...manifest.map(photo => photo.sourcePath), ...fleetPhotoSlides.map(photo => photo.url),
 ]);
 export function isBundledContentPhoto(type: string, id: string, url: string) {
   return type === 'Vessel' ? isBundledVesselPhoto(type, id, url) : verifiedPhotos.has(url);

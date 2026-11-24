@@ -84,7 +84,8 @@ export function validateBackup(backup: Backup) {
     }
     for (const slide of record.heroSlides || []) {
       const kind = recoveryMediaKind(slide.kind);
-      const bundled = kind === 'image' && record.type === 'Page' && record.id === 'home' && (isBundledHomeSlide(slide.url) || isBundledContentPhoto(record.type, record.id, slide.url));
+      const bundled = record.type === 'Page' && record.id === 'home'
+        && (isBundledHomeSlide(slide.url, kind) || (kind === 'image' && isBundledContentPhoto(record.type, record.id, slide.url)));
       assert(bundled || mediaKinds.get(slide.url) === kind, 'Homepage slides reference media missing from the backup.');
     }
   }

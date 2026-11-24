@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { decryptBackup, documentHash, encryptBackup, includedCollections, isMissingRecoveryAsset, remapImages, sha256, validateBackup, validateTarget, type Backup } from '../scripts/lib/recovery';
-import { defaultHomeSlides } from '../src/lib/home-slides';
+import { fleetPhotoSlides, ownerVideoSlides } from '../src/lib/home-slides';
 
 const secret = 'a-test-only-passphrase-at-least-20-characters';
 function fixture(): Backup {
@@ -54,11 +54,12 @@ test('backup retains recoverable Media Trash bytes and verifies current company 
 test('backup validates and remaps custom slides while retaining bundled homepage artwork', () => {
   const backup = fixture();
   const original = backup.assets[0].url;
-  backup.collections.moe_content[0] = { ...backup.collections.moe_content[0], type: 'Page', id: 'home', heroSlides: [{ url: original, alt: '', altTh: '' }, defaultHomeSlides[0]] };
+  const included = [fleetPhotoSlides[0], ownerVideoSlides[0]];
+  backup.collections.moe_content[0] = { ...backup.collections.moe_content[0], type: 'Page', id: 'home', heroSlides: [{ url: original, alt: '', altTh: '' }, ...included] };
   assert.doesNotThrow(() => validateBackup(backup));
   const mapped = remapImages(backup.collections, new Map([[original, { url: 'https://example.test/restored.webp', publicId: 'restored' }]]));
   assert.equal(mapped.moe_content[0].heroSlides[0].url, 'https://example.test/restored.webp');
-  assert.equal(mapped.moe_content[0].heroSlides[1].url, defaultHomeSlides[0].url);
+  assert.deepEqual(mapped.moe_content[0].heroSlides.slice(1), included);
   backup.collections.moe_content[0].heroSlides.push({ url: '/images/hero/unknown.webp' });
   assert.throws(() => validateBackup(backup), /Homepage slides/);
 });

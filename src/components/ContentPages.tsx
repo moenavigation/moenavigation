@@ -199,7 +199,11 @@ function VesselDetail({ locale, slug }: { locale: Locale; slug: string }) {
   const vessel = vessels.find((item) => item.id === slug);
   const planning = sections.find((item) => item.id === "vessel-planning" && item.parentId === "fleet");
   if (!vessel) return <MissingEntry locale={locale} page="fleet" />;
-  const images = [{url:vessel.image,alt:vessel.imageAlt.en || vessel.name,altTh:vessel.imageAlt.th || vessel.nameTh},...vessel.gallery].filter((image,index,all) => image.url.trim() && all.findIndex((item) => item.url === image.url) === index);
+  const images = [
+    { url: vessel.image, alt: vessel.imageAlt.en || vessel.name, altTh: vessel.imageAlt.th || vessel.nameTh },
+    ...vessel.gallery,
+  ].filter((image, index, all) => typeof image?.url === "string" && image.url.trim()
+    && all.findIndex(item => item?.url === image.url) === index);
   const vesselName = local(locale, vessel.name, vessel.nameTh);
   const specs = vessel.specs;
   const identityRows: [string, string][] = [];

@@ -194,12 +194,16 @@ test('client-sheet particulars appear in both languages and retain edits from th
   await expect(reopened.editor.getByRole('textbox', { name: 'Machinery · Thai', exact: true })).toHaveValue(thaiMachinery);
 });
 
-test('existing vessels without particulars show accessible blanks rather than invented zero values', async ({ page, db }) => {
-  await db.collection('moe_content').updateOne({ type: 'Vessel', id: 'dumai-moe' }, { $unset: { vesselSpecs: '' } });
+test('existing vessels without particulars show accessible blanks and omit incomplete gallery entries', async ({ page, db }) => {
+  await db.collection('moe_content').updateOne({ type: 'Vessel', id: 'dumai-moe' }, {
+    $unset: { vesselSpecs: '' }, $set: { gallery: [{ url: null, alt: '', altTh: '' }, { url: ' ', alt: '', altTh: '' }] },
+  });
   await refreshPublicCache();
   for (const locale of ['en', 'th'] as const) {
     await page.goto(`${locale === 'th' ? '/th' : ''}/fleet/dumai-moe`);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(locale === 'en' ? 'DUMAI MOE' : 'Dumai Moe');
+    await expect(page.getByRole('button', { name: locale === 'en' ? 'Open image gallery' : 'เปิดแกลเลอรีภาพ' })).toBeVisible();
+    await expect(page.getByRole('button', { name: locale === 'en' ? /^Show image \d+$/ : /^แสดงภาพที่ \d+$/ })).toHaveCount(0);
     for (const group of publicGroups[locale]) {
       const region = page.getByRole('region', { name: group.name, exact: true });
       await expect(region).toBeVisible();

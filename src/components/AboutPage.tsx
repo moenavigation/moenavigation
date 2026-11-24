@@ -9,6 +9,7 @@ import { contentText } from "@/lib/public-content";
 import { usePublicContent } from "@/lib/use-public-content";
 import { AdditionalSections, ContentBody } from "./EditorialContent";
 import Link from "./NavigationLink";
+import CompanyPhotoArchive from "./CompanyPhotoArchive";
 import styles from "./AboutPage.module.css";
 
 const featureDefinitions = [
@@ -45,6 +46,7 @@ export default function AboutPage({ locale }: { locale: Locale }) {
   const hasContactDetails = officeAddress || settings.phone || settings.email || settings.mapUrl;
   const handledSections = ["about-intro", "about-mission", "about-vision", "about-profile", ...featureDefinitions.map(item => item.id)];
   if (!page) return null;
+  const archivePhotos = page.gallery?.filter(photo => typeof photo?.url === 'string' && photo.url.trim());
 
   return <div className={styles.page}>
     <header className={styles.hero}>
@@ -91,6 +93,7 @@ export default function AboutPage({ locale }: { locale: Locale }) {
 
       {contentText(page, "body", locale) && <div className={styles.pageBody}><ContentBody text={contentText(page, "body", locale)} /></div>}
       <AdditionalSections pageId="about" locale={locale} exclude={handledSections} />
+      {archivePhotos?.length ? <CompanyPhotoArchive photos={archivePhotos} locale={locale} /> : null}
 
       {(profile || hasContactDetails || callout) && <section className={`${styles.company} ${!callout ? styles.withoutPhoto : ""}`} aria-label={local(locale, "Company details and contact", "ข้อมูลบริษัทและการติดต่อ")}>
         <div className={styles.companyDetails}>

@@ -7,7 +7,7 @@ import { Reorder, useDragControls, useReducedMotion } from 'motion/react';
 import { ArrowDown, ArrowUp, Check, FilePlus2, GripVertical, Images, Plus, RefreshCw, Save, Search, Trash2 } from 'lucide-react';
 import { CmsRequestError, cmsErrorText, cmsRequest, prepareCmsImage, resolveSubmission, type PreparedImage } from '@/lib/cms-client';
 import type { HomeSlide, ContentRecord, MediaItem } from '@/lib/cms-types';
-import { defaultHomeSlides, getHomeSlides, getHomeSlideInterval, homeSlideVideoPoster } from '@/lib/home-slides';
+import { includedHomeSlides, getHomeSlides, getHomeSlideInterval, homeSlideVideoPoster } from '@/lib/home-slides';
 import { useCmsLocale } from '@/lib/cms-locale';
 import { cmsInputPlaceholder } from '@/lib/cms-input-placeholders';
 import Dialog from './Dialog';
@@ -39,6 +39,7 @@ function SlideCard({ slide, index, total, busy, onChange, onMove, onRemove }: { 
   const { t, locale } = useCmsLocale();
   const fields = locale === 'th' ? ['altTh', 'alt'] as const : ['alt', 'altTh'] as const;
   const video = slide.kind === 'video';
+  const poster = video ? homeSlideVideoPoster(slide.url) : undefined;
   const description = (locale === 'th' ? slide.altTh : slide.alt) || t('Banner video');
   const fileSize = (bytes: number) => new Intl.NumberFormat(locale, {
     style: 'unit', unit: bytes < 1048576 ? 'kilobyte' : 'megabyte', maximumFractionDigits: 1,
@@ -50,7 +51,7 @@ function SlideCard({ slide, index, total, busy, onChange, onMove, onRemove }: { 
       <div className={styles.cardActions}><button type="button" className={styles.iconButton} disabled={busy || index === 0} aria-label={t('Move slide {number} up', { number: index + 1 })} onClick={() => onMove(-1)}><ArrowUp size={18} aria-hidden="true" /></button><button type="button" className={styles.iconButton} disabled={busy || index === total - 1} aria-label={t('Move slide {number} down', { number: index + 1 })} onClick={() => onMove(1)}><ArrowDown size={18} aria-hidden="true" /></button><button type="button" className={styles.iconButton} disabled={busy || total === 1} aria-label={t('Remove slide {number}', { number: index + 1 })} onClick={onRemove}><Trash2 size={18} aria-hidden="true" /></button></div>
     </div>
     <div className={styles.thumbnail}>
-      {video ? <video src={slide.url} poster={homeSlideVideoPoster(slide.url)} muted playsInline controls preload="metadata" aria-label={description} /> : <><img src={slide.url} alt={locale === 'th' ? slide.altTh : slide.alt} width={600} height={200} loading="lazy" /><span>{String(index + 1).padStart(2, '0')}</span></>}
+      {video ? <video src={slide.url} poster={poster} muted playsInline controls preload={poster ? "none" : "metadata"} aria-label={description} /> : <><img src={slide.url} alt={locale === 'th' ? slide.altTh : slide.alt} width={600} height={200} loading="lazy" /><span>{String(index + 1).padStart(2, '0')}</span></>}
     </div>
     {video && slide.preparedBytes !== undefined && slide.sourceBytes !== undefined && <p className={styles.fileSize}>{t('Original {source} · Upload {output}', { source: fileSize(slide.sourceBytes), output: fileSize(slide.preparedBytes) })}</p>}
     <details className={styles.descriptions}><summary>{t(video ? 'Video descriptions' : 'Image descriptions')}</summary><div>{fields.map(field => <label key={field}>{t(video ? (field === 'alt' ? 'Video description · English' : 'Video description · Thai') : (field === 'alt' ? 'Image description · English' : 'Image description · Thai'))}<input placeholder={cmsInputPlaceholder(field === 'alt' ? 'en' : 'th', field === 'alt' ? 'bannerDescriptionEn' : 'bannerDescriptionTh')} lang={field === 'alt' ? 'en' : 'th'} maxLength={250} value={slide[field]} disabled={busy} onChange={event => onChange(field, event.target.value)} /></label>)}</div></details>
@@ -100,7 +101,7 @@ export default function CmsHomeSlides({ active, ownerId, store, onDirtyChange, o
   const currentPage = Math.min(page, pageCount - 1);
   const visibleImages = images.slice(currentPage * 12, currentPage * 12 + 12);
   const hasMore = searching ? Boolean(search.nextCursor) : Boolean(cursor);
-  const includedBanners = defaultHomeSlides.filter(slide => (locale === 'th' ? slide.altTh : slide.alt).toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
+  const includedBanners = includedHomeSlides.filter(slide => (locale === 'th' ? slide.altTh : slide.alt).toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
 
   const accept = useCallback((record: ContentRecord) => {
     // A confirmed save can retain fewer cards than an earlier upload attempt.
@@ -321,7 +322,19 @@ export default function CmsHomeSlides({ active, ownerId, store, onDirtyChange, o
       {notice && <p className={styles.success} role="status"><Check size={18} />{t(notice)}</p>}
     </>}
     <Dialog open={active && picker} onClose={() => setPicker(false)} title={t('Choose a banner')} closeLabel={t('Close banner library')}><div className={styles.library}><label className={styles.search}><Search size={18} /><input type="search" maxLength={160} value={query} aria-label={t('Search banners')} placeholder={t('Search by name…')} onChange={event => { setQuery(event.target.value); setPage(0); }} /></label>
-      {includedBanners.length > 0 && <section className={styles.included} aria-label={t('Included banners')}><h3>{t('Included banners')}</h3><div className={styles.libraryGrid}>{includedBanners.map(item => <button type="button" key={item.url} disabled={locked || slides.some(slide => slide.url === item.url)} onClick={() => addIncluded(item)}><img src={item.url} alt="" width={300} height={100} loading="lazy" /><span>{locale === 'th' ? item.altTh : item.alt}</span>{slides.some(slide => slide.url === item.url) && <Check size={16} />}</button>)}</div></section>}
+      {includedBanners.length > 0 && <section className={styles.included} aria-label={t('Included banners')}>
+        <h3>{t('Included banners')}</h3>
+        <div className={styles.libraryGrid}>{includedBanners.map(item => {
+          const name = locale === 'th' ? item.altTh : item.alt;
+          const selected = slides.some(slide => slide.url === item.url);
+          const video = item.kind === 'video';
+          return <button type="button" key={item.url} disabled={locked || selected} onClick={() => addIncluded(item)}>
+            <img src={video ? homeSlideVideoPoster(item.url) : item.url} alt="" width={300} height={100} loading="lazy" />
+            <span>{video ? t('Video · {name}', { name }) : name}</span>
+            {selected && <Check size={16} />}
+          </button>;
+        })}</div>
+      </section>}
       <h3>{t('Media library')}</h3>
       {(searching ? search.loading : libraryLoading && !images.length) ? <CmsWorkingPanel active={active && picker} title="Loading banners…" /> : <><div className={styles.libraryGrid}>{visibleImages.map(item => <button type="button" key={item.id} disabled={slides.some(slide => slide.url === item.url)} onClick={() => addLibrary(item)}><img src={item.kind === 'video' ? homeSlideVideoPoster(item.url) : item.url} alt="" width={300} height={100} loading="lazy" /><span>{item.kind === 'video' ? t('Video · {name}', { name: item.title }) : item.title}</span>{slides.some(slide => slide.url === item.url) && <Check size={16} />}</button>)}</div>{!images.length && <p>{t('No matching media. Try another name or clear your search.')}</p>}</>}
       {(searching ? search.error : libraryError) && <div className={styles.error} role="alert">{t(searching ? search.error : libraryError)}<button type="button" className="button secondary" onClick={() => searching ? search.retry() : void loadLibrary()}>{t('Try again')}</button></div>}

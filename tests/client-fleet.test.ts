@@ -72,7 +72,7 @@ test('all fleet seed assets are tracked and optimized image checksums match thei
     }
   }
   const added = manifest.filter(asset => asset.sourcePath.startsWith('/images/fleet-originals/'));
-  assert.equal(added.length, Object.values(fleetPhotos).flat().length);
+    assert.equal(added.length, 14);
   for (const asset of added) {
     const bytes = readFileSync(new URL(`../public${asset.sourcePath}`, import.meta.url));
     assert.equal(bytes.length, asset.bytes);

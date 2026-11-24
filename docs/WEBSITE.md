@@ -223,10 +223,10 @@ vessel, operations and office photos used across the website. Fleet photographs
 come from the client’s vessel sheets and company archive. The CMS replaces
 historical illustrations and retouched files with the corresponding originals
 when opening earlier content and excludes retired files from its image picker.
-The five bundled homepage photos have individual desktop and mobile crops.
+The homepage includes three ten-second silent owner videos with posters and two owner photographs. The five earlier optional banners retain their individual desktop and mobile crops.
 The Home hero and connection image have separate bilingual caption fields;
 categories stay separate from image captions. Vessel records store supporting
-gallery images. The supplied `Design/` files
+gallery images, and the About page has an editable company photo archive. The supplied `Design/` files
 are design references.
 
 - `generated-images.json` records service, fleet, operations, and gallery

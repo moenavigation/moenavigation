@@ -231,5 +231,195 @@
     "height": 1047,
     "format": "webp",
     "sourceUrl": "https://www.moe-line.com/wp-content/uploads/2025/07/sld-029.webp"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-archive-moe-line-3-underway.webp",
+    "sha256": "d21a5e11fc8902a3c42d64ca53b2cf5cb34db8959c59d1cb9f62795203b28563",
+    "bytes": 748554,
+    "width": 2200,
+    "height": 1496,
+    "format": "webp",
+    "ownerOriginal": "07 Oct 2023/DJI_0308.JPG",
+    "originalSha256": "98dfdc2d26e704c268552128cb795ce1a8da20dc4bcf75da831845d2b03024e7"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-dumai-moe-anchorage.webp",
+    "sha256": "d9cb0cd2795aa5c743317235503e9175036644e595f2328b8836742ecc493def",
+    "bytes": 629338,
+    "width": 2200,
+    "height": 1385,
+    "format": "webp",
+    "ownerOriginal": "24.08.26/DJI_20260824114917_0009_D.JPG",
+    "originalSha256": "773ecba12d2dce5bc000aed3357a417f54b8283cb6e6322c60221397b3393157"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-dumai-moe-bow-quarter.webp",
+    "sha256": "2353cabaf04ad20ffd6ea70c688468cb29ac5733ed0abda3c787ea45576d2fb5",
+    "bytes": 687594,
+    "width": 2200,
+    "height": 1648,
+    "format": "webp",
+    "ownerOriginal": "24.08.26/DJI_20260824114826_0003_D.JPG",
+    "originalSha256": "ac5d8a187fcbebeadf652329eb6b5e1d7ce4e8e03f74820920859081e2f29ee1"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-dumai-moe-terminal-profile.webp",
+    "sha256": "e945617a7c590c11421b22cf72ed2b94910daf9947df547512c7b89afc0daacb",
+    "bytes": 625284,
+    "width": 2200,
+    "height": 1648,
+    "format": "webp",
+    "ownerOriginal": "24.08.26/DJI_20260824115700_0021_D.JPG",
+    "originalSha256": "82d3ecb1b49f095894658ad9c75e12fa9de98dce92af99c906a4192f209e35ad"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-dumai-moe-stern.webp",
+    "sha256": "85a0ca9347d1aff82b9d9497f5780b0888888c972cad09cd2552edf0efb84c1a",
+    "bytes": 670482,
+    "width": 2200,
+    "height": 1648,
+    "format": "webp",
+    "ownerOriginal": "24.08.26/DJI_20260824115623_0017_D.JPG",
+    "originalSha256": "483a40893123a2573b48a9c04c37af810ea7e390da2b9a0dd9d5891dc08b6eeb"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-dumai-moe-bow-view.webp",
+    "sha256": "d73fce8a040a8790eb44f24db0b59c6d7044ad5f4a1afaae644271c3f8c9e85e",
+    "bytes": 702312,
+    "width": 2200,
+    "height": 1648,
+    "format": "webp",
+    "ownerOriginal": "24.08.26/DJI_20260824115716_0024_D.JPG",
+    "originalSha256": "f9c59b4741728081a9c894fd6f2e63254d16d8a7c180392b59efb4967b248868"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-dumai-moe-pipe-deck.webp",
+    "sha256": "bd65b7ac3c0ca01976dbb5b7eb65c8b32ddee201048c14b0fd3f89521afc36ed",
+    "bytes": 1100066,
+    "width": 2200,
+    "height": 1648,
+    "format": "webp",
+    "ownerOriginal": "24.08.26/DJI_20260824120026_0039_D.JPG",
+    "originalSha256": "b09dacd16fb21b7415b50e787d347e7cdebedd958b728a5af7abf60cb093255f"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-dumai-moe-deck-overview.webp",
+    "sha256": "f4acecba27a10074962c72ceb8dc6aa5a02627dd0b71842ecacc4915d22d88c1",
+    "bytes": 1163382,
+    "width": 2200,
+    "height": 1648,
+    "format": "webp",
+    "ownerOriginal": "24.08.26/DJI_20260824120042_0042_D.JPG",
+    "originalSha256": "cf92c5d7598ce1bd62fc6f589d8bc89d864db08dc9265a8c0b84b066ba889ff2"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-dumai-moe-lifeboat.webp",
+    "sha256": "92a2d1fb35628cd6420d908de577f1b2edee97a2f486c702dc23727f64abcb48",
+    "bytes": 694948,
+    "width": 2200,
+    "height": 1648,
+    "format": "webp",
+    "ownerOriginal": "24.08.26/DJI_20260824120156_0048_D.JPG",
+    "originalSha256": "d46c6570736160fcc1fec79e3b1c72b762a0c50abb1421050bb765f814dcedd9"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-moe-line-4-crane-berth.webp",
+    "sha256": "0df227a05f281e5b0c1dddb96f5488064d6d6fa4b042939f03589cf358d30953",
+    "bytes": 455998,
+    "width": 2200,
+    "height": 1650,
+    "format": "webp",
+    "ownerOriginal": "06 Oct 2023/[Originals]/DJI_0283.JPG",
+    "originalSha256": "4739bce686d3c352ae27fce17583fad52928bd811cda3ae08e666c4ee96de7bc"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-moe-line-4-terminal-profile.webp",
+    "sha256": "167cce16cca32b9d4ebd5fd74ac60ba4c101080bf8dbcf7cebaf90a5eb2fe8d1",
+    "bytes": 359498,
+    "width": 2200,
+    "height": 1444,
+    "format": "webp",
+    "ownerOriginal": "06 Oct 2023/DJI_0290.JPG",
+    "originalSha256": "1b3593734efb771224cf978e163524a91018cb95e3de9fe1fd7e432fb670e45a"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-moe-line-4-crane-deck.webp",
+    "sha256": "574cffd6dd39ebf3f32e1ac74f631a902cf6e8bfe65034666f85452eab3c0d11",
+    "bytes": 432192,
+    "width": 2200,
+    "height": 1788,
+    "format": "webp",
+    "ownerOriginal": "06 Oct 2023/DJI_0296.JPG",
+    "originalSha256": "a147bcd5ba826e568a48bd47e06caeb3aac8824eb31e034858ed51d5bf3910a0"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-moe-line-4-cargo-hold.webp",
+    "sha256": "9fea80cd0084fafb460d4aa781426d9f394f965932531d61a885a7ad38625712",
+    "bytes": 333894,
+    "width": 2200,
+    "height": 1650,
+    "format": "webp",
+    "ownerOriginal": "06 Oct 2023/DJI_0297.JPG",
+    "originalSha256": "7e2992446cd6749d42d5e375985d75cd800ea17ed043b7aceee517d3c38e979b"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-archive-moe-line-1-river-bridge.webp",
+    "sha256": "9167dc9599b8261b35262c2ebc7932682240d0efc794e93e86b75d1d8a5890df",
+    "bytes": 508884,
+    "width": 2200,
+    "height": 1650,
+    "format": "webp",
+    "ownerOriginal": "01 May 2023 - Patpadang view video & photo/[Originals]/DJI_0007.JPG",
+    "originalSha256": "57cfb360271904ad101e555d12309ec5b3b061e8fbc666fc901195115a46b883"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-archive-moe-line-1-container-bow.webp",
+    "sha256": "96a4c28c1e20703517f9f293453539672247d44606035338a7b8d8e2902cf81f",
+    "bytes": 453090,
+    "width": 2200,
+    "height": 1650,
+    "format": "webp",
+    "ownerOriginal": "07 Oct 2023/DJI_0320.JPG",
+    "originalSha256": "eaccc8fd70d2237515447b2538bf90463d3379dbffe06d07b8752da16b7b37df"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-archive-moe-line-3-river-quay.webp",
+    "sha256": "0b9158b71090d5a9ce7dc595730ec608905cab235cfd27ec73c80f48b199dda9",
+    "bytes": 386942,
+    "width": 2200,
+    "height": 1650,
+    "format": "webp",
+    "ownerOriginal": "03 Oct 2023/[Originals]/DJI_0259.JPG",
+    "originalSha256": "1544c81306160e8936bf69f4d286dcad6b70535c9d41f0d2c051aaa499a8f69c"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-archive-moe-line-3-hold-overhead.webp",
+    "sha256": "a75881a1096804ed1cf8bc953545ce9841927ff53cc439f44a0bf692b4e14463",
+    "bytes": 476778,
+    "width": 2200,
+    "height": 1650,
+    "format": "webp",
+    "ownerOriginal": "03 Oct 2023/DJI_0275.JPG",
+    "originalSha256": "3e5f277bdd5e38ffd1477c4000db10fffc1f11b418487317ed21052d4609a797"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-container-terminal-basin.webp",
+    "sha256": "5d29633e74368e5754394649b40736878efcda760065123f7bbbeddb041d8fe8",
+    "bytes": 432978,
+    "width": 2200,
+    "height": 1650,
+    "format": "webp",
+    "ownerOriginal": "07 Oct 2023/[Originals]/DJI_0328.JPG",
+    "originalSha256": "76bc922ef3ca318f32c356caeca8a475fd7c3b36753b6c258fe7db59db0712e6"
+  },
+  {
+    "sourcePath": "/images/owner-media/photo-coastal-port-approach.webp",
+    "sha256": "011f2e63f135f9b59fb5272f85d00f830596e174b7c7b68a78f31e1e9efdaec6",
+    "bytes": 351702,
+    "width": 2200,
+    "height": 1650,
+    "format": "webp",
+    "ownerOriginal": "07 Oct 2023/DJI_0321.JPG",
+    "originalSha256": "e1551d56ab98e0ffbaa7011f1f2abd36d7879f40368f2f07bea7cbb8fae3d1b0"
   }
 ]

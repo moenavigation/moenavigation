@@ -1,4 +1,16 @@
-# Homepage banner photographs
+# Homepage banner media
+
+The November 2026 owner delivery supplies the opening carousel. It alternates a DUMAI MOE tanker clip, a dated MOE LINE 3 archive photograph, footage of the MOE LINE 4 crane barge, a DUMAI MOE anchorage photograph and an aerial view of a container terminal. Each silent video has a still poster from its first frame. The crops were checked at 3:1 and 16:9. Reduced-motion visitors can start the videos themselves.
+
+| Edited video | Owner source | Source interval |
+| --- | --- | --- |
+| DUMAI MOE | `24.08.26/DJI_20260824114926_0010_D.MP4` | 00:00.8–00:10.8 |
+| MOE LINE 4 | `06 Oct 2023/DJI_0292.MP4` | 00:03–00:13 |
+| Container terminal | `07 Oct 2023/DJI_0329.MP4` | 00:03–00:13 |
+
+The camera delivery included duplicate files, alternate JPEG edits, flight subtitles and proxy videos. The public exports omit GPS metadata, flight subtitles and the source audio. The March 2025 footage shows a residential flight. The missing `DJI_0324.JPG` was represented by a download-error notice. Source filenames and hashes for all 19 selected stills are in the [media manifest](../../scripts/data/media-manifest.json).
+
+## Earlier optional banners
 
 The homepage uses real company photographs in response to the November 2026 homepage revision brief. Five optional CMS banners have a 3:1 desktop crop and a separately framed 1024 × 576 mobile crop. The following source files identify the exact frames used. Archived paths are relative to `working space/fleet-image-enhancements-2026-11-17/originals/`.
 
@@ -12,7 +24,7 @@ The homepage uses real company photographs in response to the November 2026 home
 
 The five original bundled banner addresses resolve to their photographic replacements in saved slide selections. One previously uploaded wider version of the MOE LINE 3 photograph also resolves to its archived original. Custom image and video selections retain their URLs and order.
 
-The fleet gallery uses the supplied November client sheets for DUMAI MOE and MOE LINE 4, 5 and 6. The other four main photos and six distinct additional views come from their matching folders in the company archive. The original-source manifest in the working folder records vessel identity evidence. DUMAI MOE and MOE LINE 2 each have a single verified photograph. The DUMAI MOE source is 391 × 253 pixels and is used at its native resolution. The public files use WebP conversion and ordinary resizing or cropping.
+The client sheets remain the source of particulars for DUMAI MOE and MOE LINE 4, 5 and 6. Eight owner photographs now illustrate DUMAI MOE, replacing the earlier 391 × 253 sheet photograph on the public profile. Four new views of MOE LINE 4 complement its two earlier photographs. The 2023 photographs of MOE LINE 1 and 3 are identified as archive material on About and the homepage.
 
 ## Archived October artwork
 
@@ -42,7 +54,7 @@ The homepage now starts with a full-width 3:1 banner, with centered headline, de
 
 Manage the slides at `/cms/slides` (CMS → Homepage slides). The page uses one main column with multiple slide cards per row when space allows. Drag cards within or between rows to reorder, add a device image or video, or choose saved media from the library, and save. Each card shows the full banner thumbnail; open the public homepage to check its mobile crop. The default interval is three seconds and can be adjusted from two to fifteen seconds. Included banners remain available in the image picker after removal. The manager preserves unsaved work during CMS navigation and same-account session recovery.
 
-The slide list and timing are stored on the existing homepage record. Missing slide settings use the five included images, so existing home copy is preserved and no migration or live-data write is required.
+The homepage record stores the slide list and timing. When it has no saved slides, visitors see the five owner banners described above. The two stills have separately framed 1024 × 576 mobile versions.
 
 ## Verification — 31 October 2026
 

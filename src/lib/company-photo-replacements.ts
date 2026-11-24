@@ -1,5 +1,5 @@
 import type { ContentImage } from './cms-types';
-import { fleetPhotos } from './fleet-photos';
+import { originalFleetPhotos as fleetPhotos } from './fleet-photos';
 
 function companyPhoto(file: string, alt: string, altTh: string): ContentImage {
   return { url: `/images/company-originals/${file}.webp`, alt, altTh };

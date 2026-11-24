@@ -1,14 +1,34 @@
 import type { ContentRecord, SiteSettings } from '../../src/lib/cms-types';
-import { test, expect } from './fixtures';
+import { test, expect, refreshPublicCache, E2E_IMAGE_URL } from './fixtures';
 
 const featureIds = ['about-safety', 'about-maintenance', 'about-crew', 'about-office'];
+
+test('legacy archive entries without an image are omitted and a single-language caption remains available', async ({ db, page }) => {
+  const records = db.collection('moe_content');
+  const about = { type: 'Page', id: 'about' };
+  const missing = { alt: 'Missing photograph', altTh: 'ภาพที่หายไป' };
+  const valid = { url: E2E_IMAGE_URL, alt: 'Coastal quay in the company archive', altTh: '' };
+  await records.updateOne(about, { $set: { gallery: [missing, valid] } });
+  await refreshPublicCache();
+  await page.goto('/th/about');
+  const archive = page.getByRole('region', { name: 'ภาพจากคลังของบริษัท', exact: true });
+  await expect(archive.getByRole('button')).toHaveCount(1);
+  const caption = archive.locator('figcaption');
+  await expect(caption).toHaveText(valid.alt);
+  await expect(caption).toHaveAttribute('lang', 'en');
+  await records.updateOne(about, { $set: { gallery: [missing] } });
+  await refreshPublicCache();
+  await page.reload();
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(archive).toHaveCount(0);
+});
 
 for (const viewport of [{ name: 'mobile', width: 320, height: 900 }, { name: 'desktop', width: 1440, height: 1000 }]) {
   test.describe(`About page · ${viewport.name}`, () => {
     test.use({ viewport: { width: viewport.width, height: viewport.height }, reducedMotion: 'reduce' });
 
     for (const locale of ['en', 'th'] as const) {
-      test(`saved company story, six photographs and current contacts remain usable · ${locale}`, async ({ page, db }, testInfo) => {
+      test(`saved company story, photo archive and current contacts remain usable · ${locale}`, async ({ page, db }, testInfo) => {
         const records = await db.collection<ContentRecord>('moe_content').find({ status: 'Published', deletedAt: { $exists: false } }).toArray();
         const settings = await db.collection<SiteSettings & { _id: string }>('moe_settings').findOne({ _id: 'website' });
         const titleField = locale === 'en' ? 'title' : 'titleTh';
@@ -55,6 +75,29 @@ for (const viewport of [{ name: 'mobile', width: 320, height: 900 }, { name: 'de
           expect(iconBounds!.y).toBeLessThan(textBounds!.y + Math.min(textBounds!.height, 48));
           expect(iconBounds!.width).toBeCloseTo(viewport.name === 'mobile' ? 24 : 28, 3);
         }
+
+        const archiveTitle = locale === 'th' ? 'ภาพจากคลังของบริษัท' : 'Company photo archive';
+        const archive = main.getByRole('region', { name: archiveTitle, exact: true });
+        const photos = records.find(item => item.id === 'about' && item.type === 'Page')!.gallery!;
+        expect(photos).toHaveLength(6);
+        const figures = archive.locator('figure').filter({ has: page.getByRole('button', { name: locale === 'en' ? /Enlarge photo/ : /ขยายภาพ/ }) });
+        await expect(figures.locator('figcaption')).toHaveText(photos.map(photo => locale === 'th' ? photo.altTh : photo.alt));
+        const opener = figures.last().getByRole('button');
+        await opener.focus();
+        await expect(opener).toBeInViewport();
+        await opener.press('Enter');
+        const viewer = page.getByRole('dialog', { name: archiveTitle, exact: true });
+        const close = viewer.getByRole('button', { name: locale === 'th' ? 'ปิดภาพ' : 'Close photograph', exact: true });
+        await expect(close).toBeFocused();
+        await page.keyboard.press('Tab');
+        await expect(close).toBeFocused();
+        const enlarged = viewer.getByRole('img', { name: locale === 'th' ? photos.at(-1)!.altTh : photos.at(-1)!.alt, exact: true });
+        await expect(enlarged).toBeInViewport();
+        await expect.poll(() => enlarged.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+        if (viewport.name === 'mobile') await close.click();
+        else await viewer.press('Escape');
+        await expect(viewer).not.toBeVisible();
+        await expect(opener).toBeFocused();
 
         const company = main.getByRole('region', { name: locale === 'en' ? 'Company details and contact' : 'ข้อมูลบริษัทและการติดต่อ', exact: true });
         await expect(company.getByRole('heading', { name: 'Moe Navigation Co.,Ltd.', exact: true })).toBeVisible();

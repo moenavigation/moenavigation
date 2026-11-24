@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import type { ClientSession, Db } from 'mongodb';
 import type { ContentRecord } from '../src/lib/cms-types';
-import { defaultHomeSlides, getHomeSlides, getHomeSlideInterval } from '../src/lib/home-slides';
+import { defaultHomeSlides, fleetPhotoSlides, getHomeSlides, getHomeSlideInterval, homeSlideVideoPoster, isBundledHomeSlide, mobileHomeSlidePhoto, ownerPhotoSlides, ownerVideoSlides } from '../src/lib/home-slides';
 import { saveHomeSlidesSchema, saveSchema } from '../src/lib/validation';
 import { mapRecordImages, recordImageUrls } from '../src/lib/cms-client';
 import { cleanContentRecord, saveContentInTransaction } from '../src/server/content';
@@ -49,8 +49,10 @@ function harness(submissionId = randomUUID()) {
   return { db, content, media, operations, events, writes, submissionId };
 }
 
-test('legacy home records receive five independent defaults and a safe three-second interval', () => {
-  assert.equal(getHomeSlides(home()).length, 5);
+test('a fresh homepage alternates owner footage and photos, while saved selections keep their order and descriptions', () => {
+  assert.deepEqual(getHomeSlides(home()).map(slide => slide.kind ?? 'image'), ['video', 'image', 'video', 'image', 'video']);
+  const chosen = [{ ...fleetPhotoSlides[1], alt: 'Chosen in CMS' }, { ...ownerVideoSlides[2], altTh: 'ภาพที่เลือก' }];
+  assert.deepEqual(getHomeSlides({ heroSlides: chosen }), chosen);
   assert.equal(getHomeSlideInterval(home()), 3);
   const copy = getHomeSlides();
   copy[0].alt = 'Changed local preview';
@@ -59,12 +61,47 @@ test('legacy home records receive five independent defaults and a safe three-sec
   assert.equal(getHomeSlideInterval({ heroSlideInterval: 8 }), 8);
 });
 
+test('each supplied hero photograph has a dedicated mobile crop', async () => {
+  const { default: sharp } = await import('sharp');
+  for (const slide of ownerPhotoSlides) {
+    const path = mobileHomeSlidePhoto(slide.url);
+    assert.ok(path);
+    const { width, height } = await sharp(`public${path}`).metadata();
+    assert.deepEqual([width, height], [1024, 576]);
+  }
+  assert.equal(mobileHomeSlidePhoto(ownerVideoSlides[0].url), undefined);
+});
+
+test('each included owner clip is a silent H.264 MP4 with a real poster and exact kind-aware URL', async () => {
+  const { BufferSource, Input, MP4 } = await import('mediabunny');
+  for (const slide of defaultHomeSlides) {
+    const data = await readFile(`public${slide.url}`);
+    const isVideo = slide.kind === 'video';
+    assert(isBundledHomeSlide(slide.url, isVideo ? 'video' : 'image'));
+    assert(!isBundledHomeSlide(slide.url, isVideo ? 'image' : 'video'));
+    assert(!isBundledHomeSlide(slide.url + '?unreviewed'));
+    const poster = isVideo ? homeSlideVideoPoster(slide.url) : slide.url;
+    assert(poster);
+    const photo = isVideo ? await readFile(`public${poster}`) : data;
+    assert.equal(photo.toString('ascii', 8, 12), 'WEBP');
+    if (!isVideo) continue;
+    assert(!isBundledHomeSlide(poster, 'video'));
+    const input = new Input({ formats: [MP4], source: new BufferSource(data) });
+    try {
+      assert.equal((await input.getPrimaryVideoTrack())?.codec, 'avc');
+      assert.equal((await input.getAudioTracks()).length, 0);
+      const duration = await input.computeDuration();
+      assert(duration > 0 && duration <= 30);
+    } finally { input.dispose(); }
+  }
+});
+
 test('previous banner selections resolve to actual photographs and keep independent videos and uploads', () => {
   const old = { url: '/images/hero/01-open-water.webp', alt: '', altTh: '' };
   const previouslyUploaded = { ...old, url: 'https://res.cloudinary.com/yod4qzgu/image/upload/v1795492687/moe-navigation/5402285d79e4849c3d8e0d839aa7bc55fdd5abfabe1bf522159271c015098a68.webp' };
   const video = { ...old, url: 'https://example.com/custom.mp4', kind: 'video' as const };
   const upload = { ...old, url: 'https://example.com/custom.webp', alt: 'A selected photo' };
-  assert.deepEqual(getHomeSlides({ heroSlides: [video, previouslyUploaded, old, upload] }), [video, defaultHomeSlides[0], upload]);
+  assert.deepEqual(getHomeSlides({ heroSlides: [video, previouslyUploaded, old, upload] }), [video, fleetPhotoSlides[0], upload]);
 });
 
 test('a legacy vessel opens with vetted photographs and saves the editor’s actual gallery choices', async () => {
@@ -92,7 +129,7 @@ test('a legacy included banner saves through the dedicated CMS action with its v
   state.content.set(initial._id, initial);
   const slides = getHomeSlides(initial);
   const saved = await saveHomeSlidesInTransaction(saveHomeSlidesSchema.parse({ slides, intervalSeconds: 6, expectedRevision: 4, submissionId: state.submissionId }), actor, state.db, session);
-  assert.deepEqual(saved.heroSlides, [defaultHomeSlides[0]]);
+  assert.deepEqual(saved.heroSlides, [fleetPhotoSlides[0]]);
 });
 
 test('saving an older page with retired non-fleet images persists company photos and keeps separately managed slides', async () => {
@@ -107,14 +144,14 @@ test('saving an older page with retired non-fleet images persists company photos
   assert.equal(saved.image, '/images/company-originals/wheelhouse.webp');
   assert.equal(saved.mobileImage, saved.image);
   assert.equal(saved.gallery?.[0].url, saved.image);
-  assert.deepEqual(saved.heroSlides, [defaultHomeSlides[0]]);
+  assert.deepEqual(saved.heroSlides, [fleetPhotoSlides[0]]);
   assert.deepEqual(cleanContentRecord(state.content.get(initial._id)!).gallery, saved.gallery);
 });
 
 test('slider validation bounds interval, count, duplicate URLs and home-only fields', () => {
   const valid = { slides: getHomeSlides(), intervalSeconds: 3, expectedRevision: 4, submissionId: randomUUID() };
   assert.equal(saveHomeSlidesSchema.safeParse(valid).success, true);
-  for (const change of [{ slides: [] }, { slides: Array(13).fill(defaultHomeSlides[0]) }, { slides: [defaultHomeSlides[0], defaultHomeSlides[0]] }, { intervalSeconds: 1 }, { intervalSeconds: 16 }, { intervalSeconds: 2.5 }, { expectedRevision: 0 }, { submissionId: '' }, { record: home() }]) {
+  for (const change of [{ slides: [] }, { slides: Array(13).fill(fleetPhotoSlides[0]) }, { slides: [fleetPhotoSlides[0], fleetPhotoSlides[0]] }, { intervalSeconds: 1 }, { intervalSeconds: 16 }, { intervalSeconds: 2.5 }, { expectedRevision: 0 }, { submissionId: '' }, { record: home() }]) {
     assert.equal(saveHomeSlidesSchema.safeParse({ ...valid, ...change }).success, false);
   }
   assert.equal(saveSchema.safeParse({ record: { ...home(), id: 'about', heroSlides: getHomeSlides() }, expectedRevision: 4, submissionId: randomUUID() }).success, false);
@@ -183,7 +220,7 @@ test('a video can be committed as a slide and reused, but cannot occupy an image
     { ...afterCopyEdit, gallery: [slide] },
     { ...afterCopyEdit, heroSlides: [{ ...slide, kind: 'image' }] },
     { ...afterCopyEdit, heroSlides: [{ ...slide, url: storedImage }] },
-    { ...afterCopyEdit, heroSlides: [{ ...slide, url: defaultHomeSlides[0].url }] },
+    { ...afterCopyEdit, heroSlides: [{ ...slide, url: fleetPhotoSlides[0].url }] },
   ]) {
     const invalid = saveSchema.parse({ record, expectedRevision: 6, submissionId: randomUUID() });
     await assert.rejects(saveContentInTransaction(invalid, actor._id, state.db, session, 'cms', actor), HttpError);
@@ -196,6 +233,8 @@ test('revision conflicts, unregistered images and foreign submissions are reject
     { slides: [{ url: 'https://example.test/unregistered.webp', alt: '', altTh: '' }] },
     { slides: [{ url: uploadedImage, alt: '', altTh: '' }], submissionId: randomUUID() },
     { slides: [{ url: '/images/hero/unapproved.webp', alt: '', altTh: '' }] },
+    { slides: [{ ...ownerVideoSlides[0], kind: 'image' }] },
+    { slides: [{ ...ownerVideoSlides[0], url: '/images/owner-media/video-unapproved.mp4' }] },
   ]) {
     const state = harness();
     const input = saveHomeSlidesSchema.parse({ slides: getHomeSlides(), intervalSeconds: 3, expectedRevision: 4, submissionId: state.submissionId, ...change });
@@ -204,6 +243,17 @@ test('revision conflicts, unregistered images and foreign submissions are reject
     assert.equal(state.media.get('uploaded')?.state, 'staged');
     assert.equal(state.operations.size, 0);
     assert.equal(state.events.length, 0);
+  }
+});
+
+test('a bundled clip remains restricted to a video slide when a page edit also references it', async () => {
+  const state = harness();
+  const slide = ownerVideoSlides[0];
+  const existing = state.content.get('Page:home')!;
+  existing.heroSlides = [slide];
+  for (const change of [{ image: slide.url }, { mobileImage: slide.url }, { gallery: [slide] }]) {
+    const invalid = saveSchema.parse({ record: { ...existing, ...change }, expectedRevision: 4, submissionId: randomUUID() });
+    await assert.rejects(saveContentInTransaction(invalid, actor._id, state.db, session, 'cms', actor), HttpError);
   }
 });
 

@@ -3,6 +3,7 @@ import { createHash, scryptSync } from 'node:crypto';
 import { deflateSync } from 'node:zlib';
 import { MongoClient, type Db } from 'mongodb';
 import type { ContentRecord } from '../src/lib/cms-types';
+import { fleetPhotoSlides } from '../src/lib/home-slides';
 import { websiteContentRecords } from './data/website-content';
 
 export const E2E_DATABASE = 'moenavigation_e2e';
@@ -78,9 +79,17 @@ export async function seedE2eDatabase(db: Db) {
   assert.equal(new Set(mappings.values()).size, mappings.size, 'Synthetic media URLs must remain unique.');
   const now = new Date().toISOString();
   for (const record of source) {
+    // Exercise established CMS photo selections. The mixed-media test clears
+    // this field to cover the defaults a new homepage actually receives.
+    if (record.type === 'Page' && record.id === 'home') record.heroSlides = fleetPhotoSlides.map(photo => ({ ...photo }));
     record.image = mappings.get(record.image) || '';
     if (record.mobileImage) record.mobileImage = mappings.get(record.mobileImage);
-    for (const image of record.gallery || []) image.url = mappings.get(image.url)!;
+    if (record.gallery) record.gallery = record.gallery.map(image => {
+      // Different records can share one owner photograph in the seed.
+      const url = mappings.get(image.url);
+      assert(url, `Missing gallery image mapping for ${record.type}:${record.id}`);
+      return { ...image, url };
+    });
     record.revision = 1; record.updatedAt = now;
   }
   await db.collection('moe_content').insertMany(source.map(record => ({ _id: `${record.type}:${record.id}`, ...record })) as never[]);

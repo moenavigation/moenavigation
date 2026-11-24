@@ -5,7 +5,7 @@ import test from 'node:test';
 import identities from '../src/server/retired-photo-identities.json';
 import { isRetiredMedia, replaceRetiredContentPhotos, retiredPhotoSource, selectableMediaFilter } from '../src/server/retired-photos';
 import { companyPhotoReplacements } from '../src/lib/company-photo-replacements';
-import { defaultHomeSlides } from '../src/lib/home-slides';
+import { fleetPhotoSlides } from '../src/lib/home-slides';
 import type { ContentRecord, HomeSlide } from '../src/lib/cms-types';
 
 const page: ContentRecord = { id: 'home', type: 'Page', title: 'Home', titleTh: '', description: '', descriptionTh: '', status: 'Published', category: '', image: '', revision: 5 };
@@ -41,7 +41,7 @@ test('historical main, mobile, gallery and slides adopt the actual photo while p
   assert.equal(updated.mobileImage, photo.url);
   assert.equal(updated.caption, input.caption);
   assert.deepEqual(updated.gallery, [custom, edited]);
-  assert.deepEqual(updated.heroSlides, [video, defaultHomeSlides[0], custom]);
+  assert.deepEqual(updated.heroSlides, [video, fleetPhotoSlides[0], custom]);
   assert.equal(replaceRetiredContentPhotos(updated), updated);
   assert.equal(input.image, legacy.url);
 });

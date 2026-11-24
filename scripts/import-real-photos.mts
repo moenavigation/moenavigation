@@ -14,13 +14,19 @@ import { canonical, sha256 } from './lib/recovery';
 
 nextEnv.loadEnvConfig(process.cwd());
 const actor = { system: true } as const;
-const owner = 'maintenance:company-photographs';
-const submission = '0a1cc4a1-9632-48d9-91a7-9ad9562edeaf';
-const directory = resolve('.local/real-photo-import');
+const legacyRelease = {
+  owner: 'maintenance:company-photographs', submission: '0a1cc4a1-9632-48d9-91a7-9ad9562edeaf',
+  directory: resolve('.local/real-photo-import'),
+};
+const ownerRelease = {
+  owner: 'maintenance:owner-media-20261124', submission: '7843fdb9-8307-4dd9-8d8f-b76d4c0d0447',
+  directory: resolve('.local/owner-media-review/import-backups'),
+};
 const fields = ['image', 'mobileImage', 'imageAlt', 'imageAltTh', 'caption', 'captionTh', 'gallery', 'heroSlides'] as const;
 const usage = [
   'Usage: node --conditions=react-server --import tsx scripts/import-real-photos.mts [options]',
   '  No options                  Preview the changes without writing.',
+  '  --owner-media               Import the owner’s photo collection and update published content.',
   '  --stage                     Upload missing originals and show the post-stage plan.',
   '  --apply --expected-plan=HASH Apply the reviewed plan in one transaction.',
   '  --help                      Show this help.',
@@ -30,33 +36,42 @@ let startedUploader = false;
 
 async function run() {
   const options = parseArgs({ options: {
-    stage: { type: 'boolean' }, apply: { type: 'boolean' },
+    stage: { type: 'boolean' }, apply: { type: 'boolean' }, 'owner-media': { type: 'boolean' },
     'expected-plan': { type: 'string' }, help: { type: 'boolean' },
   } });
-  const { stage, apply, help, 'expected-plan': expected } = options.values;
+  const { stage, apply, help, 'owner-media': ownerMode, 'expected-plan': expected } = options.values;
   if (help) { console.log(usage); return; }
   assert(!(stage && apply), 'Choose either --stage or --apply. Stage the photos before applying.');
   assert(expected === undefined || apply, 'Use --expected-plan only with --apply.');
   assert(expected === undefined || /^[0-9a-f]{64}$/.test(expected), 'Pass a 64-character lowercase SHA-256 plan hash.');
   assert(!apply || expected, 'Pass --apply --expected-plan=HASH using the reviewed post-stage plan.');
+  const ownerCollection = ownerMode ? await import('./data/owner-media-content') : undefined;
+  const { owner, submission, directory } = ownerMode ? ownerRelease : legacyRelease;
   const { MONGODB_URI: uri, MONGODB_DB_NAME: databaseName } = process.env;
   assert(uri && databaseName, 'Configure MONGODB_URI and MONGODB_DB_NAME before running the import.');
   client = new MongoClient(uri, { serverSelectionTimeoutMS: 10000 });
   const db = client.db(databaseName);
   const c = collections(db);
+  const activeFilter = ownerMode ? { status: 'Published' as const, deletedAt: { $exists: false } } : {};
   const [content, media] = await Promise.all([
-    c.content.find({}).sort({ _id: 1 }).toArray(),
+    c.content.find(activeFilter).sort({ _id: 1 }).toArray(),
     c.media.find({}).sort({ _id: 1 }).toArray(),
   ]);
-  const retired = media.filter(item => item.state === 'committed' && isRetiredMedia(item));
-  const converted = content.map(record => replaceRetiredContentPhotos(record));
-  const paths = [...new Set(converted.flatMap((item, index) => {
+  const retired = ownerMode ? [] : media.filter(item => item.state === 'committed' && isRetiredMedia(item));
+  const registeredSources = new Map(media.map(item => [item.url, item.sourcePath || item.url]));
+  const sourceFor = (url: string) => registeredSources.get(url) ?? url;
+  const converted = content.map(record => ownerCollection
+    ? ownerCollection.applyOwnerMedia(record, sourceFor)
+    : replaceRetiredContentPhotos(record));
+  const requestedPaths = ownerCollection?.ownerPhotoPaths ?? converted.flatMap((item, index) => {
     const previous = new Set(contentMediaUrls(content[index]));
     return contentMediaUrls(item).filter(url => url.startsWith('/images/') && !previous.has(url) && !isBundledHomeSlide(url));
-  }))].sort();
+  });
+  const paths = [...new Set(requestedPaths)].sort();
   const uploads = new Map<string, { id: string; url: string; sha: string }>();
   for (const path of paths) {
-    assert(/^\/images\/(?:[a-z0-9-]+\/)*[a-z0-9-]+\.webp$/.test(path), 'Unexpected replacement path');
+    const allowedPath = ownerMode ? /^\/images\/owner-media\/photo-[a-z0-9-]+\.webp$/ : /^\/images\/(?:[a-z0-9-]+\/)*[a-z0-9-]+\.webp$/;
+    assert(allowedPath.test(path), `Unexpected replacement path: ${path}`);
     const bytes = await readFile(resolve('public', path.slice(1)));
     const sha = sha256(bytes);
     const id = sha256(`${owner}:${submission}:${sha}`);
@@ -84,7 +99,9 @@ async function run() {
     const after = { ...item, image: lookup(item.image) };
     if (item.mobileImage) after.mobileImage = lookup(item.mobileImage);
     if (item.gallery) after.gallery = item.gallery.map(photo => ({ ...photo, url: lookup(photo.url) }));
-    if (item.heroSlides) after.heroSlides = item.heroSlides.map(slide => ({ ...slide, url: lookup(slide.url) }));
+    if (item.heroSlides) after.heroSlides = item.heroSlides.map(slide => ({
+      ...slide, url: ownerMode && isBundledHomeSlide(slide.url, slide.kind) ? slide.url : lookup(slide.url),
+    }));
     const changedFields = fields.filter(field => !isDeepStrictEqual(before[field], after[field]));
     const patch: Partial<ContentDocument> = Object.fromEntries(changedFields.map(field => [field, after[field]]));
     return Object.keys(patch).length ? [{ before, patch }] : [];
@@ -92,19 +109,28 @@ async function run() {
   const replacementIds = [...new Set([...uploads.values()].map(asset => asset.id))];
   // A stage run may have created rows after the initial snapshot. Use database state
   // for the summary and preserve replacement order for the subsequent apply-plan hash.
-  const stagedRows = stage && replacementIds.length
-    ? await c.media.find({ _id: { $in: replacementIds }, state: 'staged' }, { projection: { id: 1 } }).toArray()
-    : media.filter(item => item.state === 'staged');
-  const stagedIds = new Set(stagedRows.map(item => item.id));
-  const staged = replacementIds.filter(id => stagedIds.has(id));
-  const plan = { target: sha256(uri + db.databaseName), changes, retired, uploads: [...uploads], staged };
+  const replacementRows = stage && replacementIds.length
+    ? await c.media.find({ _id: { $in: replacementIds } }).toArray()
+    : media;
+  const mediaById = new Map(replacementRows.map(item => [item.id, item]));
+  const staged = replacementIds.filter(id => mediaById.get(id)?.state === 'staged');
+  const registrations = ownerMode ? paths.filter(path => {
+    const asset = uploads.get(path)!;
+    const item = mediaById.get(asset.id);
+    return !item || item.state !== 'committed' || !item.pinned || item.sourceSha256 !== asset.sha || item.sourcePath !== path;
+  }) : [];
+  const plan = {
+    target: sha256(uri + db.databaseName), changes, retired, uploads: [...uploads], staged,
+    ...(ownerMode && { collection: owner, registrations }),
+  };
   const planHash = sha256(canonical(plan));
   console.log(JSON.stringify({
     mode: stage ? 'stage' : apply ? 'apply' : 'preview', planHash,
-    content: changes.map(change => change.before._id), retire: retired.map(item => item.title), replacements: paths,
+    ...(ownerMode && { collection: owner, totalLibraryPhotos: paths.length }),
+    content: changes.map(change => change.before._id), retire: retired.map(item => item.title), replacements: ownerMode ? registrations : paths,
     awaitingUpload: [...uploads.values()].filter(asset => asset.url.startsWith('/')).length, staged: staged.length,
   }, null, 2));
-  if (!apply || !(changes.length || retired.length || staged.length)) return;
+  if (!apply || !(changes.length || retired.length || staged.length || registrations.length)) return;
   assert.equal(expected, planHash, 'Review the post-stage plan before applying.');
   assert([...uploads.values()].every(asset => asset.url.startsWith('https://')), 'Stage the replacement photos first.');
   // Verify the delivered original against the file we reviewed, before changing any references.
@@ -115,15 +141,19 @@ async function run() {
   }
   await mkdir(directory, { recursive: true });
   const backup = resolve(directory, `before-${Date.now()}.json`);
+  const changedUrls = new Set(changes.flatMap(change => contentMediaUrls({ ...change.before, ...change.patch })));
+  const transactionAssets = [...uploads].filter(([path, asset]) =>
+    !ownerMode || registrations.includes(path) || changedUrls.has(asset.url));
+  const touchedMedia = new Set(transactionAssets.map(([, asset]) => asset.id));
   const before = {
     planHash, content: changes.map(change => change.before),
-    media: media.filter(item => retired.includes(item) || staged.includes(item.id)),
+    media: media.filter(item => retired.includes(item) || touchedMedia.has(item.id)),
   };
   await writeFile(backup, BSON.EJSON.stringify(before, { relaxed: false }), { flag: 'wx', mode: 0o600 });
   await client.withSession(session => session.withTransaction(async () => {
     const now = new Date();
     if (staged.length) await lockMediaSubmission(db, session, owner, submission);
-    for (const [sourcePath, asset] of uploads) {
+    for (const [sourcePath, asset] of transactionAssets) {
       const item = await c.media.findOne({ _id: asset.id, url: asset.url }, { session });
       assert(item && (item.state === 'committed' || (item.state === 'staged' && item.owner === owner && item.submissionId === submission)), 'The replacement file is no longer available for this import.');
       await c.media.updateOne({ _id: item.id }, {
@@ -134,7 +164,7 @@ async function run() {
       }
     }
     for (const { before, patch } of changes) {
-      const result = await c.content.updateOne({ _id: before._id, revision: before.revision }, {
+      const result = await c.content.updateOne({ _id: before._id, revision: before.revision, ...activeFilter }, {
         $set: { ...patch, updatedAt: now.toISOString() }, $inc: { revision: 1 },
       }, { session });
       assert.equal(result.matchedCount, 1, 'Concurrent content edit');
@@ -154,7 +184,15 @@ async function run() {
     assert(saved && saved.revision === before.revision + 1
       && Object.entries(patch).every(([key, value]) => isDeepStrictEqual(saved[key as keyof ContentDocument], value)), `Saved photo fields differ for ${before._id}.`);
   }
-  console.log(JSON.stringify({ verified: changes.length, trashed: retired.length, backup }));
+  if (ownerMode) {
+    const saved = await c.media.find({ _id: { $in: replacementIds }, state: 'committed', pinned: true }).toArray();
+    const byId = new Map(saved.map(item => [item.id, item]));
+    for (const [path, asset] of uploads) {
+      const item = byId.get(asset.id);
+      assert(item && item.url === asset.url && item.sourceSha256 === asset.sha && item.sourcePath === path, `Library registration differs for ${path}.`);
+    }
+  }
+  console.log(JSON.stringify({ verified: changes.length, trashed: retired.length, ...(ownerMode && { verifiedLibraryPhotos: paths.length }), backup }));
 }
 
 try {

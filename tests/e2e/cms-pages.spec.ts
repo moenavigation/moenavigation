@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { APIRequestContext, Locator, Page } from '@playwright/test';
 import type { ContentRecord } from '../../src/lib/cms-types';
+import { fleetPhotos } from '../../src/lib/fleet-photos';
 import { cmsMainThai } from '../../src/lib/cms-main-th';
 import { cmsFieldsThai } from '../../src/lib/cms-fields-th';
 import { test, expect, login, E2E_ADMIN, E2E_BASE_URL, loginChallengeData } from './fixtures';
@@ -45,9 +46,9 @@ test.describe('homepage charter services on desktop', () => {
     const services = page.locator('#chartering-services');
     await expect(services.locator('article')).toHaveCount(3);
     await expect(services.locator('article img')).toHaveCount(3);
-    for (const [index, id] of ['moe-line-5', 'moe-line-4', 'dumai-moe'].entries()) {
+    for (const [index, id] of (['moe-line-5', 'moe-line-4', 'dumai-moe'] as const).entries()) {
       const image = services.locator('article img').nth(index);
-      await expect(image).toHaveAttribute('src', `/images/fleet-originals/${id}.webp`);
+      await expect(image).toHaveAttribute('src', fleetPhotos[id][0].url);
       await expect.poll(() => image.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBeGreaterThan(0);
     }
     await expect(services.getByText('Included in every charter', { exact: true })).toBeVisible();
@@ -150,6 +151,67 @@ test('page cards lead to existing Home content, save both languages, and preserv
   await page.getByRole('button', { name: 'Edit Page introduction', exact: true }).click();
   await expect(await showLanguage(editor, 'Title · English')).toHaveValue(saved.title);
   await expect(await showLanguage(editor, 'Title · Thai')).toHaveValue(saved.titleTh);
+});
+
+test('About photo archive saves bilingual captions, image selection and order', async ({ page, db }) => {
+  await login(page);
+  const before = (await savedRecords(page.request)).find(record => record.type === 'Page' && record.id === 'about')!;
+  const previous = before.gallery!;
+  expect(previous).toHaveLength(6);
+  const replacement = await db.collection('moe_media').findOne({ sourcePath: '/images/owner-media/photo-dumai-moe-bow-quarter.webp' });
+  expect(replacement).toBeTruthy();
+
+  await page.goto('/cms/pages?page=about');
+  await page.getByRole('button', { name: 'Edit Page introduction', exact: true }).click();
+  const editor = page.getByRole('dialog', { name: 'Edit content', exact: true });
+  await editor.getByText('Company photo archive', { exact: true }).click();
+  const row = (number: number) => editor.getByRole('group', { name: `Gallery image ${number}`, exact: true });
+  const add = editor.getByRole('button', { name: 'Add gallery image', exact: true });
+  await expect(row(1).getByRole('button', { name: 'Move gallery image 1 earlier' })).toBeDisabled();
+  await add.click();
+  const added = row(7);
+  await expect(added.getByLabel('Choose gallery image 7')).toBeFocused();
+  await added.getByRole('button', { name: 'Browse library for gallery image 7' }).click();
+  await added.getByRole('searchbox').fill(replacement!.title);
+  await added.getByRole('button', { name: replacement!.title, exact: true }).click();
+  const newPhoto = { url: replacement!.url, alt: 'A tanker viewed from its bow', altTh: 'ภาพเรือบรรทุกน้ำมันเมื่อมองจากหัวเรือ' };
+  await added.getByLabel('Description · English', { exact: true }).fill(newPhoto.alt);
+  await added.getByLabel('Description · Thai', { exact: true }).fill(newPhoto.altTh);
+  await expect(added.getByRole('button', { name: 'Move gallery image 7 later' })).toBeDisabled();
+  await added.getByRole('button', { name: 'Move gallery image 7 earlier' }).press('Enter');
+  await expect(row(6).getByRole('button', { name: 'Move gallery image 6 earlier' })).toBeFocused();
+  await expect(row(6).getByLabel('Description · Thai')).toHaveValue(newPhoto.altTh);
+  await row(7).getByRole('button', { name: 'Remove gallery image 7' }).click();
+  await expect(row(7)).toHaveCount(0);
+
+  let releaseSave!: () => void;
+  const release = new Promise<void>(resolve => { releaseSave = resolve; });
+  await page.route('**/api/cms/content', async route => {
+    if (route.request().method() === 'POST') await release;
+    await route.continue();
+  });
+  const save = page.waitForResponse(response => response.url().endsWith('/api/cms/content') && response.request().method() === 'POST');
+  try {
+    await editor.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(add).toBeDisabled();
+    await expect(row(6).getByLabel('Description · Thai')).toBeDisabled();
+    await expect(row(6).getByRole('button', { name: 'Remove gallery image 6' })).toBeDisabled();
+  } finally {
+    releaseSave();
+  }
+  const response = await save;
+  expect(response.status(), await response.text()).toBe(200);
+  await expect(editor).not.toBeVisible();
+  const after = (await savedRecords(page.request)).find(record => record.type === 'Page' && record.id === 'about')!;
+  expect(after.gallery).toEqual([...previous.slice(0, -1), newPhoto]);
+  for (const [path, archiveName, caption] of [
+    ['/about', 'Company photo archive', newPhoto.alt],
+    ['/th/about', 'ภาพจากคลังของบริษัท', newPhoto.altTh],
+  ]) {
+    await page.goto(path);
+    const archive = page.getByRole('region', { name: archiveName, exact: true });
+    await expect(archive.locator('figcaption').last()).toHaveText(caption);
+  }
 });
 
 test('shared footer editing exposes bilingual text and statistics and links contact details to Settings', async ({ page }) => {
@@ -262,8 +324,10 @@ test('CMS API rejects new page elements and layout changes without changing save
   const headers = { origin: E2E_BASE_URL };
   expect((await request.post('/api/cms/login', { headers, data: { ...E2E_ADMIN, ...await loginChallengeData(request) } })).ok()).toBe(true);
   const before = await savedRecords(request);
-  const page = before.find(record => record.type === 'Page' && record.id === 'home')!;
-  const section = before.find(record => record.type === 'Section' && record.id === 'home-expertise')!;
+  // Use records without homepage-only fields so schema checks pass and these
+  // requests exercise the CMS permission and layout rules themselves.
+  const page = before.find(record => record.type === 'Page' && record.id === 'routes')!;
+  const section = before.find(record => record.type === 'Section' && record.id === 'about-safety')!;
   expect(page).toBeTruthy();
   expect(section).toBeTruthy();
 
@@ -278,7 +342,7 @@ test('CMS API rejects new page elements and layout changes without changing save
 
   const changes: Array<{ record: ContentRecord; patch: Partial<ContentRecord> }> = [
     { record: page, patch: { order: (page.order ?? 0) + 1 } },
-    { record: section, patch: { parentId: 'about' } },
+    { record: section, patch: { parentId: 'home' } },
     { record: section, patch: { order: (section.order ?? 0) + 1 } },
     { record: section, patch: { icon: section.icon === 'Anchor' ? 'Ship' : 'Anchor' } },
     { record: section, patch: { category: 'A different layout group' } },

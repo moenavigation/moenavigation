@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { basename, resolve } from 'node:path';
 import { v2 as cloudinary } from 'cloudinary';
-import type { ContentRecord } from '../src/lib/cms-types';
+import type { ContentRecord, HomeSlide } from '../src/lib/cms-types';
 import { recordSchema } from '../src/lib/validation';
 import { isBundledHomeSlide } from '../src/lib/home-slides';
 import { replaceRetiredContentPhotos } from '../src/server/retired-photos';
@@ -35,14 +35,22 @@ const uploadedThisRun: Asset[] = [];
 const providers = new Map<string, ProviderAsset>();
 const deliveryHashes = new Map<string, string>();
 const sourcePaths = new Set(manifest.map(asset => asset.sourcePath));
-const imageUrls = (record: Partial<ContentRecord>) => [record.image, record.mobileImage, ...(record.gallery || []).map(image => image.url), ...(record.heroSlides || []).map(image => image.url).filter(url => !isBundledHomeSlide(url))].filter((url): url is string => Boolean(url));
+const imageUrls = (record: Partial<ContentRecord>) => [record.image, record.mobileImage, ...(record.gallery || []).map(image => image.url), ...(record.heroSlides || []).filter(slide => !isBundledHomeSlide(slide.url, slide.kind ?? 'image')).map(slide => slide.url)].filter((url): url is string => Boolean(url));
 function replaceImages(record: ContentRecord, urls: Map<string, string>): ContentRecord {
   const replace = (url: string) => {
-    if (!url.startsWith('/images/') || isBundledHomeSlide(url)) return url;
+    if (!url.startsWith('/images/') || isBundledHomeSlide(url, 'image')) return url;
     assert(urls.has(url), `Unrecognized local image: ${url}`);
     return urls.get(url)!;
   };
-  return { ...record, image: replace(record.image), mobileImage: record.mobileImage ? replace(record.mobileImage) : '', gallery: (record.gallery || []).map(image => ({ ...image, url: replace(image.url) })), ...(record.heroSlides ? { heroSlides: record.heroSlides.map(image => ({ ...image, url: isBundledHomeSlide(image.url) ? image.url : replace(image.url) })) } : {}) };
+  const replaceSlide = (slide: HomeSlide) => {
+    if (isBundledHomeSlide(slide.url, slide.kind ?? 'image')) return slide;
+    if (slide.kind === 'video') {
+      assert(!slide.url.startsWith('/images/'), `Unrecognized local video: ${slide.url}`);
+      return slide;
+    }
+    return { ...slide, url: replace(slide.url) };
+  };
+  return { ...record, image: replace(record.image), mobileImage: record.mobileImage ? replace(record.mobileImage) : '', gallery: (record.gallery || []).map(image => ({ ...image, url: replace(image.url) })), ...(record.heroSlides ? { heroSlides: record.heroSlides.map(replaceSlide) } : {}) };
 }
 async function sourceBytes(asset: Asset) {
   const candidates = [resolve('public', asset.sourcePath.slice(1)), resolve('.local/migration-backup-2026-10-23/images', basename(asset.sourcePath))];
@@ -135,7 +143,7 @@ try {
     assert(validation.success, `Invalid migration record ${id}: ${validation.error?.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join('; ')}`);
     const parsed = replaceRetiredContentPhotos(validation.data);
     const next: ContentRecord = { ...parsed, revision: before?.revision || 1, ...(before?.deletedAt ? { deletedAt: before.deletedAt } : {}) };
-    for (const url of imageUrls(next)) if (url.startsWith('/images/')) assert(sourcePaths.has(url) || isBundledHomeSlide(url), `Unmapped image in ${id}`);
+    for (const url of imageUrls(next)) if (url.startsWith('/images/')) assert(sourcePaths.has(url) || isBundledHomeSlide(url, 'image'), `Unmapped image in ${id}`);
     return next;
   });
   const changes = desired.map(record => {

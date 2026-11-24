@@ -170,8 +170,9 @@ export async function saveContentInTransaction(input: z.infer<typeof saveSchema>
     // These exact, versioned app assets need no Cloudinary upload. All other
     // slide URLs still pass through the normal library/ownership validation.
     const slide = input.record.heroSlides?.find(item => item.url === url);
-    if (slide?.kind !== 'video' && (isBundledContentPhoto(input.record.type, input.record.id, url)
-      || (slide && isBundledHomeSlide(url) && !imageFields.has(url)))) continue;
+    if (slide?.kind !== 'video' && isBundledContentPhoto(input.record.type, input.record.id, url)) continue;
+    if (input.record.type === 'Page' && input.record.id === 'home' && slide && !imageFields.has(url)
+      && isBundledHomeSlide(url, slide.kind ?? 'image')) continue;
     const media = await c.media.findOne({ url }, { session });
     if (!media || isRetiredMedia(media) || !['staged', 'committed'].includes(media.state)) throw new HttpError(400, 'Choose a library file or upload a file before saving.');
     if ((media.kind ?? 'image') !== (slide?.kind ?? 'image') || (media.kind === 'video' && imageFields.has(url))) {

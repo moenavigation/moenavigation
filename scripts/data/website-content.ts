@@ -5,6 +5,8 @@ import { legacyAboutDraftPatches, legacyAboutFeatureRecords, type LegacyAboutIma
 import { defaultFooterStatistics } from '../../src/lib/footer-statistics';
 import { applyHomepageCopy } from '../../src/lib/homepage-chartering';
 import { companyPhotos, contentPhotoFields } from '../../src/lib/company-photo-replacements';
+import { applyOwnerMedia } from './owner-media-content';
+import type { ContentRecord } from '../../src/lib/cms-types';
 
 const localAboutImages: LegacyAboutImageUrls = {
   hero: '/images/about/port-operations.webp',
@@ -878,4 +880,4 @@ export const websiteContentRecords = [
 ].map(record => {
   const about = aboutDrafts.find(item => item.type === record.type && item.id === record.id);
   return about ? { ...record, ...about.patch } : applyHomepageCopy(record);
-}).concat(legacyAboutFeatureRecords(localAboutImages));
+}).concat(legacyAboutFeatureRecords(localAboutImages)).map(record => applyOwnerMedia(record as ContentRecord));

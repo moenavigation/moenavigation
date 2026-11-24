@@ -2,7 +2,7 @@ import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { Page } from '@playwright/test';
 import { test, expect, refreshPublicCache, E2E_IMAGE_BUFFER, E2E_BASE_URL } from './fixtures';
-import { defaultHomeSlides } from '../../src/lib/home-slides';
+import { defaultHomeSlides, fleetPhotoSlides, homeSlideVideoPoster } from '../../src/lib/home-slides';
 
 test.use({ reducedMotion: 'no-preference' });
 
@@ -62,10 +62,10 @@ test('390px mobile loads the 16:9 photograph and localizes the complete hero', a
   const carousel = await expectHeroLayout(page, 16 / 9, true);
   await expect.poll(() => carousel.getByRole('img').evaluate(el => (el as HTMLImageElement).currentSrc)).toContain('-mobile.webp');
   await expect(carousel.getByRole('button', { name: 'แสดงสไลด์ 2', exact: true })).toBeVisible();
-  await expect(carousel.getByRole('img')).toHaveAttribute('alt', defaultHomeSlides[0].altTh);
+  await expect(carousel.getByRole('img')).toHaveAttribute('alt', fleetPhotoSlides[0].altTh);
   await carousel.getByRole('button', { name: 'แสดงสไลด์ 2', exact: true }).click();
   await expect(carousel).toHaveAttribute('data-slide-index', '1');
-  await expect(carousel.getByRole('img')).toHaveAttribute('alt', defaultHomeSlides[1].altTh);
+  await expect(carousel.getByRole('img')).toHaveAttribute('alt', fleetPhotoSlides[1].altTh);
   await saveScreenshot(page, `hero-th-mobile-390-${testInfo.project.name}`);
 });
 
@@ -124,7 +124,10 @@ test('autoplay resumes after manual selection and keyboard focus pauses it', asy
   await expect(carousel).toHaveAttribute('data-autoplay', 'false');
   await page.waitForTimeout(3200);
   await expect(carousel).toHaveAttribute('data-slide-index', '0');
-  await page.getByRole('link', { name: 'Explore Our Services', exact: true }).focus();
+  // Moving backward from the first indicator keeps the carousel onscreen.
+  // Focusing the CTA below it can correctly pause rotation as it scrolls away.
+  await previous.press('Shift+Tab');
+  await expect.poll(() => carousel.evaluate(element => element.contains(document.activeElement))).toBe(false);
   await expect(carousel).toHaveAttribute('data-autoplay', 'true');
   await carousel.getByRole('button', { name: 'Show slide 3', exact: true }).click();
   await expect(carousel).toHaveAttribute('data-slide-index', '2');
@@ -227,12 +230,12 @@ test('the saved interval controls public autoplay', async ({ page, db }) => {
 });
 
 test('one saved slide renders without rotation or redundant controls', async ({ page, db }) => {
-  await db.collection<{ _id: string }>('moe_content').updateOne({ _id: 'Page:home' }, { $set: { heroSlides: [{ ...defaultHomeSlides[3] }] } });
+  await db.collection<{ _id: string }>('moe_content').updateOne({ _id: 'Page:home' }, { $set: { heroSlides: [{ ...fleetPhotoSlides[3] }] } });
   await refreshPublicCache();
   await page.goto('/');
   const carousel = slider(page);
   await expect(carousel.locator('img')).toHaveCount(1);
-  await expect(carousel.getByRole('img')).toHaveAttribute('alt', defaultHomeSlides[3].alt);
+  await expect(carousel.getByRole('img')).toHaveAttribute('alt', fleetPhotoSlides[3].alt);
   await expect(carousel.getByRole('button')).toHaveCount(0);
   await expect(carousel).toHaveAttribute('data-autoplay', 'false');
   await page.clock.install();
@@ -254,7 +257,7 @@ test('video slides play to completion, pause on demand, and respect reduced moti
       body: bytes.subarray(start, end + 1) });
   });
   await db.collection<{ _id: string }>('moe_content').updateOne({ _id: 'Page:home' }, { $set: {
-    heroSlideInterval: 2, heroSlides: [{ kind: 'video', url, alt: 'Harbor video', altTh: 'วิดีโอท่าเรือ' }, defaultHomeSlides[0]],
+    heroSlideInterval: 2, heroSlides: [{ kind: 'video', url, alt: 'Harbor video', altTh: 'วิดีโอท่าเรือ' }, fleetPhotoSlides[0]],
   } });
   await refreshPublicCache();
   await page.setViewportSize({ width: 390, height: 900 });
@@ -307,12 +310,72 @@ test('video slides play to completion, pause on demand, and respect reduced moti
   await expect(carousel).toHaveAttribute('data-slide-index', '1');
 });
 
+test.describe('bundled owner banners', () => {
+  test.use({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+
+  test('owner footage uses the real poster for first paint, mobile crop, social sharing and playback failure', async ({ page, db, browserName }, testInfo) => {
+    await db.collection<{ _id: string }>('moe_content').updateOne({ _id: 'Page:home' }, { $unset: { heroSlides: '' } });
+    await refreshPublicCache();
+    const lead = defaultHomeSlides[0];
+    const poster = homeSlideVideoPoster(lead.url)!;
+    const requested: string[] = [];
+    page.on('request', request => {
+      const path = new URL(request.url()).pathname;
+      if (path.endsWith('.mp4')) requested.push(path);
+    });
+    await page.goto('/th');
+    const carousel = slider(page, true);
+    const video = carousel.locator('video');
+    await expect(video).toHaveAttribute('poster', poster);
+    await expect(video).toHaveAttribute('aria-label', lead.altTh);
+    await expect(video).toHaveAttribute('preload', 'none');
+    for (const selector of ['meta[property="og:image"]', 'meta[name="twitter:image"]']) {
+      await expect(page.locator(selector)).toHaveAttribute('content', E2E_BASE_URL + poster);
+    }
+    const frame = (await carousel.boundingBox())!;
+    expect((await video.boundingBox())!.width).toBeCloseTo(frame.width, 0);
+    expect(frame.width / frame.height).toBeCloseTo(16 / 9, 2);
+    expect(await video.evaluate((el: HTMLVideoElement) => el.paused && el.muted)).toBe(true);
+    expect(requested).toEqual([]);
+    await carousel.screenshot({ path: testInfo.outputPath('owner-mobile-banner.png') });
+    const hasPlaybackDecoder = browserName !== 'webkit' || process.platform !== 'win32';
+    if (hasPlaybackDecoder) {
+      await page.getByRole('banner').hover();
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await expect.poll(() => video.evaluate((el: HTMLVideoElement) => el.currentTime)).toBeGreaterThan(0);
+      expect(await video.evaluate((el: HTMLVideoElement) => [el.videoWidth, el.videoHeight])).toEqual([1920, 864]);
+      await video.evaluate((el: HTMLVideoElement) => { el.currentTime = el.duration - 0.5; });
+      await expect(carousel).toHaveAttribute('data-slide-index', '1');
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+    }
+    // Test the error on the next clip. Firefox can retain the previously
+    // decoded video across reloads without issuing another HTTP request.
+    const unavailable = defaultHomeSlides[2];
+    let failedRequests = 0;
+    await page.route('**' + unavailable.url, route => {
+      failedRequests++;
+      return route.fulfill({ status: 404, headers: { 'Cache-Control': 'no-store' } });
+    });
+    await carousel.getByRole('button', { name: 'แสดงสไลด์ 3', exact: true }).click();
+    // Windows WebKit can fail before requesting media if no decoder exists.
+    // Both a decoder error and a real network error must leave the poster visible.
+    await carousel.hover();
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    const still = carousel.getByRole('img', { name: unavailable.altTh, exact: true });
+    await expect(still).toHaveAttribute('src', homeSlideVideoPoster(unavailable.url)!);
+    await expect.poll(() => still.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
+    if (hasPlaybackDecoder) expect(failedRequests).toBeGreaterThan(0);
+    await carousel.getByRole('button', { name: 'แสดงสไลด์ 2', exact: true }).click();
+    await expect(carousel.getByRole('img')).toHaveAttribute('alt', defaultHomeSlides[1].altTh);
+  });
+});
+
 for (const width of [320, 390, 768]) {
   test.describe(`twelve slides at ${width}px`, () => {
     test.use({ viewport: { width, height: 1000 }, reducedMotion: 'reduce' });
 
     test('keeps all navigation reachable', async ({ page, db }) => {
-      const slides = Array.from({ length: 12 }, (_, index) => ({ url: `${defaultHomeSlides[index % 5].url}?fixture=${index}`, alt: `Test slide ${index + 1}`, altTh: `ภาพทดสอบ ${index + 1}` }));
+      const slides = Array.from({ length: 12 }, (_, index) => ({ url: `${fleetPhotoSlides[index % 5].url}?fixture=${index}`, alt: `Test slide ${index + 1}`, altTh: `ภาพทดสอบ ${index + 1}` }));
       await db.collection<{ _id: string }>('moe_content').updateOne({ _id: 'Page:home' }, { $set: { heroSlides: slides } });
       await refreshPublicCache();
       await page.goto('/');

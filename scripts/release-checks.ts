@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { enquiryRecipientList } from '../src/lib/enquiry-email';
 import { indexingEnabled, publicHttpsOrigin } from '../src/lib/site-config';
 import { isBundledContentPhoto } from '../src/server/retired-photos';
+import { isBundledHomeSlide } from '../src/lib/home-slides';
 
 export type ReleaseCheck = { name: string; status: 'pass' | 'blocked' | 'review'; detail: string };
 type Environment = Readonly<Record<string, string | undefined>>;
@@ -67,12 +68,17 @@ export function contentReadiness(records: readonly ReleaseRecord[], media: reado
     ...gallery(record).flatMap(image => [image.alt, image.altTh]),
     ...slides(record).flatMap(image => [image.alt, image.altTh]),
   ].join(' ')));
-  const urls = new Set(media.filter(item => item.state === 'committed' && !item.trashedAt).map(item => item.url));
+  const available = new Map(media.filter(item => item.state === 'committed' && !item.trashedAt).map(item => [item.url, item.kind ?? 'image']));
   const references = records.flatMap(record => {
     const bundled = (url: unknown) => typeof url === 'string' && isBundledContentPhoto(String(record.type), String(record.id), url);
     const images = [record.image, record.mobileImage, ...gallery(record).map(image => image.url)].filter(url => url && !bundled(url));
-    const mediaSlides = slides(record).filter(slide => slide.kind === 'video' || !bundled(slide.url));
-    return [...images, ...mediaSlides.map(slide => slide.url)];
+    const mediaSlides = slides(record).filter(slide => {
+      const kind = slide.kind ?? 'image';
+      if (kind === 'image' && bundled(slide.url)) return false;
+      return !(record.type === 'Page' && record.id === 'home' && typeof slide.url === 'string'
+        && (kind === 'video' || kind === 'image') && isBundledHomeSlide(slide.url, kind));
+    });
+    return [...images.map(url => ({ url, kind: 'image' })), ...mediaSlides.map(slide => ({ url: slide.url, kind: slide.kind ?? 'image' }))];
   });
   const unfinished = media.filter(item => ['uploading', 'staged', 'deleting'].includes(String(item.state)) && !item.trashedAt);
   const failedTrash = media.filter(item => item.state === 'deleting' && Boolean(item.trashedAt));
@@ -80,7 +86,7 @@ export function contentReadiness(records: readonly ReleaseRecord[], media: reado
     result('Core pages', missingPages.length === 0, missingPages.length ? `Missing public pages: ${missingPages.join(', ')}` : 'All nine core pages are public.'),
     result('Vessel specification review', vessels.length > 0 && noSpecs.length === 0, `${noSpecs.length} of ${vessels.length} public vessels have no populated specifications. Supply verified values where available; never invent missing numbers.`, 'review'),
     result('Provisional content review', provisional.length === 0, provisional.length ? `${provisional.length} public records contain wording that needs editorial review. Text matching cannot replace owner approval.` : 'No explicit provisional wording found. Owner approval is still required for facts and media.', 'review'),
-    result('Registered content images', references.every(url => urls.has(url)), `${references.length} public image references checked against available committed media. This does not fetch image files from the provider.`),
+    result('Registered content media', references.every(ref => available.get(ref.url) === ref.kind), `${references.length} non-bundled public references checked against available committed images and videos. File delivery is checked by the smoke test.`),
     result('Pending upload cleanup', unfinished.length === 0, `${unfinished.length} unfinished upload records. Healthy retained Media Trash is excluded.`, 'review'),
     result('Media Trash deletion review', failedTrash.length === 0, `${failedTrash.length} retained image deletions need review or retry. No cleanup was performed.`, 'review'),
   ];

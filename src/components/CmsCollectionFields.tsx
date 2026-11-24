@@ -1,8 +1,8 @@
 'use client';
 
 import { useId, type ReactNode } from 'react';
-import { ArrowDown, ArrowUp, ClipboardList, ImagePlus, Languages, MapPin, Plus, Ship, Trash2 } from 'lucide-react';
-import type { CmsCategorySuggestions, ContentImage, ContentRecord, RouteSpecs, VesselSpecs } from '@/lib/cms-types';
+import { ClipboardList, ImagePlus, Languages, MapPin, Ship } from 'lucide-react';
+import type { CmsCategorySuggestions, ContentRecord, RouteSpecs, VesselSpecs } from '@/lib/cms-types';
 import { useCmsLocale } from '@/lib/cms-locale';
 import { cmsContentPlaceholder } from '@/lib/cms-content-placeholders';
 import { technicalSections, technicalTextLimit } from '@/lib/vessel-technical-sections';
@@ -10,7 +10,6 @@ import CmsRouteFields from './CmsRouteFields';
 import CmsServiceIconPicker from './CmsServiceIconPicker';
 import SelectionDialog from './SelectionDialog';
 import styles from './CmsCollectionFields.module.css';
-import workspace from './CmsWorkspace.module.css';
 
 type TextField = 'title' | 'description' | 'bodyHeading' | 'body' | 'imageAlt';
 const textLabels: Record<TextField, string> = { title: 'Title', description: 'Summary', bodyHeading: 'Content heading', body: 'Content', imageAlt: 'Image description' };
@@ -40,15 +39,13 @@ const vesselDetailGroups = [
   ] },
 ] as const;
 
-export default function CmsCollectionFields({ record, records = [], categories, disabled, preparing, onChange, imageField, onGalleryChange, routeText, onRouteText }: {
+export default function CmsCollectionFields({ record, records = [], categories, disabled, onChange, imageField, routeText, onRouteText }: {
   record: ContentRecord;
   records?: ContentRecord[];
   categories?: CmsCategorySuggestions;
   disabled: boolean;
-  preparing: boolean;
   onChange: (patch: Partial<ContentRecord>) => void;
   imageField: (label: string, target: 'image' | 'mobileImage' | number, url: string, optional?: boolean) => ReactNode;
-  onGalleryChange: (gallery: ContentImage[]) => void;
   routeText: string;
   onRouteText: (text: string) => void;
 }) {
@@ -58,7 +55,7 @@ export default function CmsCollectionFields({ record, records = [], categories, 
   const hasCategory = ['Vessel', 'Project', 'News'].includes(record.type);
   const hasHeading = ['Service', 'Project', 'News'].includes(record.type);
   const categoryLabel = record.type === 'Vessel' ? 'Vessel type' : 'Category';
-  const gallery = record.gallery || [];
+
   const languageName = (language: 'th' | 'en') => t(language === 'th' ? 'Thai' : 'English');
   const bilingualLabel = (label: string, language: 'th' | 'en') => t(`${label} · ${language === 'th' ? 'Thai' : 'English'}`);
 
@@ -95,14 +92,6 @@ export default function CmsCollectionFields({ record, records = [], categories, 
       else specs[key] = Number(event.target.value);
       onChange({ routeSpecs: Object.keys(specs).length ? specs : undefined });
     }} /></label>;
-  }
-
-  function moveImage(index: number, direction: -1 | 1) {
-    const next = index + direction;
-    if (disabled || preparing || next < 0 || next >= gallery.length) return;
-    const reordered = [...gallery];
-    [reordered[index], reordered[next]] = [reordered[next], reordered[index]];
-    onGalleryChange(reordered);
   }
 
   return <fieldset className={styles.fields} disabled={disabled}>
@@ -178,13 +167,6 @@ export default function CmsCollectionFields({ record, records = [], categories, 
         </details>)}
       </div>
     </details>}
-    {record.type === 'Vessel' && <details className={styles.card}>
-      <summary><span className={styles.cardTitle}><ImagePlus size={20} aria-hidden="true" />{t('More photos')}</span><span className={styles.hint}>{gallery.length ? t('{count} photos', { count: gallery.length }) : t('Optional')}</span></summary>
-      <div className={styles.cardBody}>{gallery.map((item, index) => <div className={styles.galleryItem} key={index}>
-        {imageField(t('Gallery image {number}', { number: index + 1 }), index, item.url)}
-        <div className={styles.twoColumns}>{languages.map(language => <label className={styles.field} key={language}>{bilingualLabel('Description', language)}<input lang={language} placeholder={cmsContentPlaceholder('galleryAlt', language)} maxLength={250} value={language === 'th' ? item.altTh : item.alt} onChange={event => onChange({ gallery: gallery.map((image, position) => position === index ? { ...image, [language === 'th' ? 'altTh' : 'alt']: event.target.value } : image) })} /></label>)}</div>
-        <div className={styles.galleryActions}><div><button type="button" className={workspace.iconButton} disabled={preparing || index === 0} aria-label={t('Move gallery image {number} earlier', { number: index + 1 })} title={t('Move earlier')} onClick={() => moveImage(index, -1)}><ArrowUp size={19} /></button><button type="button" className={workspace.iconButton} disabled={preparing || index === gallery.length - 1} aria-label={t('Move gallery image {number} later', { number: index + 1 })} title={t('Move later')} onClick={() => moveImage(index, 1)}><ArrowDown size={19} /></button></div><button type="button" className={workspace.textButton} disabled={preparing} aria-label={t('Remove gallery image {number}', { number: index + 1 })} onClick={() => onGalleryChange(gallery.filter((_, position) => position !== index))}><Trash2 size={17} />{t('Remove image')}</button></div>
-      </div>)}<button type="button" className="button secondary" disabled={preparing || gallery.length >= 12} onClick={() => onGalleryChange([...gallery, { url: '', alt: '', altTh: '' }])}><Plus size={18} />{t('Add gallery image')}</button><p className={styles.hint}>{t('Up to 12 gallery images for vessel profiles. Use the arrows to set their display order. Images upload one at a time when you save.')}</p></div>
-    </details>}
+
   </fieldset>;
 }

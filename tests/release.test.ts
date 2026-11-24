@@ -3,6 +3,7 @@ import test from 'node:test';
 import { indexingEnabled, publicHttpsOrigin, siteOrigin } from '../src/lib/site-config';
 import loader from '../src/lib/cloudinary-loader';
 import { safeErrorDetails } from '../src/lib/error-reporting';
+import { ownerVideoSlides } from '../src/lib/home-slides';
 import { cloudinaryVariables, configurationChecks, contactReadiness, contentReadiness, emailReadiness, mongoVariables, populated, releaseReport } from '../scripts/release-checks';
 
 test('indexing requires explicit content approval and a production public HTTPS origin', () => {
@@ -82,7 +83,7 @@ test('healthy Media Trash is not reported as an unfinished upload; incomplete de
 test('referenced images must be available committed media and blank specifications remain reviewable', () => {
   const records = [{ type: 'Vessel', id: 'vessel', image: 'private-image-url', vesselSpecs: { tonnage: '', length: null } }];
   const checks = contentReadiness(records, [{ state: 'trashed', url: 'private-image-url' }]);
-  assert.equal(checks.find(item => item.name === 'Registered content images')!.status, 'blocked');
+  assert.equal(checks.find(item => item.name === 'Registered content media')!.status, 'blocked');
   assert.equal(checks.find(item => item.name === 'Vessel specification review')!.status, 'review');
   assert(!JSON.stringify(checks).includes('private-image-url'));
   assert.equal(contentReadiness([{ ...records[0], vesselSpecs: { tonnage: 0 } }], [{ state: 'committed', url: 'private-image-url' }]).find(item => item.name === 'Vessel specification review')!.status, 'pass');
@@ -123,8 +124,18 @@ test('passing automated checks does not falsely attest external launch readiness
 test('release checks accept bundled company photographs on their supported content records', () => {
   const records = [{ type: 'News', id: 'voyage', image: '/images/company-originals/wheelhouse.webp' },
     { type: 'Vessel', id: 'dumai-moe', image: '/images/fleet-originals/dumai-moe.webp' }];
-  const registered = () => contentReadiness(records, []).find(check => check.name === 'Registered content images')?.status;
+  const registered = () => contentReadiness(records, []).find(check => check.name === 'Registered content media')?.status;
   assert.equal(registered(), 'pass');
   records[1].id = 'moe-line-6';
   assert.equal(registered(), 'blocked');
+});
+
+test('release checks distinguish bundled clips from banner images and reject unregistered videos', () => {
+  const clip = ownerVideoSlides[0];
+  const status = (record: Record<string, unknown>) => contentReadiness([{ type: 'Page', id: 'home', ...record }], [])
+    .find(check => check.name === 'Registered content media')!.status;
+  assert.equal(status({ heroSlides: [clip] }), 'pass');
+  assert.equal(status({ image: clip.url }), 'blocked');
+  assert.equal(status({ heroSlides: [{ ...clip, kind: 'image' }] }), 'blocked');
+  assert.equal(status({ heroSlides: [{ ...clip, url: '/images/owner-media/video-unknown.mp4' }] }), 'blocked');
 });

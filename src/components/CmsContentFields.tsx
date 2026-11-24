@@ -7,6 +7,7 @@ import type { CmsCategorySuggestions, ContentRecord, MediaItem } from '@/lib/cms
 import { useCmsLocale } from '@/lib/cms-locale';
 import type { PreparedImage } from '@/lib/cms-client';
 import styles from './CmsWorkspace.module.css';
+import CmsGalleryFields from './CmsGalleryFields';
 import CmsPageFields from './CmsPageFields';
 import CmsCollectionFields from './CmsCollectionFields';
 import useCmsMediaSearch from './useCmsMediaSearch';
@@ -69,6 +70,19 @@ export default function CmsContentFields({ record, existing, records, categories
       </div>}
     </div>;
   }
-  if (record.type === 'Page' || record.type === 'Section') return <CmsPageFields key={`${record.type}:${record.id}`} record={record} disabled={disabled} onChange={onChange} imageField={imageField} />;
-  return <CmsCollectionFields key={`${record.type}:${existing ? record.id : 'new'}`} record={record} records={records} categories={categories} disabled={disabled} preparing={preparing} onChange={onChange} imageField={imageField} onGalleryChange={gallery => { setPicker(null); setPickerSearch(''); setPickerPage(0); onChange({ gallery }); }} routeText={routeText} onRouteText={onRouteText} />;
+  const pageFields = record.type === 'Page' || record.type === 'Section';
+  const isAbout = record.type === 'Page' && record.id === 'about';
+  return <>
+    {pageFields
+      ? <CmsPageFields key={record.id} record={record} disabled={disabled} onChange={onChange} imageField={imageField} />
+      : <CmsCollectionFields key={existing ? record.id : 'new'} record={record} records={records} categories={categories} disabled={disabled} onChange={onChange} imageField={imageField} routeText={routeText} onRouteText={onRouteText} />}
+    {(isAbout || record.type === 'Vessel') && <CmsGalleryFields
+      title={t(isAbout ? 'Company photo archive' : 'More photos')}
+      gallery={record.gallery || []} disabled={disabled} preparing={preparing} imageField={imageField}
+      onGalleryChange={gallery => {
+        setPicker(null);
+        onChange({ gallery });
+      }}
+    />}
+  </>;
 }

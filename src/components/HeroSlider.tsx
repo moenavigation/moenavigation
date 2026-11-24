@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion } from "motion/react";
 import { Pause, Play } from "lucide-react";
 import type { HomeSlide } from "@/lib/cms-types";
-import { homeSlideVideoPoster, mobileHomeSlidePhoto } from "@/lib/home-slides";
+import { homeSlideVideoPoster, isBundledHomeSlide, mobileHomeSlidePhoto } from "@/lib/home-slides";
 import { local, type Locale } from "@/lib/content";
 import styles from "./HeroSlider.module.css";
 
@@ -182,10 +182,14 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
     <div className={styles.images} aria-live={rotating ? "off" : "polite"} aria-atomic="false">
       {slides.map((slide, position) => {
         const mobilePhoto = mobileHomeSlidePhoto(slide.url);
+        const isVideo = slide.kind === "video";
+        const poster = isVideo ? homeSlideVideoPoster(slide.url) : undefined;
+        const description = (locale === "th" ? slide.altTh : slide.alt) || slide.alt || slide.altTh;
+        const showPoster = position === activeIndex && videoMode === "error" && poster;
         return <motion.div
         key={slide.url}
         className={styles.slide}
-        data-mobile-photo={mobilePhoto ? true : undefined}
+        data-native-crop={isVideo || isBundledHomeSlide(slide.url, "image") ? true : undefined}
         initial={false}
         animate={{ opacity: position === activeIndex ? 1 : 0 }}
         transition={{ duration: reducedMotion ? 0 : 0.7, ease: "easeInOut" }}
@@ -197,15 +201,16 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
         aria-roledescription={local(locale, "slide", "สไลด์")}
         aria-label={local(locale, `${position + 1} of ${slides.length}`, `${position + 1} จาก ${slides.length}`)}
       >
-        {slide.kind === "video" ? ((position === activeIndex || slide.url === outgoingVideo) && <video
-          ref={position === activeIndex ? video : undefined} src={slide.url} poster={homeSlideVideoPoster(slide.url)} muted playsInline
+        {showPoster ? <Image src={poster} alt={description} fill unoptimized draggable={false} />
+          : isVideo ? ((position === activeIndex || slide.url === outgoingVideo) && <video
+          ref={position === activeIndex ? video : undefined} src={slide.url} poster={poster} muted playsInline
           preload="none" loop={slides.length === 1 && !reducedMotion}
-          aria-label={(locale === "th" ? slide.altTh : slide.alt) || slide.alt || slide.altTh || local(locale, "Maritime video", "วิดีโอการเดินเรือ")}
+          aria-label={description || local(locale, "Maritime video", "วิดีโอการเดินเรือ")}
           onEnded={position === activeIndex ? () => setVideoMode("ended") : undefined}
           onError={position === activeIndex ? () => setVideoMode("error") : undefined} />)
           : <picture>
           {mobilePhoto && <source media="(max-width: 700px)" srcSet={mobilePhoto} />}
-          <Image src={slide.url} alt={(locale === "th" ? slide.altTh : slide.alt) || slide.alt || slide.altTh}
+          <Image src={slide.url} alt={description}
           fill sizes="(max-width: 700px) 169vw, 110vw" loading={position === 0 ? "eager" : "lazy"}
           fetchPriority={position === 0 ? "high" : "auto"} unoptimized={slide.url.startsWith("/")} draggable={false} /></picture>}
       </motion.div>;
