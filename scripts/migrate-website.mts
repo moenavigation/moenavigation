@@ -7,6 +7,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import type { ContentRecord } from '../src/lib/cms-types';
 import { recordSchema } from '../src/lib/validation';
 import { isBundledHomeSlide } from '../src/lib/home-slides';
+import { companyPhone } from '../src/lib/company';
 import { websiteContentRecords } from './data/website-content';
 import { findReusableMedia, metadataMatches, type MigrationAsset, type MigrationProviderAsset } from './lib/migration-media';
 
@@ -197,7 +198,7 @@ try {
         const result = await scoped.media.updateOne({ _id: mediaId(asset), state: { $in: ['staged', 'committed'] }, sourceSha256: asset.sha256 }, { $set: { state: 'committed', pinned: true, touchedAt: new Date() } }, { session });
         assert.equal(result.matchedCount, 1, `Media changed during migration: ${asset.sourcePath}`);
       }
-      if (!savedSettings) await scoped.settings.insertOne({ _id: 'website', companyName: 'Moe Navigation Co.,Ltd.', companyNameTh: 'บริษัท โม เนวิเกชั่น จำกัด', officeAddress: '', officeAddressTh: '', phone: '', email: '', mapUrl: '', revision: 1 }, { session });
+      if (!savedSettings) await scoped.settings.insertOne({ _id: 'website', companyName: 'Moe Navigation Co.,Ltd.', companyNameTh: 'บริษัท โม เนวิเกชั่น จำกัด', officeAddress: '', officeAddressTh: '', phone: companyPhone, email: '', mapUrl: '', revision: 1 }, { session });
     });
     const cacheRefreshRequired = changes.length > 0 || !savedSettings;
     console.log(JSON.stringify({ applied: true, contentRecords: await c.content.countDocuments(), mediaRecords: await c.media.countDocuments({ state: 'committed' }), cacheRefreshRequired, instruction: cacheRefreshRequired ? 'Run the dry-run again to verify zero changes, then refresh the public cache on the target instance through authenticated POST /api/cms/cache.' : 'Run the dry-run again to verify zero changes, zero uploads, and zero local media references.' }));

@@ -56,6 +56,14 @@ The SVG in `public/brand` is traced from the supplied `Moe Logo - 2026.png`, pre
 
 ## Client fleet information received on 29 October 2026
 
+On 24 November 2026 the client updated the six numbered vessel names to MOE LINE 2 through MOE LINE 7 in English and โมไลน์ 2 through โมไลน์ 7 in Thai. This applies to vessel names on the website and in the CMS. The two individually named vessels are RANONG MOE and DUMAI MOE.
+
 The client supplied eight vessel names and types: ระนองโม, โม2, โม3, โม5, โม6 and โม7 are container vessels; โม4 is a crane vessel; Dumai Moe is a tanker. These replace the earlier provisional classifications. Existing vessel URLs stay unchanged, and the new entries use `moe-line-4` and `dumai-moe`. The Thai names follow the supplied spelling, including the untranslated name Dumai Moe.
 
-The confirmed seed data lives in `scripts/data/client-fleet.ts` and is shared by the initial migration and isolated browser fixtures. No actual vessel photographs, dimensions, capacities, IMO numbers, flag, build year or operating availability were supplied; technical particulars remain blank. Fleet cards and galleries use explicitly labeled illustrative imagery, combining retained maritime assets with five optimized WebP illustrations for MOE 3, MOE 4, MOE 6, MOE 7 and Dumai Moe. Image selection follows each confirmed vessel type, and bilingual alternative text identifies every image as illustrative rather than a photograph of the named vessel. Replace these illustrations with client photos when supplied. Further CMS edits remain authoritative: the initial migration preserves existing field values rather than overwriting later editorial changes.
+The October list supplied names and types. Subsequent vessel pages, source photographs and client particulars supplement it. The initial migration and isolated browser fixtures share the fleet records in `scripts/data/client-fleet.ts`.
+
+## Client revision received on 24 November 2026
+
+The latest particulars sheets cover MOE LINE 4, MOE LINE 5, MOE LINE 6 and DUMAI MOE. The reviewed fields, source filenames and file hashes are in `scripts/data/current-pdf-vessel-particulars.ts`. MOE LINE 5 and 6 each have four reefer plugs. Their two conflicting build-year entries require owner confirmation. Keep the previously recorded 2009 and 2006 pending clarification. The crane sheet gives a safe working load of 200 tonnes. The tanker sheet gives a cargo volume of 3,330 m³ in ten tanks and a general deadweight of 3,526 tonnes.
+
+The homepage brief supplies Thai and English chartering copy. It describes crew arrangements and vessel operations management throughout a charter. Independent management services and the proposed operating-principle statements require company confirmation before public release. Alice is reviewing the existing route information.

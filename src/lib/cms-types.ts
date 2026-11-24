@@ -1,7 +1,11 @@
+import type { HomeCharterCopy } from './homepage-chartering';
+
 export const contentTypes = ['Vessel', 'Project', 'News', 'Service', 'Page', 'Route', 'Section'] as const;
 export type ContentType = typeof contentTypes[number];
 export type CmsCategorySuggestions = Partial<Record<ContentType, { en: string[]; th: string[] }>>;
 export type ContentImage = { url: string; alt: string; altTh: string };
+export type MediaKind = 'image' | 'video';
+export type HomeSlide = ContentImage & { kind?: MediaKind };
 export type FooterStatistic = { label: string; labelTh: string; value: string };
 export type RoutePort = { name: string; nameTh: string; country: string; countryTh: string };
 export type RouteSpecs = {
@@ -13,6 +17,13 @@ export type RouteSpecs = {
 };
 export type VesselSpecs = {
   imo?: string;
+  officialNumber?: string;
+  callSign?: string;
+  mmsi?: string;
+  lbpM?: number;
+  craneSwlT?: number;
+  cargoVolumeM3?: number;
+  cargoTanks?: number;
   yearBuilt?: number;
   lengthM?: number;
   beamM?: number;
@@ -22,6 +33,7 @@ export type VesselSpecs = {
   cargoCapacityT?: number;
   grossTonnage?: number;
   netTonnage?: number;
+  tonnageBasis?: 'register' | 'international';
   capacityTeu?: number;
   reeferPlugs?: number;
   flag?: string;
@@ -56,8 +68,9 @@ export type ContentRecord = {
   icon?: string;
   mobileImage?: string;
   gallery?: ContentImage[];
-  heroSlides?: ContentImage[];
+  heroSlides?: HomeSlide[];
   heroSlideInterval?: number;
+  homeCharters?: HomeCharterCopy;
   bodyHeading?: string;
   bodyHeadingTh?: string;
   origin?: RoutePort;
@@ -80,6 +93,7 @@ export type CmsContentSummary = {
 };
 
 export type MediaItem = {
+  kind?: MediaKind;
   id: string;
   title: string;
   url: string;

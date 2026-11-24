@@ -1,18 +1,18 @@
 import type { ContentRecord } from '../../src/lib/cms-types';
 import { applyLegacyVesselSpecs } from './legacy-vessel-particulars';
-import enhancedFleet from './enhanced-fleet-images.json';
+import { currentPdfVesselParticulars } from './current-pdf-vessel-particulars';
+import { fleetPhotos } from '../../src/lib/fleet-photos';
 
-// Client-supplied vessel names and types, received 29 October 2026.
-// Keep existing URL identities. Reviewed legacy particulars use PDFs as the
-// primary source; seven vessels use the approved corrected photo pairs.
+// Preserve each vessel URL when the client updates a display name.
+// Client sheets supplement and supersede the earlier published particulars.
 const vessels = [
   ['ranong-moe', 'RANONG MOE', 'ระนองโม', 'Container'],
-  ['moe-line-2', 'MOE 2', 'โม2', 'Container'],
-  ['moe-line-3', 'MOE 3', 'โม3', 'Container'],
-  ['moe-line-4', 'MOE 4', 'โม4', 'Crane'],
-  ['moe-line-5', 'MOE 5', 'โม5', 'Container'],
-  ['moe-line-6', 'MOE 6', 'โม6', 'Container'],
-  ['moe-line-7', 'MOE 7', 'โม7', 'Container'],
+  ['moe-line-2', 'MOE LINE 2', 'โมไลน์ 2', 'Container'],
+  ['moe-line-3', 'MOE LINE 3', 'โมไลน์ 3', 'Container'],
+  ['moe-line-4', 'MOE LINE 4', 'โมไลน์ 4', 'Crane'],
+  ['moe-line-5', 'MOE LINE 5', 'โมไลน์ 5', 'Container'],
+  ['moe-line-6', 'MOE LINE 6', 'โมไลน์ 6', 'Container'],
+  ['moe-line-7', 'MOE LINE 7', 'โมไลน์ 7', 'Container'],
   ['dumai-moe', 'DUMAI MOE', 'Dumai Moe', 'Tanker'],
 ] as const;
 
@@ -22,46 +22,20 @@ const categories = {
   Tanker: { categoryTh: 'เรือแทงเกอร์', description: 'Tanker in the fleet of Moe Navigation Co.,Ltd.', descriptionTh: 'เรือแทงเกอร์ในกองเรือของบริษัท โม เนวิเกชั่น จำกัด' },
 };
 
-const media = {
-  'ranong-moe': ['container-vessel', 'container-deck-detail', 'port', 'vessel-deck'],
-  'moe-line-2': ['port', 'logistics', 'container-deck-detail'],
-  'moe-line-3': ['fleet/moe-3-container-illustration', 'container-deck-detail', 'port', 'logistics'],
-  'moe-line-4': ['fleet/moe-4-crane-illustration', 'crane-lift-detail'],
-  'moe-line-5': ['vessel-deck', 'container-deck-detail', 'port', 'logistics'],
-  'moe-line-6': ['fleet/moe-6-container-illustration', 'container-deck-detail', 'port', 'logistics'],
-  'moe-line-7': ['fleet/moe-7-container-illustration', 'container-deck-detail', 'port', 'logistics'],
-  'dumai-moe': ['fleet/dumai-moe-tanker-illustration', 'tanker-deck-detail', 'tanker'],
-} satisfies Record<typeof vessels[number][0], string[]>;
-
-function illustrativeMedia(id: typeof vessels[number][0], title: string, titleTh: string) {
-  const corrected = enhancedFleet.vessels.find(vessel => vessel.id === id);
-  if (corrected) return {
-    image: corrected.main.url,
-    imageAlt: corrected.main.alt,
-    imageAltTh: corrected.main.altTh,
-    mobileImage: '',
-    gallery: corrected.gallery.map(({ url, alt, altTh }) => ({ url, alt, altTh })),
-  };
-  const [main, ...gallery] = media[id];
-  return {
-    image: `/images/${main}.webp`,
-    imageAlt: `${title} — illustrative maritime image, not a photograph of this vessel.`,
-    imageAltTh: `${titleTh} — ภาพประกอบทางทะเล ไม่ใช่ภาพถ่ายของเรือลำนี้`,
-    mobileImage: '',
-    gallery: gallery.map((asset, index) => ({
-      url: `/images/${asset}.webp`,
-      alt: `${title} — illustrative maritime image ${index + 2}, not a photograph of this vessel.`,
-      altTh: `${titleTh} — ภาพประกอบทางทะเล ${index + 2} ไม่ใช่ภาพถ่ายของเรือลำนี้`,
-    })),
-  };
+function vesselMedia(id: keyof typeof fleetPhotos) {
+  const [main, ...gallery] = fleetPhotos[id];
+  return { image: main.url, imageAlt: main.alt, imageAltTh: main.altTh, mobileImage: '', gallery };
 }
 
 export const clientFleetRecords: ContentRecord[] = vessels.map(([id, title, titleTh, category], index) => applyLegacyVesselSpecs({
   id, type: 'Vessel', title, titleTh, category, ...categories[category],
-  ...illustrativeMedia(id, title, titleTh),
+  ...vesselMedia(id),
   body: '', bodyTh: '', bodyHeading: '', bodyHeadingTh: '',
   order: index + 1, status: 'Published', revision: 1,
-}).record);
+}).record).map(record => {
+  const sheet = currentPdfVesselParticulars.find(source => source.id === record.id);
+  return sheet ? { ...record, vesselSpecs: { ...record.vesselSpecs, ...sheet.specs } } : record;
+});
 
 export const clientFleetPageCopy = {
   description: 'Explore our container vessels, crane vessel and tanker.',

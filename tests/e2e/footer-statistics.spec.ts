@@ -1,9 +1,48 @@
 import type { ContentRecord } from '../../src/lib/cms-types';
-import { test, expect, login } from './fixtures';
+import { test, expect, login, refreshPublicCache } from './fixtures';
 
 for (const viewport of [{ width: 1440, height: 1000 }, { width: 320, height: 900 }]) {
   test.describe(`Footer statistics · ${viewport.width}`, () => {
     test.use({ viewport, reducedMotion: 'reduce' });
+    test('footer exposes bilingual navigation, the published fleet and visible office details', async ({ page, db }, testInfo) => {
+      test.slow();
+      const mapUrl = 'https://maps.google.com/?q=Synthetic+E2E+office';
+      await db.collection('moe_settings').updateOne({}, { $set: { mapUrl, companyNameTh: 'บริษัทเดินเรือตัวอย่าง' } });
+      await db.collection('moe_content').updateOne({ type: 'Vessel', id: 'moe-line-3' }, { $set: { status: 'Draft' } });
+      await db.collection('moe_content').updateOne({ type: 'Vessel', id: 'moe-line-2' }, { $set: { deletedAt: new Date().toISOString() } });
+      await refreshPublicCache();
+      const vessels = await db.collection<ContentRecord>('moe_content').find({ type: 'Vessel', status: 'Published', deletedAt: { $exists: false } }).sort({ order: 1, id: 1 }).toArray();
+      expect(vessels).toHaveLength(6);
+      for (const locale of ['en', 'th'] as const) {
+        const thai = locale === 'th';
+        const prefix = thai ? '/th' : '';
+        const routes = ['', '/about', '/services', '/fleet', '/routes', '/projects', '/news', '/contact', '/privacy', '/services/vessel-services', `/fleet/${vessels[0].id}`, '/projects/bunkering-operation', '/news/connected-ports'];
+        for (const route of routes) {
+          await page.goto(`${prefix}${route}` || '/', { waitUntil: 'domcontentloaded' });
+          const footer = page.getByRole('contentinfo');
+          const fleet = footer.getByRole('navigation', { name: thai ? 'กองเรือของเรา' : 'Our fleet', exact: true }).getByRole('link');
+          await expect(fleet).toHaveText(vessels.map(vessel => thai ? vessel.titleTh : vessel.title));
+          expect(await fleet.evaluateAll(links => links.map(link => link.getAttribute('href')))).toEqual(vessels.map(vessel => `${prefix}/fleet/${vessel.id}`));
+          await expect(footer.locator('dd').first()).toHaveText(String(vessels.length));
+        }
+        const footer = page.getByRole('contentinfo');
+        const navigation = footer.getByRole('navigation', { name: thai ? 'เมนูเว็บไซต์' : 'Navigation', exact: true }).getByRole('link');
+        await expect(navigation).toHaveText(thai ? ['หน้าแรก', 'เกี่ยวกับเรา', 'บริการ', 'กองเรือ', 'เส้นทาง', 'ติดต่อเรา'] : ['Home', 'About Us', 'Services', 'Fleet', 'Routes', 'Contact Us']);
+        expect(await navigation.evaluateAll(links => links.map(link => link.getAttribute('href')))).toEqual(['', '/about', '/services', '/fleet', '/routes', '/contact'].map(path => `${prefix}${path}` || '/'));
+        await expect(footer.getByText(thai ? /ให้บริการเช่าเรือคอนเทนเนอร์ เรือเครน/ : /Full-vessel chartering for container ships/)).toBeVisible();
+        await expect(footer.getByText(thai ? 'บริษัทเดินเรือตัวอย่าง' : 'Moe Navigation Co., Ltd.', { exact: true })).toBeVisible();
+        const office = footer.getByRole('region', { name: thai ? 'ติดต่อเรา' : 'Contact', exact: true });
+        await expect(office.getByText(thai ? 'สำนักงานทดสอบ E2E' : 'Synthetic E2E office')).toBeVisible();
+        await expect(office.locator('a[href="tel:+66000000000"]')).toContainText('+66000000000');
+        await expect(office.locator('a[href="mailto:contact@example.test"]')).toContainText('contact@example.test');
+        await expect(office.getByRole('link', { name: thai ? /แผนที่สำนักงาน/ : /Office map/ })).toHaveAttribute('href', mapUrl);
+        await expect(office.getByRole('link', { name: thai ? 'ส่งข้อความสอบถาม' : 'Send an enquiry' })).toHaveAttribute('href', `${prefix}/contact#contact-form`);
+        await expect(footer.getByRole('link', { name: thai ? 'นโยบายความเป็นส่วนตัว' : 'Privacy policy' })).toHaveAttribute('href', `${prefix}/privacy`);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+        await footer.screenshot({ path: testInfo.outputPath(`footer-directory-${locale}.png`), animations: 'disabled' });
+      }
+    });
+
     test('CMS edits preserve automatic Fleet count and save the other bilingual figures', async ({ page }, testInfo) => {
       await page.goto('/about');
       const footer = page.getByRole('contentinfo');

@@ -3,9 +3,9 @@ import { test, expect, E2E_ADMIN, solveLoginSlide } from './fixtures';
 
 const logoSelector = 'img[src="/brand/moe-logo.svg"]';
 
-async function expectOfficialLogo(logo: Locator, locale: 'en' | 'th' = 'en') {
+async function expectOfficialLogo(logo: Locator, locale: 'en' | 'th' = 'en', alt = locale === 'th' ? 'บริษัท โม เนวิเกชั่น จำกัด' : 'Moe Navigation Co.,Ltd.') {
   await expect(logo).toBeVisible();
-  await expect(logo).toHaveAttribute('alt', locale === 'th' ? 'บริษัท โม เนวิเกชั่น จำกัด' : 'Moe Navigation Co.,Ltd.');
+  await expect(logo).toHaveAttribute('alt', alt);
   await expect(logo).toHaveAttribute('width', '805');
   await expect(logo).toHaveAttribute('height', '365');
   await expect.poll(() => logo.evaluate(element => {
@@ -34,9 +34,10 @@ test('official logo loads in the desktop public header and footer with accessibl
 
   const footer = page.locator('footer');
   await footer.scrollIntoViewIfNeeded();
-  const footerHome = footer.getByRole('link', { name: 'Moe Navigation Co.,Ltd.', exact: true });
+  const footerHome = footer.getByRole('link', { name: 'Moe Navigation Co., Ltd.', exact: true });
   await expect(footerHome).toHaveAttribute('href', '/');
-  await expectOfficialLogo(footerHome.locator(logoSelector));
+  await expectOfficialLogo(footerHome.locator(logoSelector), 'en', 'Moe Navigation Co., Ltd.');
+  await expect(footerHome.locator(logoSelector).locator('..')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
   await footer.screenshot({ path: testInfo.outputPath('official-logo-desktop-footer.png'), animations: 'disabled' });
 });
 

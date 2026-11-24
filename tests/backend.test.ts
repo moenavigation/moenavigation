@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import test from 'node:test';
 import { actionSchema, enquirySchema, loginSchema, passwordSchema, recordSchema, saveSchema, saveSettingsSchema } from '../src/server/validation';
 import { projectPublicContent } from '../src/lib/public-content';
+import { formatCompanyPhone } from '../src/lib/company';
 import { contentTypes, corePageIds, type ContentRecord } from '../src/lib/cms-types';
 import { contentMediaUrls, contentMediaReferenceFilter } from '../src/server/media-references';
 
@@ -12,6 +13,16 @@ const validRecord = {
   description: 'A vessel description.', descriptionTh: 'รายละเอียดเรือทดสอบ',
   image: '/images/hero.webp', category: 'Cargo', categoryTh: 'สินค้า', status: 'Draft' as const,
 };
+
+test('office contact settings expose the international number for existing domestic and international spellings', () => {
+  for (const saved of ['02 427 5905', '02-427-5905', '+66 (0) 2 427-5905', '6624275905', '006624275905', undefined]) {
+    const displayed = formatCompanyPhone(saved);
+    assert.equal(displayed, '+66 2 427-5905');
+    assert.equal(displayed.replace(/[^+\d]/g, ''), '+6624275905');
+  }
+  assert.equal(formatCompanyPhone(''), '');
+  assert.equal(formatCompanyPhone('02 555 0100'), '02 555 0100');
+});
 
 test('content accepts bilingual data and trims user-entered text', () => {
   const result = recordSchema.parse({ ...validRecord, title: '  Test vessel  ', titleTh: '  เรือทดสอบ  ' });

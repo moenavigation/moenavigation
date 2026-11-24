@@ -37,7 +37,7 @@ test('home selects the displayed ordered cards and route geometry without long d
   ];
   const selected = selectPublicPageRecords(records, '');
   const content = projectPublicContent(selected);
-  assert.deepEqual(content.services.map(item => item.id), ['service-5', 'service-4', 'service-3', 'service-2']);
+  assert.deepEqual(content.services, []);
   assert.equal(content.vessels.length, 3);
   assert.equal(content.news.length, 0);
   assert.equal(content.projects.length, 0);
@@ -49,7 +49,6 @@ test('home selects the displayed ordered cards and route geometry without long d
   assert.equal(content.routes[0].bodyTh, undefined);
   assert.equal(content.routes[0].gallery, undefined);
   assert.deepEqual(content.vessels[0].gallery, []);
-  assert.ok(selected.indexOf(selected.find(item => item.id === 'service-2')!) < selected.indexOf(selected.find(item => item.id === 'service-5')!));
 });
 
 test('home omits collections when their displaying sections are absent', () => {

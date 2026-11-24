@@ -1,8 +1,10 @@
 import { test, expect, login, solveLoginSlide, E2E_ADMIN, E2E_IMAGE_BUFFER } from './fixtures';
 import type { ContentRecord } from '../../src/lib/cms-types';
+import type { MediaDocument } from '../../src/server/db';
 import { defaultHomeSlides } from '../../src/lib/home-slides';
 import { copyFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import type { Page, TestInfo } from '@playwright/test';
 
 async function capture(page: Page, testInfo: TestInfo, name: string) {
@@ -21,6 +23,97 @@ async function capture(page: Page, testInfo: TestInfo, name: string) {
   await mkdir(folder, { recursive: true });
   await copyFile(output, path.join(folder, `${name}-${testInfo.project.name}.png`));
 }
+
+test.describe('mobile banner photo preparation', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('large banner photos retain 2560 pixels and fit the mobile slide editor', async ({ page }) => {
+    await login(page);
+    await page.goto('/cms/slides');
+    const cards = page.locator('[data-slide-card]');
+    await expect(cards).toHaveCount(5);
+    const png = await page.evaluate(() => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 3000;
+      canvas.height = 1000;
+      const context = canvas.getContext('2d')!;
+      context.fillStyle = '#37688c';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL().split(',')[1];
+    });
+    await page.getByLabel('Select banner images or videos').setInputFiles({
+      name: 'wide-banner.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64'),
+    });
+    await expect(cards).toHaveCount(6);
+    const preview = cards.last().locator('img');
+    await preview.scrollIntoViewIfNeeded();
+    await expect.poll(() => preview.evaluate((img: HTMLImageElement) => [img.naturalWidth, img.naturalHeight])).toEqual([2560, 853]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  });
+});
+
+test('a device video is compressed locally, saved as a video, and available in the banner library', async ({ page, db }) => {
+  await login(page);
+  await page.goto('/cms/slides');
+  const cards = page.locator('[data-slide-card]');
+  await expect(cards).toHaveCount(5);
+  const file = page.getByLabel('Select banner images or videos');
+  let uploads = 0;
+  await page.route('**/api/cms/media', async route => {
+    if (route.request().method() !== 'POST') return route.continue();
+    uploads++;
+    const form = await new Response(new Uint8Array(route.request().postDataBuffer()!), {
+      headers: { 'Content-Type': route.request().headers()['content-type'] },
+    }).formData();
+    const clip = form.get('file') as File;
+    const sha = (data: Buffer | string) => createHash('sha256').update(data).digest('hex');
+    const submissionId = String(form.get('submissionId'));
+    const id = sha(`${E2E_ADMIN.id}:${submissionId}:${preparedHash}`);
+    const publicId = `moe-e2e/${id}`;
+    const url = `https://res.cloudinary.com/moe-e2e/video/upload/v1/${publicId}.${clip.type === 'video/mp4' ? 'mp4' : 'webm'}`;
+    // Emulate the staged Cloudinary asset. The request still exercises the real
+    // authenticated upload validation and the subsequent MongoDB slide save.
+    await db.collection<MediaDocument>('moe_media').insertOne({
+      _id: id, id, publicId, url, title: 'Harbor clip', kind: 'video', state: 'staged',
+      owner: E2E_ADMIN.id, submissionId, pinned: false, createdAt: new Date().toISOString(), touchedAt: new Date(),
+    });
+    await route.continue();
+  });
+  await file.setInputFiles(path.resolve('tests/fixtures/banner-video.mp4'));
+  const hasEncoder = await page.evaluate(() => typeof VideoEncoder !== 'undefined');
+  if (!hasEncoder) {
+    await expect(page.getByText('This browser could not compress this video. Try another browser or choose a different clip.', { exact: true })).toBeVisible();
+    await expect(cards).toHaveCount(5);
+    expect(uploads).toBe(0);
+    // A browser without an encoder can still prepare an already optimized clip.
+    await file.setInputFiles(path.resolve('tests/fixtures/prepared-slide.mp4'));
+  }
+  await expect(cards).toHaveCount(6);
+  const preview = cards.last().locator('video');
+  await expect(preview).toHaveAttribute('src', /^blob:/);
+  // WebKit may omit multipart file bytes from Playwright's intercepted request.
+  // Hash the actual local preview that the editor submits on Save.
+  const preparedHash = await preview.evaluate(async (video: HTMLVideoElement) => {
+    const bytes = await (await fetch(video.src)).arrayBuffer();
+    const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+    return Array.from(hash, byte => byte.toString(16).padStart(2, '0')).join('');
+  });
+  if (hasEncoder) await expect.poll(() => preview.evaluate((video: HTMLVideoElement) => video.videoWidth)).toBe(1280);
+  expect(uploads).toBe(0);
+  await cards.last().locator('summary').click();
+  await cards.last().getByLabel('Video description · English').fill('A ship entering the harbor');
+  await page.getByRole('button', { name: 'Save slides', exact: true }).click();
+  await expect(page.getByText('Homepage slides saved. Your website is up to date.')).toBeVisible();
+  expect(uploads).toBe(1);
+  const saved = (await (await page.request.get('/api/cms/home-slides')).json()).record as ContentRecord;
+  expect(saved.heroSlides?.at(-1)).toMatchObject({ kind: 'video', alt: 'A ship entering the harbor' });
+  await page.getByRole('button', { name: 'Remove slide 6', exact: true }).click();
+  await page.getByRole('button', { name: 'Browse library', exact: true }).click();
+  await page.getByLabel('Search banners').fill('Harbor clip');
+  await page.getByRole('button', { name: 'Video · Harbor clip', exact: true }).click();
+  await expect(cards.last().locator('video')).toHaveAttribute('src', saved.heroSlides!.at(-1)!.url);
+  expect(uploads).toBe(1);
+});
 
 test('homepage slide manager preserves unsaved order across navigation and saves interval with immediate public visibility', async ({ page, context }, testInfo) => {
   await login(page);
@@ -182,7 +275,7 @@ test('expired sessions keep the slide draft and prepared device image for the sa
     uploadRequests++;
     return route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ error: 'Please sign in again.' }) });
   });
-  await page.getByLabel('Upload banner images', { exact: true }).setInputFiles({ name: 'prepared-banner.png', mimeType: 'image/png', buffer: E2E_IMAGE_BUFFER });
+  await page.getByLabel('Select banner images or videos', { exact: true }).setInputFiles({ name: 'prepared-banner.png', mimeType: 'image/png', buffer: E2E_IMAGE_BUFFER });
   await expect(page.locator('[data-slide-card]')).toHaveCount(6);
   expect(uploadRequests).toBe(0);
   const lastCard = page.locator('[data-slide-card]').last();
@@ -213,11 +306,11 @@ test('a removed included banner can be found and added again after saving', asyn
   await expect(page.getByText('Homepage slides saved. Your website is up to date.', { exact: true })).toBeVisible();
   await expect(page.locator('[data-slide-card]')).toHaveCount(4);
   await page.getByRole('button', { name: 'Browse library', exact: true }).click();
-  const picker = page.getByRole('dialog', { name: 'Choose a banner image', exact: true });
+  const picker = page.getByRole('dialog', { name: 'Choose a banner', exact: true });
   const included = picker.getByRole('region', { name: 'Included banners', exact: true });
   await expect(included.getByRole('button')).toHaveCount(5);
   await expect(included.getByRole('button', { name: defaultHomeSlides[1].alt, exact: true })).toBeDisabled();
-  await picker.getByLabel('Search banner images', { exact: true }).fill('warm morning');
+  await picker.getByLabel('Search banners', { exact: true }).fill('MOE LINE 3');
   await expect(included.getByRole('button')).toHaveCount(1);
   await included.getByRole('button', { name: defaultHomeSlides[0].alt, exact: true }).click();
   await expect(picker).not.toBeVisible();

@@ -4,10 +4,10 @@
 import useTimedNotice from './useTimedNotice';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Reorder, useDragControls, useReducedMotion } from 'motion/react';
-import { ArrowDown, ArrowUp, Check, GripVertical, ImagePlus, Images, Plus, RefreshCw, Save, Search, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Check, FilePlus2, GripVertical, Images, Plus, RefreshCw, Save, Search, Trash2 } from 'lucide-react';
 import { CmsRequestError, cmsErrorText, cmsRequest, prepareCmsImage, resolveSubmission, type PreparedImage } from '@/lib/cms-client';
-import type { ContentImage, ContentRecord, MediaItem } from '@/lib/cms-types';
-import { defaultHomeSlides, getHomeSlides, getHomeSlideInterval } from '@/lib/home-slides';
+import type { HomeSlide, ContentRecord, MediaItem } from '@/lib/cms-types';
+import { defaultHomeSlides, getHomeSlides, getHomeSlideInterval, homeSlideVideoPoster } from '@/lib/home-slides';
 import { useCmsLocale } from '@/lib/cms-locale';
 import { cmsInputPlaceholder } from '@/lib/cms-input-placeholders';
 import Dialog from './Dialog';
@@ -15,8 +15,8 @@ import CmsWorkingPanel from './CmsWorkingPanel';
 import useCmsMediaSearch from './useCmsMediaSearch';
 import styles from './CmsHomeSlides.module.css';
 
-type Slide = ContentImage & { key: string };
-type Desired = { slides: ContentImage[]; interval: number; revision: number };
+type Slide = HomeSlide & { key: string; sourceBytes?: number; preparedBytes?: number };
+type Desired = { slides: HomeSlide[]; interval: number; revision: number };
 export type CmsSlidesDraft = {
   ownerId: string; saved: ContentRecord | null; slides: Slide[]; intervalSeconds: number; attempts: number; conflict: ContentRecord | null; error: string; uncertain: boolean;
   prepared: Map<string, PreparedImage>; staged: Map<string, MediaItem>; submission: string; hasUploaded: boolean; lastDesired: Desired | null;
@@ -30,7 +30,7 @@ export class CmsSlidesDraftStore {
   discard() { if (this.draft) for (const image of this.draft.prepared.values()) URL.revokeObjectURL(image.preview); this.draft = null; }
 }
 type Props = { active: boolean; ownerId: string; store: CmsSlidesDraftStore; onDirtyChange: (dirty: boolean) => void; onBusyChange: (busy: boolean) => void; onSaved: (record: ContentRecord) => void };
-const serialize = (slides: ContentImage[], interval: number) => JSON.stringify({ slides: slides.map(({ url, alt, altTh }) => ({ url, alt, altTh })), interval });
+const serialize = (slides: HomeSlide[], interval: number) => JSON.stringify({ slides: slides.map(({ url, alt, altTh, kind }) => ({ url, alt, altTh, kind: kind ?? 'image' })), interval });
 const asSlides = (record: ContentRecord): Slide[] => getHomeSlides(record).map((slide, index) => ({ ...slide, key: `saved-${index}-${slide.url}` }));
 
 function SlideCard({ slide, index, total, busy, onChange, onMove, onRemove }: { slide: Slide; index: number; total: number; busy: boolean; onChange: (field: 'alt' | 'altTh', value: string) => void; onMove: (offset: number) => void; onRemove: () => void }) {
@@ -38,14 +38,22 @@ function SlideCard({ slide, index, total, busy, onChange, onMove, onRemove }: { 
   const reduceMotion = useReducedMotion();
   const { t, locale } = useCmsLocale();
   const fields = locale === 'th' ? ['altTh', 'alt'] as const : ['alt', 'altTh'] as const;
+  const video = slide.kind === 'video';
+  const description = (locale === 'th' ? slide.altTh : slide.alt) || t('Banner video');
+  const fileSize = (bytes: number) => new Intl.NumberFormat(locale, {
+    style: 'unit', unit: bytes < 1048576 ? 'kilobyte' : 'megabyte', maximumFractionDigits: 1,
+  }).format(bytes < 1048576 ? bytes / 1024 : bytes / 1048576);
   return <Reorder.Item value={slide} id={`slide-${slide.key}`} dragListener={false} dragControls={controls} drag={!busy} layout="position" transition={{ duration: reduceMotion ? 0 : .2 }} className={styles.card} data-slide-card>
     <div className={styles.cardTop}>
       <button type="button" className={`${styles.iconButton} ${styles.handle}`} disabled={busy} aria-label={t('Drag slide {number} to reorder', { number: index + 1 })} onPointerDown={event => controls.start(event)}><GripVertical aria-hidden="true" size={20} /></button>
       <div className={styles.cardSummary}><strong>{t('Slide {number}', { number: index + 1 })}</strong>{slide.url.startsWith('blob:') && <span>{t('Ready to upload')}</span>}</div>
       <div className={styles.cardActions}><button type="button" className={styles.iconButton} disabled={busy || index === 0} aria-label={t('Move slide {number} up', { number: index + 1 })} onClick={() => onMove(-1)}><ArrowUp size={18} aria-hidden="true" /></button><button type="button" className={styles.iconButton} disabled={busy || index === total - 1} aria-label={t('Move slide {number} down', { number: index + 1 })} onClick={() => onMove(1)}><ArrowDown size={18} aria-hidden="true" /></button><button type="button" className={styles.iconButton} disabled={busy || total === 1} aria-label={t('Remove slide {number}', { number: index + 1 })} onClick={onRemove}><Trash2 size={18} aria-hidden="true" /></button></div>
     </div>
-    <div className={styles.thumbnail}><img src={slide.url} alt={locale === 'th' ? slide.altTh : slide.alt} width={600} height={200} loading="lazy" /><span>{String(index + 1).padStart(2, '0')}</span></div>
-    <details className={styles.descriptions}><summary>{t('Image descriptions')}</summary><div>{fields.map(field => <label key={field}>{t(field === 'alt' ? 'Image description · English' : 'Image description · Thai')}<input placeholder={cmsInputPlaceholder(field === 'alt' ? 'en' : 'th', field === 'alt' ? 'bannerDescriptionEn' : 'bannerDescriptionTh')} lang={field === 'alt' ? 'en' : 'th'} maxLength={250} value={slide[field]} disabled={busy} onChange={event => onChange(field, event.target.value)} /></label>)}</div></details>
+    <div className={styles.thumbnail}>
+      {video ? <video src={slide.url} poster={homeSlideVideoPoster(slide.url)} muted playsInline controls preload="metadata" aria-label={description} /> : <><img src={slide.url} alt={locale === 'th' ? slide.altTh : slide.alt} width={600} height={200} loading="lazy" /><span>{String(index + 1).padStart(2, '0')}</span></>}
+    </div>
+    {video && slide.preparedBytes !== undefined && slide.sourceBytes !== undefined && <p className={styles.fileSize}>{t('Original {source} · Upload {output}', { source: fileSize(slide.sourceBytes), output: fileSize(slide.preparedBytes) })}</p>}
+    <details className={styles.descriptions}><summary>{t(video ? 'Video descriptions' : 'Image descriptions')}</summary><div>{fields.map(field => <label key={field}>{t(video ? (field === 'alt' ? 'Video description · English' : 'Video description · Thai') : (field === 'alt' ? 'Image description · English' : 'Image description · Thai'))}<input placeholder={cmsInputPlaceholder(field === 'alt' ? 'en' : 'th', field === 'alt' ? 'bannerDescriptionEn' : 'bannerDescriptionTh')} lang={field === 'alt' ? 'en' : 'th'} maxLength={250} value={slide[field]} disabled={busy} onChange={event => onChange(field, event.target.value)} /></label>)}</div></details>
   </Reorder.Item>;
 }
 
@@ -58,6 +66,7 @@ export default function CmsHomeSlides({ active, ownerId, store, onDirtyChange, o
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [preparing, setPreparing] = useState(false);
+  const preparation = useRef<AbortController | null>(null);
   const [progress, setProgress] = useState('');
   const [error, setError] = useState(initial?.error ?? '');
   const [notice, setNotice] = useTimedNotice();
@@ -84,7 +93,7 @@ export default function CmsHomeSlides({ active, ownerId, store, onDirtyChange, o
   const busy = saving || preparing || loading;
   const locked = busy || uncertain;
   const dirty = Boolean(saved && serialize(slides, intervalSeconds) !== serialize(getHomeSlides(saved), getHomeSlideInterval(saved)));
-  const search = useCmsMediaSearch(query, active && picker);
+  const search = useCmsMediaSearch(query, active && picker, 0, 'slides');
   const searching = Boolean(query.trim());
   const images = searching ? search.items : library;
   const pageCount = Math.max(1, Math.ceil(images.length / 12));
@@ -120,7 +129,7 @@ export default function CmsHomeSlides({ active, ownerId, store, onDirtyChange, o
   });
   useEffect(() => {
     mounted.current = true;
-    return () => { mounted.current = false; store.resources(ownerId, { submission: submission.current, hasUploaded: hasUploaded.current, lastDesired: lastDesired.current }); };
+    return () => { mounted.current = false; preparation.current?.abort(); store.resources(ownerId, { submission: submission.current, hasUploaded: hasUploaded.current, lastDesired: lastDesired.current }); };
   }, [ownerId, store]);
   useEffect(() => {
     if (!dirty && !busy) return;
@@ -136,31 +145,45 @@ export default function CmsHomeSlides({ active, ownerId, store, onDirtyChange, o
     prepared.current.delete(slide.key); updateSlides(slides.filter(item => item.key !== slide.key));
   }
   async function chooseFiles(files: File[]) {
-    if (locked || !files.length) return;
+    if (locked || preparation.current || !files.length) return;
     if (slides.length + files.length > 12) { setError('You can add up to 12 slides.'); return; }
+    const controller = new AbortController();
+    preparation.current = controller;
     setPreparing(true); changed();
-    const additions: Slide[] = [];
     try {
       for (const file of files) {
-        const image = await prepareCmsImage(file);
-        if (!mounted.current) { URL.revokeObjectURL(image.preview); return; }
-        const key = crypto.randomUUID(); prepared.current.set(key, image); additions.push({ key, url: image.preview, alt: '', altTh: '' });
+        const video = file.type.startsWith('video/') || /\.(mp4|webm)$/i.test(file.name);
+        setProgress(t(video ? 'Preparing video {name}…' : 'Preparing image {name}…', { name: file.name }));
+        const media = video
+          ? await (await import('@/lib/cms-video')).prepareCmsVideo(file, {
+              signal: controller.signal,
+              onProgress: fraction => {
+                if (!controller.signal.aborted) setProgress(t('Compressing {name} · {percent}%', { name: file.name, percent: Math.floor(fraction * 100) }));
+              },
+            })
+          : await prepareCmsImage(file, 'home-slide');
+        if (controller.signal.aborted) { URL.revokeObjectURL(media.preview); break; }
+        const key = crypto.randomUUID();
+        prepared.current.set(key, media);
+        const slide: Slide = { key, url: media.preview, alt: '', altTh: '', ...(video && { kind: 'video', sourceBytes: file.size, preparedBytes: media.blob.size }) };
+        setSlides(previous => [...previous, slide]);
       }
-      setSlides(previous => [...previous, ...additions]);
     } catch (cause) {
-      for (const slide of additions) { const image = prepared.current.get(slide.key); if (image) URL.revokeObjectURL(image.preview); prepared.current.delete(slide.key); }
-      if (mounted.current) setError(cmsErrorText(cause));
-    } finally { if (mounted.current) setPreparing(false); }
+      if (!controller.signal.aborted && mounted.current) setError(cmsErrorText(cause));
+    } finally {
+      preparation.current = null;
+      if (mounted.current) { setPreparing(false); setProgress(''); }
+    }
   }
   async function loadLibrary(next: string | null = null) {
     setLibraryLoading(true); setLibraryError('');
-    try { const result = await cmsRequest<{ media: MediaItem[]; nextCursor: string | null }>(`/api/cms/media${next ? `?cursor=${encodeURIComponent(next)}` : ''}`); if (mounted.current) { setLibrary(previous => next ? [...previous, ...result.media.filter(item => !previous.some(existing => existing.id === item.id))] : result.media); setCursor(result.nextCursor); } }
+    try { const result = await cmsRequest<{ media: MediaItem[]; nextCursor: string | null }>(`/api/cms/media?scope=slides${next ? `&cursor=${encodeURIComponent(next)}` : ''}`); if (mounted.current) { setLibrary(previous => next ? [...previous, ...result.media.filter(item => !previous.some(existing => existing.id === item.id))] : result.media); setCursor(result.nextCursor); } }
     catch (cause) { if (mounted.current) setLibraryError(cmsErrorText(cause)); }
     finally { if (mounted.current) setLibraryLoading(false); }
   }
-  function openLibrary() { setPicker(true); setQuery(''); setPage(0); if (!library.length) void loadLibrary(); }
-  function addLibrary(item: MediaItem) { if (slides.length >= 12 || slides.some(slide => slide.url === item.url)) return; const slide = { key: crypto.randomUUID(), url: item.url, alt: '', altTh: '' }; updateSlides([...slides, slide]); setPicker(false); }
-  function addIncluded(item: ContentImage) { if (locked || slides.length >= 12 || slides.some(slide => slide.url === item.url)) return; const slide = { ...item, key: crypto.randomUUID() }; updateSlides([...slides, slide]); setPicker(false); }
+  function openLibrary() { setPicker(true); setQuery(''); setPage(0); void loadLibrary(); }
+  function addLibrary(item: MediaItem) { addIncluded({ url: item.url, alt: '', altTh: '', kind: item.kind }); }
+  function addIncluded(item: HomeSlide) { if (locked || slides.length >= 12 || slides.some(slide => slide.url === item.url)) return; const slide = { ...item, key: crypto.randomUUID() }; updateSlides([...slides, slide]); setPicker(false); }
   async function reconcile(abortAttempt = false) {
     const desired = lastDesired.current;
     if (!desired) return false;
@@ -191,19 +214,19 @@ export default function CmsHomeSlides({ active, ownerId, store, onDirtyChange, o
     if (!submission.current) submission.current = crypto.randomUUID();
     let writeAttempted = false;
     try {
-      const desired: ContentImage[] = [];
+      const desired: HomeSlide[] = [];
       for (const [index, slide] of slides.entries()) {
         let url = slide.url;
         const image = prepared.current.get(slide.key);
         if (image) {
           if (!staged.current.has(slide.key)) {
-            setProgress(t('Uploading image {number} of {total}…', { number: index + 1, total: slides.length }));
+            setProgress(t('Uploading slide {number} of {total}…', { number: index + 1, total: slides.length }));
             const body = new FormData(); body.set('file', image.blob, image.filename); body.set('submissionId', submission.current); hasUploaded.current = true;
             const result = await cmsRequest<{ media: MediaItem }>('/api/cms/media', { method: 'POST', body }); staged.current.set(slide.key, result.media);
           }
           url = staged.current.get(slide.key)!.url;
         }
-        desired.push({ url, alt: slide.alt.trim(), altTh: slide.altTh.trim() });
+        desired.push({ url, alt: slide.alt.trim(), altTh: slide.altTh.trim(), ...(slide.kind === 'video' && { kind: 'video' }) });
       }
       setProgress(t('Saving slides…'));
       lastDesired.current = { slides: desired, interval: intervalSeconds, revision: saved.revision }; writeAttempted = true;
@@ -257,34 +280,53 @@ export default function CmsHomeSlides({ active, ownerId, store, onDirtyChange, o
     finally { busyRef.current = false; if (mounted.current) { setLoading(false); setProgress(''); } }
   }
   return <section hidden={!active} className={styles.manager} aria-label={t('Homepage slides')}>
-    <CmsWorkingPanel active={active && busy && !picker && !confirmReload} title={progress || (preparing ? 'Preparing image…' : saving ? 'Saving slides…' : 'Loading homepage slides…')} />
+    <CmsWorkingPanel active={active && busy && !preparing && !picker && !confirmReload} title={progress || (saving ? 'Saving slides…' : 'Loading homepage slides…')} />
     {!saved && !loading && <div className={styles.empty}><p>{t(error || 'Homepage slides could not be loaded.')}</p><button type="button" className="button secondary" onClick={() => void load()}><RefreshCw size={18} />{t('Try again')}</button></div>}
     {saved && <>
       <div className={styles.toolbar}><div><span className={styles.count}>{t('{count} slides', { count: slides.length })}</span><span className={styles.draft}>{t(dirty ? 'Unsaved changes' : 'All changes saved')}</span></div><div className={styles.toolbarActions}><button type="button" className="button secondary" disabled={busy} onClick={() => dirty ? setConfirmReload(true) : void load()}><RefreshCw size={17} />{t('Reload saved slides')}</button><button type="button" className="button" disabled={busy || !dirty || Boolean(conflict) || attempts >= 3} onClick={() => void save()}><Save size={18} />{t(saving ? 'Saving slides…' : 'Save slides')}</button></div></div>
       <div className={styles.layout}>
         <div className={styles.editor}>
-          <div className={styles.sectionHeading}><div><h2>{t('Slide order')}</h2><p>{t('Drag the handle to arrange your images. The first image opens the homepage.')}</p></div></div>
+          <div className={styles.sectionHeading}><div><h2>{t('Slide order')}</h2><p>{t('Drag the handle to arrange your slides. The first slide opens the homepage.')}</p></div></div>
           <Reorder.Group axis="xy" values={slides} onReorder={next => updateSlides(next)} className={styles.cards} aria-label={t('Reorder homepage slides')}>
             {slides.map((slide, index) => <SlideCard key={slide.key} slide={slide} index={index} total={slides.length} busy={locked} onChange={(field, value) => updateSlides(slides.map(item => item.key === slide.key ? { ...item, [field]: value } : item))} onMove={offset => move(index, offset)} onRemove={() => remove(slide)} />)}
           </Reorder.Group>
           <div className={styles.addPanel}>
-            <div className={styles.addContent}><div className={styles.addHeading}><Plus size={21} aria-hidden="true" /><strong>{t('Add a banner')}</strong><p>{t('Recommended: 3:1. The sides are cropped to 16:9 on mobile.')}</p></div><div className={styles.addActions}><label className={`button secondary ${styles.fileButton}`} aria-disabled={locked || slides.length >= 12}><ImagePlus size={18} />{t('Device image')}<input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={locked || slides.length >= 12} aria-label={t('Upload banner images')} onChange={event => { void chooseFiles(Array.from(event.target.files || [])); event.target.value = ''; }} /></label><button type="button" className="button secondary" disabled={locked || slides.length >= 12} onClick={openLibrary}><Images size={18} />{t('Browse library')}</button></div><p>{t('Device images upload only when you save. Up to 12 slides.')}</p></div>
-            <div className={styles.timing}><label htmlFor="hero-slide-interval">{t('Time between slides')}</label><div><input id="hero-slide-interval" type="range" min={2} max={15} step={1} value={intervalSeconds} disabled={locked} onChange={event => { changed(); setIntervalSeconds(Number(event.target.value)); }} /><output htmlFor="hero-slide-interval">{t('{seconds} sec', { seconds: intervalSeconds })}</output></div><p>{t('The homepage advances automatically. Visitors can pause it at any time.')}</p></div>
+            <div className={styles.addContent}>
+              <div className={styles.addHeading}>
+                <Plus size={21} aria-hidden="true" /><strong>{t('Add a banner')}</strong>
+                <p>{t('Recommended: 3:1. The sides are cropped to 16:9 on mobile.')}</p>
+              </div>
+              <div className={styles.addActions}>
+                <label className={`button secondary ${styles.fileButton}`} aria-disabled={locked || slides.length >= 12}>
+                  <FilePlus2 size={18} />{t('Add images or videos')}
+                  <input type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,.mp4,.webm"
+                    multiple disabled={locked || slides.length >= 12} aria-label={t('Select banner images or videos')}
+                    onChange={event => { void chooseFiles(Array.from(event.target.files || [])); event.target.value = ''; }} />
+                </label>
+                <button type="button" className="button secondary" disabled={locked || slides.length >= 12} onClick={openLibrary}>
+                  <Images size={18} />{t('Browse library')}
+                </button>
+              </div>
+              <p>{t('MP4 or WebM, up to 30 seconds and 100 MB. Videos are compressed on your device and play without sound.')}</p>
+              <p>{t('Files upload when you save. Up to 12 slides.')}</p>
+              {preparing && <div className={styles.preparation}><CmsWorkingPanel active={active} title={progress} description="Keep this tab open until preparation finishes." /><button type="button" className="button secondary" onClick={() => preparation.current?.abort()}>{t('Cancel preparation')}</button></div>}
+            </div>
+            <div className={styles.timing}><label htmlFor="hero-slide-interval">{t('Time between slides')}</label><div><input id="hero-slide-interval" type="range" min={2} max={15} step={1} value={intervalSeconds} disabled={locked} onChange={event => { changed(); setIntervalSeconds(Number(event.target.value)); }} /><output htmlFor="hero-slide-interval">{t('{seconds} sec', { seconds: intervalSeconds })}</output></div><p>{t('Images use this interval. Videos play to the end before the next slide.')}</p></div>
           </div>
         </div>
       </div>
-      {error && <div className={styles.error} role="alert"><p>{t(error)}</p><p>{t('Your changes and prepared images are kept here.')}</p></div>}
+      {error && <div className={styles.error} role="alert"><p>{t(error)}</p><p>{t('Your changes and prepared slides are kept here.')}</p></div>}
       {(uncertain || attempts >= 3) && !conflict && <div className={styles.error}><p>{t(attempts >= 3 ? 'Saving has failed three times. Check the saved version before trying again.' : 'The previous save needs checking. Retry Save with the same changes, or check the saved version before editing.')}</p><button type="button" className="button secondary" disabled={busy} onClick={() => void checkSaved()}>{t('Check saved slides')}</button></div>}
-      {conflict && <div className={styles.conflict}><h3>{t('Another change was saved first')}</h3><p>{t('Your slide order and images are kept. Reload the saved slides, or keep your version after reviewing the latest change.')}</p><div><button type="button" className="button secondary" onClick={() => setConfirmReload(true)}>{t('Reload saved slides')}</button><button type="button" className="button secondary" disabled={busy} onClick={() => void keepMyVersion()}>{t('Keep my version')}</button></div></div>}
+      {conflict && <div className={styles.conflict}><h3>{t('Another change was saved first')}</h3><p>{t('Your slides are kept here. Review the latest change, then reload the saved slides or keep your version.')}</p><div><button type="button" className="button secondary" onClick={() => setConfirmReload(true)}>{t('Reload saved slides')}</button><button type="button" className="button secondary" disabled={busy} onClick={() => void keepMyVersion()}>{t('Keep my version')}</button></div></div>}
       {notice && <p className={styles.success} role="status"><Check size={18} />{t(notice)}</p>}
     </>}
-    <Dialog open={active && picker} onClose={() => setPicker(false)} title={t('Choose a banner image')} closeLabel={t('Close image library')}><div className={styles.library}><label className={styles.search}><Search size={18} /><input type="search" maxLength={160} value={query} aria-label={t('Search banner images')} placeholder={t('Search image names…')} onChange={event => { setQuery(event.target.value); setPage(0); }} /></label>
+    <Dialog open={active && picker} onClose={() => setPicker(false)} title={t('Choose a banner')} closeLabel={t('Close banner library')}><div className={styles.library}><label className={styles.search}><Search size={18} /><input type="search" maxLength={160} value={query} aria-label={t('Search banners')} placeholder={t('Search by name…')} onChange={event => { setQuery(event.target.value); setPage(0); }} /></label>
       {includedBanners.length > 0 && <section className={styles.included} aria-label={t('Included banners')}><h3>{t('Included banners')}</h3><div className={styles.libraryGrid}>{includedBanners.map(item => <button type="button" key={item.url} disabled={locked || slides.some(slide => slide.url === item.url)} onClick={() => addIncluded(item)}><img src={item.url} alt="" width={300} height={100} loading="lazy" /><span>{locale === 'th' ? item.altTh : item.alt}</span>{slides.some(slide => slide.url === item.url) && <Check size={16} />}</button>)}</div></section>}
       <h3>{t('Media library')}</h3>
-      {(searching ? search.loading : libraryLoading && !images.length) ? <CmsWorkingPanel active={active && picker} title="Loading your images" /> : <><div className={styles.libraryGrid}>{visibleImages.map(item => <button type="button" key={item.id} disabled={slides.some(slide => slide.url === item.url)} onClick={() => addLibrary(item)}><img src={item.url} alt="" width={300} height={100} loading="lazy" /><span>{item.title}</span>{slides.some(slide => slide.url === item.url) && <Check size={16} />}</button>)}</div>{!images.length && <p>{t('No matching images. Try another name or clear your search.')}</p>}</>}
+      {(searching ? search.loading : libraryLoading && !images.length) ? <CmsWorkingPanel active={active && picker} title="Loading banners…" /> : <><div className={styles.libraryGrid}>{visibleImages.map(item => <button type="button" key={item.id} disabled={slides.some(slide => slide.url === item.url)} onClick={() => addLibrary(item)}><img src={item.kind === 'video' ? homeSlideVideoPoster(item.url) : item.url} alt="" width={300} height={100} loading="lazy" /><span>{item.kind === 'video' ? t('Video · {name}', { name: item.title }) : item.title}</span>{slides.some(slide => slide.url === item.url) && <Check size={16} />}</button>)}</div>{!images.length && <p>{t('No matching media. Try another name or clear your search.')}</p>}</>}
       {(searching ? search.error : libraryError) && <div className={styles.error} role="alert">{t(searching ? search.error : libraryError)}<button type="button" className="button secondary" onClick={() => searching ? search.retry() : void loadLibrary()}>{t('Try again')}</button></div>}
-      <CmsWorkingPanel active={active && picker && (searching ? search.loadingMore : libraryLoading && images.length > 0)} title="Loading more images…" />
-      {pageCount > 1 && <div className={styles.pagination}><button type="button" className="button secondary" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>{t('Previous images')}</button><span>{t('Page {page} of {total}', { page: currentPage + 1, total: pageCount })}</span><button type="button" className="button secondary" disabled={currentPage === pageCount - 1} onClick={() => setPage(currentPage + 1)}>{t('Next images')}</button></div>}{hasMore && currentPage === pageCount - 1 && <button type="button" className="button secondary" disabled={libraryLoading || search.loadingMore} onClick={() => searching ? void search.loadMore() : void loadLibrary(cursor)}>{t('Load more images')}</button>}
+      <CmsWorkingPanel active={active && picker && (searching ? search.loadingMore : libraryLoading && images.length > 0)} title="Loading more banners…" />
+      {pageCount > 1 && <div className={styles.pagination}><button type="button" className="button secondary" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>{t('Previous page')}</button><span>{t('Page {page} of {total}', { page: currentPage + 1, total: pageCount })}</span><button type="button" className="button secondary" disabled={currentPage === pageCount - 1} onClick={() => setPage(currentPage + 1)}>{t('Next page')}</button></div>}{hasMore && currentPage === pageCount - 1 && <button type="button" className="button secondary" disabled={libraryLoading || search.loadingMore} onClick={() => searching ? void search.loadMore() : void loadLibrary(cursor)}>{t('Load more banners')}</button>}
     </div></Dialog>
     <Dialog open={active && confirmReload} onClose={() => setConfirmReload(false)} title={t('Reload saved slides?')} closeLabel={t('Cancel')}><p>{t('This replaces your unsaved slide changes with the latest saved version.')}</p><div className={styles.confirmActions}><button type="button" className="button secondary" onClick={() => setConfirmReload(false)}>{t('Cancel')}</button><button type="button" className="button" onClick={() => void reload()}>{t('Reload saved slides')}</button></div></Dialog>
   </section>;

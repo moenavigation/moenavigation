@@ -5,7 +5,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { MongoClient } from 'mongodb';
 import { v2 as cloudinary, type UploadApiResponse } from 'cloudinary';
-import { canonical, decryptBackup, documentHash, encryptBackup, excludedCollections, includedCollections, isMissingRecoveryAsset, remapImages, sha256, validateBackup, validateTarget, type Backup, type BackupAsset } from './lib/recovery';
+import { canonical, decryptBackup, documentHash, encryptBackup, excludedCollections, includedCollections, isMissingRecoveryAsset, recoveryMediaKind, remapImages, sha256, validateBackup, validateTarget, type Backup, type BackupAsset } from './lib/recovery';
 
 nextEnv.loadEnvConfig(process.cwd());
 const args = process.argv.slice(2), command = args[0];
@@ -29,17 +29,17 @@ async function saveJson(path: string, data: unknown, exclusive = false) {
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, JSON.stringify(data, null, 2) + '\n', { mode: 0o600, flag: exclusive ? 'wx' : 'w' });
 }
-async function imageBytes(url: string, expected?: string) {
+async function mediaBytes(url: string, kind: 'image' | 'video', expected?: string) {
   const parsed = new URL(url);
-  assert(parsed.protocol === 'https:' && parsed.hostname === 'res.cloudinary.com' && parsed.pathname.startsWith(`/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/`), 'Unexpected media origin.');
+  assert(parsed.protocol === 'https:' && parsed.hostname === 'res.cloudinary.com' && parsed.pathname.startsWith(`/${process.env.CLOUDINARY_CLOUD_NAME}/${kind}/upload/`), 'Unexpected media origin.');
   const response = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(30000) });
-  assert(response.ok && response.headers.get('content-type')?.startsWith('image/'), 'Image delivery failed.');
-  assert(Number(response.headers.get('content-length') || 0) <= 25 * 1024 * 1024, 'Image exceeds backup limit.');
+  assert(response.ok && response.headers.get('content-type')?.startsWith(`${kind}/`), 'Media delivery failed.');
+  assert(Number(response.headers.get('content-length') || 0) <= 25 * 1024 * 1024, 'Media file exceeds backup limit.');
   const chunks: Uint8Array[] = []; let size = 0;
-  assert(response.body, 'Empty image response.');
-  for await (const chunk of response.body) { size += chunk.length; assert(size <= 25 * 1024 * 1024, 'Image exceeds backup limit.'); chunks.push(chunk); }
+  assert(response.body, 'Empty media response.');
+  for await (const chunk of response.body) { size += chunk.length; assert(size <= 25 * 1024 * 1024, 'Media file exceeds backup limit.'); chunks.push(chunk); }
   const bytes = Buffer.concat(chunks);
-  if (expected) assert.equal(sha256(bytes), expected, 'Image hash verification failed.');
+  if (expected) assert.equal(sha256(bytes), expected, 'Media hash verification failed.');
   return bytes;
 }
 async function snapshot(dbName: string) {
@@ -63,30 +63,36 @@ async function snapshot(dbName: string) {
   } finally { await session.endSession(); }
   return { collections, indexes };
 }
+function assetCounts(backup: Backup) {
+  const videos = backup.assets.filter(asset => asset.kind === 'video').length;
+  return { originalImages: backup.assets.length - videos, ...(videos ? { originalVideos: videos } : {}) };
+}
 async function create() {
   const secret = await passphrase(); assert(secret.length >= 20, 'Set BACKUP_PASSPHRASE or BACKUP_PASSPHRASE_FILE to a secret of at least 20 characters.');
   const backup: Backup = { schema: 1, id: randomUUID(), createdAt: new Date().toISOString(), sourceDatabase: activeDatabase, ...await snapshot(activeDatabase), assets: [] };
   assert(backup.collections.moe_media.every(media => media.state === 'committed'), 'Finish pending uploads or use the CMS Cleanup tool before creating a full backup.');
-  let totalImageBytes = 0;
+  let totalBytes = 0, videoBytes = 0;
   for (const media of backup.collections.moe_media) {
-    const remote = await provider().api.resource(media.publicId, { resource_type: 'image' });
+    const kind = recoveryMediaKind(media.kind);
+    const remote = await provider().api.resource(media.publicId, { resource_type: kind });
     assert(remote.public_id === media.publicId && remote.secure_url === media.url, 'Registered media no longer matches the original provider asset.');
-    const bytes = await imageBytes(remote.secure_url, media.sourceSha256);
-    totalImageBytes += bytes.length;
-    assert(totalImageBytes <= 128 * 1024 * 1024, 'Original images exceed this CLI limit; use a streaming backup for larger libraries.');
-    assert.equal(bytes.length, remote.bytes, 'Original image size differs from Cloudinary metadata.');
-    backup.assets.push({ mediaId: String(media._id), publicId: media.publicId, url: media.url, format: remote.format, bytes: bytes.length, sha256: sha256(bytes), content: bytes.toString('base64') });
+    const bytes = await mediaBytes(remote.secure_url, kind, media.sourceSha256);
+    totalBytes += bytes.length;
+    if (kind === 'video') videoBytes += bytes.length;
+    assert(totalBytes <= 128 * 1024 * 1024, 'Original media exceed this CLI limit; use a streaming backup for larger libraries.');
+    assert.equal(bytes.length, remote.bytes, 'Original media size differs from Cloudinary metadata.');
+    backup.assets.push({ mediaId: String(media._id), publicId: media.publicId, url: media.url, format: remote.format, ...(kind === 'video' ? { kind } : {}), bytes: bytes.length, sha256: sha256(bytes), content: bytes.toString('base64') });
   }
   // Do not label a backup complete if records changed while media were being downloaded.
   const after = await snapshot(activeDatabase);
   for (const name of includedCollections) assert.equal(documentHash(backup.collections[name]), documentHash(after.collections[name]), 'Application data changed during backup. Retry when editing has finished.');
   validateBackup(backup);
   const encrypted = encryptBackup(backup, secret);
-  decryptBackup(encrypted, secret); // Verify authentication, schema and every image before writing.
+  decryptBackup(encrypted, secret); // Verify authentication, schema and every asset before writing.
   const path = resolve(option('output') || `.local/backups/${backup.createdAt.replace(/[:.]/g, '-')}.moebackup`);
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, encrypted, { mode: 0o600, flag: 'wx' });
-  const report = { status: 'verified', archive: path, archiveSha256: sha256(encrypted), backupId: backup.id, createdAt: backup.createdAt, collections: Object.fromEntries(includedCollections.map(name => [name, backup.collections[name].length])), originalImages: backup.assets.length, imageBytes: backup.assets.reduce((sum, image) => sum + image.bytes, 0), excludedCollections, providerSecretsIncluded: false, accountPasswordHashesIncluded: true };
+  const report = { status: 'verified', archive: path, archiveSha256: sha256(encrypted), backupId: backup.id, createdAt: backup.createdAt, collections: Object.fromEntries(includedCollections.map(name => [name, backup.collections[name].length])), ...assetCounts(backup), imageBytes: totalBytes - videoBytes, ...(videoBytes ? { videoBytes } : {}), excludedCollections, providerSecretsIncluded: false, accountPasswordHashesIncluded: true };
   await saveJson(`${path}.report.json`, report, true); console.log(JSON.stringify(report, null, 2));
 }
 async function load() {
@@ -99,7 +105,7 @@ async function plan(backup: Backup, archiveHash: string) {
   validateTarget(backup.sourceDatabase, activeDatabase, target);
   const folder = `${process.env.CLOUDINARY_FOLDER || 'moe-navigation'}/recovery/${backup.id}-${sha256(target).slice(0, 12)}`;
   assert(/^[a-zA-Z0-9/_-]+$/.test(folder), 'Invalid Cloudinary recovery folder.');
-  const value = { archiveHash, backupId: backup.id, targetDatabase: target, mediaFolder: folder, mediaMode: 'restore-original-bytes', records: Object.fromEntries(includedCollections.map(name => [name, backup.collections[name].length])), originalImages: backup.assets.length };
+  const value = { archiveHash, backupId: backup.id, targetDatabase: target, mediaFolder: folder, mediaMode: 'restore-original-bytes', records: Object.fromEntries(includedCollections.map(name => [name, backup.collections[name].length])), ...assetCounts(backup) };
   return { ...value, planHash: sha256(canonical(value)) };
 }
 type Plan = Awaited<ReturnType<typeof plan>>;
@@ -111,7 +117,7 @@ async function requireEmpty(dbName: string) {
 }
 function upload(asset: BackupAsset, publicId: string, backupId: string) {
   return new Promise<UploadApiResponse>((resolveUpload, reject) => {
-    provider().uploader.upload_stream({ resource_type: 'image', public_id: publicId, overwrite: false, unique_filename: false, context: { moe_recovery_id: backupId, sha256: asset.sha256 } }, (error, response) => error || !response ? reject(error || new Error('Empty upload response')) : resolveUpload(response)).end(Buffer.from(asset.content, 'base64'));
+    provider().uploader.upload_stream({ resource_type: recoveryMediaKind(asset.kind), public_id: publicId, overwrite: false, unique_filename: false, context: { moe_recovery_id: backupId, sha256: asset.sha256 } }, (error, response) => error || !response ? reject(error || new Error('Empty upload response')) : resolveUpload(response)).end(Buffer.from(asset.content, 'base64'));
   });
 }
 async function restore() {
@@ -131,7 +137,7 @@ async function restore() {
     const publicId = assetId(planned, asset);
     const remote = await upload(asset, publicId, backup.id);
     assert(!remote.existing && remote.public_id === publicId, 'A recovery asset already exists; refusing to reuse or overwrite it.');
-    await imageBytes(remote.secure_url, asset.sha256);
+    await mediaBytes(remote.secure_url, recoveryMediaKind(asset.kind), asset.sha256);
     mappings.set(asset.url, { publicId, url: remote.secure_url });
   }
   const documents = remapImages(backup.collections, mappings), connection = await connect(), session = connection.startSession();
@@ -154,7 +160,7 @@ async function restore() {
     receipt.hashes[name] = documentHash(actual);
   }
   receipt.status = 'verified'; await saveJson(receiptPath, receipt);
-  console.log(JSON.stringify({ status: 'verified', receipt: receiptPath, originalImagesVerified: backup.assets.length, documentCounts: planned.records, sessionsRestored: 0, notificationsSent: 0, ttlIndexesActivated: false }, null, 2));
+  console.log(JSON.stringify({ status: 'verified', receipt: receiptPath, originalImagesVerified: planned.originalImages, ...(planned.originalVideos ? { originalVideosVerified: planned.originalVideos } : {}), documentCounts: planned.records, sessionsRestored: 0, notificationsSent: 0, ttlIndexesActivated: false }, null, 2));
 }
 async function verifyOrCleanup(cleanup: boolean) {
   const { backup, archiveHash } = await load(), planned = await plan(backup, archiveHash);
@@ -166,14 +172,15 @@ async function verifyOrCleanup(cleanup: boolean) {
   assert(marker?.planHash === planned.planHash && marker.archiveHash === archiveHash, 'Target is not owned by this restore.');
   const names = (await db.listCollections({}, { nameOnly: true }).toArray()).map(item => item.name);
   assert(names.every(name => [...includedCollections, 'moe_recovery'].includes(name)), 'Unexpected collection in restore target; refusing cleanup.');
-  const mappings = new Map<string, { url: string; publicId: string }>();
+  const mappings = new Map<string, { url: string; publicId: string; kind: 'image' | 'video' }>();
   for (const asset of backup.assets) {
     const publicId = assetId(planned, asset);
     try {
-      const remote = await provider().api.resource(publicId, { resource_type: 'image', context: true });
+      const kind = recoveryMediaKind(asset.kind);
+      const remote = await provider().api.resource(publicId, { resource_type: kind, context: true });
       assert(remote.context?.custom?.moe_recovery_id === backup.id && remote.context?.custom?.sha256 === asset.sha256, 'Recovery asset ownership does not match.');
-      if (!cleanup) await imageBytes(remote.secure_url, asset.sha256);
-      mappings.set(asset.url, { url: remote.secure_url, publicId });
+      if (!cleanup) await mediaBytes(remote.secure_url, kind, asset.sha256);
+      mappings.set(asset.url, { url: remote.secure_url, publicId, kind });
     } catch (error) {
       if (!(cleanup && isMissingRecoveryAsset(error))) throw error;
     }
@@ -185,28 +192,29 @@ async function verifyOrCleanup(cleanup: boolean) {
       assert.equal(documentHash(actual), receipt.hashes[name] || documentHash(expected[name]), 'Restored data changed; refusing automatic cleanup.');
     } else assert.equal(actual.length, 0, 'Unexpected records in unfinished restore.');
   }
-  if (!cleanup) { assert(marker.status === 'restored', 'Restore is unfinished.'); console.log(JSON.stringify({ status: 'verified', planHash: planned.planHash, images: backup.assets.length, collections: planned.records })); return; }
-  console.log(JSON.stringify({ mode: args.includes('--apply') ? 'cleanup' : 'cleanup-dry-run', planHash: planned.planHash, targetDatabase: planned.targetDatabase, exactRecoveryImages: mappings.size }));
+  if (!cleanup) { assert(marker.status === 'restored', 'Restore is unfinished.'); console.log(JSON.stringify({ status: 'verified', planHash: planned.planHash, images: planned.originalImages, ...(planned.originalVideos ? { videos: planned.originalVideos } : {}), collections: planned.records })); return; }
+  const recoveryVideos = [...mappings.values()].filter(mapping => mapping.kind === 'video').length;
+  console.log(JSON.stringify({ mode: args.includes('--apply') ? 'cleanup' : 'cleanup-dry-run', planHash: planned.planHash, targetDatabase: planned.targetDatabase, exactRecoveryImages: mappings.size - recoveryVideos, ...(recoveryVideos ? { exactRecoveryVideos: recoveryVideos } : {}) }));
   if (!args.includes('--apply')) return;
   assert.equal(option('expected-plan'), planned.planHash, 'Reviewed plan hash is required for cleanup.');
   const sourceDb = connection.db(activeDatabase);
   // Every deletion is an exact ID with a verified per-backup ownership marker.
   for (const mapping of mappings.values()) {
-    assert.equal(await sourceDb.collection('moe_media').countDocuments({ $or: [{ publicId: mapping.publicId }, { url: mapping.url }] }), 0, 'A recovery image is referenced by the active database.');
-    assert.equal(await sourceDb.collection('moe_content').countDocuments({ $or: [{ image: mapping.url }, { mobileImage: mapping.url }, { 'gallery.url': mapping.url }, { 'heroSlides.url': mapping.url }] }), 0, 'A recovery image is used by active content.');
-    assert.equal(await sourceDb.collection('moe_users').countDocuments({ avatar: mapping.url }), 0, 'A recovery image is used by a user profile, including Trash.');
-    const result = await provider().uploader.destroy(mapping.publicId, { resource_type: 'image', invalidate: true });
-    assert(['ok', 'not found'].includes(result.result), 'Recovery image cleanup failed; target retained for retry.');
+    assert.equal(await sourceDb.collection('moe_media').countDocuments({ $or: [{ publicId: mapping.publicId }, { url: mapping.url }] }), 0, 'A recovery asset is referenced by the active database.');
+    assert.equal(await sourceDb.collection('moe_content').countDocuments({ $or: [{ image: mapping.url }, { mobileImage: mapping.url }, { 'gallery.url': mapping.url }, { 'heroSlides.url': mapping.url }] }), 0, 'A recovery asset is used by active content.');
+    assert.equal(await sourceDb.collection('moe_users').countDocuments({ avatar: mapping.url }), 0, 'A recovery asset is used by a user profile, including Trash.');
+    const result = await provider().uploader.destroy(mapping.publicId, { resource_type: mapping.kind, invalidate: true });
+    assert(['ok', 'not found'].includes(result.result), 'Recovery media cleanup failed; target retained for retry.');
   }
   await db.dropDatabase();
   receipt.status = 'cleaned'; receipt.cleanedAt = new Date().toISOString(); await saveJson(resolve(receiptPath), receipt);
-  console.log(JSON.stringify({ status: 'cleaned', databaseRemoved: planned.targetDatabase, recoveryImagesRemoved: mappings.size, backupPreserved: true }));
+  console.log(JSON.stringify({ status: 'cleaned', databaseRemoved: planned.targetDatabase, recoveryImagesRemoved: mappings.size - recoveryVideos, ...(recoveryVideos ? { recoveryVideosRemoved: recoveryVideos } : {}), backupPreserved: true }));
 }
 try {
   if (command === 'create') await create();
   else if (command === 'inspect') {
     const { backup, archiveHash } = await load();
-    console.log(JSON.stringify({ status: 'verified', backupId: backup.id, createdAt: backup.createdAt, sourceDatabase: backup.sourceDatabase, archiveHash, collections: Object.fromEntries(includedCollections.map(name => [name, backup.collections[name].length])), originalImages: backup.assets.length }, null, 2));
+    console.log(JSON.stringify({ status: 'verified', backupId: backup.id, createdAt: backup.createdAt, sourceDatabase: backup.sourceDatabase, archiveHash, collections: Object.fromEntries(includedCollections.map(name => [name, backup.collections[name].length])), ...assetCounts(backup) }, null, 2));
   } else if (command === 'restore') await restore();
   else if (command === 'verify') await verifyOrCleanup(false);
   else if (command === 'cleanup') await verifyOrCleanup(true);

@@ -102,7 +102,7 @@ export function parseRouteCoordinates(text: string): [number, number][] {
   });
 }
 
-export async function prepareCmsImage(file: File): Promise<PreparedImage> {
+export async function prepareCmsImage(file: File, usage?: 'home-slide'): Promise<PreparedImage> {
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error('Choose a JPEG, PNG, or WebP image.');
   if (file.size > 8 * 1024 * 1024) throw new Error('Choose an image smaller than 8 MB.');
   const original = URL.createObjectURL(file);
@@ -111,20 +111,26 @@ export async function prepareCmsImage(file: File): Promise<PreparedImage> {
     image.src = original;
     await image.decode();
     if (!image.naturalWidth || !image.naturalHeight) throw new Error('This image could not be opened.');
-    const scale = Math.min(1, 2000 / Math.max(image.naturalWidth, image.naturalHeight));
     const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
-    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
     const context = canvas.getContext('2d');
     if (!context) throw new Error('Your browser could not prepare this image.');
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    const webp = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/webp', .86));
-    const fallback = scale < 1 ? await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, file.type, .9)) : file;
-    const retained = fallback || file;
-    const blob = webp?.type === 'image/webp' && webp.size < retained.size ? webp : retained;
-    if (blob.size > 3 * 1024 * 1024) throw new Error('Choose a smaller image. The prepared image must be under 3 MB.');
-    const extension = blob.type === 'image/png' ? 'png' : blob.type === 'image/jpeg' ? 'jpg' : 'webp';
-    return { blob, preview: URL.createObjectURL(blob), filename: `${file.name.replace(/\.[^.]+$/, '')}.${extension}`, width: canvas.width, height: canvas.height };
+    const standard = { maxSide: 2000, quality: .86 };
+    const profiles = usage === 'home-slide' ? [{ maxSide: 2560, quality: .9 }, standard] : [standard];
+    for (const { maxSide, quality } of profiles) {
+      const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+      if (usage === 'home-slide') context.imageSmoothingQuality = 'high';
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      const webp = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/webp', quality));
+      const fallback = scale < 1 ? await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, file.type, .9)) : file;
+      const retained = fallback || file;
+      const blob = webp?.type === 'image/webp' && webp.size < retained.size ? webp : retained;
+      if (blob.size > 3 * 1024 * 1024) continue;
+      const extension = blob.type === 'image/png' ? 'png' : blob.type === 'image/jpeg' ? 'jpg' : 'webp';
+      return { blob, preview: URL.createObjectURL(blob), filename: `${file.name.replace(/\.[^.]+$/, '')}.${extension}`, width: canvas.width, height: canvas.height };
+    }
+    throw new Error('Choose a smaller image. The prepared image must be under 3 MB.');
   } catch (error) {
     if (error instanceof Error && error.name === 'EncodingError') throw new Error('This image could not be opened. Choose a different JPEG, PNG, or WebP file.');
     throw error;

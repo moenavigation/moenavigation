@@ -13,8 +13,9 @@ import { selectPublicPageRecords } from '@/lib/public-page-content';
 import { PublicSearchParamsProvider } from '@/lib/use-public-search-params';
 import { indexingEnabled, siteOrigin } from '@/lib/site-config';
 import { idSchema } from '@/lib/validation';
+import { defaultHomeSlides, getHomeSlides, homeSlideVideoPoster } from '@/lib/home-slides';
 import { companyNameEn } from '@/lib/company';
-import { countPublicVessels } from '@/lib/footer-statistics';
+import { footerVesselLinks } from '@/lib/footer-statistics';
 
 export const revalidate = 86400;
 // Generate public URLs on first visit, then reuse their rendered output. New
@@ -49,16 +50,21 @@ export async function generateMetadata({ params }: { params: Promise<{ path?: st
   const description = local(locale, item.description, item.descriptionTh);
   const pathPart = pieces.join("/");
   const company = local(locale, settings.companyName, settings.companyNameTh);
+  const sameCompanyName = !page && title.replace(/\s/g, '').localeCompare(company.replace(/\s/g, ''), locale, { sensitivity: 'base', ignorePunctuation: true }) === 0;
+  const pageTitle = sameCompanyName ? title : `${title} | ${company}`;
   const siteUrl = siteOrigin();
-  const images = item.image ? [{ url: item.image, alt: local(locale, item.imageAlt || item.title, item.imageAltTh || item.titleTh) }] : [];
+  const banner = item.type === 'Page' && item.id === 'home' ? getHomeSlides(item)[0] : undefined;
+  const image = banner?.kind === 'video' ? homeSlideVideoPoster(banner.url) ?? defaultHomeSlides[0].url : banner?.url ?? item.image;
+  const imageAlt = banner ? local(locale, banner.alt, banner.altTh) || title : local(locale, item.imageAlt || item.title, item.imageAltTh || item.titleTh);
+  const images = image ? [{ url: image, alt: imageAlt }] : [];
   return {
     metadataBase: new URL(siteUrl),
-    title: `${title} | ${company}`,
+    title: pageTitle,
     description,
     robots: { index: indexingEnabled(), follow: indexingEnabled() },
     alternates: { canonical: href(locale, pathPart), languages: { th: href("th", pathPart), en: href("en", pathPart), "x-default": href("en", pathPart) } },
-    openGraph: { title: `${title} | ${company}`, description, url: new URL(href(locale, pathPart), siteUrl).href, siteName: company, locale: locale === "en" ? "en_US" : "th_TH", alternateLocale: locale === 'en' ? 'th_TH' : 'en_US', images, type: item.type === 'News' ? 'article' : 'website' },
-    twitter: { card: images.length ? 'summary_large_image' : 'summary', title: `${title} | ${company}`, description, images },
+    openGraph: { title: pageTitle, description, url: new URL(href(locale, pathPart), siteUrl).href, siteName: company, locale: locale === "en" ? "en_US" : "th_TH", alternateLocale: locale === 'en' ? 'th_TH' : 'en_US', images, type: item.type === 'News' ? 'article' : 'website' },
+    twitter: { card: images.length ? 'summary_large_image' : 'summary', title: pageTitle, description, images },
   };
 }
 
@@ -81,7 +87,7 @@ async function PublicPage({ locale, page, slug, pieces }: { locale: Locale; page
   const [published, settings] = await Promise.all([getPublicRecords(), getPublicSettings()]);
   const records = selectPublicPageRecords(published, page, slug);
   // The footer needs the whole fleet, even when this page includes only a few cards or none.
-  const fleetCount = countPublicVessels(published);
+  const fleetLinks = footerVesselLinks(published);
   // A record can be trashed while the remaining data is loading. Still use the
   // framework's noindex recovery page if it disappeared after the route check.
   if (!records.some(record => record.type === (slug ? detailTypes[page] : 'Page') && record.id === (slug || page || 'home'))) notFound();
@@ -91,5 +97,5 @@ async function PublicPage({ locale, page, slug, pieces }: { locale: Locale; page
     ...(settings.phone ? { telephone: settings.phone } : {}), ...(settings.email ? { email: settings.email } : {}),
     ...(local(locale, settings.officeAddress, settings.officeAddressTh) ? { address: local(locale, settings.officeAddress, settings.officeAddressTh) } : {}),
   } : null;
-  return <PublicContentProvider records={records} settings={settings} fleetCount={fleetCount}>{organization && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization).replace(/</g, '\\u003c') }} />}<SiteShell locale={locale}>{page ? <ContentPage key={`${locale}/${pieces.join("/")}`} locale={locale} page={page} slug={slug} /> : <Home locale={locale} />}</SiteShell></PublicContentProvider>;
+  return <PublicContentProvider records={records} settings={settings} fleetLinks={fleetLinks}>{organization && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization).replace(/</g, '\\u003c') }} />}<SiteShell locale={locale}>{page ? <ContentPage key={`${locale}/${pieces.join("/")}`} locale={locale} page={page} slug={slug} /> : <Home locale={locale} />}</SiteShell></PublicContentProvider>;
 }

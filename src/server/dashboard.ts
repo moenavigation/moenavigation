@@ -4,12 +4,13 @@ import type { Db } from 'mongodb';
 import { z } from 'zod';
 import { attentionIssueCodes, attentionTypes, getContentAttentionIssues, type AttentionItem, type AttentionPage, type AttentionQuery, type DashboardData, type DashboardServiceStatus } from '@/lib/cms-dashboard';
 import type { ContentRecord } from '@/lib/cms-types';
-import { collections, ensureIndexes, getDb, type ContentDocument } from './db';
+import { collections, ensureIndexes, getDb } from './db';
 import { cleanEnquiry } from './enquiries';
 import { activeEnquiryFilter } from './enquiry-retention';
 import { readEnquiryRecipients } from './enquiry-recipients';
 import { emailSetupStatus } from './enquiry-notifications';
 import { HttpError } from './http';
+import { cleanContentRecord } from './content';
 
 const pageSize = 12;
 const serviceCacheMs = 60_000;
@@ -51,22 +52,17 @@ export function attentionPageFromRecords(records: ContentRecord[], query: Attent
   return { items: items.slice(offset, nextOffset), total: items.length, nextCursor: nextOffset < items.length ? Buffer.from(JSON.stringify({ offset: nextOffset, scope })).toString('base64url') : null };
 }
 
-function cleanContent(row: ContentDocument): ContentRecord {
-  const { _id, purgeAt, ...record } = row;
-  void _id; void purgeAt;
-  return record;
-}
 async function attentionRecords(db: Db): Promise<ContentRecord[]> {
   // Long bodies and image galleries are irrelevant to these checks. Scan the
   // complete collection using lighter records, then hydrate only the page.
-  return (await collections(db).content.find({ deletedAt: { $exists: false }, type: { $in: [...attentionTypes] }, $or: [{ purgeAt: { $exists: false } }, { purgeAt: { $gt: new Date() } }] }, { projection: { body: 0, bodyTh: 0, gallery: 0, heroSlides: 0 } }).sort({ updatedAt: -1, _id: 1 }).toArray()).map(cleanContent);
+  return (await collections(db).content.find({ deletedAt: { $exists: false }, type: { $in: [...attentionTypes] }, $or: [{ purgeAt: { $exists: false } }, { purgeAt: { $gt: new Date() } }] }, { projection: { body: 0, bodyTh: 0, gallery: 0, heroSlides: 0 } }).sort({ updatedAt: -1, _id: 1 }).toArray()).map(cleanContentRecord);
 }
 export async function getDashboardAttention(query: AttentionQuery): Promise<AttentionPage> {
   await ensureIndexes();
   const db = await getDb();
   const page = attentionPageFromRecords(await attentionRecords(db), query);
   const records = await collections(db).content.find({ _id: { $in: page.items.map(item => `${item.record.type}:${item.record.id}`) }, deletedAt: { $exists: false } }).toArray();
-  const byKey = new Map(records.map(row => [row._id, cleanContent(row)]));
+  const byKey = new Map(records.map(row => [row._id, cleanContentRecord(row)]));
   return { ...page, items: page.items.flatMap(item => {
     const record = byKey.get(`${item.record.type}:${item.record.id}`);
     return record ? [{ record, issues: getContentAttentionIssues(record) }] : [];

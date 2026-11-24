@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { countPublicVessels, defaultFooterStatistics, visibleFooterStatistics } from '../src/lib/footer-statistics';
+import { countPublicVessels, defaultFooterStatistics, footerVesselLinks, visibleFooterStatistics } from '../src/lib/footer-statistics';
+import { applyHomepageCopy } from '../src/lib/homepage-chartering';
 import { recordSchema } from '../src/lib/validation';
 import { buildFooterStatisticsPlan } from '../scripts/data/footer-statistics-import-plan';
 import { websiteContentRecords } from '../scripts/data/website-content';
@@ -9,6 +10,26 @@ import { translateCmsError } from '../src/lib/cms-messages-th';
 
 const seededRecords = websiteContentRecords as ContentRecord[];
 const footer = seededRecords.find(record => record.type === 'Section' && record.id === 'footer')!;
+
+test('footer vessel links carry localized titles in editorial order and omit unpublished records', () => {
+  const vessel = seededRecords.find(record => record.type === 'Vessel')!;
+  const front = { ...vessel, id: 'first', order: 3 };
+  const back = { ...vessel, id: 'last', order: 9 };
+  const records = [back, { ...front, status: 'Draft' as const }, footer, front, { ...back, deletedAt: '2026-11-20' }];
+  assert.deepEqual(footerVesselLinks(records), [front, back].map(({ id, title, titleTh }) => ({ id, title, titleTh })));
+  assert.equal(footerVesselLinks(records).length, countPublicVessels(records));
+  assert.equal(records[0], back);
+});
+
+test('shared footer intro upgrades the former defaults independently and respects custom CMS copy', () => {
+  const previous = { ...footer, title: 'People. Purpose. Every voyage.', titleTh: 'ทีมงาน เป้าหมาย และทุกการเดินทาง' };
+  assert.deepEqual(applyHomepageCopy(previous), footer);
+  assert.match(footer.title, /container ships, crane vessels and tankers/);
+  assert.match(footer.titleTh, /เรือคอนเทนเนอร์ เรือเครน และเรือแท็งเกอร์/);
+  assert.equal(applyHomepageCopy({ ...previous, title: 'Our edited introduction' }).title, 'Our edited introduction');
+  assert.equal(applyHomepageCopy({ ...previous, titleTh: '' }).titleTh, '');
+  assert.equal(applyHomepageCopy({ ...previous, parentId: 'about' }).title, previous.title);
+});
 
 test('footer statistics use current fleet count and the three user-approved source figures', () => {
   const records = seededRecords.map(record => record.id === 'footer' ? { ...record, footerStats: undefined, caption: '', captionTh: '' } : record);

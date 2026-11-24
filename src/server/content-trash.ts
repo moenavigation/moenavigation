@@ -3,6 +3,7 @@ import { appendAuditEvent, auditActor } from './audit';
 import { z } from 'zod';
 import { contentTypes, corePageIds } from '@/lib/cms-types';
 import { idSchema } from '@/lib/validation';
+import { normalizeFleetNames } from '@/lib/fleet-names';
 import { collections, transaction, type UserDocument } from './db';
 import { HttpError } from './http';
 import { authorizeTrashDeletion } from './trash-permissions';
@@ -25,7 +26,7 @@ export async function removeTrashedContent(input: z.infer<typeof removeContentSc
     if (record.type === 'Page' && (corePageIds as readonly string[]).includes(record.id)) throw new HttpError(400, 'Core website pages cannot be permanently deleted. Restore this page instead.');
     if (record.type === 'Page' && await c.content.findOne({ type: 'Section', parentId: record.id }, { session })) throw new HttpError(409, 'This page still has content areas. Restore it or remove those areas from Trash first.');
     await c.content.deleteOne({ _id: key, revision: input.expectedRevision }, { session });
-    await appendAuditEvent(db, session, { action: 'content.deleted', actor: auditActor(actor), target: { type: record.type, id: record.id, label: record.title } });
+    await appendAuditEvent(db, session, { action: 'content.deleted', actor: auditActor(actor), target: { type: record.type, id: record.id, label: normalizeFleetNames(record).title } });
     // Library images remain available and reference-checked by the separate media cleanup workflow.
     return { removed: true };
   });

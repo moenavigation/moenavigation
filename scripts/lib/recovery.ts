@@ -3,13 +3,19 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes, scryptSync }
 import { gzipSync, gunzipSync } from 'node:zlib';
 import { BSON, type Document } from 'mongodb';
 import { isBundledHomeSlide } from '../../src/lib/home-slides';
+import { isBundledVesselPhoto } from '../../src/lib/fleet-photos';
+import type { MediaKind } from '../../src/lib/cms-types';
 
 const MAGIC = Buffer.from('MOEBACKUP1\n');
 const MAX_ARCHIVE = 256 * 1024 * 1024;
 const MAX_PLAINTEXT = 512 * 1024 * 1024;
 export const includedCollections = ['moe_content', 'moe_media', 'moe_users', 'moe_enquiries', 'moe_settings'];
 export const excludedCollections = ['moe_sessions', 'moe_state', 'moe_operations', 'moe_recovery', 'moe_logs'];
-export type BackupAsset = { mediaId: string; publicId: string; url: string; format: string; bytes: number; sha256: string; content: string };
+export type BackupAsset = { mediaId: string; publicId: string; url: string; format: string; kind?: MediaKind; bytes: number; sha256: string; content: string };
+export function recoveryMediaKind(kind: unknown): MediaKind {
+  assert(kind === undefined || kind === 'image' || kind === 'video', 'Unsupported media kind in backup.');
+  return kind ?? 'image';
+}
 export type Backup = { schema: 1; id: string; createdAt: string; sourceDatabase: string; collections: Record<string, Document[]>; indexes: Record<string, Document[]>; assets: BackupAsset[] };
 export const sha256 = (input: string | Buffer) => createHash('sha256').update(input).digest('hex');
 export const canonical = (value: unknown): string => {
@@ -58,22 +64,31 @@ export function validateBackup(backup: Backup) {
   assert(backup.schema === 1 && /^[0-9a-f-]{36}$/.test(backup.id), 'Unsupported backup payload.');
   assert(/^[a-zA-Z0-9_-]{1,64}$/.test(backup.sourceDatabase), 'Invalid source database.');
   assert(Object.keys(backup.collections).length === includedCollections.length && includedCollections.every(name => Array.isArray(backup.collections[name])), 'Unexpected backup collection set.');
-  assert(backup.assets.length === backup.collections.moe_media.length, 'Every registered image must be backed up.');
+  assert(backup.assets.length === backup.collections.moe_media.length, 'Every registered media file must be backed up.');
   const ids = new Set<string>();
+  const mediaKinds = new Map<string, MediaKind>();
   for (const asset of backup.assets) {
     assert(!ids.has(asset.mediaId), 'Duplicate media in backup.'); ids.add(asset.mediaId);
-    assert(/^[a-z0-9]+$/i.test(asset.format) && asset.bytes > 0 && asset.bytes <= 25 * 1024 * 1024, 'Unsupported image in backup.');
+    const kind = recoveryMediaKind(asset.kind);
+    assert(/^[a-z0-9]+$/i.test(asset.format) && asset.bytes > 0 && asset.bytes <= 25 * 1024 * 1024, 'Unsupported media file in backup.');
+    if (kind === 'video') assert(['mp4', 'webm'].includes(asset.format), 'Unsupported video format in backup.');
     const bytes = Buffer.from(asset.content, 'base64');
-    assert(bytes.length === asset.bytes && sha256(bytes) === asset.sha256, 'Image integrity check failed.');
-    assert(backup.collections.moe_media.some(media => media._id === asset.mediaId && media.publicId === asset.publicId && media.url === asset.url && media.state === 'committed'), 'Media metadata differs from backup image.');
+    assert(bytes.length === asset.bytes && sha256(bytes) === asset.sha256, 'Media integrity check failed.');
+    assert(backup.collections.moe_media.some(media => media._id === asset.mediaId && media.publicId === asset.publicId && media.url === asset.url && media.state === 'committed' && recoveryMediaKind(media.kind) === kind), 'Media metadata differs from backup asset.');
+    mediaKinds.set(asset.url, kind);
   }
-  const urls = new Set(backup.assets.map(asset => asset.url));
   for (const record of backup.collections.moe_content) {
-    for (const url of [record.image, record.mobileImage, ...(record.gallery || []).map((image: Document) => image.url)]) if (url) assert(urls.has(url), 'Content references an image missing from the backup.');
-    for (const image of record.heroSlides || []) assert(urls.has(image.url) || (record.type === 'Page' && record.id === 'home' && isBundledHomeSlide(image.url)), 'Homepage slides reference an image missing from the backup.');
+    for (const url of [record.image, record.mobileImage, ...(record.gallery || []).map((image: Document) => image.url)]) {
+      if (url) assert(isBundledVesselPhoto(record.type, record.id, url) || mediaKinds.get(url) === 'image', 'Content references an image missing from the backup.');
+    }
+    for (const slide of record.heroSlides || []) {
+      const kind = recoveryMediaKind(slide.kind);
+      const bundled = kind === 'image' && record.type === 'Page' && record.id === 'home' && isBundledHomeSlide(slide.url);
+      assert(bundled || mediaKinds.get(slide.url) === kind, 'Homepage slides reference media missing from the backup.');
+    }
   }
   for (const user of backup.collections.moe_users) {
-    if (user.avatar) assert(urls.has(user.avatar), 'A user profile references an image missing from the backup.');
+    if (user.avatar) assert(mediaKinds.get(user.avatar) === 'image', 'A user profile references an image missing from the backup.');
   }
 }
 export function validateTarget(source: string, current: string, target: string) {

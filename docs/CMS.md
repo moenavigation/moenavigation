@@ -65,12 +65,13 @@ Use actual connection checks for database and image storage; distinguish email
 configuration from verified delivery, and show unavailable or unknown honestly.
 
 Manage homepage banners at `/cms/slides`, using a single-column page with
-responsive rows of draggable image cards and keyboard reorder controls.
-Cards show the 3:1 banner thumbnail; open the homepage to review its centered
-16:9 mobile crop. Default rotation is three seconds; editors can
-adjust it from two to fifteen seconds. Keep slide images and their descriptions
+responsive rows of draggable image and video cards and keyboard reorder controls.
+Cards show the 3:1 banner preview. The homepage uses a centered 16:9 mobile crop.
+Images rotate every three seconds by default, adjustable from two to fifteen.
+Video banners play silently to the end and offer a pause control. Prepare device
+files locally and upload on Save. Keep slide media and their descriptions
 separate from the homepage introduction. Preserve unsaved slide edits across
-CMS navigation and protect saved slide images from cleanup.
+CMS navigation and protect saved slide media from cleanup.
 
 Organize page editing around recognizable website pages and their existing
 content areas. Let clients edit the copy and images those areas use without

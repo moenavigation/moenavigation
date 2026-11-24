@@ -3,8 +3,10 @@ import { createHash } from 'node:crypto';
 import { v2 as cloudinary, type UploadApiResponse } from 'cloudinary';
 import type { ClientSession, Db, Filter } from 'mongodb';
 import { z } from 'zod';
-import type { ContentRecord, MediaItem } from '@/lib/cms-types';
+import type { ContentRecord, MediaItem, MediaKind } from '@/lib/cms-types';
+import { MAX_SLIDE_VIDEO_BYTES, MAX_SLIDE_VIDEO_SECONDS, MAX_SLIDE_VIDEO_SIDE } from '@/lib/slide-video-limits';
 import { escapeInboxSearch } from '@/lib/inbox-query';
+import { normalizeFleetNames } from '@/lib/fleet-names';
 import { collections, ensureIndexes, getDb, transaction, type MediaDocument, type UserDocument } from './db';
 import { digest, rateLimit } from './auth';
 import { HttpError, readBytes } from './http';
@@ -12,7 +14,7 @@ import { submissionSchema } from './validation';
 import { nextCursor, readCursor } from './pagination';
 import { contentMediaReferenceFilter, hasMediaReferences, userMediaReferenceFilter } from './media-references';
 import { authorizeTrashDeletion } from './trash-permissions';
-import { appendAuditEvent, auditActor } from './audit';
+import { appendAuditEvent, auditActor, mediaAuditTarget } from './audit';
 
 const uploadLeaseMs = 120000;
 const submissionKey = (owner: string, submissionId: string) => `media-submission:${digest(`${owner}:${submissionId}`)}`;
@@ -31,7 +33,7 @@ async function touchSubmission(db: Db, session: ClientSession, owner: string, su
 }
 export async function lockMediaSubmission(db: Db, session: ClientSession, owner: string, submissionId: string) {
   const state = await touchSubmission(db, session, owner, submissionId);
-  if (state?.value === 'aborted') throw new HttpError(409, 'This save was cancelled. Start a new save to upload the prepared images again.');
+  if (state?.value === 'aborted') throw new HttpError(409, 'This save was cancelled. Start a new save to upload the prepared files again.');
 }
 
 export const mediaFolder = () => process.env.CLOUDINARY_FOLDER || 'moe-navigation';
@@ -43,7 +45,7 @@ export function mediaProvider() {
   return cloudinary;
 }
 function clean(media: MediaDocument): MediaItem {
-  return { id: media.id, title: media.title, url: media.url, publicId: media.publicId, state: media.state === 'trashed' ? 'trashed' : media.state === 'committed' ? 'committed' : 'staged', createdAt: media.createdAt, ...(media.trashedAt ? { trashedAt: media.trashedAt } : {}), ...(media.sourcePath ? { sourcePath: media.sourcePath } : {}) };
+  return { id: media.id, title: media.title, url: media.url, publicId: media.publicId, ...(media.kind ? { kind: media.kind } : {}), state: media.state === 'trashed' ? 'trashed' : media.state === 'committed' ? 'committed' : 'staged', createdAt: media.createdAt, ...(media.trashedAt ? { trashedAt: media.trashedAt } : {}), ...(media.sourcePath ? { sourcePath: media.sourcePath } : {}) };
 }
 function imageType(data: Buffer) {
   if (data.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10]))) return 'image/png';
@@ -51,21 +53,54 @@ function imageType(data: Buffer) {
   if (data.toString('ascii', 0, 4) === 'RIFF' && data.toString('ascii', 8, 12) === 'WEBP') return 'image/webp';
   return null;
 }
+
+export async function validatePreparedMedia(data: Buffer, mime: string): Promise<MediaKind> {
+  const type = mime.split(';', 1)[0].trim().toLowerCase();
+  if (type !== 'video/mp4' && type !== 'video/webm') {
+    if (data.length > 3 * 1024 * 1024) throw new HttpError(400, 'Choose a prepared JPEG, PNG or WebP image up to 3 MB.');
+    if (imageType(data) !== type) throw new HttpError(400, 'The file must contain a valid JPEG, PNG or WebP image.');
+    return 'image';
+  }
+  if (data.length > MAX_SLIDE_VIDEO_BYTES) throw new HttpError(400, 'Choose a prepared MP4 or WebM video up to 4 MB.');
+  const { BufferSource, Input, MP4, WEBM } = await import('mediabunny');
+  const input = new Input({ formats: [type === 'video/mp4' ? MP4 : WEBM], source: new BufferSource(data) });
+  try {
+    const tracks = await input.getTracks();
+    const track = tracks[0];
+    if (tracks.length !== 1 || !track.isVideoTrack()) throw new HttpError(400, 'Choose a prepared video with one silent video track.');
+    const [width, height, start, end] = await Promise.all([
+      track.getDisplayWidth(), track.getDisplayHeight(), track.getFirstTimestamp(), track.computeDuration(),
+    ]);
+    const duration = end - start;
+    // Frame-rate conversion can round the final timestamp up by part of a frame.
+    if (![width, height, duration].every(value => Number.isFinite(value) && value > 0)
+      || Math.max(width, height) > MAX_SLIDE_VIDEO_SIDE || duration > MAX_SLIDE_VIDEO_SECONDS + 0.1) {
+      throw new HttpError(400, 'Choose a prepared video up to 30 seconds and 1280 pixels on its longest side.');
+    }
+    return 'video';
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    throw new HttpError(400, 'The file must contain a valid MP4 or WebM video.');
+  } finally {
+    input.dispose();
+  }
+}
 export async function uploadMedia(request: Request, owner: string, actor?: UserDocument): Promise<MediaItem> {
   await ensureIndexes();
-  const body = await readBytes(request, 3 * 1024 * 1024 + 65536);
+  const body = await readBytes(request, MAX_SLIDE_VIDEO_BYTES + 65536);
   let form: FormData;
   try { form = await new Response(body, { headers: { 'Content-Type': request.headers.get('content-type') || '' } }).formData(); }
-  catch { throw new HttpError(400, 'The image could not be read. Please choose it again.'); }
+  catch { throw new HttpError(400, 'The file could not be read. Please choose it again.'); }
   const submissionId = submissionSchema.parse(form.get('submissionId'));
   const file = form.get('file');
-  if (!(file instanceof File) || !file.size || file.size > 3 * 1024 * 1024) throw new HttpError(400, 'Choose a prepared JPEG, PNG or WebP image up to 3 MB.');
+  if (!(file instanceof File) || !file.size) throw new HttpError(400, 'Choose a file to upload.');
+  await rateLimit(`upload:${owner}`, 100, 60 * 60);
   const data = Buffer.from(await file.arrayBuffer());
-  if (imageType(data) !== file.type) throw new HttpError(400, 'The file must contain a valid JPEG, PNG or WebP image.');
+  const kind = await validatePreparedMedia(data, file.type);
+  const title = file.name.replace(/\.[^.]+$/, '').slice(0, 160) || `Uploaded ${kind}`;
   const id = digest(`${owner}:${submissionId}:${createHash('sha256').update(data).digest('hex')}`);
   const publicId = `${mediaFolder()}/${id}`;
   const c = collections(await getDb());
-  await rateLimit(`upload:${owner}`, 100, 60 * 60);
   const reservation = await transaction(async (db, session) => {
     const scoped = collections(db);
     const existing = await scoped.media.findOne({ _id: id }, { session });
@@ -74,9 +109,9 @@ export async function uploadMedia(request: Request, owner: string, actor?: UserD
     if (existing?.state === 'staged') return { ready: existing };
     const now = new Date();
     if (!existing) {
-      await scoped.media.insertOne({ _id: id, id, title: file.name.replace(/\.[^.]+$/, '').slice(0, 160) || 'Uploaded image', url: `pending:${id}`, publicId, state: 'uploading', owner, submissionId, pinned: false, touchedAt: now, createdAt: now.toISOString() }, { session });
+      await scoped.media.insertOne({ _id: id, id, title, kind, url: `pending:${id}`, publicId, state: 'uploading', owner, submissionId, pinned: false, touchedAt: now, createdAt: now.toISOString() }, { session });
     } else {
-      if (existing.state !== 'uploading' || existing.touchedAt.getTime() > Date.now() - uploadLeaseMs) throw new HttpError(409, 'This image is still processing. Wait two minutes, then retry the same save.');
+      if (existing.state !== 'uploading' || existing.touchedAt.getTime() > Date.now() - uploadLeaseMs) throw new HttpError(409, 'This file is still processing. Wait two minutes, then retry the same save.');
       await scoped.media.updateOne({ _id: id, state: 'uploading', touchedAt: existing.touchedAt }, { $set: { touchedAt: now } }, { session });
     }
     return { leaseAt: now };
@@ -86,7 +121,7 @@ export async function uploadMedia(request: Request, owner: string, actor?: UserD
   let result: Pick<UploadApiResponse, 'public_id' | 'secure_url' | 'bytes'>;
   try {
     result = await new Promise<UploadApiResponse>((resolveUpload, rejectUpload) => {
-      const stream = provider.uploader.upload_stream({ public_id: publicId, resource_type: 'image', overwrite: false, allowed_formats: ['jpg', 'jpeg', 'png', 'webp'], timeout: 60000 }, (error, value) => {
+      const stream = provider.uploader.upload_stream({ public_id: publicId, resource_type: kind, overwrite: false, allowed_formats: kind === 'video' ? ['mp4', 'webm'] : ['jpg', 'jpeg', 'png', 'webp'], timeout: 60000 }, (error, value) => {
         if (error || !value) rejectUpload(new Error('CloudinaryUploadError'));
         else resolveUpload(value);
       });
@@ -94,10 +129,10 @@ export async function uploadMedia(request: Request, owner: string, actor?: UserD
     });
   } catch {
     // A timed-out response can still have uploaded successfully; deterministic IDs allow recovery.
-    try { result = await provider.api.resource(publicId, { resource_type: 'image' }) as UploadApiResponse; }
-    catch { await c.media.updateOne({ _id: id, state: 'uploading', touchedAt: reservation.leaseAt }, { $set: { touchedAt: new Date() } }); throw new HttpError(502, 'The image upload could not be confirmed. Your prepared image is kept; wait two minutes, then retry the save.'); }
+    try { result = await provider.api.resource(publicId, { resource_type: kind }) as UploadApiResponse; }
+    catch { await c.media.updateOne({ _id: id, state: 'uploading', touchedAt: reservation.leaseAt }, { $set: { touchedAt: new Date() } }); throw new HttpError(502, 'The upload could not be confirmed. Your prepared file is kept. Wait two minutes, then retry the save.'); }
   }
-  if (result.public_id !== publicId || !result.secure_url.startsWith(`https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/`)) throw new Error('UnexpectedCloudinaryAsset');
+  if (result.public_id !== publicId || !result.secure_url.startsWith(`https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/${kind}/upload/`)) throw new Error('UnexpectedCloudinaryAsset');
   const updated = await transaction(async (db, session) => {
     const state = await touchSubmission(db, session, owner, submissionId);
     const scoped = collections(db);
@@ -106,7 +141,7 @@ export async function uploadMedia(request: Request, owner: string, actor?: UserD
     if (state?.value === 'aborted') {
       // Cleanup may already have removed an expired reservation. A late provider
       // response must still retain a deletion retry record for this exact asset.
-      const cancelled: MediaDocument = { _id: id, id, title: file.name.replace(/\.[^.]+$/, '').slice(0, 160) || 'Uploaded image', url: result.secure_url, publicId, state: 'deleting', owner, submissionId, pinned: false, touchedAt: new Date(), createdAt: existing?.createdAt || reservation.leaseAt!.toISOString(), bytes: result.bytes };
+      const cancelled: MediaDocument = { _id: id, id, title, kind, url: result.secure_url, publicId, state: 'deleting', owner, submissionId, pinned: false, touchedAt: new Date(), createdAt: existing?.createdAt || reservation.leaseAt!.toISOString(), bytes: result.bytes };
       await scoped.media.replaceOne({ _id: id }, cancelled, { upsert: true, session });
       return cancelled;
     }
@@ -118,7 +153,7 @@ export async function uploadMedia(request: Request, owner: string, actor?: UserD
   if (!updated) throw new HttpError(409, 'This upload changed during processing. Retry the save.');
   if (updated.state === 'deleting') {
     await deleteClaimedMedia(updated, actor);
-    throw new HttpError(409, 'This save was cancelled. Start a new save to upload the prepared images again.');
+    throw new HttpError(409, 'This save was cancelled. Start a new save to upload the prepared files again.');
   }
   return clean(updated);
 }
@@ -143,13 +178,14 @@ function readMediaCursor(rawCursor: string | null, query: string) {
     return cursor;
   } catch { throw new HttpError(400, 'This page cursor is invalid. Refresh the list.'); }
 }
-export async function getMediaPage(rawCursor: string | null, rawQuery: string | null = null, state: 'committed' | 'trashed' = 'committed', pageSize = 50) {
+export async function getMediaPage(rawCursor: string | null, rawQuery: string | null = null, state: 'committed' | 'trashed' = 'committed', pageSize = 50, includeVideos = false) {
   const query = (rawQuery || '').trim().toLocaleLowerCase();
-  if (query.length > 160 || query.includes('\0')) throw new HttpError(400, 'Search image names using up to 160 characters.');
-  const cursorScope = state === 'trashed' ? `trash:${query}` : query;
+  if (query.length > 160 || query.includes('\0')) throw new HttpError(400, 'Search file names using up to 160 characters.');
+  const cursorScope = includeVideos ? JSON.stringify([state, 'slides', query]) : state === 'trashed' ? `trash:${query}` : query;
   const cursor = readMediaCursor(rawCursor, cursorScope);
   const filter: Filter<MediaDocument> = {
     state,
+    ...(includeVideos ? {} : { kind: { $ne: 'video' as const } }),
     ...(query ? { title: { $regex: escapeInboxSearch(query), $options: 'i' } } : {}),
     ...(cursor ? { $or: [{ createdAt: { $lt: cursor.createdAt } }, { createdAt: cursor.createdAt, _id: { $lt: cursor.id } }] } : {}),
   };
@@ -161,13 +197,13 @@ export const getMediaTrashPage = (cursor: string | null) => getMediaPage(cursor,
 async function deleteClaimedMedia(media: MediaDocument, actor?: UserDocument): Promise<boolean> {
   const c = collections(await getDb());
   try {
-    const result = await mediaProvider().uploader.destroy(media.publicId!, { resource_type: 'image', invalidate: true });
+    const result = await mediaProvider().uploader.destroy(media.publicId!, { resource_type: media.kind ?? 'image', invalidate: true });
     if (!['ok', 'not found'].includes(result.result)) throw new Error('CloudinaryDeleteError');
     await transaction(async (db, session) => {
       const removed = await collections(db).media.deleteOne({ _id: media._id, state: 'deleting' }, { session });
       if (removed.deletedCount && actor) await appendAuditEvent(db, session, {
         action: media.trashedAt || media.state === 'trashed' || media.state === 'committed' || media.pinned ? 'media.deleted' : 'media.upload_discarded',
-        actor: auditActor(actor), target: { type: 'Image', id: media.id, label: media.title },
+        actor: auditActor(actor), target: mediaAuditTarget(media),
       });
     });
     return true;
@@ -177,7 +213,7 @@ async function deleteClaimedMedia(media: MediaDocument, actor?: UserDocument): P
     if (actor) {
       try {
         await transaction((db, session) => appendAuditEvent(db, session, {
-          action: 'media.delete_failed', actor: auditActor(actor), target: { type: 'Image', id: media.id, label: media.title }, outcome: 'failed',
+          action: 'media.delete_failed', actor: auditActor(actor), target: mediaAuditTarget(media), outcome: 'failed',
         }));
       } catch { /* The retained deletion claim is authoritative if logging is also unavailable. */ }
     }
@@ -245,32 +281,32 @@ export async function removeMedia(mediaId: string, requireTrash = false, actor?:
     const c = collections(db);
     const item = await c.media.findOne({ _id: mediaId }, { session });
     if (!item) return null;
-    if (requireTrash && item.state !== 'trashed' && !(item.state === 'deleting' && item.trashedAt)) throw new HttpError(409, 'Move this image to Media Trash before deleting it permanently.');
-    if (!item.publicId?.startsWith(`${mediaFolder()}/`)) throw new HttpError(400, 'This image is outside the managed library.');
-    if (item.state === 'uploading') throw new HttpError(409, 'This image is still uploading. Wait for its submission to finish before removing it.');
-    if (await hasMediaReferences(db, item.url, session)) throw new HttpError(409, 'This image is used by content or a user profile, including Trash. Replace it there before removing it.');
+    if (requireTrash && item.state !== 'trashed' && !(item.state === 'deleting' && item.trashedAt)) throw new HttpError(409, 'Move this file to Media Trash before deleting it permanently.');
+    if (!item.publicId?.startsWith(`${mediaFolder()}/`)) throw new HttpError(400, 'This file is outside the managed library.');
+    if (item.state === 'uploading') throw new HttpError(409, 'This file is still uploading. Wait for the upload to finish before removing it.');
+    if (await hasMediaReferences(db, item.url, session)) throw new HttpError(409, 'This file is still in use, including in retained Trash items. Replace it before removing it.');
     await abortSubmission(db, session, item.owner, item.submissionId);
     await c.media.updateOne({ _id: mediaId }, { $set: { state: 'deleting', pinned: false, touchedAt: new Date(0) } }, { session });
     return item;
   });
   if (!media) return { removed: true };
-  if (!await deleteClaimedMedia(media, actor)) throw new HttpError(502, 'The image could not be removed. Retry Cleanup to finish removing it.');
+  if (!await deleteClaimedMedia(media, actor)) throw new HttpError(502, 'The file could not be removed. Retry Cleanup to finish removing it.');
   return { removed: true };
 }
 export async function getMediaUsage(mediaId: string) {
   await ensureIndexes();
   const c = collections(await getDb());
   const media = await c.media.findOne({ _id: mediaId, state: 'committed' });
-  if (!media) throw new HttpError(404, 'This image is no longer in the library. Refresh the page.');
+  if (!media) throw new HttpError(404, 'This file is no longer in the library. Refresh the page.');
   const [documents, users] = await Promise.all([
     c.content.find(contentMediaReferenceFilter(media.url), {
-      projection: { type: 1, id: 1, title: 1, titleTh: 1, status: 1, parentId: 1, deletedAt: 1, updatedAt: 1, image: 1, mobileImage: 1, gallery: 1, heroSlides: 1 },
+      projection: { type: 1, id: 1, title: 1, titleTh: 1, fleetNamesReviewed: 1, status: 1, parentId: 1, deletedAt: 1, updatedAt: 1, image: 1, mobileImage: 1, gallery: 1, heroSlides: 1 },
     }).sort({ deletedAt: 1, updatedAt: -1, _id: 1 }).toArray(),
     c.users.find(userMediaReferenceFilter(media.url), { projection: { _id: 1, username: 1, deletedAt: 1 } }).sort({ deletedAt: 1, username: 1, _id: 1 }).toArray(),
   ]);
   return {
     media: { id: media.id, title: media.title },
-    usages: [...documents.map(record => {
+    usages: [...documents.map(normalizeFleetNames).map(record => {
       const fields: Array<'image' | 'mobileImage' | 'gallery' | 'heroSlides'> = [];
       if (record.image === media.url) fields.push('image');
       if (record.mobileImage === media.url) fields.push('mobileImage');
@@ -291,14 +327,14 @@ export async function trashMedia(mediaId: string, actor?: UserDocument): Promise
   return transaction(async (db, session) => {
     const c = collections(db);
     const item = await c.media.findOne({ _id: mediaId }, { session });
-    if (!item) throw new HttpError(404, 'This image is no longer in the library. Refresh the page.');
+    if (!item) throw new HttpError(404, 'This file is no longer in the library. Refresh the page.');
     if (item.state === 'trashed') return clean(item);
-    if (item.state !== 'committed') throw new HttpError(409, 'This image is still processing. Try again after it is saved.');
-    if (!item.publicId?.startsWith(`${mediaFolder()}/`)) throw new HttpError(400, 'This image is outside the managed library.');
-    if (await hasMediaReferences(db, item.url, session)) throw new HttpError(409, 'This image is used by content or a user profile, including Trash. Replace it there before moving it to Media Trash.');
+    if (item.state !== 'committed') throw new HttpError(409, 'This file is still processing. Try again after it is saved.');
+    if (!item.publicId?.startsWith(`${mediaFolder()}/`)) throw new HttpError(400, 'This file is outside the managed library.');
+    if (await hasMediaReferences(db, item.url, session)) throw new HttpError(409, 'This file is still in use, including in retained Trash items. Replace it before moving it to Media Trash.');
     const moved = await c.media.findOneAndUpdate({ _id: mediaId, state: 'committed', touchedAt: item.touchedAt }, { $set: { state: 'trashed', trashedAt: new Date().toISOString(), touchedAt: new Date() } }, { session, returnDocument: 'after' });
-    if (!moved) throw new HttpError(409, 'This image changed while it was being moved. Refresh the library and try again.');
-    if (actor) await appendAuditEvent(db, session, { action: 'media.trashed', actor: auditActor(actor), target: { type: 'Image', id: moved.id, label: moved.title } });
+    if (!moved) throw new HttpError(409, 'This file changed while it was being moved. Refresh the library and try again.');
+    if (actor) await appendAuditEvent(db, session, { action: 'media.trashed', actor: auditActor(actor), target: mediaAuditTarget(moved) });
     return clean(moved);
   });
 }
@@ -306,12 +342,12 @@ export async function restoreMedia(mediaId: string, actor?: UserDocument): Promi
   return transaction(async (db, session) => {
     const c = collections(db);
     const item = await c.media.findOne({ _id: mediaId }, { session });
-    if (!item) throw new HttpError(404, 'This image is no longer in Media Trash. Refresh the list.');
+    if (!item) throw new HttpError(404, 'This file is no longer in Media Trash. Refresh the list.');
     if (item.state === 'committed') return clean(item);
-    if (item.state !== 'trashed') throw new HttpError(409, 'This image is not ready to restore. Refresh Media Trash.');
+    if (item.state !== 'trashed') throw new HttpError(409, 'This file is not ready to restore. Refresh Media Trash.');
     const restored = await c.media.findOneAndUpdate({ _id: mediaId, state: 'trashed', touchedAt: item.touchedAt }, { $set: { state: 'committed', pinned: true, touchedAt: new Date() }, $unset: { trashedAt: '' } }, { session, returnDocument: 'after' });
-    if (!restored) throw new HttpError(409, 'This image changed while it was being restored. Refresh Media Trash and try again.');
-    if (actor) await appendAuditEvent(db, session, { action: 'media.restored', actor: auditActor(actor), target: { type: 'Image', id: restored.id, label: restored.title } });
+    if (!restored) throw new HttpError(409, 'This file changed while it was being restored. Refresh Media Trash and try again.');
+    if (actor) await appendAuditEvent(db, session, { action: 'media.restored', actor: auditActor(actor), target: mediaAuditTarget(restored) });
     return clean(restored);
   });
 }
@@ -324,7 +360,7 @@ export async function commitMedia(mediaId: string, submissionId: string, title: 
     await lockMediaSubmission(db, session, owner, submissionId);
     media.state = 'committed'; media.pinned = true; media.title = title; media.touchedAt = new Date();
     await c.media.replaceOne({ _id: mediaId }, media, { session });
-    if (actor) await appendAuditEvent(db, session, { action: 'media.uploaded', actor: auditActor(actor), target: { type: 'Image', id: media.id, label: media.title } });
+    if (actor) await appendAuditEvent(db, session, { action: 'media.uploaded', actor: auditActor(actor), target: mediaAuditTarget(media) });
     return clean(media);
   });
 }
@@ -341,7 +377,7 @@ export async function cleanupMedia({ allowTrashDeletion = true, actor }: { allow
       const current = await scoped.media.findOne({ _id: candidate._id, state: 'committed', touchedAt: candidate.touchedAt }, { session });
       if (!current || await hasMediaReferences(db, current.url, session)) return false;
       const result = await scoped.media.updateOne({ _id: current._id, state: 'committed', touchedAt: current.touchedAt }, { $set: { state: 'trashed', trashedAt: new Date().toISOString(), touchedAt: new Date() } }, { session });
-      if (result.modifiedCount && actor) await appendAuditEvent(db, session, { action: 'media.trashed', actor: auditActor(actor), target: { type: 'Image', id: current.id, label: current.title } });
+      if (result.modifiedCount && actor) await appendAuditEvent(db, session, { action: 'media.trashed', actor: auditActor(actor), target: mediaAuditTarget(current) });
       return result.modifiedCount === 1;
     });
     if (moved) trashed++;

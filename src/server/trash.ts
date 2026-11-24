@@ -10,11 +10,12 @@ import { digest } from './auth';
 import { HttpError } from './http';
 import { mediaFolder } from './media';
 import { enquiryRetainedFilter } from './enquiry-retention';
+import { fleetNameSearchFilters, normalizeFleetNames } from '@/lib/fleet-names';
 
 type TrashRow = {
   kind: CmsTrashKind; id: string; key: string; title: string; titleTh?: string;
   image?: string; deletedAt: string; purgeAt?: string | null; revision?: number;
-  role?: CmsRole; parentId?: string; mediaState?: string; managed?: boolean;
+  role?: CmsRole; parentId?: string; mediaState?: string; managed?: boolean; fleetNamesReviewed?: true;
 };
 type TrashFacet = { items: TrashRow[]; total: { value: number }[]; counts: { _id: CmsTrashKind; value: number }[] };
 
@@ -52,17 +53,18 @@ export async function getCmsTrashPage(query: CmsTrashQuery, actor: UserDocument)
   const c = collections(await getDb());
   const now = new Date();
   const retained = { $or: [{ purgeAt: { $exists: false } }, { purgeAt: { $gt: now } }] };
+  const mediaKind = { $cond: [{ $eq: ['$kind', 'video'] }, 'Video', 'Image'] };
   const pipeline: Document[] = [
     { $match: { type: { $in: contentTypes }, deletedAt: { $exists: true }, ...retained } },
     { $project: {
-      _id: 0, kind: '$type', id: 1, key: { $concat: ['$type', ':', '$id'] }, title: 1, titleTh: 1, image: 1, revision: 1, parentId: 1,
+      _id: 0, kind: '$type', id: 1, key: { $concat: ['$type', ':', '$id'] }, title: 1, titleTh: 1, fleetNamesReviewed: 1, image: 1, revision: 1, parentId: 1,
       deletedAt: dateString('$deletedAt'), purgeAt: dateString('$purgeAt'),
       searchFields: searchFields('title', 'titleTh', 'id', 'category', 'categoryTh', 'parentId'),
     } },
     { $unionWith: { coll: 'moe_media', pipeline: [
       { $match: { $or: [{ state: 'trashed' }, { state: 'deleting', trashedAt: { $exists: true } }] } },
       { $project: {
-        _id: 0, kind: { $literal: 'Image' }, id: 1, key: { $concat: ['Image:', '$id'] }, title: 1, image: '$url', mediaState: '$state',
+        _id: 0, kind: mediaKind, id: 1, key: { $concat: [mediaKind, ':', '$id'] }, title: 1, image: '$url', mediaState: '$state',
         deletedAt: dateString({ $ifNull: ['$trashedAt', '$createdAt'] }),
         managed: { $regexMatch: { input: { $ifNull: ['$publicId', ''] }, regex: `^${escapeInboxSearch(mediaFolder())}/` } },
         searchFields: searchFields('title', 'id'),
@@ -87,7 +89,10 @@ export async function getCmsTrashPage(query: CmsTrashQuery, actor: UserDocument)
   ] } });
   const filtered: Document = query.item ? { key: query.item } : {
     ...(query.kind === 'All' ? {} : { kind: query.kind }),
-    ...(query.q ? { searchFields: { $regex: escapeInboxSearch(query.q), $options: 'i' } } : {}),
+    ...(query.q ? { $or: [
+      { searchFields: { $regex: escapeInboxSearch(query.q), $options: 'i' } },
+      ...fleetNameSearchFilters(query.q).map(filter => ({ kind: 'Vessel', ...filter })),
+    ] } : {}),
   };
   const pageStages: Document[] = [{ $match: filtered }];
   if (cursor) pageStages.push({ $match: { $or: [{ deletedAt: { $lt: cursor.deletedAt } }, { deletedAt: cursor.deletedAt, key: { $gt: cursor.key } }] } });
@@ -106,7 +111,7 @@ export async function getCmsTrashPage(query: CmsTrashQuery, actor: UserDocument)
   const rows = (result?.items ?? []).slice(0, cmsTrashPageSize);
   const pageIds = rows.filter(item => item.kind === 'Page').map(item => item.id);
   const parentIds = rows.filter(item => item.kind === 'Section' && item.parentId && item.parentId !== 'shared').map(item => item.parentId!);
-  const imageUrls = rows.filter(item => item.kind === 'Image' && item.image).map(item => item.image!);
+  const imageUrls = rows.filter(item => (item.kind === 'Image' || item.kind === 'Video') && item.image).map(item => item.image!);
   const [linkedPageIds, activeParents, referencedImageUrls, profileImageUrls] = await Promise.all([
     pageIds.length ? c.content.distinct('parentId', { type: 'Section', parentId: { $in: pageIds } }) : [],
     parentIds.length ? c.content.distinct('id', { type: 'Page', id: { $in: parentIds }, deletedAt: { $exists: false }, ...retained }) : [],
@@ -121,7 +126,8 @@ export async function getCmsTrashPage(query: CmsTrashQuery, actor: UserDocument)
   const availableParents = new Set(activeParents);
   const referencedImages = new Set([...referencedImageUrls.map(item => item._id), ...profileImageUrls]);
   const items: CmsTrashItem[] = rows.map(row => {
-    const base = { id: row.id, key: row.key, title: row.title, ...(row.titleTh ? { titleTh: row.titleTh } : {}), ...(row.image ? { image: row.image } : {}), deletedAt: row.deletedAt, ...(row.purgeAt ? { purgeAt: row.purgeAt } : {}) };
+    const { title, titleTh } = normalizeFleetNames({ ...row, type: row.kind });
+    const base = { id: row.id, key: row.key, title, ...(titleTh ? { titleTh } : {}), ...(row.image ? { image: row.image } : {}), deletedAt: row.deletedAt, ...(row.purgeAt ? { purgeAt: row.purgeAt } : {}) };
     let restoreBlockedReason: string | undefined;
     let deleteBlockedReason: string | undefined = canPermanentlyDelete(role) ? undefined : 'Only Dev and Admin can permanently delete items from Trash.';
     if (row.kind === 'User') {
@@ -130,16 +136,16 @@ export async function getCmsTrashPage(query: CmsTrashQuery, actor: UserDocument)
       if (row.id === actor._id) restoreBlockedReason = deleteBlockedReason = 'You cannot remove your own account.';
       return { ...base, kind: 'User', role: targetRole, canRestore: !restoreBlockedReason, canDelete: !deleteBlockedReason, ...(restoreBlockedReason ? { restoreBlockedReason } : {}), ...(deleteBlockedReason ? { deleteBlockedReason } : {}) };
     }
-    if (row.kind === 'Image') {
-      if (row.mediaState !== 'trashed') restoreBlockedReason = 'This image is waiting for permanent deletion. Retry deleting it to finish.';
-      if (!row.managed) deleteBlockedReason = 'This image is outside the managed library.';
-      else if (row.image && referencedImages.has(row.image)) deleteBlockedReason = 'This image is used by content or a user profile, including Trash. Replace it there before removing it.';
+    if (row.kind === 'Image' || row.kind === 'Video') {
+      if (row.mediaState !== 'trashed') restoreBlockedReason = 'This file is waiting for permanent deletion. Retry deleting it to finish.';
+      if (!row.managed) deleteBlockedReason = 'This file is outside the managed library.';
+      else if (row.image && referencedImages.has(row.image)) deleteBlockedReason = 'This file is still in use, including in retained Trash items. Replace it before removing it.';
     } else {
       if (row.kind === 'Page' && (corePageIds as readonly string[]).includes(row.id)) deleteBlockedReason = 'Core website pages cannot be permanently deleted. Restore this page instead.';
       else if (row.kind === 'Page' && linked.has(row.id)) deleteBlockedReason = 'This page still has content areas. Restore it or remove those areas from Trash first.';
       if (row.kind === 'Section' && row.parentId !== 'shared' && (!row.parentId || !availableParents.has(row.parentId))) restoreBlockedReason = 'Restore the parent page before restoring this content area.';
     }
-    return { ...base, kind: row.kind, ...(row.kind !== 'Image' ? { revision: row.revision!, ...(row.parentId ? { parentId: row.parentId } : {}) } : {}), canRestore: !restoreBlockedReason, canDelete: !deleteBlockedReason, ...(restoreBlockedReason ? { restoreBlockedReason } : {}), ...(deleteBlockedReason ? { deleteBlockedReason } : {}) } as CmsTrashItem;
+    return { ...base, kind: row.kind, ...(row.kind !== 'Image' && row.kind !== 'Video' ? { revision: row.revision!, ...(row.parentId ? { parentId: row.parentId } : {}) } : {}), canRestore: !restoreBlockedReason, canDelete: !deleteBlockedReason, ...(restoreBlockedReason ? { restoreBlockedReason } : {}), ...(deleteBlockedReason ? { deleteBlockedReason } : {}) } as CmsTrashItem;
   });
   return { items, total: result?.total[0]?.value ?? 0, counts, nextCursor: (result?.items.length ?? 0) > cmsTrashPageSize ? nextCursor(rows[rows.length - 1], scope) : null };
 }

@@ -15,7 +15,8 @@ type SearchState = {
 
 const empty: SearchState = { query: '', items: [], nextCursor: null, loading: false, loadingMore: false, error: '' };
 
-export default function useCmsMediaSearch(query: string, enabled: boolean, revision = 0) {
+export default function useCmsMediaSearch(query: string, enabled: boolean, revision = 0, scope?: 'slides') {
+  const scopeParam = scope === 'slides' ? '&scope=slides' : '';
   const normalized = query.trim();
   const [retryCount, setRetryCount] = useState(0);
   const [state, setState] = useState<SearchState>(empty);
@@ -31,14 +32,14 @@ export default function useCmsMediaSearch(query: string, enabled: boolean, revis
     setState({ ...empty, query: normalized, loading: true });
     const timer = setTimeout(async () => {
       try {
-        const result = await cmsRequest<{ media: MediaItem[]; nextCursor: string | null }>(`/api/cms/media?q=${encodeURIComponent(normalized)}`, { signal: controller.signal });
+        const result = await cmsRequest<{ media: MediaItem[]; nextCursor: string | null }>(`/api/cms/media?q=${encodeURIComponent(normalized)}${scopeParam}`, { signal: controller.signal });
         if (generation.current === current && !controller.signal.aborted) setState({ query: normalized, items: result.media, nextCursor: result.nextCursor, loading: false, loadingMore: false, error: '' });
       } catch (cause) {
         if (generation.current === current && !controller.signal.aborted) setState({ ...empty, query: normalized, error: cmsErrorText(cause) });
       }
     }, 300);
     return () => { clearTimeout(timer); controller.abort(); };
-  }, [enabled, normalized, revision, retryCount]);
+  }, [enabled, normalized, revision, retryCount, scopeParam]);
 
   const loadMore = useCallback(async () => {
     if (!enabled || !normalized || state.query !== normalized || state.loading || state.loadingMore || !state.nextCursor) return;
@@ -47,7 +48,7 @@ export default function useCmsMediaSearch(query: string, enabled: boolean, revis
     request.current = controller;
     setState(previous => ({ ...previous, loadingMore: true, error: '' }));
     try {
-      const result = await cmsRequest<{ media: MediaItem[]; nextCursor: string | null }>(`/api/cms/media?q=${encodeURIComponent(normalized)}&cursor=${encodeURIComponent(state.nextCursor)}`, { signal: controller.signal });
+      const result = await cmsRequest<{ media: MediaItem[]; nextCursor: string | null }>(`/api/cms/media?q=${encodeURIComponent(normalized)}${scopeParam}&cursor=${encodeURIComponent(state.nextCursor)}`, { signal: controller.signal });
       if (generation.current !== current || controller.signal.aborted) return;
       setState(previous => previous.query !== normalized ? previous : {
         ...previous,
@@ -58,7 +59,7 @@ export default function useCmsMediaSearch(query: string, enabled: boolean, revis
     } catch (cause) {
       if (generation.current === current && !controller.signal.aborted) setState(previous => ({ ...previous, loadingMore: false, error: cmsErrorText(cause) }));
     }
-  }, [enabled, normalized, state]);
+  }, [enabled, normalized, state, scopeParam]);
 
   const current = enabled && normalized && state.query === normalized ? state : null;
   return {

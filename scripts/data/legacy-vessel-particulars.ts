@@ -1,3 +1,4 @@
+import { normalizeFleetNames } from '../../src/lib/fleet-names';
 import type { ContentRecord, VesselSpecs } from '../../src/lib/cms-types';
 
 export type VesselParticularField = keyof VesselSpecs;
@@ -60,17 +61,17 @@ export const legacyVesselParticulars: readonly LegacyVesselParticular[] = [
     blankReasons: {},
   },
   {
-    id: 'moe-line-2', expectedTitle: 'MOE 2', expectedCategory: 'Container', primarySource: 'website', sourceUrls: sources('moe-line-2', 2),
+    id: 'moe-line-2', expectedTitle: 'MOE LINE 2', expectedCategory: 'Container', primarySource: 'website', sourceUrls: sources('moe-line-2', 2),
     specs: { imo: '8359184', yearBuilt: 2008, flag: 'Thailand', flagTh: 'ไทย', lengthM: 49.98, beamM: 12.8, depthM: 4.5, draftM: 3.85, capacityTeu: 72, reeferPlugs: 3, grossTonnage: 835, netTonnage: 505, deadweightT: 1590, cargoCapacityT: 1550 },
     blankReasons: {},
   },
   {
-    id: 'moe-line-3', expectedTitle: 'MOE 3', expectedCategory: 'Container', primarySource: 'website', sourceUrls: sources('moe-line-3', 3),
+    id: 'moe-line-3', expectedTitle: 'MOE LINE 3', expectedCategory: 'Container', primarySource: 'website', sourceUrls: sources('moe-line-3', 3),
     specs: { imo: '8359172', yearBuilt: 2011, flag: 'Thailand', flagTh: 'ไทย', lengthM: 49.98, beamM: 12.8, depthM: 4.2, draftM: 3.2, capacityTeu: 72, reeferPlugs: 3, grossTonnage: 760, netTonnage: 464, deadweightT: 1290, cargoCapacityT: 1250 },
     blankReasons: {},
   },
   {
-    id: 'moe-line-4', expectedTitle: 'MOE 4', expectedCategory: 'Crane', primarySource: 'website', sourceUrls: sources('moe-line-4', 4),
+    id: 'moe-line-4', expectedTitle: 'MOE LINE 4', expectedCategory: 'Crane', primarySource: 'website', sourceUrls: sources('moe-line-4', 4),
     specs: { yearBuilt: 1988, flag: 'Thailand', flagTh: 'ไทย', lengthM: 55, beamM: 19, depthM: 4, grossTonnage: 1329 },
     blankReasons: {
       imo: 'No IMO was supplied. Official registration 4800-00377 is not an IMO number.',
@@ -83,17 +84,17 @@ export const legacyVesselParticulars: readonly LegacyVesselParticular[] = [
     },
   },
   {
-    id: 'moe-line-5', expectedTitle: 'MOE 5', expectedCategory: 'Container', primarySource: 'website', sourceUrls: sources('moe-line-5', 5),
+    id: 'moe-line-5', expectedTitle: 'MOE LINE 5', expectedCategory: 'Container', primarySource: 'website', sourceUrls: sources('moe-line-5', 5),
     specs: { imo: '1042457', yearBuilt: 2009, flag: 'Thailand', flagTh: 'ไทย', lengthM: 49.98, beamM: 14.8, depthM: 4.92, draftM: 3.52, capacityTeu: 120, reeferPlugs: 3, grossTonnage: 1163, netTonnage: 651, deadweightT: 1800, cargoCapacityT: 1750 },
     blankReasons: {},
   },
   {
-    id: 'moe-line-6', expectedTitle: 'MOE 6', expectedCategory: 'Container', primarySource: 'website', sourceUrls: sources('moe-line-6', 6),
+    id: 'moe-line-6', expectedTitle: 'MOE LINE 6', expectedCategory: 'Container', primarySource: 'website', sourceUrls: sources('moe-line-6', 6),
     specs: { imo: '1042469', yearBuilt: 2006, flag: 'Thailand', flagTh: 'ไทย', lengthM: 49.98, beamM: 14.8, depthM: 4.62, draftM: 3.35, capacityTeu: 120, reeferPlugs: 3, grossTonnage: 1047, netTonnage: 592, deadweightT: 1800, cargoCapacityT: 1750 },
     blankReasons: {},
   },
   {
-    id: 'moe-line-7', expectedTitle: 'MOE 7', expectedCategory: 'Container', primarySource: 'website', sourceUrls: sources('moe-line-7', 7),
+    id: 'moe-line-7', expectedTitle: 'MOE LINE 7', expectedCategory: 'Container', primarySource: 'website', sourceUrls: sources('moe-line-7', 7),
     specs: { imo: '1065837', yearBuilt: 2003, flag: 'Thailand', flagTh: 'ไทย', lengthM: 49.98, beamM: 15.6, depthM: 5.4, draftM: 3.9, capacityTeu: 120, reeferPlugs: 3, grossTonnage: 1266, netTonnage: 687, deadweightT: 2100, cargoCapacityT: 2050 },
     blankReasons: {},
   },
@@ -112,7 +113,7 @@ function reviewedPdfValue(source: LegacyVesselParticular, field: VesselParticula
 }
 
 function assertIdentity(record: ContentRecord, expected: Pick<LegacyVesselParticular, 'id' | 'expectedTitle' | 'expectedCategory'>) {
-  if (record.type !== 'Vessel' || record.id !== expected.id || record.title !== expected.expectedTitle || record.category !== expected.expectedCategory || record.deletedAt
+  if (record.type !== 'Vessel' || record.id !== expected.id || normalizeFleetNames(record).title !== expected.expectedTitle || record.category !== expected.expectedCategory || record.deletedAt
     || '_id' in record && record._id !== `Vessel:${expected.id}`) {
     throw new Error(`Legacy vessel identity does not match the current record: ${expected.id}.`);
   }

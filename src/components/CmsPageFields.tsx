@@ -5,6 +5,7 @@ import { ImagePlus, Languages } from 'lucide-react';
 import type { ContentRecord } from '@/lib/cms-types';
 import { useCmsLocale } from '@/lib/cms-locale';
 import { cmsContentPlaceholder } from '@/lib/cms-content-placeholders';
+import { charterKinds, defaultHomeCharters } from '@/lib/homepage-chartering';
 import CmsFooterStatisticsFields from './CmsFooterStatisticsFields';
 import styles from './CmsPageFields.module.css';
 
@@ -56,7 +57,8 @@ export default function CmsPageFields({ record, disabled, onChange, imageField }
 
   function input(field: TextField, language: 'th' | 'en') {
     const key = (language === 'th' ? `${field}Th` : field) as TextField | ThaiTextField;
-    const name = record.id === 'footer' && record.parentId === 'shared' && field === 'caption' ? 'Statistics heading' : labels[field];
+    const name = record.id === 'footer' && record.parentId === 'shared' && field === 'caption' ? 'Statistics heading'
+      : record.id === 'home' && record.type === 'Page' && field === 'caption' ? 'Supporting line' : labels[field];
     const label = t(`${name} · ${language === 'th' ? 'Thai' : 'English'}`);
     const required = field === 'title' || (field === 'description' && record.type === 'Page');
     const common = { lang: language, placeholder: cmsContentPlaceholder(field, language, record.type), required, maxLength: limits[field], value: record[key] || '', onChange: (event: { target: { value: string } }) => onChange({ [key]: event.target.value }) };
@@ -70,7 +72,23 @@ export default function CmsPageFields({ record, disabled, onChange, imageField }
     {record.type === 'Page' && record.id === 'home' && <p className={styles.hint}>{t('Manage the homepage banner images and their descriptions in Homepage slides.')}</p>}
     {([locale, locale === 'th' ? 'en' : 'th'] as const).map(language => <details key={language} className={styles.language} open={locale === language}>
       <summary><span className={styles.languageTitle}><Languages size={20} aria-hidden="true" />{languageName(language)}</span><span className={styles.hint}>{t('Website text')}</span></summary>
-      <div className={styles.textFields}>{textFields.map(field => input(field, language))}</div>
+      <div className={styles.textFields}>{textFields.map(field => input(field, language))}
+        {record.type === 'Section' && record.parentId === 'home' && record.id === 'home-expertise' && charterKinds.map(kind => {
+          const charters = record.homeCharters ?? defaultHomeCharters;
+          const titleKey = language === 'en' ? 'title' : 'titleTh';
+          const descriptionKey = language === 'en' ? 'description' : 'descriptionTh';
+          function change(key: typeof titleKey | typeof descriptionKey, value: string) {
+            onChange({ homeCharters: { ...charters, [kind]: { ...charters[kind], [key]: value } } });
+          }
+          return <fieldset key={kind} className={styles.statisticCard}>
+            <legend>{defaultHomeCharters[kind][locale === 'en' ? 'title' : 'titleTh']}</legend>
+            <label className={styles.field}>{t('Card heading')}<input lang={language} value={charters[kind][titleKey]} required maxLength={200}
+              placeholder={defaultHomeCharters[kind][titleKey]} onChange={event => change(titleKey, event.target.value)} /></label>
+            <label className={styles.field}>{t(language === 'en' ? 'Description · English' : 'Description · Thai')}<textarea lang={language} value={charters[kind][descriptionKey]} rows={3} maxLength={2000}
+              placeholder={cmsContentPlaceholder('description', language, 'Section')} onChange={event => change(descriptionKey, event.target.value)} /></label>
+          </fieldset>;
+        })}
+      </div>
     </details>)}
     {record.id === 'footer' && record.parentId === 'shared' && <CmsFooterStatisticsFields record={record} onChange={onChange} />}
     {(fields.mainImage || fields.mobileImage) && <section className={styles.pictures} aria-label={t('Pictures')}>

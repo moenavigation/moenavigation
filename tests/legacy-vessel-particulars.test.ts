@@ -19,6 +19,13 @@ function emptyFleet() {
   return structuredClone(clientFleetRecords).map(record => { delete record.vesselSpecs; return record; });
 }
 
+function websiteFleet() {
+  return emptyFleet().map(record => {
+    const website = legacyVesselParticulars.find(source => source.id === record.id);
+    return website ? { ...record, vesselSpecs: { ...website.specs } } : record;
+  });
+}
+
 test('all imported particulars use the reviewed website tables as the primary source', () => {
   const archive = JSON.parse(readFileSync(new URL('../docs/research/legacy-moe-line-2026-11-16/fleet/fleet-data.json', import.meta.url), 'utf8')) as { vessels: ArchivedVessel[] };
   assert.equal(legacyVesselParticulars.length, 7);
@@ -113,7 +120,7 @@ test('missing crane keys are explicitly cleared, while DUMAI data is untouched',
 });
 
 test('explicit website policy replaces only previously imported PDF capacities and is idempotent', () => {
-  const records = structuredClone(clientFleetRecords);
+  const records = websiteFleet();
   for (const record of records.filter(item => item.category === 'Container')) {
     record.vesselSpecs!.reeferPlugs = 5;
     if (record.id === 'ranong-moe') record.vesselSpecs!.capacityTeu = 72;
@@ -125,7 +132,7 @@ test('explicit website policy replaces only previously imported PDF capacities a
   assert.deepEqual(plan.conflicts, []);
   const after = records.map(record => applyLegacyVesselSpecs(record, { replaceReviewedPdfValues: true }).record);
   assert.deepEqual(records, before);
-  assert.deepEqual(after, clientFleetRecords);
+  assert.deepEqual(after, websiteFleet());
   assert.deepEqual(buildLegacyVesselParticularsPlan(after, { replaceReviewedPdfValues: true }).changes, []);
   const different = structuredClone(records);
   different.find(item => item.id === 'ranong-moe')!.vesselSpecs!.capacityTeu = 100;
@@ -135,7 +142,10 @@ test('explicit website policy replaces only previously imported PDF capacities a
 
 test('identity mismatches, conflicting IMO numbers and an unexpected fleet set stop the plan', () => {
   const record = emptyFleet().find(item => item.id === 'moe-line-2')!;
-  for (const patch of [{ title: 'MOE LINE 2' }, { category: 'Tanker' }, { type: 'Route' }, { deletedAt: '2026-11-17' }, { _id: 'Vessel:moe-line-3' }]) {
+  const legacy = applyLegacyVesselSpecs({ ...record, title: 'MOE 2' });
+  assert.equal(legacy.record.title, 'MOE 2');
+  assert.deepEqual(legacy.record.vesselSpecs, applyLegacyVesselSpecs(record).record.vesselSpecs);
+  for (const patch of [{ title: 'MOE LINE 3' }, { title: 'MOE 3' }, { category: 'Tanker' }, { type: 'Route' }, { deletedAt: '2026-11-17' }, { _id: 'Vessel:moe-line-3' }]) {
     assert.throws(() => applyLegacyVesselSpecs({ ...record, ...patch } as ContentRecord), /identity does not match/);
   }
   assert.throws(() => applyLegacyVesselSpecs({ ...record, vesselSpecs: { imo: '8359172' } }), /IMO does not match/);
@@ -145,7 +155,7 @@ test('identity mismatches, conflicting IMO numbers and an unexpected fleet set s
 });
 
 test('website policy update preserves trashed and unmatched vessels without recreating removed records', () => {
-  const records = structuredClone(clientFleetRecords).filter(record => record.id !== 'moe-line-3');
+  const records = websiteFleet().filter(record => record.id !== 'moe-line-3');
   const trashed = records.find(record => record.id === 'moe-line-2')!;
   trashed.deletedAt = '2026-11-17T10:00:00.000Z';
   trashed.vesselSpecs!.reeferPlugs = 5;
@@ -160,7 +170,7 @@ test('website policy update preserves trashed and unmatched vessels without recr
 });
 
 test('existing disagreements are surfaced even if no other fields need adding, for the caller to abort', () => {
-  const records = structuredClone(clientFleetRecords);
+  const records = websiteFleet();
   const vessel = records.find(item => item.id === 'moe-line-2')!;
   vessel.vesselSpecs!.lengthM = 51;
   const before = structuredClone(records);

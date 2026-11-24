@@ -1,0 +1,102 @@
+{
+  "ranong-moe": [
+    "/images/container-vessel.webp",
+    "/images/container-deck-detail.webp",
+    "/images/port.webp",
+    "/images/vessel-deck.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694748/moe-navigation/library/container-vessel-15c2222f580a9621f307.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694747/moe-navigation/library/container-deck-detail-b8bc1405d3f2c150de32.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694758/moe-navigation/library/port-7db6750e9234effd2ac7.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694763/moe-navigation/library/vessel-deck-8bf1eca094a80e9b67a4.webp",
+    "/images/fleet-enhanced/ranong-moe-neutral.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867279/moe-navigation/ee7afb8b77d113bb7922382ecfdc9f221cd6c2abb1e9226c46468b616a5c06ce.webp",
+    "/images/fleet-enhanced/ranong-moe-warm.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867281/moe-navigation/9463f932190eadab7ebdfafaca672d1197f988de7b103b457a412d609e27fce6.webp"
+  ],
+  "moe-line-2": [
+    "/images/port.webp",
+    "/images/logistics.webp",
+    "/images/container-deck-detail.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694758/moe-navigation/library/port-7db6750e9234effd2ac7.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694756/moe-navigation/library/logistics-595769e9a3b33e0d6334.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694747/moe-navigation/library/container-deck-detail-b8bc1405d3f2c150de32.webp",
+    "/images/fleet-enhanced/moe-line-2-neutral.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867283/moe-navigation/eeff07f52ad685cc728698f80c82bdb323f968d5c668903fcc892ac48ea23228.webp",
+    "/images/fleet-enhanced/moe-line-2-warm.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867285/moe-navigation/e67cd8a6185983c07a8e90d08580a72c5e89e1a0f72335d21b72d130e5db3e53.webp"
+  ],
+  "moe-line-3": [
+    "/images/fleet/moe-3-container-illustration.webp",
+    "/images/container-deck-detail.webp",
+    "/images/port.webp",
+    "/images/logistics.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1793272471/moe-navigation/75b222dfcba0858348e4b58a208f9595da2c037de65c109c48dfaa3826151de4.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694747/moe-navigation/library/container-deck-detail-b8bc1405d3f2c150de32.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694758/moe-navigation/library/port-7db6750e9234effd2ac7.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694756/moe-navigation/library/logistics-595769e9a3b33e0d6334.webp",
+    "/images/fleet-enhanced/moe-line-3-neutral.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867287/moe-navigation/ddaefbf1566884b04fbb1ff32a1845aa3a0148423b4a4e798dd957fb339b0c97.webp",
+    "/images/fleet-enhanced/moe-line-3-warm.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867290/moe-navigation/f0e361558057b5d3fcdd0487dd1388110c083f34a0f3bac4bcd25ea84f6a378b.webp"
+  ],
+  "moe-line-4": [
+    "/images/fleet/moe-4-crane-illustration.webp",
+    "/images/crane-lift-detail.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1793272473/moe-navigation/59a5ba94ce39480820b77f62d79185d1d900b742b51463fa479be439a51bc82a.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694750/moe-navigation/library/crane-lift-detail-935ef2a3d23f465b722d.webp",
+    "/images/fleet-enhanced/moe-line-4-neutral.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867292/moe-navigation/61816e08ca95f4d9229070293765e973968be5a7fa7c3a58c975594dae146e06.webp",
+    "/images/fleet-enhanced/moe-line-4-warm.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867294/moe-navigation/ded1092e5b456d7dfc36e38ffa60e827d9f34167968e5b16b5288cb3ce92504c.webp"
+  ],
+  "moe-line-5": [
+    "/images/vessel-deck.webp",
+    "/images/container-deck-detail.webp",
+    "/images/port.webp",
+    "/images/logistics.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694763/moe-navigation/library/vessel-deck-8bf1eca094a80e9b67a4.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694747/moe-navigation/library/container-deck-detail-b8bc1405d3f2c150de32.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694758/moe-navigation/library/port-7db6750e9234effd2ac7.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694756/moe-navigation/library/logistics-595769e9a3b33e0d6334.webp",
+    "/images/fleet-enhanced/moe-line-5-neutral.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867297/moe-navigation/210615f8e79322ace31df0475aa0d07840146154da81e6669741a3113c42eb64.webp",
+    "/images/fleet-enhanced/moe-line-5-warm.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867299/moe-navigation/cfe424ad007c3b9750b92758a1c3f42a614fcb3fd5d491dc636cd644bcb0d24b.webp"
+  ],
+  "moe-line-6": [
+    "/images/fleet/moe-6-container-illustration.webp",
+    "/images/container-deck-detail.webp",
+    "/images/port.webp",
+    "/images/logistics.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1793272476/moe-navigation/216f0e8574bbd40a5436e435dc3e9fe0f2115f4a5cd121d5cb2cede8c032236a.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694747/moe-navigation/library/container-deck-detail-b8bc1405d3f2c150de32.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694758/moe-navigation/library/port-7db6750e9234effd2ac7.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694756/moe-navigation/library/logistics-595769e9a3b33e0d6334.webp",
+    "/images/fleet-enhanced/moe-line-6-neutral.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867301/moe-navigation/c6cc2221adbf49a8d50087fb8ef2a0080a48c920596f56c43400a5d8e78c07dc.webp",
+    "/images/fleet-enhanced/moe-line-6-warm.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867303/moe-navigation/b7c8145da12d2500585cd7210eed65de9c0420ac84a214c63a8ccd4975b107a2.webp"
+  ],
+  "moe-line-7": [
+    "/images/fleet/moe-7-container-illustration.webp",
+    "/images/container-deck-detail.webp",
+    "/images/port.webp",
+    "/images/logistics.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1793272478/moe-navigation/b39e52b0fae1182f24009d8055f7fb7e2db45cf83da2d6c112499a428477e704.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694747/moe-navigation/library/container-deck-detail-b8bc1405d3f2c150de32.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694758/moe-navigation/library/port-7db6750e9234effd2ac7.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694756/moe-navigation/library/logistics-595769e9a3b33e0d6334.webp",
+    "/images/fleet-enhanced/moe-line-7-neutral.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867305/moe-navigation/1f9baa9a19952c63b79584fd42c76f7977efb5321302cfbe779804f0d3c3be27.webp",
+    "/images/fleet-enhanced/moe-line-7-warm.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1794867308/moe-navigation/10cae47456729c0eb836f37433fd302d73b8a96f4ebd4db7152f9b4239d24914.webp"
+  ],
+  "dumai-moe": [
+    "/images/fleet/dumai-moe-tanker-illustration.webp",
+    "/images/tanker-deck-detail.webp",
+    "/images/tanker.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1793272480/moe-navigation/606a71b4ca7fe784ba66ca246b35696ae275a3397bcf77c9731d68c878584640.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694759/moe-navigation/library/tanker-deck-detail-2d91c66a976ee43f4869.webp",
+    "https://res.cloudinary.com/yod4qzgu/image/upload/v1792694760/moe-navigation/library/tanker-41cd71a06de321aa5baa.webp"
+  ]
+}

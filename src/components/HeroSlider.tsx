@@ -3,7 +3,9 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion } from "motion/react";
-import type { ContentImage } from "@/lib/cms-types";
+import { Pause, Play } from "lucide-react";
+import type { HomeSlide } from "@/lib/cms-types";
+import { homeSlideVideoPoster, mobileHomeSlidePhoto } from "@/lib/home-slides";
 import { local, type Locale } from "@/lib/content";
 import styles from "./HeroSlider.module.css";
 
@@ -18,7 +20,7 @@ const reducedMotionSnapshot = () => window.matchMedia(reducedMotionQuery).matche
 const serverReducedMotionSnapshot = () => true;
 
 export default function HeroSlider({ slides, intervalSeconds, locale }: {
-  slides: ContentImage[];
+  slides: HomeSlide[];
   intervalSeconds: number;
   locale: Locale;
 }) {
@@ -28,13 +30,18 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
   const [dragging, setDragging] = useState(false);
   const [visible, setVisible] = useState(true);
   const [inView, setInView] = useState(true);
+  const [videoMode, setVideoMode] = useState<"auto" | "play" | "pause" | "ended" | "blocked" | "error">("auto");
+  const [outgoingVideo, setOutgoingVideo] = useState<string>();
   const reducedMotion = useSyncExternalStore(subscribeReducedMotion, reducedMotionSnapshot, serverReducedMotionSnapshot);
   const root = useRef<HTMLDivElement>(null);
   const indicators = useRef<HTMLDivElement>(null);
+  const video = useRef<HTMLVideoElement>(null);
   const gesture = useRef<{ pointerId: number; x: number; y: number } | null>(null);
   const activeIndex = index % slides.length;
+  const activeVideo = slides[activeIndex]?.kind === "video" ? slides[activeIndex].url : undefined;
+  const playVideo = visible && inView && (videoMode === "play" || (videoMode === "auto" && !reducedMotion));
   const canPlay = slides.length > 1 && reducedMotion === false;
-  const rotating = canPlay && !keyboardPaused && !hovered && !dragging && visible && inView;
+  const rotating = canPlay && !keyboardPaused && !hovered && !dragging && visible && inView && videoMode !== "pause";
 
   useEffect(() => {
     const visibility = () => setVisible(!document.hidden);
@@ -46,10 +53,39 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
   }, []);
 
   useEffect(() => {
-    if (!rotating) return;
-    const timer = window.setTimeout(() => setIndex(current => (current + 1) % slides.length), intervalSeconds * 1000);
+    const element = video.current;
+    if (!element || !playVideo) return;
+    let cancelled = false;
+    let stallTimer: number;
+    const clearStall = () => window.clearTimeout(stallTimer);
+    const watchStall = () => {
+      clearStall();
+      stallTimer = window.setTimeout(() => setVideoMode("blocked"), 12000);
+    };
+    if (element.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) watchStall();
+    element.addEventListener("waiting", watchStall);
+    element.addEventListener("playing", clearStall);
+    element.play().catch(() => {
+      if (!cancelled) setVideoMode(element.error ? "error" : "blocked");
+    });
+    return () => {
+      cancelled = true;
+      clearStall();
+      element.removeEventListener("waiting", watchStall);
+      element.removeEventListener("playing", clearStall);
+      element.pause();
+    };
+  }, [activeVideo, playVideo]);
+
+  useEffect(() => {
+    if (!rotating || (activeVideo && !["ended", "blocked", "error"].includes(videoMode))) return;
+    const timer = window.setTimeout(() => {
+      setOutgoingVideo(activeVideo);
+      setIndex(current => (current + 1) % slides.length);
+      setVideoMode("auto");
+    }, activeVideo && videoMode === "ended" ? 0 : intervalSeconds * 1000);
     return () => window.clearTimeout(timer);
-  }, [rotating, index, intervalSeconds, slides.length]);
+  }, [rotating, index, intervalSeconds, slides.length, activeVideo, videoMode]);
 
   useEffect(() => {
     const strip = indicators.current;
@@ -60,7 +96,27 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
   }, [activeIndex, reducedMotion]);
 
   function select(next: number) {
-    setIndex((next + slides.length) % slides.length);
+    const position = (next + slides.length) % slides.length;
+    if (position !== activeIndex) {
+      setOutgoingVideo(activeVideo);
+      setIndex(position);
+      setVideoMode("auto");
+    }
+  }
+
+  function toggleVideo() {
+    const element = video.current;
+    if (!element) return;
+    if (playVideo) {
+      element.pause();
+      setVideoMode("pause");
+      return;
+    }
+    // Call play inside the click so browsers requiring a user gesture can start.
+    void element.play().catch((error: DOMException) => {
+      if (error.name !== "AbortError" && video.current === element) setVideoMode(element.error ? "error" : "blocked");
+    });
+    setVideoMode("play");
   }
 
   function cancelGesture(element: HTMLDivElement) {
@@ -97,7 +153,7 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
       if (!event.isPrimary) { cancelGesture(event.currentTarget); return; }
       if (event.button !== 0) return;
       setKeyboardPaused(false);
-      if (slides.length < 2 || indicators.current?.contains(event.target as Node)) return;
+      if (slides.length < 2 || (event.target as Element).closest("button")) return;
       gesture.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
       setDragging(true);
       // Touch and pen pointers have implicit capture; mouse drags need it
@@ -124,29 +180,49 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
     }}
   >
     <div className={styles.images} aria-live={rotating ? "off" : "polite"} aria-atomic="false">
-      {slides.map((slide, position) => <motion.div
+      {slides.map((slide, position) => {
+        const mobilePhoto = mobileHomeSlidePhoto(slide.url);
+        return <motion.div
         key={slide.url}
         className={styles.slide}
+        data-mobile-photo={mobilePhoto ? true : undefined}
         initial={false}
         animate={{ opacity: position === activeIndex ? 1 : 0 }}
         transition={{ duration: reducedMotion ? 0 : 0.7, ease: "easeInOut" }}
+        onAnimationComplete={() => {
+          if (position !== activeIndex && slide.url === outgoingVideo) setOutgoingVideo(undefined);
+        }}
         aria-hidden={position !== activeIndex}
         role="group"
         aria-roledescription={local(locale, "slide", "สไลด์")}
         aria-label={local(locale, `${position + 1} of ${slides.length}`, `${position + 1} จาก ${slides.length}`)}
       >
-        <Image src={slide.url} alt={(locale === "th" ? slide.altTh : slide.alt) || slide.alt || slide.altTh}
-          fill sizes="100vw" loading={position === 0 ? "eager" : "lazy"}
-          fetchPriority={position === 0 ? "high" : "auto"} unoptimized={slide.url.startsWith("/")} draggable={false} />
-      </motion.div>)}
+        {slide.kind === "video" ? ((position === activeIndex || slide.url === outgoingVideo) && <video
+          ref={position === activeIndex ? video : undefined} src={slide.url} poster={homeSlideVideoPoster(slide.url)} muted playsInline
+          preload="none" loop={slides.length === 1 && !reducedMotion}
+          aria-label={(locale === "th" ? slide.altTh : slide.alt) || slide.alt || slide.altTh || local(locale, "Maritime video", "วิดีโอการเดินเรือ")}
+          onEnded={position === activeIndex ? () => setVideoMode("ended") : undefined}
+          onError={position === activeIndex ? () => setVideoMode("error") : undefined} />)
+          : <picture>
+          {mobilePhoto && <source media="(max-width: 700px)" srcSet={mobilePhoto} />}
+          <Image src={slide.url} alt={(locale === "th" ? slide.altTh : slide.alt) || slide.alt || slide.altTh}
+          fill sizes="(max-width: 700px) 169vw, 110vw" loading={position === 0 ? "eager" : "lazy"}
+          fetchPriority={position === 0 ? "high" : "auto"} unoptimized={slide.url.startsWith("/")} draggable={false} /></picture>}
+      </motion.div>;
+      })}
     </div>
-    {slides.length > 1 && <div className={styles.controls}>
-      <div ref={indicators} className={styles.dots} aria-label={local(locale, "Choose a slide", "เลือกสไลด์")}>
+    {(slides.length > 1 || activeVideo) && <div className={styles.controls}>
+      {activeVideo && videoMode !== "error" && <button type="button" className={styles.videoControl}
+        aria-label={playVideo ? local(locale, "Pause video", "หยุดวิดีโอชั่วคราว") : local(locale, "Play video", "เล่นวิดีโอ")}
+        onClick={toggleVideo}>
+        {playVideo ? <Pause size={18} aria-hidden="true" /> : <Play size={18} aria-hidden="true" />}
+      </button>}
+      {slides.length > 1 && <div ref={indicators} className={styles.dots} aria-label={local(locale, "Choose a slide", "เลือกสไลด์")}>
         {slides.map((slide, position) => <button key={slide.url} type="button"
           className={styles.dot} aria-current={position === activeIndex ? "true" : undefined}
           aria-label={local(locale, `Show slide ${position + 1}`, `แสดงสไลด์ ${position + 1}`)}
           onClick={() => select(position)}><span /></button>)}
-      </div>
+      </div>}
     </div>}
   </div>;
 }

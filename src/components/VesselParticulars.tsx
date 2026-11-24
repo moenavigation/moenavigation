@@ -1,4 +1,4 @@
-import { Container, Ruler, Weight } from 'lucide-react';
+import { Container, Construction, Droplets, Ruler, Weight } from 'lucide-react';
 import { useId } from 'react';
 import type { VesselSpecs } from '@/lib/cms-types';
 import { local, type Locale } from '@/lib/content';
@@ -15,6 +15,7 @@ export default function VesselParticulars({ locale, specs }: { locale: Locale; s
   const groups: { key: string; title: string; icon: typeof Ruler; rows: Particular[] }[] = [
     { key: 'dimension', title: local(locale, 'Dimension', 'ขนาดเรือ'), icon: Ruler, rows: [
       { label: local(locale, 'LOA', 'ความยาวตลอดลำ (LOA)'), value: specs?.lengthM, unit: metres, dimension: true },
+      ...(specs?.lbpM !== undefined ? [{ label: local(locale, 'Length between perpendiculars', 'ความยาวระหว่างเส้นฉาก'), value: specs.lbpM, unit: metres, dimension: true }] : []),
       { label: local(locale, 'Breadth', 'ความกว้าง'), value: specs?.beamM, unit: metres, dimension: true },
       { label: local(locale, 'Depth', 'ความลึก'), value: specs?.depthM, unit: metres, dimension: true },
       { label: local(locale, 'Draft', 'ระยะกินน้ำลึก'), value: specs?.draftM, unit: metres, dimension: true },
@@ -24,12 +25,23 @@ export default function VesselParticulars({ locale, specs }: { locale: Locale; s
       { label: local(locale, 'Reefer Plug', 'จุดจ่ายไฟตู้เย็น'), value: specs?.reeferPlugs, unit: local(locale, 'units', 'จุด') },
     ] },
     { key: 'tonnage', title: local(locale, 'Tonnage', 'ขนาดระวาง'), icon: Weight, rows: [
-      { label: 'GRT', value: specs?.grossTonnage },
-      { label: 'NRT', value: specs?.netTonnage },
+      { label: specs?.tonnageBasis === 'international' ? 'GT' : 'GRT', value: specs?.grossTonnage },
+      { label: specs?.tonnageBasis === 'international' ? 'NT' : 'NRT', value: specs?.netTonnage },
       { label: 'DWT', value: specs?.deadweightT, unit: tonnes },
       { label: 'DWCC', value: specs?.cargoCapacityT, unit: tonnes },
     ] },
   ];
+  if (specs?.craneSwlT !== undefined || specs?.cargoVolumeM3 !== undefined || specs?.cargoTanks !== undefined) {
+    const equipment = [
+      { label: local(locale, 'Safe working load', 'พิกัดยกที่ปลอดภัย'), value: specs.craneSwlT, unit: tonnes },
+      { label: local(locale, 'Cargo volume at 100%', 'ปริมาตรบรรทุกที่ 100%'), value: specs.cargoVolumeM3, unit: 'm³' },
+      { label: local(locale, 'Cargo tanks', 'จำนวนถังสินค้า'), value: specs.cargoTanks },
+    ].filter(row => row.value !== undefined);
+    const crane = specs.craneSwlT !== undefined && equipment.length === 1;
+    const capacity = { key: 'cargo', title: crane ? local(locale, 'Crane capacity', 'กำลังยกเครน') : local(locale, 'Cargo capacity', 'ความจุสินค้า'), icon: crane ? Construction : Droplets, rows: equipment };
+    if (specs.capacityTeu === undefined && specs.reeferPlugs === undefined) groups.splice(1, 1, capacity);
+    else groups.push(capacity);
+  }
 
   return <div className={styles.groups}>
     {groups.map(({ key, title, icon: Icon, rows }) => <section className={styles.group} key={key} aria-labelledby={`${id}-${key}`}>

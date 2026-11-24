@@ -17,7 +17,10 @@
 .handle { touch-action: none; cursor: grab; color: #8b9cac; width: 2rem; }
 .handle:active { cursor: grabbing; }
 .thumbnail { position: relative; margin: 0 .85rem .85rem; border-radius: .5rem; overflow: hidden; background: var(--pale); }
-.thumbnail img { width: 100%; height: auto; aspect-ratio: 3 / 1; object-fit: cover; object-position: center; }
+.thumbnail img, .thumbnail video { display: block; width: 100%; height: auto; aspect-ratio: 3 / 1; object-fit: cover; object-position: center; }
+.thumbnail video { background: var(--navy); }
+.fileSize { margin: 0 1rem .75rem; color: var(--muted); }
+.preparation { display: grid; justify-items: start; gap: .6rem; margin-top: .8rem; overflow-wrap: anywhere; }
 .thumbnail span { position: absolute; left: .5rem; bottom: .4rem; padding: .15rem .45rem; color: #fff; background: #071f40b3; border-radius: .25rem; font-variant-numeric: tabular-nums; }
 .cardSummary { display: grid; gap: .1rem; flex: 1; min-width: 0; }
 .cardSummary span { color: var(--muted); }

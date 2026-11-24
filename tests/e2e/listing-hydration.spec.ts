@@ -19,9 +19,9 @@ test('fleet controls wait for hydration and then accept the first search and cat
     releaseScripts();
     await expect(search).toBeEnabled();
     await expect(crane).toBeEnabled();
-    await search.fill('โม4');
+    await search.fill('โมไลน์ 4');
     await expect(page.getByRole('status')).toHaveText('1 ลำ');
-    expect(new URL(page.url()).searchParams.get('q')).toBe('โม4');
+    expect(new URL(page.url()).searchParams.get('q')).toBe('โมไลน์ 4');
     await crane.click();
     await expect(crane).toHaveAttribute('aria-pressed', 'true');
     expect(new URL(page.url()).searchParams.get('category')).toBe('Crane');

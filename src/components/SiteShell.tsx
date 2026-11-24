@@ -17,7 +17,11 @@ import ContactsBox from "./ContactsBox";
 import FooterStatistics from "./FooterStatistics";
 import styles from "./SiteShell.module.css";
 
-export function Brand({locale}:{locale:Locale}) { return <span className={styles.brand}><BrandMark className={styles.brandLogo} locale={locale}/></span>; }
+export function Brand({locale,alt}:{locale:Locale;alt?:string}) { return <span className={styles.brand}><BrandMark className={styles.brandLogo} locale={locale} alt={alt}/></span>; }
+const footerNavigation = [
+  ...navigation.map(item => item.id === "about" ? { ...item, title: { ...item.title, en: "About Us" } } : item),
+  { id: "contact", title: { en: "Contact Us", th: "ติดต่อเรา" } },
+];
 const subscribeToHydration=()=>()=>{};
 const interactiveSnapshot=()=>true;
 const prerenderedSnapshot=()=>false;
@@ -87,8 +91,10 @@ export function SiteHeader({locale}:{locale:Locale}) {
   </>;
 }
 export default function SiteShell({locale,children}:{locale:Locale;children:ReactNode}) {
-  const { sections, settings, fleetCount }=usePublicContent();
+  const { sections, settings, fleetLinks }=usePublicContent();
   const footer=sections.find(section=>section.id==="footer" && section.parentId==="shared");
+  const footerName = local(locale, settings.companyName === "Moe Navigation Co.,Ltd." ? "Moe Navigation Co., Ltd." : settings.companyName, settings.companyNameTh);
+  const introduction = contentText(footer, "title", locale);
   const path=usePathname();
   useEffect(()=>{
     // Browser Back/Forward owns restoration of the previous scroll position.
@@ -111,9 +117,24 @@ export default function SiteShell({locale,children}:{locale:Locale;children:Reac
     <SiteHeader locale={locale}/>
     <main id="main" tabIndex={-1}>{children}<div className="container"><AdditionalSections pageId="shared" locale={locale} exclude={["shared-callout","footer","footer-contact"]} /></div></main>
     <footer className={styles.footer} onClickCapture={scrollCurrentPageToTop}>
-      <div className="container"><FooterStatistics record={footer} locale={locale} fleetCount={fleetCount}/></div>
-      <div className={`container ${styles.footerTop}`}><div><Link href={href(locale)}><Brand locale={locale}/></Link><p>{contentText(footer,"title",locale)}</p></div><ContactsBox locale={locale} settings={settings}/></div>
-      <div className={`container ${styles.footerBottom}`}><span>© {new Date().getFullYear()} {local(locale,settings.companyName,settings.companyNameTh)}</span><Link href={href(locale,"privacy")}>{local(locale,"Privacy policy","นโยบายความเป็นส่วนตัว")}</Link></div>
+      <div className="container"><FooterStatistics record={footer} locale={locale} fleetCount={fleetLinks.length}/></div>
+      <div className={`container ${styles.footerTop}`}>
+        <div className={styles.footerCompany}>
+          <Link className={styles.brandLink} href={href(locale)}><Brand locale={locale} alt={footerName}/></Link>
+          <p className={styles.companyName}>{footerName}</p>
+          {introduction && <p className={styles.introduction}>{introduction}</p>}
+        </div>
+        <nav aria-labelledby="footer-navigation">
+          <h2 id="footer-navigation">{local(locale, "Navigation", "เมนูเว็บไซต์")}</h2>
+          <ul>{footerNavigation.map(item => <li key={item.id}><Link href={href(locale, item.id)}>{item.title[locale]}</Link></li>)}</ul>
+        </nav>
+        {fleetLinks.length > 0 && <nav aria-labelledby="footer-fleet">
+          <h2 id="footer-fleet">{local(locale, "Our fleet", "กองเรือของเรา")}</h2>
+          <ul>{fleetLinks.map(vessel => <li key={vessel.id}><Link href={href(locale, `fleet/${vessel.id}`)}>{locale === "th" ? vessel.titleTh || vessel.title : vessel.title || vessel.titleTh}</Link></li>)}</ul>
+        </nav>}
+        <ContactsBox locale={locale} settings={settings}/>
+      </div>
+      <div className={`container ${styles.footerBottom}`}><span>© {new Date().getFullYear()} {footerName}</span><Link href={href(locale,"privacy")}>{local(locale,"Privacy policy","นโยบายความเป็นส่วนตัว")}</Link></div>
       <FloatingContact key={path} locale={locale}/>
     </footer>
   </>;

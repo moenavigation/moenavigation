@@ -14,7 +14,7 @@ import styles from './CmsActivityLog.module.css';
 const categories: { value: CmsLogCategoryFilter; label: string }[] = [
   ...cmsLogGroups, { value: 'auth', label: 'Sign-in and security' },
   { value: 'content', label: 'Content' }, { value: 'user', label: 'Users' },
-  { value: 'settings', label: 'Settings' }, { value: 'enquiry', label: 'Enquiries' }, { value: 'media', label: 'Images' },
+  { value: 'settings', label: 'Settings' }, { value: 'enquiry', label: 'Enquiries' }, { value: 'media', label: 'Images and videos' },
 ];
 
 export default function CmsActivityLog({ revision, compact = false }: { revision: number; compact?: boolean }) {

@@ -4,7 +4,7 @@ import { recordSchema, vesselSpecsSchema } from '../src/lib/validation';
 import type { VesselSpecs } from '../src/lib/cms-types';
 
 const vessel = {
-  id: 'moe-4', type: 'Vessel', title: 'MOE 4', titleTh: 'โม4',
+  id: 'moe-line-4', type: 'Vessel', title: 'MOE LINE 4', titleTh: 'โมไลน์ 4',
   description: 'Crane vessel in the fleet of Moe Navigation Co.,Ltd.',
   descriptionTh: 'เรือเครนในกองเรือของบริษัท โม เนวิเกชั่น จำกัด',
   category: 'Crane', categoryTh: 'เรือเครน', image: '', status: 'Published',

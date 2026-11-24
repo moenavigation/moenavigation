@@ -35,6 +35,63 @@ async function expectNoHorizontalOverflow(page: Page, editor?: Locator) {
   }
 }
 
+test.describe('homepage charter services on desktop', () => {
+  test.use({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
+
+  test('real vessel photographs, included management and a saved English CMS edit preserve the Thai copy', async ({ page, context }, testInfo) => {
+    await page.goto('/');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Moe Navigation Co., Ltd.');
+    await page.getByRole('link', { name: 'Explore Our Services', exact: true }).click();
+    const services = page.locator('#chartering-services');
+    await expect(services.locator('article')).toHaveCount(3);
+    await expect(services.locator('article img')).toHaveCount(3);
+    for (const [index, id] of ['moe-line-5', 'moe-line-4', 'dumai-moe'].entries()) {
+      const image = services.locator('article img').nth(index);
+      await expect(image).toHaveAttribute('src', `/images/fleet-originals/${id}.webp`);
+      await expect.poll(() => image.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBeGreaterThan(0);
+    }
+    await expect(services.getByText('Included in every charter', { exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Reliable Vessel Chartering. Managed from Start to Finish.', exact: true })).toBeVisible();
+    await services.screenshot({ path: testInfo.outputPath('charters-desktop.png'), animations: 'disabled' });
+    for (const [index, category] of ['Container', 'Crane', 'Tanker'].entries()) {
+      await expect(services.locator('article a').nth(index)).toHaveAttribute('href', `/fleet?category=${category}`);
+    }
+
+    const admin = await context.newPage();
+    await login(admin);
+    await admin.goto('/cms/pages?page=home');
+    await admin.getByRole('button', { name: 'Edit Your Cargo. Our Vessel. Complete Management.', exact: true }).click();
+    const editor = admin.getByRole('dialog', { name: 'Edit content', exact: true });
+    const container = editor.locator('details[open]').getByRole('group', { name: 'Container Vessel Chartering', exact: true });
+    await container.getByLabel('Card heading', { exact: true }).fill('Container charters for your cargo');
+    await editor.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(editor).not.toBeVisible();
+    await page.goto('/');
+    await expect(services.getByRole('heading', { name: 'Container charters for your cargo', exact: true })).toBeVisible();
+    await page.goto('/th');
+    await expect(services.getByRole('heading', { name: 'บริการเช่าเรือคอนเทนเนอร์', exact: true })).toBeVisible();
+  });
+});
+
+test.describe('homepage charter services on mobile', () => {
+  test.use({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+
+  test('Thai charter links open the selected fleet category', async ({ page }, testInfo) => {
+    await page.goto('/th');
+    const services = page.locator('#chartering-services');
+    await expect(services.getByRole('heading', { name: 'บริการเช่าเรือแท็งเกอร์', exact: true })).toBeVisible();
+    await expect(services.getByText('บริการที่รวมอยู่ในการเช่าเรือ', { exact: true })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await services.screenshot({ path: testInfo.outputPath('charters-th-mobile.png'), animations: 'disabled' });
+    for (const [index, category] of ['Container', 'Crane', 'Tanker'].entries()) {
+      await expect(services.locator('article a').nth(index)).toHaveAttribute('href', `/th/fleet?category=${category}`);
+    }
+    await services.locator('article a').nth(1).click();
+    await expect(page.getByRole('button', { name: 'เรือเครน', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('status')).toHaveText('1 ลำ');
+  });
+});
+
 test('page cards lead to existing Home content, save both languages, and preserve the layout', async ({ page, context }, testInfo) => {
   await login(page);
   await page.setViewportSize({ width: 1440, height: 1000 });

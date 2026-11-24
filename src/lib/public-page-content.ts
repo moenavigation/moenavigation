@@ -37,7 +37,6 @@ export function selectPublicPageRecords(records: ContentRecord[], page: string, 
 
   if (pageId === 'home') {
     const hasSection = (id: string) => sections.some(section => section.id === id);
-    if (hasSection('home-expertise')) include(collection('Service').slice(0, 4));
     if (hasSection('home-fleet')) include(collection('Vessel').slice(0, 3));
     if (hasSection('home-connections')) include(collection('Route'));
   } else if (pageId === 'routes') {

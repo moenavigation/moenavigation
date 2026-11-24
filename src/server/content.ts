@@ -1,5 +1,5 @@
 import 'server-only';
-import { appendAuditEvent, auditActor } from './audit';
+import { appendAuditEvent, auditActor, mediaAuditTarget } from './audit';
 import { cache } from 'react';
 import type { ClientSession, Db, Filter } from 'mongodb';
 import { z } from 'zod';
@@ -13,38 +13,42 @@ import { lockMediaSubmission } from './media';
 import { contentMediaUrls } from './media-references';
 import { assertCmsContentAction, assertCmsContentEdit } from './cms-content-policy';
 import { isBundledHomeSlide } from '@/lib/home-slides';
+import { isBundledVesselPhoto } from '@/lib/fleet-photos';
+import { replaceLegacyFleetPhotos } from './fleet-photo-replacements';
 import { enquiryRetainedFilter } from './enquiry-retention';
+import { fleetNameSearchFilters, normalizeFleetNames, numberedFleetNames } from '@/lib/fleet-names';
+import { applyHomepageCopy, hasRevisedHomepageCopy } from '@/lib/homepage-chartering';
 
 export const contentKey = (record: Pick<ContentRecord, 'type' | 'id'>) => `${record.type}:${record.id}`;
-function clean(record: ContentDocument): ContentRecord {
-  const { _id, purgeAt, ...value } = record;
-  void _id; void purgeAt;
-  return value;
+export function cleanContentRecord(record: ContentDocument): ContentRecord {
+  const { _id, purgeAt, fleetNamesReviewed, homepageCopyReviewed, ...value } = normalizeFleetNames(record);
+  void _id; void purgeAt; void fleetNamesReviewed;
+  return replaceLegacyFleetPhotos(homepageCopyReviewed ? value : applyHomepageCopy(value));
 }
 export const getPublishedRecords = cache(async (): Promise<ContentRecord[]> => {
   const c = collections(await getDb());
-  return (await c.content.find({ status: 'Published', deletedAt: { $exists: false } }).sort({ _id: 1 }).toArray()).map(clean);
+  return (await c.content.find({ status: 'Published', deletedAt: { $exists: false } }).sort({ _id: 1 }).toArray()).map(cleanContentRecord);
 });
 // Reused by route validation and metadata within one render. Checking one indexed
 // record before streaming preserves real 404 responses for missing or trashed URLs.
 export const getPublishedRecord = cache(async (type: ContentRecord['type'], id: string): Promise<ContentRecord | null> => {
   const record = await collections(await getDb()).content.findOne({ _id: contentKey({ type, id }), status: 'Published', deletedAt: { $exists: false } });
-  return record ? clean(record) : null;
+  return record ? cleanContentRecord(record) : null;
 });
 export async function getContentRecords() {
   await ensureIndexes();
-  return (await collections(await getDb()).content.find({ $or: [{ purgeAt: { $exists: false } }, { purgeAt: { $gt: new Date() } }] }).sort({ updatedAt: -1, _id: 1 }).toArray()).map(clean);
+  return (await collections(await getDb()).content.find({ $or: [{ purgeAt: { $exists: false } }, { purgeAt: { $gt: new Date() } }] }).sort({ updatedAt: -1, _id: 1 }).toArray()).map(cleanContentRecord);
 }
 
 export async function getCmsContentRecord(type: ContentRecord['type'], id: string): Promise<ContentRecord | null> {
   await ensureIndexes();
   const record = await collections(await getDb()).content.findOne({ _id: contentKey({ type, id }), deletedAt: { $exists: false } });
-  return record ? clean(record) : null;
+  return record ? cleanContentRecord(record) : null;
 }
 
 export async function getCmsTrashRecords() {
   await ensureIndexes();
-  return (await collections(await getDb()).content.find({ deletedAt: { $exists: true }, $or: [{ purgeAt: { $exists: false } }, { purgeAt: { $gt: new Date() } }] }).sort({ updatedAt: -1, _id: 1 }).toArray()).map(clean);
+  return (await collections(await getDb()).content.find({ deletedAt: { $exists: true }, $or: [{ purgeAt: { $exists: false } }, { purgeAt: { $gt: new Date() } }] }).sort({ updatedAt: -1, _id: 1 }).toArray()).map(cleanContentRecord);
 }
 
 export async function getCmsContentOverview(role: CmsRole = 'Operator') {
@@ -84,7 +88,7 @@ export async function getCmsContentOverview(role: CmsRole = 'Operator') {
     };
     nextOrder[group._id] = Math.min(10000, Math.max(-1, group.maxOrder) + 1);
   }
-  return { records: core.map(clean), summary: { counts, categories, nextOrder, recent: recent.map(clean), trashCount: contentTrashCount + mediaTrashCount + userTrashCount + enquiryTrashCount } };
+  return { records: core.map(cleanContentRecord), summary: { counts, categories, nextOrder, recent: recent.map(cleanContentRecord), trashCount: contentTrashCount + mediaTrashCount + userTrashCount + enquiryTrashCount } };
 }
 
 export type CmsCollectionType = Exclude<ContentRecord['type'], 'Page' | 'Section'>;
@@ -108,6 +112,7 @@ export async function getCmsContentPage(query: CmsContentPageQuery) {
   if (query.q) {
     const match = new RegExp(escapeContentSearch(query.q), 'i');
     filter.$or = ['title', 'titleTh', 'id', 'category', 'categoryTh', 'parentId'].map(field => ({ [field]: match }));
+    if (query.type === 'Vessel') filter.$or.push(...fleetNameSearchFilters(query.q));
   }
   await ensureIndexes();
   const content = collections(await getDb()).content;
@@ -116,7 +121,7 @@ export async function getCmsContentPage(query: CmsContentPageQuery) {
     content.find(filter).sort({ updatedAt: -1, _id: 1 }).skip(offset).limit(CONTENT_PAGE_SIZE).toArray(),
   ]);
   const nextOffset = offset + documents.length;
-  return { records: documents.map(clean), total, nextCursor: nextOffset < total ? Buffer.from(JSON.stringify({ offset: nextOffset, scope })).toString('base64url') : null };
+  return { records: documents.map(cleanContentRecord), total, nextCursor: nextOffset < total ? Buffer.from(JSON.stringify({ offset: nextOffset, scope })).toString('base64url') : null };
 }
 export async function saveContent(input: z.infer<typeof saveSchema>, owner: string) {
   return transaction((db, session) => saveContentInTransaction(input, owner, db, session));
@@ -153,30 +158,42 @@ export async function saveContentInTransaction(input: z.infer<typeof saveSchema>
       ...(input.record.heroSlideInterval === undefined && existing.heroSlideInterval !== undefined ? { heroSlideInterval: existing.heroSlideInterval } : {}),
     } };
   }
+  if (existing?.homeCharters && !input.record.homeCharters) {
+    input = { ...input, record: { ...input.record, homeCharters: existing.homeCharters } };
+  }
   if (input.record.type === 'Section' && input.record.parentId !== 'shared') {
     const parent = await c.content.findOne({ _id: contentKey({ type: 'Page', id: input.record.parentId }) }, { session });
     if (!parent || parent.deletedAt || parent.purgeAt) throw new HttpError(400, 'Choose an existing page for this section. Restore pages in Trash before adding or editing their sections.');
   }
-  const images = contentMediaUrls(input.record);
-  for (const url of images) {
+  const imageFields = new Set([input.record.image, input.record.mobileImage, ...input.record.gallery.map(image => image.url)]);
+  for (const url of contentMediaUrls(input.record)) {
     // These exact, versioned app assets need no Cloudinary upload. All other
     // slide URLs still pass through the normal library/ownership validation.
-    if (input.record.type === 'Page' && input.record.id === 'home' && isBundledHomeSlide(url)
-      && input.record.heroSlides?.some(slide => slide.url === url)
-      && ![input.record.image, input.record.mobileImage, ...input.record.gallery.map(image => image.url)].includes(url)) continue;
+    const slide = input.record.heroSlides?.find(item => item.url === url);
+    if (slide && slide.kind !== 'video' && isBundledHomeSlide(url) && !imageFields.has(url)) continue;
+    if (!slide && isBundledVesselPhoto(input.record.type, input.record.id, url)) continue;
     const media = await c.media.findOne({ url }, { session });
-    if (!media || !['staged', 'committed'].includes(media.state)) throw new HttpError(400, 'Choose a library image or upload an image before saving.');
+    if (!media || !['staged', 'committed'].includes(media.state)) throw new HttpError(400, 'Choose a library file or upload a file before saving.');
+    if ((media.kind ?? 'image') !== (slide?.kind ?? 'image') || (media.kind === 'video' && imageFields.has(url))) {
+      throw new HttpError(400, 'Choose a matching image or video for this field.');
+    }
     if (media.state === 'staged' && (media.owner !== owner || media.submissionId !== input.submissionId)) throw new HttpError(403, 'This upload belongs to a different save. Please choose the image again.');
     // This write conflicts with cleanup's state claim, making save and cleanup mutually exclusive.
     await c.media.updateOne({ _id: media._id, state: media.state }, { $set: { state: 'committed', touchedAt: new Date() } }, { session });
-    if (actor && media.state === 'staged') await appendAuditEvent(db, session, { action: 'media.uploaded', actor: auditActor(actor), target: { type: 'Image', id: media.id, label: media.title } });
+    if (actor && media.state === 'staged') await appendAuditEvent(db, session, { action: 'media.uploaded', actor: auditActor(actor), target: mediaAuditTarget(media) });
   }
   const record: ContentRecord = { ...input.record, revision: (existing?.revision || 0) + 1, updatedAt: new Date().toISOString() };
-  if (existing) await c.content.replaceOne({ _id: key, revision: input.expectedRevision! }, record, { session });
-  else await c.content.insertOne({ _id: key, ...record }, { session });
-  await c.operations.insertOne({ _id: operationId, fingerprint, result: record, createdAt: new Date() }, { session });
+  // Once the client has reviewed these fields, keep their choices even if they
+  // deliberately re-enter a former name or photo description.
+  const reviewed = existing?.fleetNamesReviewed || (source === 'cms' && record.type === 'Vessel' && numberedFleetNames.some(item => item.id === record.id));
+  const reviewedHomepage = existing?.homepageCopyReviewed || (source === 'cms' && !operationFingerprint && hasRevisedHomepageCopy(record));
+  const stored = { ...record, ...(reviewed ? { fleetNamesReviewed: true as const } : {}), ...(reviewedHomepage ? { homepageCopyReviewed: true as const } : {}) };
+  if (existing) await c.content.replaceOne({ _id: key, revision: input.expectedRevision! }, stored, { session });
+  else await c.content.insertOne({ _id: key, ...stored }, { session });
+  const result = reviewedHomepage ? record : applyHomepageCopy(record);
+  await c.operations.insertOne({ _id: operationId, fingerprint, result, createdAt: new Date() }, { session });
   if (actor) await appendAuditEvent(db, session, { action: existing ? 'content.updated' : 'content.created', actor: auditActor(actor), target: { type: record.type, id: record.id, label: record.title } });
-  return record;
+  return result;
 }
 export async function contentAction(input: z.infer<typeof actionSchema>) {
   return transaction((db, session) => contentActionInTransaction(input, db, session));
@@ -205,6 +222,7 @@ export async function contentActionInTransaction(input: z.infer<typeof actionSch
   record.revision++;
   record.updatedAt = new Date().toISOString();
   await c.content.replaceOne({ _id: record._id, revision: input.expectedRevision }, record, { session });
-  if (actor) await appendAuditEvent(db, session, { action: input.action === 'trash' ? 'content.trashed' : 'content.restored', actor: auditActor(actor), target: { type: record.type, id: record.id, label: record.title } });
-  return clean(record);
+  const result = cleanContentRecord(record);
+  if (actor) await appendAuditEvent(db, session, { action: input.action === 'trash' ? 'content.trashed' : 'content.restored', actor: auditActor(actor), target: { type: result.type, id: result.id, label: result.title } });
+  return result;
 }

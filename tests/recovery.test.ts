@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { decryptBackup, documentHash, encryptBackup, includedCollections, isMissingRecoveryAsset, remapImages, sha256, validateBackup, validateTarget, type Backup } from '../scripts/lib/recovery';
 import { defaultHomeSlides } from '../src/lib/home-slides';
@@ -49,6 +50,34 @@ test('backup validates and remaps custom slides while retaining bundled homepage
   assert.equal(mapped.moe_content[0].heroSlides[1].url, defaultHomeSlides[0].url);
   backup.collections.moe_content[0].heroSlides.push({ url: '/images/hero/unknown.webp' });
   assert.throws(() => validateBackup(backup), /Homepage slides/);
+});
+
+test('restores bundled vessel photos only on the vessel they depict', () => {
+  const backup = fixture();
+  const vessel = { type: 'Vessel', id: 'dumai-moe', image: '/images/fleet-originals/dumai-moe.webp' };
+  backup.collections.moe_content.push(vessel);
+  validateBackup(backup);
+  vessel.id = 'moe-line-2';
+  assert.throws(() => validateBackup(backup), /image missing/);
+});
+
+test('mixed-media backups restore video bytes, kind and slide order alongside historical images', () => {
+  const backup = fixture();
+  const url = 'https://res.cloudinary.com/example/video/upload/v1/harbor.mp4';
+  const bytes = readFileSync('tests/fixtures/banner-video.mp4');
+  backup.assets.push({ mediaId: 'clip', publicId: 'harbor', kind: 'video', url, format: 'mp4', bytes: bytes.length, sha256: sha256(bytes), content: bytes.toString('base64') });
+  backup.collections.moe_media.push({ _id: 'clip', publicId: 'harbor', kind: 'video', url, state: 'committed' });
+  backup.collections.moe_content[0].heroSlides = [{ url, kind: 'video' }, { url: backup.assets[0].url }];
+  const restored = decryptBackup(encryptBackup(backup, secret), secret);
+  assert.equal(restored.assets[1].kind, 'video');
+  assert.deepEqual(Buffer.from(restored.assets[1].content, 'base64'), bytes);
+  const mappedUrl = url.replace('/v1/', '/v2/recovery/');
+  const mapped = remapImages(restored.collections, new Map([[url, { url: mappedUrl, publicId: 'recovery/harbor' }]]));
+  assert.deepEqual(mapped.moe_content[0].heroSlides, [{ url: mappedUrl, kind: 'video' }, { url: backup.assets[0].url }]);
+  backup.collections.moe_content[0].heroSlides[0].kind = 'image';
+  assert.throws(() => validateBackup(backup), /Homepage slides/);
+  delete backup.assets[1].kind;
+  assert.throws(() => validateBackup(backup), /metadata differs/);
 });
 test('restore target validation refuses main, active QA, malformed and unrelated databases', () => {
   validateTarget('moe', 'moe', 'moe_restore_rehearsal');

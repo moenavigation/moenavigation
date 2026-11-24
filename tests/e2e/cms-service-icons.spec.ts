@@ -77,7 +77,7 @@ test('Add service saves its selected icon through the real API and immediately s
   await website.close();
 });
 
-test('Edit service keeps an unsaved icon out of the database and saves the same icon for the homepage, listing, and detail', async ({ page, db, context }) => {
+test('Edit service keeps an unsaved icon out of the database and saves the same icon for the listing and detail', async ({ page, db, context }) => {
   await login(page);
   const services = (await records(page)).filter(record => record.type === 'Service').sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const before = services[1] ?? services[0];
@@ -98,10 +98,8 @@ test('Edit service keeps an unsaved icon out of the database and saves the same 
   expect(saved).toMatchObject({ id: before.id, icon, revision: before.revision + 1 });
   for (const field of ['title', 'titleTh', 'description', 'descriptionTh', 'image', 'order', 'category', 'categoryTh'] as const) expect(saved[field]).toEqual(before[field]);
   const website = await context.newPage();
-  for (const path of ['/', '/services']) {
-    await website.goto(path);
-    await expect(website.locator(`main a[href="/services/${saved.id}"] svg.lucide-${cssIcon}`)).toBeVisible();
-  }
+  await website.goto('/services');
+  await expect(website.locator(`main a[href="/services/${saved.id}"] svg.lucide-${cssIcon}`)).toBeVisible();
   await website.goto(`/services/${saved.id}`);
   await expect(website.locator(`[class*="detailIcon"] svg.lucide-${cssIcon}`)).toBeVisible();
   await website.close();

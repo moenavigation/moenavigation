@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowRight, ExternalLink, FileText, Pencil, Settings } from 
 import { corePageIds, type ContentRecord } from '@/lib/cms-types';
 import { cmsPageLabel, publishedContentUrl } from '@/lib/cms-navigation';
 import { useCmsLocale } from '@/lib/cms-locale';
-import { getHomeSlides } from '@/lib/home-slides';
+import { getHomeSlides, homeSlideVideoPoster } from '@/lib/home-slides';
 import styles from './CmsPageManager.module.css';
 
 const homeOrder = ['home-expertise', 'home-trust', 'home-trust-safety', 'home-trust-practical', 'home-trust-partnerships', 'home-fleet', 'home-connections'];
@@ -26,7 +26,11 @@ export default function CmsPageManager({ records, selectedPage, onSelect, onEdit
   });
   const title = (record: ContentRecord) => locale === 'th' ? record.titleTh || record.title : record.title || record.titleTh;
   const pageName = (record: ContentRecord) => (corePageIds as readonly string[]).includes(record.id) ? t(cmsPageLabel(record)) : title(record);
-  const thumbnail = (record: ContentRecord) => record.type === 'Page' && record.id === 'home' ? getHomeSlides(record)[0]?.url || '' : record.image;
+  function thumbnail(record: ContentRecord) {
+    if (record.type !== 'Page' || record.id !== 'home') return record.image;
+    const first = getHomeSlides(record)[0];
+    return first.kind === 'video' ? homeSlideVideoPoster(first.url) : first.url;
+  }
   const page = pages.find(record => record.id === selectedPage);
   const shared = selectedPage === 'shared';
   const sectionRecords = active.filter(record => record.type === 'Section' && record.parentId === selectedPage);

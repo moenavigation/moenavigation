@@ -1,6 +1,5 @@
 import nextEnv from '@next/env';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { MongoClient } from 'mongodb';
@@ -8,33 +7,37 @@ import type { ContentDocument } from '../src/server/db';
 import { appendAuditEvent } from '../src/server/audit';
 import { vesselSpecsSchema } from '../src/lib/validation';
 import { buildLegacyVesselParticularsPlan } from './data/legacy-vessel-particulars';
+import { currentPdfVesselParticulars } from './data/current-pdf-vessel-particulars';
+import { buildCurrentPdfVesselPlan, currentPdfFleetIds } from './data/current-pdf-vessel-plan';
+import { canonical, sha256 } from './lib/recovery';
 
-// Narrow, reviewed website-first content import. Default mode reads only; never run the full
-// website migration to populate vessel particulars on an existing website.
+// Both source modes default to a dry run. The legacy importer excludes vessels
+// covered by the newer owner-supplied PDFs.
 nextEnv.loadEnvConfig(process.cwd());
 const apply = process.argv.includes('--apply');
+const currentPdfs = process.argv.includes('--current-pdfs');
 const expectedPlan = process.argv.find(value => value.startsWith('--expected-plan='))?.slice('--expected-plan='.length);
-const directory = resolve('.local/legacy-vessel-website-import-2026-11-17');
+const directory = resolve(currentPdfs ? '.local/current-vessel-pdf-import-2026-11-24' : '.local/legacy-vessel-website-import-2026-11-17');
 let client: MongoClient | undefined;
 
-function canonical(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(canonical);
-  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([key, child]) => [key, canonical(child)]));
-  return value;
-}
-const hash = (value: unknown) => createHash('sha256').update(JSON.stringify(canonical(value))).digest('hex');
+const hash = (value: unknown) => sha256(canonical(value));
 const withoutChangedFields = ({ vesselSpecs, revision, updatedAt, ...rest }: ContentDocument) => { void vesselSpecs; void revision; void updatedAt; return rest; };
+const buildPlan = (records: ContentDocument[]) => currentPdfs
+  ? buildCurrentPdfVesselPlan(records, currentPdfVesselParticulars)
+  : buildLegacyVesselParticularsPlan(records, { replaceReviewedPdfValues: true, allowCurrentFleet: true });
 
 try {
+  assert(process.argv.slice(2).every(arg => arg === '--apply' || arg === '--current-pdfs' || /^--expected-plan=[a-f0-9]{64}$/.test(arg)), 'Unknown particulars import option.');
   assert(process.env.MONGODB_URI && process.env.MONGODB_DB_NAME, 'Database configuration is incomplete.');
   client = new MongoClient(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 15_000, connectTimeoutMS: 15_000, socketTimeoutMS: 20_000 });
   await client.connect();
   const db = client.db(process.env.MONGODB_DB_NAME);
   const content = db.collection<ContentDocument>('moe_content');
-  const filter = { type: 'Vessel' as const };
+  const filter = { type: 'Vessel' as const, deletedAt: { $exists: false }, id: currentPdfs ? { $in: [...currentPdfFleetIds] } : { $nin: [...currentPdfFleetIds] } };
   const before = await content.find(filter).sort({ id: 1 }).toArray();
-  const plan = buildLegacyVesselParticularsPlan(before, { replaceReviewedPdfValues: true, allowCurrentFleet: true });
-  const planHash = hash({ target: hash([process.env.MONGODB_URI, process.env.MONGODB_DB_NAME]), before, plan });
+  const plan = buildPlan(before);
+  const primarySource = currentPdfs ? 'current-pdfs' : 'website';
+  const planHash = hash({ primarySource, target: hash([process.env.MONGODB_URI, process.env.MONGODB_DB_NAME]), before, plan });
   await mkdir(directory, { recursive: true });
   await writeFile(resolve(directory, 'plan.json'), JSON.stringify({ reviewedAt: new Date().toISOString(), planHash, ...plan }, null, 2) + '\n');
   console.log(JSON.stringify({ mode: apply ? 'apply' : 'dry-run', planHash, changes: plan.changes.map(change => ({ id: change.id, expectedRevision: change.expectedRevision, addedFields: change.addedFields, replacedFields: change.replacedFields, removedFields: change.removedFields, fieldDifferences: change.fieldDifferences })), unchanged: plan.unchanged, unmatched: plan.unmatched, conflicts: plan.conflicts }, null, 2));
@@ -71,8 +74,8 @@ try {
         assert.deepEqual(withoutChangedFields(saved), withoutChangedFields(original), `Unrelated content changed for ${original.id}.`);
       } else assert.deepEqual(saved, original, `Untargeted vessel changed: ${original.id}.`);
     }
-    assert.equal(buildLegacyVesselParticularsPlan(after, { allowCurrentFleet: true }).changes.length, 0, 'Import is not idempotent.');
-    await writeFile(resolve(directory, 'applied.json'), JSON.stringify({ appliedAt: new Date().toISOString(), primarySource: 'website', planHash, backup, updatedVessels: plan.changes.map(change => change.id), content: after, verification: { exactSavedSpecs: true, unrelatedContentPreserved: true, idempotent: true }, cacheRefreshRequired: true }, null, 2) + '\n', { mode: 0o600 });
+    assert.equal(buildPlan(after).changes.length, 0, 'Import is not idempotent.');
+    await writeFile(resolve(directory, 'applied.json'), JSON.stringify({ appliedAt: new Date().toISOString(), primarySource, planHash, backup, updatedVessels: plan.changes.map(change => change.id), content: after, verification: { exactSavedSpecs: true, unrelatedContentPreserved: true, idempotent: true }, cacheRefreshRequired: true }, null, 2) + '\n', { mode: 0o600 });
     console.log(JSON.stringify({ applied: true, updatedVessels: plan.changes.length, backup, verified: true, cacheRefreshRequired: true }));
   } else if (apply) console.log(JSON.stringify({ applied: false, updatedVessels: 0, reason: 'All reviewed particulars are already stored.' }));
 } catch (error) {

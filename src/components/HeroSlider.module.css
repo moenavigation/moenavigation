@@ -4,9 +4,12 @@
 .images, .slide { position: absolute; inset: 0; }
 .images { touch-action: pan-y pinch-zoom; }
 .slide { pointer-events: none; }
-.slide img { object-fit: cover; object-position: center; user-select: none; }
+.slide picture { position: absolute; inset: 0; display: block; }
+.slide img, .slide video { object-fit: cover; object-position: center; user-select: none; }
+.slide video { display: block; width: 100%; height: 100%; }
 .slider::after { content: ''; position: absolute; z-index: 1; inset: 45% 0 0; pointer-events: none; background: linear-gradient(transparent, rgb(4 23 40 / .48)); }
-.controls { position: absolute; z-index: 2; inset: auto var(--gutter) 1.5rem; display: grid; justify-items: center; align-items: center; color: #fff; pointer-events: none; }
+.controls { position: absolute; z-index: 2; inset: auto var(--gutter) 1.5rem; display: flex; justify-content: center; align-items: center; gap: .5rem; color: #fff; pointer-events: none; }
+.videoControl { display: grid; place-items: center; flex: none; width: var(--target-size); height: var(--target-size); color: inherit; border: 1px solid #ffffff60; border-radius: 50%; background: #06233ec4; cursor: pointer; pointer-events: auto; }
 .dots { display: flex; align-items: center; max-width: 100%; overflow-x: auto; padding-inline: .4rem; border: 1px solid #ffffff38; border-radius: 3rem; background: #06233e54; backdrop-filter: blur(12px); scrollbar-width: none; cursor: default; pointer-events: auto; }
 .dot { display: grid; place-items: center; flex-shrink: 0; min-height: var(--target-size); width: var(--target-size); padding: .5rem; border: 0; border-radius: 50%; background: transparent; }
 .dot span { display: block; width: .4rem; height: .4rem; background: #ffffff8c; border-radius: 1rem; transition: width .25s, background .25s; }
@@ -16,8 +19,8 @@
 @media(max-width:700px) {
   .slider { aspect-ratio: 16 / 9; }
   /* Keep a 3:1 image canvas, revealing only its centered 16:9 slice. */
-  .slide { inset-inline: -34.375%; }
-  .controls { inset: auto .75rem .75rem; grid-template-columns: minmax(0, 1fr); }
+  .slide:not([data-mobile-photo]) { inset-inline: -34.375%; }
+  .controls { inset: auto .75rem .75rem; }
   .dots { padding-inline: .2rem; }
   .dot { width: 2.2rem; }
 }

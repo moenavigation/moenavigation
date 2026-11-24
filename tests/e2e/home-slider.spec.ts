@@ -1,7 +1,7 @@
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { Page } from '@playwright/test';
-import { test, expect, refreshPublicCache } from './fixtures';
+import { test, expect, refreshPublicCache, E2E_IMAGE_BUFFER } from './fixtures';
 import { defaultHomeSlides } from '../../src/lib/home-slides';
 
 test.use({ reducedMotion: 'no-preference' });
@@ -26,7 +26,7 @@ async function expectHeroLayout(page: Page, ratio: number, thai = false) {
   await expect(image).toHaveCSS('object-fit', 'cover');
   await expect(image).toHaveCSS('object-position', '50% 50%');
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
-  const action = page.getByRole('link', { name: thai ? 'ดูบริการของเรา' : 'Explore services', exact: true });
+  const action = page.getByRole('link', { name: thai ? 'ดูบริการของเรา' : 'Explore Our Services', exact: true });
   const actionBox = (await action.boundingBox())!;
   expect(actionBox.y).toBeGreaterThan(title.y + title.height);
   return carousel;
@@ -42,6 +42,8 @@ test('desktop banner is 3:1 with centered copy and actions underneath', async ({
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   const carousel = await expectHeroLayout(page, 3);
+  const sharedPhoto = await page.locator('meta[property="og:image"]').getAttribute('content');
+  expect(new URL(sharedPhoto!).pathname).toBe(defaultHomeSlides[0].url);
   await expect(carousel.locator('img')).toHaveCount(5);
   await expect(carousel.getByRole('group')).toHaveCount(1);
   await expect(carousel.getByRole('button')).toHaveCount(5);
@@ -49,7 +51,7 @@ test('desktop banner is 3:1 with centered copy and actions underneath', async ({
   await saveScreenshot(page, `hero-en-desktop-${testInfo.project.name}`);
 });
 
-test('390px mobile crops both sides to 16:9 and localizes the complete hero', async ({ page }, testInfo) => {
+test('390px mobile loads the 16:9 photograph and localizes the complete hero', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 1050 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
@@ -57,6 +59,7 @@ test('390px mobile crops both sides to 16:9 and localizes the complete hero', as
   await saveScreenshot(page, `hero-en-mobile-390-${testInfo.project.name}`);
   await page.goto('/th');
   const carousel = await expectHeroLayout(page, 16 / 9, true);
+  await expect.poll(() => carousel.getByRole('img').evaluate(el => (el as HTMLImageElement).currentSrc)).toContain('-mobile.webp');
   await expect(carousel.getByRole('button', { name: 'แสดงสไลด์ 2', exact: true })).toBeVisible();
   await expect(carousel.getByRole('img')).toHaveAttribute('alt', defaultHomeSlides[0].altTh);
   await carousel.getByRole('button', { name: 'แสดงสไลด์ 2', exact: true }).click();
@@ -120,7 +123,7 @@ test('autoplay resumes after manual selection and keyboard focus pauses it', asy
   await expect(carousel).toHaveAttribute('data-autoplay', 'false');
   await page.waitForTimeout(3200);
   await expect(carousel).toHaveAttribute('data-slide-index', '0');
-  await page.getByRole('link', { name: 'Explore services', exact: true }).focus();
+  await page.getByRole('link', { name: 'Explore Our Services', exact: true }).focus();
   await expect(carousel).toHaveAttribute('data-autoplay', 'true');
   await carousel.getByRole('button', { name: 'Show slide 3', exact: true }).click();
   await expect(carousel).toHaveAttribute('data-slide-index', '2');
@@ -234,6 +237,73 @@ test('one saved slide renders without rotation or redundant controls', async ({ 
   await page.clock.install();
   await page.clock.fastForward(9000);
   await expect(carousel).toHaveAttribute('data-slide-index', '0');
+});
+
+test('video slides play to completion, pause on demand, and respect reduced motion on mobile', async ({ page, db, browserName }) => {
+  const url = 'https://res.cloudinary.com/moe-e2e/video/upload/v1/harbor.mp4';
+  const bytes = await readFile(path.resolve('tests/fixtures/banner-video.mp4'));
+  await page.route('**/video/upload/so_0/**', route => route.fulfill({ contentType: 'image/png', body: E2E_IMAGE_BUFFER }));
+  await page.route(url, route => {
+    const range = route.request().headers().range?.match(/^bytes=(\d+)-(\d*)$/);
+    if (!range) return route.fulfill({ contentType: 'video/mp4', body: bytes });
+    const start = Number(range[1]);
+    const end = Math.min(Number(range[2] || bytes.length - 1), bytes.length - 1);
+    return route.fulfill({ status: 206, contentType: 'video/mp4',
+      headers: { 'Accept-Ranges': 'bytes', 'Content-Range': `bytes ${start}-${end}/${bytes.length}` },
+      body: bytes.subarray(start, end + 1) });
+  });
+  await db.collection<{ _id: string }>('moe_content').updateOne({ _id: 'Page:home' }, { $set: {
+    heroSlideInterval: 2, heroSlides: [{ kind: 'video', url, alt: 'Harbor video', altTh: 'วิดีโอท่าเรือ' }, defaultHomeSlides[0]],
+  } });
+  await refreshPublicCache();
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/th');
+  const carousel = slider(page, true);
+  const video = carousel.locator('video');
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', url.replace('/upload/', '/upload/so_0/').replace('.mp4', '.jpg'));
+  await expect(video).toHaveAttribute('aria-label', 'วิดีโอท่าเรือ');
+  await expect(video).toHaveAttribute('playsinline', '');
+  await expect(video).toHaveAttribute('poster', /so_0\/v1\/harbor.jpg/);
+  await expect(video).toHaveCSS('object-fit', 'cover');
+  expect(await video.evaluate((element: HTMLVideoElement) => element.muted && element.paused)).toBe(true);
+  if (browserName === 'webkit' && process.platform === 'win32') {
+    // Some Windows WebKit builds advertise MP4 support without a working decoder.
+    // Check the fixture independently so a carousel regression still fails here.
+    const decodes = await page.evaluate(async src => {
+      const probe = document.createElement('video');
+      probe.muted = true;
+      probe.playsInline = true;
+      probe.src = src;
+      document.body.append(probe);
+      let timer: number | undefined;
+      try {
+        return await Promise.race([
+          probe.play().then(() => true),
+          new Promise<boolean>(resolve => { timer = window.setTimeout(() => resolve(false), 5000); }),
+        ]);
+      }
+      catch { return false; }
+      finally { window.clearTimeout(timer); probe.pause(); probe.remove(); }
+    }, url);
+    if (!decodes) {
+      await page.getByRole('banner').hover();
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await expect(carousel).toHaveAttribute('data-slide-index', '1', { timeout: 18000 });
+      return;
+    }
+  }
+  await carousel.getByRole('button', { name: 'เล่นวิดีโอ', exact: true }).click();
+  await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime)).toBeGreaterThan(0);
+  await carousel.getByRole('button', { name: 'หยุดวิดีโอชั่วคราว', exact: true }).click();
+  await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.paused)).toBe(true);
+  await carousel.getByRole('button', { name: 'แสดงสไลด์ 2', exact: true }).click();
+  await expect(video).toHaveCount(0);
+  await carousel.getByRole('button', { name: 'แสดงสไลด์ 1', exact: true }).click();
+  await page.getByRole('banner').hover();
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime)).toBeGreaterThan(2.1);
+  await expect(carousel).toHaveAttribute('data-slide-index', '1');
 });
 
 for (const width of [320, 390, 768]) {

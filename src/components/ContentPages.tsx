@@ -12,6 +12,7 @@ import { contentText } from "@/lib/public-content";
 import { usePublicContent } from "@/lib/use-public-content";
 import { listingHref, listingQueryLimit, matchesListingSearch, readListingFilters } from "@/lib/listing-filters";
 import { useListingFilters } from "@/lib/use-listing-filters";
+import { formerFleetSearchNames } from "@/lib/fleet-names";
 import { paginateItems } from "@/lib/pagination";
 import { ServiceIcon } from "@/lib/service-icons";
 import { AdditionalSections, ContentBody } from "./EditorialContent";
@@ -130,7 +131,7 @@ function Fleet({ locale, slug }: { locale: Locale; slug?: string }) {
   const searchRef = useRef<HTMLInputElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const scrollToPage = useRef(false);
-  const filtered = vessels.filter((item) => (category === "All" || category === item.type) && matchesListingSearch(query, [item.name, item.nameTh, item.type, categoryName("th", item.type, item.typeTh), item.description.en, item.description.th]));
+  const filtered = vessels.filter((item) => (category === "All" || category === item.type) && matchesListingSearch(query, [item.name, item.nameTh, ...formerFleetSearchNames(item.id, item.name, item.nameTh), item.type, categoryName("th", item.type, item.typeTh), item.description.en, item.description.th]));
   const result = paginateItems(filtered, requestedPage, 18);
   useEffect(() => {
     if (slug) return;
@@ -203,6 +204,9 @@ function VesselDetail({ locale, slug }: { locale: Locale; slug: string }) {
   const specs = vessel.specs;
   const identityRows: [string, string][] = [];
   if (specs?.imo) identityRows.push([local(locale, "IMO number", "หมายเลข IMO"), specs.imo]);
+  if (specs?.officialNumber) identityRows.push([local(locale, "Official number", "เลขทะเบียนเรือ"), specs.officialNumber]);
+  if (specs?.callSign) identityRows.push([local(locale, "Call sign", "สัญญาณเรียกขาน"), specs.callSign]);
+  if (specs?.mmsi) identityRows.push(["MMSI", specs.mmsi]);
   if (specs?.yearBuilt) identityRows.push([local(locale, "Year built (CE)", "ปีที่สร้าง (ค.ศ.)"), String(specs.yearBuilt)]);
   if (specs?.flag || specs?.flagTh) identityRows.push([local(locale, "Flag", "ประเทศที่จดทะเบียนเรือ"), local(locale, specs.flag || specs.flagTh || "", specs.flagTh || specs.flag || "")]);
   return <div className="container section">

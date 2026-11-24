@@ -1,5 +1,19 @@
 import { test, expect, E2E_IMAGE_URL, refreshPublicCache } from './fixtures';
 
+test('contact pages show the international office number and dial it in both languages', async ({ page, db }) => {
+  await db.collection<{ _id: string }>('moe_settings').updateOne({ _id: 'website' }, { $set: { phone: '02 427 5905' } });
+  await refreshPublicCache();
+  for (const url of ['/contact', '/th/contact']) {
+    await page.goto(url);
+    const office = page.getByRole('main').getByRole('link', { name: '+66 2 427-5905', exact: true });
+    await expect(office).toBeVisible();
+    await expect(office).toHaveAttribute('href', 'tel:+6624275905');
+    const footerPhones = page.locator('footer a[href^="tel:"]');
+    await expect(footerPhones).toHaveCount(2);
+    for (const link of await footerPhones.all()) await expect(link).toHaveAttribute('href', 'tel:+6624275905');
+  }
+});
+
 test('query preferences hydrate from cached pages and follow browser Back and Forward', async ({ page }) => {
   await page.goto('/fleet?q=MOE&category=Tanker');
   const search = page.getByRole('searchbox', { name: 'Search vessels' });

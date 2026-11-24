@@ -4,12 +4,17 @@ import type { ClientSession, Db, Document } from 'mongodb';
 import { z } from 'zod';
 import { cmsLogActions, cmsLogCategory, cmsLogEventSchema, cmsLogGroups, cmsLogPageSize, cmsLogSummary, type CmsLogActor, type CmsLogEvent, type CmsLogItem, type CmsLogPage, type CmsLogQuery } from '@/lib/cms-logs';
 import { resolveCmsRole } from '@/lib/cms-roles';
+import type { MediaItem } from '@/lib/cms-types';
 import { escapeInboxSearch } from '@/lib/inbox-query';
 import { collections, ensureIndexes, getDb, type AuditDocument, type UserDocument } from './db';
 import { HttpError } from './http';
 
 export function auditActor(user: Pick<UserDocument, '_id' | 'username' | 'role'>): CmsLogActor {
   return { id: user._id, username: user.username, role: resolveCmsRole(user.role) };
+}
+
+export function mediaAuditTarget(media: Pick<MediaItem, 'kind' | 'id' | 'title'>) {
+  return { type: media.kind === 'video' ? 'Video' as const : 'Image' as const, id: media.id, label: media.title };
 }
 
 /** Preserve UTC time of day and clamp leap day to February 28 in the next year. */
@@ -73,7 +78,7 @@ export function formatCmsLogPage(rows: AuditDocument[], total: number, query: Cm
     const permitsLabel = !['Enquiry', 'Session', 'MediaLibrary', 'Settings'].includes(row.target.type);
     const target = { type: row.target.type, id: row.target.id, ...(permitsLabel && row.target.label !== undefined ? { label: row.target.label } : {}) };
     const safe = cmsLogEventSchema.parse({ action: row.action, actor, target, outcome: row.outcome });
-    return { id: row._id, occurredAt: row.occurredAt.toISOString(), expiresAt: row.expiresAt.toISOString(), action: safe.action, category: cmsLogCategory(safe.action), actor: safe.actor, target: safe.target, outcome: safe.outcome, summary: cmsLogSummary(safe.action, safe.outcome) };
+    return { id: row._id, occurredAt: row.occurredAt.toISOString(), expiresAt: row.expiresAt.toISOString(), action: safe.action, category: cmsLogCategory(safe.action), actor: safe.actor, target: safe.target, outcome: safe.outcome, summary: cmsLogSummary(safe.action, safe.outcome, safe.target.type) };
   });
   const last = items.at(-1);
   return { items, total, nextCursor: rows.length > cmsLogPageSize && last ? encodeCursor({ id: last.id, occurredAt: last.occurredAt, scope: cursorScope(query) }) : null };

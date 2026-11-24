@@ -7,6 +7,8 @@ export const GET = api(async request => {
   await requireUser();
   const params = new URL(request.url).searchParams;
   if (params.getAll('q').length > 1 || params.getAll('cursor').length > 1) throw new HttpError(400, 'Use one media search and one page cursor.');
-  return json(await getMediaPage(params.get('cursor'), params.get('q')));
+  const scope = params.get('scope');
+  if (params.getAll('scope').length > 1 || (scope !== null && scope !== 'slides')) throw new HttpError(400, 'Choose a valid media library.');
+  return json(await getMediaPage(params.get('cursor'), params.get('q'), 'committed', 50, scope === 'slides'));
 });
 export const POST = api(async request => { sameOrigin(request); const user = await requireUser(); return json({ media: await uploadMedia(request, user._id, user) }); });

@@ -10,7 +10,7 @@ for (const locale of ['en', 'th'] as const) {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Moe Navigation Co.,Ltd.');
     await expect(page).toHaveTitle(`${aboutTitle} | ${company}`);
     await expect(page.locator('meta[property="og:site_name"]')).toHaveAttribute('content', company);
-    await expect(page.locator('footer')).toContainText(`© ${new Date().getFullYear()} ${company}`);
+    await expect(page.locator('footer')).toContainText(`© ${new Date().getFullYear()} ${thai ? company : 'Moe Navigation Co., Ltd.'}`);
     await expect(page.locator('[data-site-header] img[src="/brand/moe-logo.svg"]')).toHaveAttribute('alt', company);
   });
 }

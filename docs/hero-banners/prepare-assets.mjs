@@ -12,7 +12,7 @@ for (const asset of manifest.assets) {
   await copyFile(asset.originalGeneratedPath, original);
   const metadata = await sharp(original).metadata();
   if (metadata.width !== metadata.height * 3) throw new Error(`Banner is not 3:1: ${asset.name}`);
-  const output = await sharp(original).webp({ quality: 88, effort: 6 }).toFile(path.join(root, 'public', asset.publicPath));
+  const output = await sharp(original).webp({ quality: manifest.webpConversion.quality, effort: 6 }).toFile(path.join(root, 'public', asset.publicPath));
   asset.width = metadata.width;
   asset.height = metadata.height;
   asset.webpBytes = output.size;

@@ -58,13 +58,13 @@
     },
     {
       "id": "moe-line-2",
-      "currentName": "MOE 2",
+      "currentName": "MOE LINE 2",
       "legacyName": "MOE LINE 2",
       "mainVariant": "neutral",
       "selectionReason": "Neutral daylight keeps the green/red hull colors natural and the corrected lettering clear; warm daylight provides the gallery alternative.",
       "main": {
         "vesselId": "moe-line-2",
-        "currentName": "MOE 2",
+        "currentName": "MOE LINE 2",
         "legacyName": "MOE LINE 2",
         "variant": "neutral",
         "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-2/neutral.png",
@@ -81,13 +81,13 @@
         "chunks": [
           "VP8 "
         ],
-        "alt": "MOE 2 — AI-enhanced vessel photograph.",
+        "alt": "MOE LINE 2 — AI-enhanced vessel photograph.",
         "altTh": "โมไลน์ 2 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI"
       },
       "gallery": [
         {
           "vesselId": "moe-line-2",
-          "currentName": "MOE 2",
+          "currentName": "MOE LINE 2",
           "legacyName": "MOE LINE 2",
           "variant": "warm",
           "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-2/warm.png",
@@ -104,20 +104,20 @@
           "chunks": [
             "VP8 "
           ],
-          "alt": "MOE 2 — AI-enhanced vessel photograph in warm daylight.",
+          "alt": "MOE LINE 2 — AI-enhanced vessel photograph in warm daylight.",
           "altTh": "โมไลน์ 2 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI ในแสงแดดโทนอุ่น"
         }
       ]
     },
     {
       "id": "moe-line-3",
-      "currentName": "MOE 3",
+      "currentName": "MOE LINE 3",
       "legacyName": "MOE LINE 3",
       "mainVariant": "neutral",
       "selectionReason": "Neutral daylight keeps the green/red hull colors natural and the corrected lettering clear; warm daylight provides the gallery alternative.",
       "main": {
         "vesselId": "moe-line-3",
-        "currentName": "MOE 3",
+        "currentName": "MOE LINE 3",
         "legacyName": "MOE LINE 3",
         "variant": "neutral",
         "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-3/neutral.png",
@@ -134,13 +134,13 @@
         "chunks": [
           "VP8 "
         ],
-        "alt": "MOE 3 — AI-enhanced vessel photograph.",
+        "alt": "MOE LINE 3 — AI-enhanced vessel photograph.",
         "altTh": "โมไลน์ 3 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI"
       },
       "gallery": [
         {
           "vesselId": "moe-line-3",
-          "currentName": "MOE 3",
+          "currentName": "MOE LINE 3",
           "legacyName": "MOE LINE 3",
           "variant": "warm",
           "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-3/warm.png",
@@ -157,20 +157,20 @@
           "chunks": [
             "VP8 "
           ],
-          "alt": "MOE 3 — AI-enhanced vessel photograph in warm daylight.",
+          "alt": "MOE LINE 3 — AI-enhanced vessel photograph in warm daylight.",
           "altTh": "โมไลน์ 3 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI ในแสงแดดโทนอุ่น"
         }
       ]
     },
     {
       "id": "moe-line-4",
-      "currentName": "MOE 4",
+      "currentName": "MOE LINE 4",
       "legacyName": "MOE LINE 4",
       "mainVariant": "neutral",
       "selectionReason": "Neutral daylight keeps the green/red hull colors natural and the corrected lettering clear; warm daylight provides the gallery alternative.",
       "main": {
         "vesselId": "moe-line-4",
-        "currentName": "MOE 4",
+        "currentName": "MOE LINE 4",
         "legacyName": "MOE LINE 4",
         "variant": "neutral",
         "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-4/neutral.png",
@@ -187,13 +187,13 @@
         "chunks": [
           "VP8 "
         ],
-        "alt": "MOE 4 — AI-enhanced vessel photograph.",
+        "alt": "MOE LINE 4 — AI-enhanced vessel photograph.",
         "altTh": "โมไลน์ 4 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI"
       },
       "gallery": [
         {
           "vesselId": "moe-line-4",
-          "currentName": "MOE 4",
+          "currentName": "MOE LINE 4",
           "legacyName": "MOE LINE 4",
           "variant": "warm",
           "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-4/warm.png",
@@ -210,20 +210,20 @@
           "chunks": [
             "VP8 "
           ],
-          "alt": "MOE 4 — AI-enhanced vessel photograph in warm daylight.",
+          "alt": "MOE LINE 4 — AI-enhanced vessel photograph in warm daylight.",
           "altTh": "โมไลน์ 4 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI ในแสงแดดโทนอุ่น"
         }
       ]
     },
     {
       "id": "moe-line-5",
-      "currentName": "MOE 5",
+      "currentName": "MOE LINE 5",
       "legacyName": "MOE LINE 5",
       "mainVariant": "neutral",
       "selectionReason": "Neutral daylight keeps the green/red hull colors natural and the corrected lettering clear; warm daylight provides the gallery alternative.",
       "main": {
         "vesselId": "moe-line-5",
-        "currentName": "MOE 5",
+        "currentName": "MOE LINE 5",
         "legacyName": "MOE LINE 5",
         "variant": "neutral",
         "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-5/neutral.png",
@@ -240,13 +240,13 @@
         "chunks": [
           "VP8 "
         ],
-        "alt": "MOE 5 — AI-enhanced vessel photograph.",
+        "alt": "MOE LINE 5 — AI-enhanced vessel photograph.",
         "altTh": "โมไลน์ 5 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI"
       },
       "gallery": [
         {
           "vesselId": "moe-line-5",
-          "currentName": "MOE 5",
+          "currentName": "MOE LINE 5",
           "legacyName": "MOE LINE 5",
           "variant": "warm",
           "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-5/warm.png",
@@ -263,20 +263,20 @@
           "chunks": [
             "VP8 "
           ],
-          "alt": "MOE 5 — AI-enhanced vessel photograph in warm daylight.",
+          "alt": "MOE LINE 5 — AI-enhanced vessel photograph in warm daylight.",
           "altTh": "โมไลน์ 5 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI ในแสงแดดโทนอุ่น"
         }
       ]
     },
     {
       "id": "moe-line-6",
-      "currentName": "MOE 6",
+      "currentName": "MOE LINE 6",
       "legacyName": "MOE LINE 6",
       "mainVariant": "neutral",
       "selectionReason": "Neutral daylight keeps the green/red hull colors natural and the corrected lettering clear; warm daylight provides the gallery alternative.",
       "main": {
         "vesselId": "moe-line-6",
-        "currentName": "MOE 6",
+        "currentName": "MOE LINE 6",
         "legacyName": "MOE LINE 6",
         "variant": "neutral",
         "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-6/neutral.png",
@@ -293,13 +293,13 @@
         "chunks": [
           "VP8 "
         ],
-        "alt": "MOE 6 — AI-enhanced vessel photograph.",
+        "alt": "MOE LINE 6 — AI-enhanced vessel photograph.",
         "altTh": "โม ไลน์ 6 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI"
       },
       "gallery": [
         {
           "vesselId": "moe-line-6",
-          "currentName": "MOE 6",
+          "currentName": "MOE LINE 6",
           "legacyName": "MOE LINE 6",
           "variant": "warm",
           "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-6/warm.png",
@@ -316,20 +316,20 @@
           "chunks": [
             "VP8 "
           ],
-          "alt": "MOE 6 — AI-enhanced vessel photograph in warm daylight.",
+          "alt": "MOE LINE 6 — AI-enhanced vessel photograph in warm daylight.",
           "altTh": "โม ไลน์ 6 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI ในแสงแดดโทนอุ่น"
         }
       ]
     },
     {
       "id": "moe-line-7",
-      "currentName": "MOE 7",
+      "currentName": "MOE LINE 7",
       "legacyName": "MOE LINE 7",
       "mainVariant": "neutral",
       "selectionReason": "Neutral daylight keeps the green/red hull colors natural and the corrected lettering clear; warm daylight provides the gallery alternative.",
       "main": {
         "vesselId": "moe-line-7",
-        "currentName": "MOE 7",
+        "currentName": "MOE LINE 7",
         "legacyName": "MOE LINE 7",
         "variant": "neutral",
         "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-7/neutral.png",
@@ -346,13 +346,13 @@
         "chunks": [
           "VP8 "
         ],
-        "alt": "MOE 7 — AI-enhanced vessel photograph.",
+        "alt": "MOE LINE 7 — AI-enhanced vessel photograph.",
         "altTh": "โม ไลน์ 7 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI"
       },
       "gallery": [
         {
           "vesselId": "moe-line-7",
-          "currentName": "MOE 7",
+          "currentName": "MOE LINE 7",
           "legacyName": "MOE LINE 7",
           "variant": "warm",
           "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-7/warm.png",
@@ -369,7 +369,7 @@
           "chunks": [
             "VP8 "
           ],
-          "alt": "MOE 7 — AI-enhanced vessel photograph in warm daylight.",
+          "alt": "MOE LINE 7 — AI-enhanced vessel photograph in warm daylight.",
           "altTh": "โม ไลน์ 7 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI ในแสงแดดโทนอุ่น"
         }
       ]
@@ -422,7 +422,7 @@
     },
     {
       "vesselId": "moe-line-2",
-      "currentName": "MOE 2",
+      "currentName": "MOE LINE 2",
       "legacyName": "MOE LINE 2",
       "variant": "neutral",
       "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-2/neutral.png",
@@ -439,12 +439,12 @@
       "chunks": [
         "VP8 "
       ],
-      "alt": "MOE 2 — AI-enhanced vessel photograph.",
+      "alt": "MOE LINE 2 — AI-enhanced vessel photograph.",
       "altTh": "โมไลน์ 2 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI"
     },
     {
       "vesselId": "moe-line-2",
-      "currentName": "MOE 2",
+      "currentName": "MOE LINE 2",
       "legacyName": "MOE LINE 2",
       "variant": "warm",
       "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-2/warm.png",
@@ -461,12 +461,12 @@
       "chunks": [
         "VP8 "
       ],
-      "alt": "MOE 2 — AI-enhanced vessel photograph in warm daylight.",
+      "alt": "MOE LINE 2 — AI-enhanced vessel photograph in warm daylight.",
       "altTh": "โมไลน์ 2 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI ในแสงแดดโทนอุ่น"
     },
     {
       "vesselId": "moe-line-3",
-      "currentName": "MOE 3",
+      "currentName": "MOE LINE 3",
       "legacyName": "MOE LINE 3",
       "variant": "neutral",
       "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-3/neutral.png",
@@ -483,12 +483,12 @@
       "chunks": [
         "VP8 "
       ],
-      "alt": "MOE 3 — AI-enhanced vessel photograph.",
+      "alt": "MOE LINE 3 — AI-enhanced vessel photograph.",
       "altTh": "โมไลน์ 3 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI"
     },
     {
       "vesselId": "moe-line-3",
-      "currentName": "MOE 3",
+      "currentName": "MOE LINE 3",
       "legacyName": "MOE LINE 3",
       "variant": "warm",
       "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-3/warm.png",
@@ -505,12 +505,12 @@
       "chunks": [
         "VP8 "
       ],
-      "alt": "MOE 3 — AI-enhanced vessel photograph in warm daylight.",
+      "alt": "MOE LINE 3 — AI-enhanced vessel photograph in warm daylight.",
       "altTh": "โมไลน์ 3 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI ในแสงแดดโทนอุ่น"
     },
     {
       "vesselId": "moe-line-4",
-      "currentName": "MOE 4",
+      "currentName": "MOE LINE 4",
       "legacyName": "MOE LINE 4",
       "variant": "neutral",
       "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-4/neutral.png",
@@ -527,12 +527,12 @@
       "chunks": [
         "VP8 "
       ],
-      "alt": "MOE 4 — AI-enhanced vessel photograph.",
+      "alt": "MOE LINE 4 — AI-enhanced vessel photograph.",
       "altTh": "โมไลน์ 4 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI"
     },
     {
       "vesselId": "moe-line-4",
-      "currentName": "MOE 4",
+      "currentName": "MOE LINE 4",
       "legacyName": "MOE LINE 4",
       "variant": "warm",
       "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-4/warm.png",
@@ -549,12 +549,12 @@
       "chunks": [
         "VP8 "
       ],
-      "alt": "MOE 4 — AI-enhanced vessel photograph in warm daylight.",
+      "alt": "MOE LINE 4 — AI-enhanced vessel photograph in warm daylight.",
       "altTh": "โมไลน์ 4 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI ในแสงแดดโทนอุ่น"
     },
     {
       "vesselId": "moe-line-5",
-      "currentName": "MOE 5",
+      "currentName": "MOE LINE 5",
       "legacyName": "MOE LINE 5",
       "variant": "neutral",
       "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-5/neutral.png",
@@ -571,12 +571,12 @@
       "chunks": [
         "VP8 "
       ],
-      "alt": "MOE 5 — AI-enhanced vessel photograph.",
+      "alt": "MOE LINE 5 — AI-enhanced vessel photograph.",
       "altTh": "โมไลน์ 5 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI"
     },
     {
       "vesselId": "moe-line-5",
-      "currentName": "MOE 5",
+      "currentName": "MOE LINE 5",
       "legacyName": "MOE LINE 5",
       "variant": "warm",
       "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-5/warm.png",
@@ -593,12 +593,12 @@
       "chunks": [
         "VP8 "
       ],
-      "alt": "MOE 5 — AI-enhanced vessel photograph in warm daylight.",
+      "alt": "MOE LINE 5 — AI-enhanced vessel photograph in warm daylight.",
       "altTh": "โมไลน์ 5 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI ในแสงแดดโทนอุ่น"
     },
     {
       "vesselId": "moe-line-6",
-      "currentName": "MOE 6",
+      "currentName": "MOE LINE 6",
       "legacyName": "MOE LINE 6",
       "variant": "neutral",
       "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-6/neutral.png",
@@ -615,12 +615,12 @@
       "chunks": [
         "VP8 "
       ],
-      "alt": "MOE 6 — AI-enhanced vessel photograph.",
+      "alt": "MOE LINE 6 — AI-enhanced vessel photograph.",
       "altTh": "โม ไลน์ 6 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI"
     },
     {
       "vesselId": "moe-line-6",
-      "currentName": "MOE 6",
+      "currentName": "MOE LINE 6",
       "legacyName": "MOE LINE 6",
       "variant": "warm",
       "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-6/warm.png",
@@ -637,12 +637,12 @@
       "chunks": [
         "VP8 "
       ],
-      "alt": "MOE 6 — AI-enhanced vessel photograph in warm daylight.",
+      "alt": "MOE LINE 6 — AI-enhanced vessel photograph in warm daylight.",
       "altTh": "โม ไลน์ 6 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI ในแสงแดดโทนอุ่น"
     },
     {
       "vesselId": "moe-line-7",
-      "currentName": "MOE 7",
+      "currentName": "MOE LINE 7",
       "legacyName": "MOE LINE 7",
       "variant": "neutral",
       "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-7/neutral.png",
@@ -659,12 +659,12 @@
       "chunks": [
         "VP8 "
       ],
-      "alt": "MOE 7 — AI-enhanced vessel photograph.",
+      "alt": "MOE LINE 7 — AI-enhanced vessel photograph.",
       "altTh": "โม ไลน์ 7 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI"
     },
     {
       "vesselId": "moe-line-7",
-      "currentName": "MOE 7",
+      "currentName": "MOE LINE 7",
       "legacyName": "MOE LINE 7",
       "variant": "warm",
       "sourcePath": "working space/fleet-image-enhancements-2026-11-17/finals/moe-line-7/warm.png",
@@ -681,7 +681,7 @@
       "chunks": [
         "VP8 "
       ],
-      "alt": "MOE 7 — AI-enhanced vessel photograph in warm daylight.",
+      "alt": "MOE LINE 7 — AI-enhanced vessel photograph in warm daylight.",
       "altTh": "โม ไลน์ 7 — ภาพถ่ายเรือที่ปรับปรุงด้วย AI ในแสงแดดโทนอุ่น"
     }
   ]

@@ -5,7 +5,7 @@ import type { CmsRole } from '@/lib/cms-roles';
 import type { CmsLogItem } from '@/lib/cms-logs';
 import type { NotificationDelivery } from './enquiry-notifications';
 
-export type ContentDocument = ContentRecord & { _id: string; purgeAt?: Date };
+export type ContentDocument = ContentRecord & { _id: string; purgeAt?: Date; fleetNamesReviewed?: true; homepageCopyReviewed?: true };
 export type MediaDocument = Omit<MediaItem, 'state'> & { _id: string; state: 'uploading' | 'staged' | 'committed' | 'trashed' | 'deleting'; owner: string; submissionId: string; pinned: boolean; touchedAt: Date; bytes?: number; sourceSha256?: string; width?: number; height?: number };
 export type UserDocument = { _id: string; username: string; role?: CmsRole; passwordHash: string; createdAt: Date; passwordVersion: number; avatar?: string; profileRevision?: number; deletedAt?: Date; purgeAt?: Date };
 export type SessionDocument = { _id: string; userId: string; passwordVersion: number; expiresAt: Date };

@@ -10,12 +10,12 @@ const task = path.join(root, 'working space/fleet-image-enhancements-2026-11-17'
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
 const names = {
   'ranong-moe': ['RANONG MOE', 'RANONG MOE', 'ระนอง โม'],
-  'moe-line-2': ['MOE 2', 'MOE LINE 2', 'โมไลน์ 2'],
-  'moe-line-3': ['MOE 3', 'MOE LINE 3', 'โมไลน์ 3'],
-  'moe-line-4': ['MOE 4', 'MOE LINE 4', 'โมไลน์ 4'],
-  'moe-line-5': ['MOE 5', 'MOE LINE 5', 'โมไลน์ 5'],
-  'moe-line-6': ['MOE 6', 'MOE LINE 6', 'โม ไลน์ 6'],
-  'moe-line-7': ['MOE 7', 'MOE LINE 7', 'โม ไลน์ 7'],
+  'moe-line-2': ['MOE LINE 2', 'MOE LINE 2', 'โมไลน์ 2'],
+  'moe-line-3': ['MOE LINE 3', 'MOE LINE 3', 'โมไลน์ 3'],
+  'moe-line-4': ['MOE LINE 4', 'MOE LINE 4', 'โมไลน์ 4'],
+  'moe-line-5': ['MOE LINE 5', 'MOE LINE 5', 'โมไลน์ 5'],
+  'moe-line-6': ['MOE LINE 6', 'MOE LINE 6', 'โม ไลน์ 6'],
+  'moe-line-7': ['MOE LINE 7', 'MOE LINE 7', 'โม ไลน์ 7'],
 };
 function webpChunks(bytes) {
   assert.equal(bytes.toString('ascii', 0, 4), 'RIFF');

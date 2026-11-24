@@ -8,9 +8,9 @@ import { buildEnhancedFleetPlan, enhancedFleetSelection as selection } from '../
 
 const urls = Object.fromEntries(selection.assets.map(asset => [asset.url, `https://res.cloudinary.com/example/image/upload/v1/fleet/${asset.vesselId}-${asset.variant}.webp`]));
 const identities = [
-  ['ranong-moe', 'RANONG MOE'], ['moe-line-2', 'MOE 2'], ['moe-line-3', 'MOE 3'],
-  ['moe-line-4', 'MOE 4'], ['moe-line-5', 'MOE 5'], ['moe-line-6', 'MOE 6'],
-  ['moe-line-7', 'MOE 7'], ['dumai-moe', 'DUMAI MOE'],
+  ['ranong-moe', 'RANONG MOE'], ['moe-line-2', 'MOE LINE 2'], ['moe-line-3', 'MOE LINE 3'],
+  ['moe-line-4', 'MOE LINE 4'], ['moe-line-5', 'MOE LINE 5'], ['moe-line-6', 'MOE LINE 6'],
+  ['moe-line-7', 'MOE LINE 7'], ['dumai-moe', 'DUMAI MOE'],
 ] as const;
 // Reviewed final PNG identities, retained here so validation does not depend on working files.
 const approvedSources: Record<string, readonly [string, number, number]> = {
@@ -82,6 +82,13 @@ test('wrong names, missing IDs, duplicate IDs, wrong record types and removed ve
       assert.throws(() => buildEnhancedFleetPlan(records, urls), id);
     }
   }
+});
+
+test('the photo import accepts historical numbered names and rejects a number belonging to another vessel', () => {
+  const records = fixture().map(record => ({ ...record, title: record.title.replace('MOE LINE ', 'MOE ') }));
+  assert.deepEqual(buildEnhancedFleetPlan(records, urls).map(change => change.patch), buildEnhancedFleetPlan(fixture(), urls).map(change => change.patch));
+  records[1].title = 'MOE 3';
+  assert.throws(() => buildEnhancedFleetPlan(records, urls), /moe-line-2/);
 });
 
 test('both distinct prepared photos are required for each vessel', () => {

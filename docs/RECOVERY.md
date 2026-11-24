@@ -1,11 +1,11 @@
 # Backup and recovery
 
-The CMS JSON export is useful for editing and inspection. For recovery, use the encrypted CLI archive below: it includes database records **and the original Cloudinary image bytes**.
+The CMS JSON export is useful for editing and inspection. For recovery, use the encrypted CLI archive. It includes database records **and the original Cloudinary image and video files**.
 
 ## What is preserved
 
 - `moe_content`, including Draft and Trash records and their deletion dates.
-- `moe_media`, with one hash-verified original image for every registered committed asset.
+- `moe_media`, with one hash-verified original file for every registered committed asset.
 - `moe_users`, including password hashes; account passwords are not exported in plain text.
 - `moe_enquiries`, including private notification delivery state.
 - `moe_settings` and the source collections' index definitions.
@@ -14,13 +14,13 @@ Sessions, request counters, upload leases, old idempotency-operation records and
 
 Activity history (`moe_logs`) is also explicitly excluded. Content recovery
 cannot overwrite the append-only history or reintroduce expired entries.
-These archives recover website data and images; they do not recover activity logs.
+The archive contains website data and media. Activity logs follow their separate retention policy.
 
-Archives use AES-256-GCM authenticated encryption, a unique salt and IV, and scrypt key derivation. Image SHA-256 checks detect incomplete or changed bytes. BSON dates and numeric values survive the archive. The bounded in-memory CLI limits database records to 64 MiB, original images to 128 MiB total / 25 MiB each, and the archive to 256 MiB encrypted / 512 MiB expanded. Use a streaming/native backup system if the site grows beyond those limits.
+Archives use AES-256-GCM authenticated encryption, a unique salt and IV, and scrypt key derivation. Media SHA-256 checks detect incomplete or changed bytes. BSON dates and numeric values survive the archive. The bounded in-memory CLI limits database records to 64 MiB, original media to 128 MiB total / 25 MiB each, and the archive to 256 MiB encrypted / 512 MiB expanded. Use a streaming/native backup system if the site grows beyond those limits.
 
 ## Create and inspect
 
-Use Node 22 and the installed project dependencies. Configure MongoDB and Cloudinary normally in `.env.local`. Finish uploads and resolve leftovers using CMS Cleanup first. Avoid editing content during backup; the command compares all included records again after downloading images and refuses to finish if they changed.
+Use Node 22 and the installed project dependencies. Configure MongoDB and Cloudinary normally in `.env.local`. Finish uploads and resolve leftovers using CMS Cleanup first. Avoid editing content during backup; the command compares all included records again after downloading media and refuses to finish if they changed.
 
 Provide a strong passphrase of at least 20 characters through `BACKUP_PASSPHRASE`, or point `BACKUP_PASSPHRASE_FILE` at a private file. Keep it out of command arguments, logs and Git.
 
@@ -34,9 +34,9 @@ Creation refuses to overwrite an existing archive. A small adjacent `.report.jso
 
 ## Rehearse recovery
 
-Recovery always restores original images to a dedicated Cloudinary recovery folder with `overwrite: false`. It rewrites main, mobile, gallery and user-profile references in the isolated copy, including images retained by Trash. Account photos must reference archived image assets; older archives without account photos remain supported. Recovery cleanup also protects images still referenced by an active database account, including accounts in Trash. Existing Cloudinary assets and the active database are not changed.
+Recovery always restores original images and videos to a dedicated Cloudinary recovery folder with `overwrite: false`. It rewrites main, mobile, gallery, homepage slide and user-profile references in the isolated copy, including media retained by Trash. Account photos must reference archived image assets; older archives without account photos remain supported. Recovery cleanup also protects images still referenced by an active database account, including accounts in Trash. Existing Cloudinary assets and the active database are not changed.
 
-The target must be empty and named `<source database>_restore_<suffix>`, at most 38 ASCII characters to fit the Atlas database-name limit. Use a short unique suffix; the CLI rejects longer targets before connecting or uploading images. It also rejects the currently configured database as a target. Run a dry run, review its counts, destination and `planHash`, then pass that exact hash:
+The target must be empty and named `<source database>_restore_<suffix>`, at most 38 ASCII characters to fit the Atlas database-name limit. Use a short unique suffix; the CLI rejects longer targets before connecting or uploading media. It also rejects the currently configured database as a target. Run a dry run, review its counts, destination and `planHash`, then pass that exact hash:
 
 ```powershell
 npm.cmd run backup:restore -- --archive=.local/backups/my-backup.moebackup --target-db=moenavigation_restore_trial --receipt=.local/recovery/trial.json
@@ -44,16 +44,16 @@ npm.cmd run backup:restore -- --archive=.local/backups/my-backup.moebackup --tar
 npm.cmd run backup:verify -- --archive=.local/backups/my-backup.moebackup --target-db=moenavigation_restore_trial --receipt=.local/recovery/trial.json
 ```
 
-Verification checks the complete restored documents against the expected copy and fetches every restored image to check its original hash. No notifications are sent. No sessions are restored. No TTL indexes are activated during rehearsal, so old Trash cannot disappear before verification. The archive retains the original index definitions for review; the application recreates its current indexes when deliberately connected to an accepted restored database.
+Verification checks the complete restored documents against the expected copy and fetches every restored file to check its original hash. No notifications are sent. No sessions are restored. No TTL indexes are activated during rehearsal, so old Trash cannot disappear before verification. The archive retains the original index definitions for review; the application recreates its current indexes when deliberately connected to an accepted restored database.
 
-The CLI creates an ownership marker before uploads and a receipt before provider writes. If interrupted, preserve both the receipt and archive. Run `backup:cleanup` against that exact attempt, then retry into another empty target. Cleanup refuses unexpected collections, changed restored records, mismatched ownership markers or images referenced by the active application. It never performs a broad Cloudinary prefix deletion.
+The CLI creates an ownership marker before uploads and a receipt before provider writes. If interrupted, preserve both the receipt and archive. Run `backup:cleanup` against that exact attempt, then retry into another empty target. Cleanup refuses unexpected collections, changed restored records, mismatched ownership markers or media referenced by the active application. It never performs a broad Cloudinary prefix deletion.
 
 ```powershell
 npm.cmd run backup:cleanup -- --archive=.local/backups/my-backup.moebackup --target-db=moenavigation_restore_trial --receipt=.local/recovery/trial.json
 npm.cmd run backup:cleanup -- --archive=.local/backups/my-backup.moebackup --target-db=moenavigation_restore_trial --receipt=.local/recovery/trial.json --apply --expected-plan=<reviewed-plan-hash>
 ```
 
-Cleanup removes only that owned rehearsal database and its exact verified image IDs. The encrypted backup, key and proof receipt remain. If ownership cannot be proven after a very early interruption, stop and inspect the isolated target manually; do not use a blanket delete.
+Cleanup removes only that owned rehearsal database and its exact verified media IDs. The encrypted backup, key and proof receipt remain. If ownership cannot be proven after a very early interruption, stop and inspect the isolated target manually; do not use a blanket delete.
 
 ## Actual recovery and provider settings
 

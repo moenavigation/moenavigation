@@ -326,5 +326,117 @@
     "width": 1673,
     "height": 940,
     "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet-originals/dumai-moe.webp",
+    "sha256": "b98a16b7cb92cfb3836d74b33fbe04f0b8318476bb6f13561f0babc54414b90f",
+    "bytes": 21160,
+    "width": 391,
+    "height": 253,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet-originals/moe-line-2.webp",
+    "sha256": "a86221a3a7ab91ab6af303f8b7075da3af6bdf87b884b86a429a42122bf6c65a",
+    "bytes": 299534,
+    "width": 1920,
+    "height": 1159,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet-originals/moe-line-3-stern.webp",
+    "sha256": "2d9f32c7062bb6380fbc0ba7cda0f51de49e645091e8524b9b8d8fca46812326",
+    "bytes": 325164,
+    "width": 1920,
+    "height": 1080,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet-originals/moe-line-3.webp",
+    "sha256": "f72cf1079fe043ea55affec4ac5f88fb566695af373ecab47f4bfb4d743adc6e",
+    "bytes": 306190,
+    "width": 1920,
+    "height": 1159,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet-originals/moe-line-4-crane.webp",
+    "sha256": "30611daf3696e8cf9dd6baaa7a71bae74ad8baff4e33e39ba51cbf4a755f5d77",
+    "bytes": 94596,
+    "width": 1280,
+    "height": 720,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet-originals/moe-line-4.webp",
+    "sha256": "c66447fea6e122e7a241fca83d4ca3f52d115087514b50479c3afb7a805e673b",
+    "bytes": 281682,
+    "width": 1374,
+    "height": 1030,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet-originals/moe-line-5-bow.webp",
+    "sha256": "19bb251628b4647de0f657c3d02723ffa05b6abbe5c226891682159d1824ea9a",
+    "bytes": 248136,
+    "width": 1563,
+    "height": 1600,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet-originals/moe-line-5.webp",
+    "sha256": "4faf6fb5e7aa3f910995c4e0e721741b9c6ad024b97b0b4c34b4c70c7fe51756",
+    "bytes": 106854,
+    "width": 1100,
+    "height": 825,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet-originals/moe-line-6-alternate.webp",
+    "sha256": "a3b04779e3deef0bf08b614baf1a86721f61668b438ac8e7fc2a2e3d13f363b4",
+    "bytes": 169940,
+    "width": 1920,
+    "height": 1159,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet-originals/moe-line-6.webp",
+    "sha256": "3aefd665249b4412753e48f0f8d69e1164d8241225bc546b85b306a8ca5903c0",
+    "bytes": 92200,
+    "width": 1100,
+    "height": 751,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet-originals/moe-line-7-profile.webp",
+    "sha256": "bace23ffe6aafabca5ca0d5a811f1d41a02c708053d9d8321cee552fd124c4d7",
+    "bytes": 226000,
+    "width": 1920,
+    "height": 1159,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet-originals/moe-line-7.webp",
+    "sha256": "13fde0797ef60066d5a020ca50b6b7afd47425388adbc2228382e1f764e49851",
+    "bytes": 245402,
+    "width": 1919,
+    "height": 1079,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet-originals/ranong-moe-stern.webp",
+    "sha256": "7526970418d642479d390cc6271e332e65a0878576a90aa1f793abeb972f4ad7",
+    "bytes": 83142,
+    "width": 1141,
+    "height": 854,
+    "format": "webp"
+  },
+  {
+    "sourcePath": "/images/fleet-originals/ranong-moe.webp",
+    "sha256": "af7f82231ce9e5dfaa8fcd9574ce8f75a67705bc4b0bfc0fb7e163012ee93380",
+    "bytes": 214478,
+    "width": 1920,
+    "height": 1440,
+    "format": "webp"
   }
 ]

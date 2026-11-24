@@ -18,7 +18,7 @@ export const cmsLogGroups = [
   { value: 'user_activity', label: 'User activity', description: 'Sign-ins, security and account changes', categories: ['auth', 'user'] },
   { value: 'enquiry_activity', label: 'Enquiry activity', description: 'Message status, Trash and email notifications', categories: ['enquiry'] },
 ] as const satisfies readonly { value: string; label: string; description: string; categories: readonly CmsLogCategory[] }[];
-export const cmsLogTargetTypes = [...contentTypes, 'Image', 'User', 'Settings', 'Enquiry', 'Session', 'MediaLibrary'] as const;
+export const cmsLogTargetTypes = [...contentTypes, 'Image', 'Video', 'User', 'Settings', 'Enquiry', 'Session', 'MediaLibrary'] as const;
 export const cmsLogOutcomes = ['success', 'denied', 'failed'] as const;
 export const cmsLogPageSize = 30;
 export type CmsLogAction = typeof cmsLogActions[number];
@@ -48,9 +48,16 @@ export const cmsLogActionLabels: Record<CmsLogAction, string> = {
 export function cmsLogCategory(action: CmsLogAction): CmsLogCategory {
   return action.split('.')[0] as CmsLogCategory;
 }
-export function cmsLogSummary(action: CmsLogAction, outcome: typeof cmsLogOutcomes[number]): string {
+export function cmsLogSummary(action: CmsLogAction, outcome: typeof cmsLogOutcomes[number], targetType?: CmsLogTargetType): string {
   if (action === 'auth.login' && outcome !== 'success') return outcome === 'denied' ? 'Sign-in denied' : 'Sign-in failed';
   if (action === 'media.cleanup' && outcome === 'failed') return 'Image cleanup incomplete';
+  if (targetType === 'Video') {
+    const videoLabels: Partial<Record<CmsLogAction, string>> = {
+      'media.uploaded': 'Added video', 'media.trashed': 'Moved video to Trash', 'media.restored': 'Restored video',
+      'media.deleted': 'Permanently deleted video', 'media.delete_failed': 'Video deletion failed',
+    };
+    return videoLabels[action] ?? cmsLogActionLabels[action];
+  }
   return cmsLogActionLabels[action];
 }
 
@@ -74,7 +81,7 @@ export const cmsLogEventSchema = z.strictObject({
     : category === 'settings' ? event.target.type === 'Settings'
     : category === 'enquiry' ? event.target.type === 'Enquiry'
     : event.action === 'media.cleanup' ? event.target.type === 'MediaLibrary' && event.target.id === 'library'
-    : event.target.type === 'Image';
+    : event.target.type === 'Image' || event.target.type === 'Video';
   if (!allowed) context.addIssue({ code: 'custom', path: ['target'], message: 'Choose the matching activity target.' });
   if (event.target.label !== undefined && ['Enquiry', 'Session', 'MediaLibrary', 'Settings'].includes(event.target.type)) {
     context.addIssue({ code: 'custom', path: ['target', 'label'], message: 'This activity target cannot contain a label.' });

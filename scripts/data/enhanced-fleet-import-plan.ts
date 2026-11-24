@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import type { ContentRecord } from '../../src/lib/cms-types';
+import { normalizeFleetNames } from '../../src/lib/fleet-names';
 import selected from './enhanced-fleet-images.json';
 
 export const enhancedFleetOwner = 'enhanced-fleet-import-2026-11-17';
@@ -17,7 +18,7 @@ export function buildEnhancedFleetPlan(records: ContentRecord[], urls: Record<st
     assert.equal(matches.length, 1, `Expected exactly one saved vessel ${vessel.id}.`);
     const record = matches[0];
     assert(!record.deletedAt, `Vessel ${vessel.id} is removed.`);
-    assert.equal(record.title, vessel.currentName, `Vessel name conflicts with the reviewed photo: ${vessel.id}.`);
+    assert.equal(normalizeFleetNames(record).title, vessel.currentName, `Vessel name conflicts with the reviewed photo: ${vessel.id}.`);
     const image = urls[vessel.main.url];
     const alternate = vessel.gallery.map(photo => {
       assert(urls[photo.url], `Missing prepared photo ${photo.url}.`);

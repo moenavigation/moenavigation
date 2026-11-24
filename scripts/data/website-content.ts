@@ -3,6 +3,7 @@ import { clientFleetRecords, clientFleetPageCopy } from './client-fleet';
 import { legacyTradingRouteRecords, legacyRoutesPageCopy } from './legacy-trading-routes';
 import { legacyAboutDraftPatches, legacyAboutFeatureRecords, type LegacyAboutImageUrls } from './legacy-about-import-plan';
 import { defaultFooterStatistics } from '../../src/lib/footer-statistics';
+import { applyHomepageCopy } from '../../src/lib/homepage-chartering';
 
 const localAboutImages: LegacyAboutImageUrls = {
   hero: '/images/about/port-operations.webp',
@@ -883,5 +884,5 @@ export const websiteContentRecords = [
   }
 ].map(record => {
   const about = aboutDrafts.find(item => item.type === record.type && item.id === record.id);
-  return about ? { ...record, ...about.patch } : record;
+  return about ? { ...record, ...about.patch } : applyHomepageCopy(record);
 }).concat(legacyAboutFeatureRecords(localAboutImages));

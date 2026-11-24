@@ -17,6 +17,7 @@ const textLimits: Record<TextField, number> = { title: 200, description: 2000, b
 const vesselDetailGroups = [
   { label: 'Dimension', fields: [
     { key: 'lengthM', label: 'LOA (m)', max: 1000, whole: false },
+    { key: 'lbpM', label: 'Length between perpendiculars (m)', max: 1000, whole: false },
     { key: 'beamM', label: 'Breadth (m)', max: 500, whole: false },
     { key: 'depthM', label: 'Depth (m)', max: 100, whole: false },
     { key: 'draftM', label: 'Draft (m)', max: 100, whole: false },
@@ -30,6 +31,11 @@ const vesselDetailGroups = [
     { key: 'netTonnage', label: 'NRT', max: 2000000, whole: false },
     { key: 'deadweightT', label: 'DWT (tonnes)', max: 2000000, whole: false },
     { key: 'cargoCapacityT', label: 'DWCC (tonnes)', max: 2000000, whole: false },
+  ] },
+  { label: 'Cargo equipment', fields: [
+    { key: 'craneSwlT', label: 'Crane safe working load (tonnes)', max: 2000000, whole: false },
+    { key: 'cargoVolumeM3', label: 'Cargo volume at 100% (m³)', max: 2000000, whole: false },
+    { key: 'cargoTanks', label: 'Number of cargo tanks', max: 1000, whole: true },
   ] },
 ] as const;
 
@@ -124,11 +130,28 @@ export default function CmsCollectionFields({ record, records = [], categories, 
       <summary><span className={styles.cardTitle}><Ship size={20} aria-hidden="true" />{t('Vessel details')}</span><span className={styles.hint}>{t('Optional')}</span></summary>
       <div className={styles.cardBody}><p className={styles.hint}>{t('Enter approved vessel information only. Leave unknown values blank.')}</p>
         <fieldset className={styles.detailsGroup}><legend>{t('Vessel identity')}</legend>
+          <div className={styles.twoColumns}>
+            <label className={styles.field}>{t('Official number')}<input maxLength={40} value={record.vesselSpecs?.officialNumber ?? ''} onChange={event => updateSpec('officialNumber', event.target.value)} /></label>
+            <label className={styles.field}>{t('Call sign')}<input maxLength={20} value={record.vesselSpecs?.callSign ?? ''} onChange={event => updateSpec('callSign', event.target.value)} /></label>
+            <label className={styles.field}>MMSI<input inputMode="numeric" pattern="[0-9]{9}" maxLength={9} value={record.vesselSpecs?.mmsi ?? ''} onChange={event => updateSpec('mmsi', event.target.value)} /></label>
+          </div>
           <div className={styles.twoColumns}><label className={styles.field}>{t('IMO ship number')}<input inputMode="numeric" placeholder={cmsContentPlaceholder('imo', locale)} maxLength={7} pattern="[1-9][0-9]{6}" value={record.vesselSpecs?.imo || ''} onChange={event => updateSpec('imo', event.target.value)} /><span className={styles.hint}>{t('Seven digits without the IMO prefix. The check digit is validated when saving.')}</span></label><label className={styles.field}>{t('Year built')}<input type="number" placeholder={cmsContentPlaceholder('yearBuilt', locale)} min={1800} max={new Date().getUTCFullYear()} step={1} value={record.vesselSpecs?.yearBuilt ?? ''} onChange={event => updateSpec('yearBuilt', event.target.value === '' ? undefined : Number(event.target.value))} /></label></div>
           <div className={styles.twoColumns}>{languages.map(language => <label className={styles.field} key={language}>{bilingualLabel('Flag state', language)}<input lang={language} placeholder={cmsContentPlaceholder('flag', language)} maxLength={100} value={record.vesselSpecs?.[language === 'th' ? 'flagTh' : 'flag'] || ''} onChange={event => updateSpec(language === 'th' ? 'flagTh' : 'flag', event.target.value)} /></label>)}</div>
         </fieldset>
-        {vesselDetailGroups.map(group => <fieldset className={styles.detailsGroup} key={group.label}><legend>{t(group.label)}</legend><div className={styles.twoColumns}>
-          {group.fields.map(field => <label className={styles.field} key={field.key}>{t(field.label)}<input type="number" placeholder={cmsContentPlaceholder(field.key, locale)} min={field.whole ? 0 : 0.01} max={field.max} step={field.whole ? 1 : 'any'} value={record.vesselSpecs?.[field.key] ?? ''} onChange={event => updateSpec(field.key, event.target.value === '' ? undefined : Number(event.target.value))} /></label>)}
+        {vesselDetailGroups.map(group => <fieldset className={styles.detailsGroup} key={group.label}><legend>{t(group.label)}</legend>
+          {group.label === 'Tonnage' && <label className={styles.field}>{t('Tonnage convention')}
+            <select value={record.vesselSpecs?.tonnageBasis ?? 'register'} onChange={event => updateSpec('tonnageBasis', event.target.value)}>
+              <option value="register">{t('Register tonnage (GRT / NRT)')}</option>
+              <option value="international">{t('International tonnage (GT / NT)')}</option>
+            </select>
+          </label>}
+          <div className={styles.twoColumns}>
+          {group.fields.map(field => {
+            const label = record.vesselSpecs?.tonnageBasis === 'international' && (field.label === 'GRT' || field.label === 'NRT')
+              ? field.label === 'GRT' ? 'GT' : 'NT'
+              : t(field.label);
+            return <label className={styles.field} key={field.key}>{label}<input type="number" placeholder={cmsContentPlaceholder(field.key, locale)} min={field.whole ? 0 : 0.01} max={field.max} step={field.whole ? 1 : 'any'} value={record.vesselSpecs?.[field.key] ?? ''} onChange={event => updateSpec(field.key, event.target.value === '' ? undefined : Number(event.target.value))} /></label>;
+          })}
         </div></fieldset>)}
       </div>
     </details>}

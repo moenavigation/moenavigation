@@ -13,6 +13,13 @@ const optionalSpecText = (max: number) => z.string().trim().max(max).optional().
 const imoSchema = z.string().trim().refine(value => !value || (/^[1-9]\d{6}$/.test(value) && [...value.slice(0, 6)].reduce((sum, digit, index) => sum + Number(digit) * (7 - index), 0) % 10 === Number(value[6])), 'Enter the seven-digit IMO ship number with its correct check digit.').optional().transform(value => value || undefined);
 export const vesselSpecsSchema = z.object({
   imo: imoSchema,
+  officialNumber: optionalSpecText(40),
+  callSign: optionalSpecText(20),
+  mmsi: z.string().trim().regex(/^(?:\d{9})?$/, 'Enter a nine-digit MMSI.').optional().transform(value => value || undefined),
+  lbpM: z.number().positive().max(1000).optional(),
+  craneSwlT: z.number().positive().max(2000000).optional(),
+  cargoVolumeM3: z.number().positive().max(2000000).optional(),
+  cargoTanks: z.number().int().nonnegative().max(1000).optional(),
   yearBuilt: z.number().int().min(1800).max(new Date().getUTCFullYear(), 'Use the actual completed build year.').optional(),
   lengthM: z.number().positive().max(1000).optional(),
   beamM: z.number().positive().max(500).optional(),
@@ -22,6 +29,7 @@ export const vesselSpecsSchema = z.object({
   cargoCapacityT: z.number().positive().max(2000000).optional(),
   grossTonnage: z.number().positive().max(2000000).optional(),
   netTonnage: z.number().positive().max(2000000).optional(),
+  tonnageBasis: z.enum(['register', 'international']).optional(),
   capacityTeu: z.number().int().nonnegative().max(100000).optional(),
   reeferPlugs: z.number().int().nonnegative().max(100000).optional(),
   flag: optionalSpecText(100), flagTh: optionalSpecText(100),
@@ -57,14 +65,19 @@ const dateSchema = z.string().refine(value => {
   return /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }, 'Enter a valid date.').optional().default('');
 const homeSlidesSchema = z.array(z.object({
+  kind: z.enum(['image', 'video']).optional(),
   url: z.string().trim().min(1).max(1500), alt: z.string().trim().max(250), altTh: z.string().trim().max(250),
-})).min(1, 'Keep at least one slide.').max(MAX_HOME_SLIDES).refine(slides => new Set(slides.map(slide => slide.url)).size === slides.length, 'Choose each image only once.');
+})).min(1, 'Keep at least one slide.').max(MAX_HOME_SLIDES).refine(slides => new Set(slides.map(slide => slide.url)).size === slides.length, 'Choose each slide only once.');
 const homeSlideIntervalSchema = z.number().int().min(MIN_HOME_SLIDE_INTERVAL).max(MAX_HOME_SLIDE_INTERVAL);
 export const saveHomeSlidesSchema = z.strictObject({
   slides: homeSlidesSchema,
   intervalSeconds: homeSlideIntervalSchema,
   expectedRevision: z.number().int().positive(),
   submissionId: submissionSchema,
+});
+const charterCopySchema = z.object({
+  title: z.string().trim().min(1).max(200), titleTh: z.string().trim().min(1).max(200),
+  description: z.string().trim().max(2000), descriptionTh: z.string().trim().max(2000),
 });
 export const recordSchema = z.object({
   id: idSchema, type: z.enum(contentTypes),
@@ -78,6 +91,7 @@ export const recordSchema = z.object({
   caption: optionalText(200), captionTh: optionalText(200),
   mobileImage: optionalText(1500), gallery: z.array(z.object({ url: z.string().min(1).max(1500), alt: z.string().trim().max(250), altTh: z.string().trim().max(250) })).max(12).optional().default([]),
   heroSlides: homeSlidesSchema.optional(), heroSlideInterval: homeSlideIntervalSchema.optional(),
+  homeCharters: z.strictObject({ container: charterCopySchema, crane: charterCopySchema, tanker: charterCopySchema, management: charterCopySchema }).optional(),
   bodyHeading: optionalText(200), bodyHeadingTh: optionalText(200),
   origin: portSchema.optional(), destination: portSchema.optional(),
   waypoints: z.array(z.tuple([z.number().min(-90).max(90), z.number().min(-180).max(180)])).max(100).optional().default([]),
@@ -92,6 +106,7 @@ export const recordSchema = z.object({
     });
   }
   if ((record.heroSlides !== undefined || record.heroSlideInterval !== undefined) && (record.type !== 'Page' || record.id !== 'home')) context.addIssue({ code: 'custom', path: ['heroSlides'], message: 'Homepage slides belong to the home page only.' });
+  if (record.homeCharters && (record.type !== 'Section' || record.id !== 'home-expertise' || record.parentId !== 'home')) context.addIssue({ code: 'custom', path: ['homeCharters'], message: 'Charter cards belong to the homepage services section only.' });
   if (record.type !== 'Vessel' && record.vesselSpecs && Object.values(record.vesselSpecs).some(value => value !== undefined)) context.addIssue({ code: 'custom', path: ['vesselSpecs'], message: 'Vessel specifications belong to fleet records only.' });
   if (record.type !== 'Route' && record.routeSpecs && Object.values(record.routeSpecs).some(value => value !== undefined)) context.addIssue({ code: 'custom', path: ['routeSpecs'], message: 'Route details belong to route records only.' });
   if (record.type !== 'Section') {

@@ -7,8 +7,17 @@ export const defaultFooterStatistics: FooterStatistic[] = [
   { label: 'Annual Voyages', labelTh: 'เที่ยวเรือต่อปี', value: '1,119' },
 ];
 
-export function countPublicVessels(records: readonly ContentRecord[]): number {
-  return records.filter(record => record.type === 'Vessel' && record.status === 'Published' && !record.deletedAt).length;
+function publishedVessels(records: readonly ContentRecord[]) {
+  return records.filter(record => record.type === 'Vessel' && record.status === 'Published' && !record.deletedAt);
+}
+
+export const countPublicVessels = (records: readonly ContentRecord[]) => publishedVessels(records).length;
+export type FooterVesselLink = Pick<ContentRecord, 'id' | 'title' | 'titleTh'>;
+
+export function footerVesselLinks(records: readonly ContentRecord[]): FooterVesselLink[] {
+  return publishedVessels(records)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.id.localeCompare(b.id))
+    .map(({ id, title, titleTh }) => ({ id, title, titleTh }));
 }
 
 export function visibleFooterStatistics(record: Pick<ContentRecord, 'footerStats'> | undefined, fleetCount: number): (FooterStatistic & { sourceIndex: number })[] {

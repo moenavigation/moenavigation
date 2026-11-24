@@ -93,7 +93,7 @@ test('CMS saves, Trash and restore refresh cached pages, metadata, sitemap and m
   await checkFleetCount(initialCount + 1);
 });
 
-test('saving website details refreshes cached contact text and metadata in both languages', async ({ request }) => {
+test('saving website details refreshes cached contact text and metadata in both languages', async ({ request, page }) => {
   await signIn(request);
   for (const path of ['/contact', '/th/contact']) {
     expect((await request.get(path)).status()).toBe(200);
@@ -105,12 +105,12 @@ test('saving website details refreshes cached contact text and metadata in both 
     settings: { ...settings, companyName: 'Updated cache company', companyNameTh: 'บริษัททดสอบแคช', officeAddress: 'Updated cached office', officeAddressTh: 'สำนักงานที่แก้ไขแล้ว' },
   } });
   expect(response.status(), await response.text()).toBe(200);
-  const english = await (await request.get('/contact')).text();
-  const thai = await (await request.get('/th/contact')).text();
-  expect(english).toContain('Updated cached office');
-  expect(english).toMatch(/<title>[^<]+ \| Updated cache company<\/title>/);
-  expect(thai).toContain('สำนักงานที่แก้ไขแล้ว');
-  expect(thai).toMatch(/<title>[^<]+ \| บริษัททดสอบแคช<\/title>/);
+  await page.goto('/contact');
+  await expect(page.getByRole('main').getByText('Updated cached office', { exact: true })).toBeVisible();
+  await expect(page).toHaveTitle(/ \| Updated cache company$/);
+  await page.goto('/th/contact');
+  await expect(page.getByRole('main').getByText('สำนักงานที่แก้ไขแล้ว', { exact: true })).toBeVisible();
+  await expect(page).toHaveTitle(/ \| บริษัททดสอบแคช$/);
 });
 
 test('CMS responses remain private and only signed-in same-origin callers can refresh public content', async ({ request }) => {

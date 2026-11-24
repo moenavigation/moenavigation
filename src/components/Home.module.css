@@ -14,13 +14,16 @@
 .sectionHeading>a { flex-shrink: 0; padding-bottom: .25rem; }
 .sectionHeading>div { min-width: 0; max-width: 48rem; }
 .sectionHeading p { margin-top: .9rem; }
-.expertise { padding-block: 3rem; }
-.expertiseGrid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1rem; }
-.expertiseCard { min-width: 0; background: var(--pale); border: 1px solid #eaf0f5; border-radius: var(--radius); padding: 1.5rem; display: flex; flex-direction: column; align-items: flex-start; position: relative; transition: border-color .2s, box-shadow .2s; }
-.serviceIcon { width: 1.75rem; height: 1.75rem; flex-shrink: 0; stroke-width: 1.6; }
-.expertiseTitle { display: flex; align-items: flex-start; gap: .75rem; width: 100%; min-width: 0; margin-bottom: .75rem; line-height: 1.4; }
-.expertiseTitle span { min-width: 0; overflow-wrap: anywhere; }
-.expertiseCard p { font-size: var(--font-small); }
+.expertise { padding-block: 3rem; scroll-margin-top: 5rem; }
+.expertiseGrid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1.2rem; }
+.expertiseCard { min-width: 0; display: flex; flex-direction: column; overflow: hidden; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); }
+.charterPhoto { position: relative; aspect-ratio: 1.8; background: var(--pale); }
+.charterPhoto img { object-fit: cover; }
+.charterCopy { display: flex; flex: 1; flex-direction: column; align-items: flex-start; gap: .8rem; padding: 1.35rem; overflow-wrap: break-word; }
+.charterCopy :global(.text-link) { margin-top: auto; padding-top: .3rem; }
+.management { display: flex; gap: 1.25rem; align-items: center; margin-top: 1.25rem; padding: 1.5rem; background: var(--pale); border-radius: var(--radius); }
+.management svg { flex: none; width: 2rem; height: 2rem; color: var(--blue); stroke-width: 1.5; }
+.management h3 { margin-block: .3rem; }
 .trust { position: relative; background: var(--navy); color: #fff; }
 .trust>img { object-fit: cover; opacity: .15; }
 .trustInner { position: relative; display: grid; grid-template-columns: 1.1fr 1fr; gap: 6rem; padding-block: 4rem; }
@@ -31,7 +34,7 @@
 .trustValues { display: grid; gap: 1.5rem; }
 .trustValues>div { display: flex; align-items: center; gap: 1.2rem; border-bottom: 1px solid #ffffff24; padding-bottom: 1.5rem; }
 .trustValues>div:last-child { border: 0; padding-bottom: 0; }
-.trustValues svg { width: 2.5rem; height: 2.5rem; stroke-width: 1.4; }
+.trustValues svg { flex: none; width: 2.5rem; height: 2.5rem; stroke-width: 1.4; }
 .trustValues p { margin-top: .35rem; }
 .trustInner>div,.trustValues span { min-width: 0; }
 .mediaGrid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1.4rem; }
@@ -47,9 +50,9 @@
 .newsCopy :global(.eyebrow) { letter-spacing: .03em; font-weight: 400; }
 .newsCopy h3 { min-height: 3rem; }
 .newsCopy :global(.text-link) { margin-top: auto; padding-top: 1.5rem; }
-.expertiseCard:focus-visible,.mediaCard:focus-visible,.newsCard:focus-visible { outline-offset: 5px; border-color: var(--blue); }
-@media(hover:hover) and (pointer:fine) { .expertiseCard:hover,.mediaCard:hover,.newsCard:hover { border-color: #9fbbd3; box-shadow: var(--shadow-card); } .mediaCard:hover img,.newsCard:hover img { transform: scale(1.035); } .trust :global(.text-link):hover { color: #fff; } }
-@media(max-width:1100px) { .expertiseGrid { grid-template-columns: repeat(2,minmax(0,1fr)); } .trustInner { gap: 3rem; } }
+.mediaCard:focus-visible,.newsCard:focus-visible { outline-offset: 5px; border-color: var(--blue); }
+@media(hover:hover) and (pointer:fine) { .mediaCard:hover,.newsCard:hover { border-color: #9fbbd3; box-shadow: var(--shadow-card); } .mediaCard:hover img,.newsCard:hover img { transform: scale(1.035); } .trust :global(.text-link):hover { color: #fff; } }
+@media(max-width:1100px) { .trustInner { gap: 3rem; } }
 @media(max-width:700px) {
   .heroIntro { padding-block: 2.3rem 2.5rem; }
   .heroIntro h1 { max-width: 26rem; }
@@ -61,8 +64,9 @@
   .heroCaption { margin-top: 1.4rem; max-width: 25rem; }
   .sectionHeading { display: block; }
   .sectionHeading>a { margin-top: 1rem; }
-  .expertiseCard { padding: 1.2rem; }
-  .expertiseCard h3 { overflow-wrap: break-word; }
+  .expertiseGrid { grid-template-columns: 1fr; }
+  .charterCopy { padding: 1.2rem; }
+  .management { align-items: flex-start; }
   .trustInner { grid-template-columns: 1fr; padding-block: 3rem; }
   .mediaGrid { grid-template-columns: 1fr; }
   .fleetAction :global(.button) { width: 100%; }

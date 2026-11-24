@@ -11,9 +11,9 @@ import type { ContentRecord } from '@/lib/cms-types';
 // source identity, and isolate each ephemeral test run from persisted caches.
 const scope = [process.env.MONGODB_DB_NAME || '', process.env.NEXT_PUBLIC_SITE_URL || '', process.env.MOE_E2E_OWNER || ''];
 const options = { tags: [PUBLIC_CONTENT_TAG], revalidate: PUBLIC_CACHE_SECONDS };
-// Refresh snapshots after the reviewed website-source particulars update outside CMS saves.
-export const getPublicRecords = cache(unstable_cache(getPublishedRecords, ['public-records-v6', ...scope], options));
-export const getPublicSettings = cache(unstable_cache(getSiteSettings, ['public-settings-v1', ...scope], options));
+// Expire snapshots containing earlier vessel photography and homepage copy.
+export const getPublicRecords = cache(unstable_cache(getPublishedRecords, ['public-records-v9', ...scope], options));
+export const getPublicSettings = cache(unstable_cache(getSiteSettings, ['public-settings-v2', ...scope], options));
 
 export const getPublicRecord = cache(async (type: ContentRecord['type'], id: string) =>
   (await getPublicRecords()).find(record => record.type === type && record.id === id) || null);

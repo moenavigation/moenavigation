@@ -133,6 +133,7 @@ test('staged photos require this actor and submission, and unavailable library i
     [photo(actor._id, randomUUID(), 'staged'), 403],
     [photo(actor._id, submissionId, 'uploading'), 400],
     [photo(actor._id, submissionId, 'trashed'), 400],
+    [{ ...photo(actor._id, submissionId), kind: 'video' }, 400],
     [photo(actor._id, submissionId, 'deleting'), 400],
   ] as const) {
     const state = harness([actor], [image]);

@@ -6,7 +6,7 @@ import useDialogBackdrop from './useDialogBackdrop';
 import CmsWorkingPanel from './CmsWorkingPanel';
 import CmsAvatar from './CmsAvatar';
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type ReactNode, type RefObject } from 'react';
-import { Check, FileText, ImageIcon, Inbox, RotateCcw, Search, ShieldCheck, SlidersHorizontal, Trash2, X } from 'lucide-react';
+import { Check, FileText, ImageIcon, Inbox, Film, RotateCcw, Search, ShieldCheck, SlidersHorizontal, Trash2, X } from 'lucide-react';
 import { useCmsLocale } from '@/lib/cms-locale';
 import { cmsInputPlaceholder } from '@/lib/cms-input-placeholders';
 import { CmsRequestError, cmsErrorText, cmsRequest } from '@/lib/cms-client';
@@ -18,7 +18,7 @@ import styles from './CmsTrashManager.module.css';
 
 type Filter = 'All' | CmsTrashKind;
 const options: { kind: Filter; label: string }[] = [
-  { kind: 'All', label: 'All items' }, { kind: 'Image', label: 'Images' }, { kind: 'User', label: 'User accounts' },
+  { kind: 'All', label: 'All items' }, { kind: 'Image', label: 'Images' }, { kind: 'Video', label: 'Videos' }, { kind: 'User', label: 'User accounts' },
   { kind: 'Enquiry', label: 'Enquiries' },
   { kind: 'Vessel', label: 'Vessels' }, { kind: 'Route', label: 'Routes' }, { kind: 'Project', label: 'Projects' },
   { kind: 'Service', label: 'Services' }, { kind: 'News', label: 'News' }, { kind: 'Page', label: 'Pages' }, { kind: 'Section', label: 'Sections' },
@@ -118,7 +118,7 @@ export default function CmsTrashManager({ role, target, initialKind, revision, o
       let restored: ContentRecord | undefined;
       if (item.kind === 'User') {
         await cmsRequest(`/api/cms/users/${operation}`, { method: 'POST', body: JSON.stringify({ id: item.id, currentPassword }) });
-      } else if (item.kind === 'Image') {
+      } else if (item.kind === 'Image' || item.kind === 'Video') {
         await cmsRequest(`/api/cms/media/${operation}`, { method: 'POST', body: JSON.stringify({ mediaId: item.id }) });
       } else if (item.kind === 'Enquiry') {
         await cmsRequest(`/api/cms/inbox/${operation === 'restore' ? 'action' : 'remove'}`, { method: 'POST', body: JSON.stringify({ id: item.id, expectedRevision: item.revision, ...(operation === 'restore' ? { action: 'restore' } : {}) }) });
@@ -168,6 +168,7 @@ export default function CmsTrashManager({ role, target, initialKind, revision, o
   const actionTitle = action?.item.kind === 'User' ? action.operation === 'restore' ? 'Restore user' : 'Delete user permanently' : 'Delete permanently';
   const explanation = action?.item.kind === 'User'
     ? action.operation === 'restore' ? 'Restoring this account allows it to sign in again with its existing password and role. Previous sessions stay signed out.' : 'This user account will be permanently deleted. This cannot be undone.'
+    : action?.item.kind === 'Video' ? 'This video will be permanently deleted. This cannot be undone.'
     : action?.item.kind === 'Image' ? 'This image will be permanently deleted. This cannot be undone.'
       : action?.item.kind === 'Enquiry' ? 'This enquiry and its message will be permanently deleted. This cannot be undone.' : 'This cannot be undone. Saved images stay in the media library.';
 
@@ -181,7 +182,7 @@ export default function CmsTrashManager({ role, target, initialKind, revision, o
       {error && <div className={styles.error} role="alert">{t(error)}<button type="button" className="button secondary" disabled={busy || loading} onClick={() => void load()}>{t('Try again')}</button></div>}
       {!waiting && !error && !current?.items.length && <div className={styles.empty}><Trash2 size={34} aria-hidden="true" /><h3>{t(hasFilters ? 'No matching items' : 'Trash is empty')}</h3><p>{t(hasFilters ? 'Try another search or clear your filters.' : 'Removed content, enquiries, images, and user accounts will appear here.')}</p></div>}
       {Boolean(current?.items.length) && <table className={styles.table} aria-busy={waiting || busy}><thead><tr><th scope="col">{t('Item')}</th><th scope="col">{t('Type')}</th><th scope="col">{t('Moved to Trash')}</th><th scope="col">{t('Action')}</th></tr></thead><tbody>{current!.items.map(item => <tr key={item.key} data-trash-key={item.key}>
-        <td className={styles.item}><div className={styles.identity}>{item.kind === 'User' ? <span className={styles.userAvatar}><CmsAvatar username={item.title} avatar={item.image} /></span> : item.image ? <img src={item.image} alt="" width={88} height={60} loading="lazy" /> : <span className={styles.placeholder}>{item.kind === 'Image' ? <ImageIcon size={24} aria-hidden="true" /> : item.kind === 'Enquiry' ? <Inbox size={24} aria-hidden="true" /> : <FileText size={24} aria-hidden="true" />}</span>}<div><strong>{title(item)}</strong>{item.kind === 'User' && <span className={styles.role}>{item.role}</span>}{!item.canRestore && !item.canDelete && <span className={styles.reason}><ShieldCheck size={15} aria-hidden="true" />{t(item.restoreBlockedReason || item.deleteBlockedReason || 'Protected item')}</span>}</div></div></td>
+        <td className={styles.item}><div className={styles.identity}>{item.kind === 'User' ? <span className={styles.userAvatar}><CmsAvatar username={item.title} avatar={item.image} /></span> : item.kind === 'Video' ? <span className={styles.placeholder}><Film size={24} aria-hidden="true" /></span> : item.image ? <img src={item.image} alt="" width={88} height={60} loading="lazy" /> : <span className={styles.placeholder}>{item.kind === 'Image' ? <ImageIcon size={24} aria-hidden="true" /> : item.kind === 'Enquiry' ? <Inbox size={24} aria-hidden="true" /> : <FileText size={24} aria-hidden="true" />}</span>}<div><strong>{title(item)}</strong>{item.kind === 'User' && <span className={styles.role}>{item.role}</span>}{!item.canRestore && !item.canDelete && <span className={styles.reason}><ShieldCheck size={15} aria-hidden="true" />{t(item.restoreBlockedReason || item.deleteBlockedReason || 'Protected item')}</span>}</div></div></td>
         <td className={styles.type}>{t(item.kind === 'User' ? 'User account' : item.kind)}</td><td className={styles.date}><span>{date(item.deletedAt)}</span>{item.purgeAt && <small>{t('Available until {date}', { date: date(item.purgeAt) })}</small>}</td>
         <td><div className={styles.actions}>{item.canRestore && <button type="button" className="button secondary" disabled={busy || waiting} aria-label={t('Restore {name}', { name: title(item) })} onClick={event => chooseAction(item, 'restore', event.currentTarget)}><RotateCcw size={16} aria-hidden="true" />{t('Restore')}</button>}{item.canDelete && <button type="button" className={`button secondary ${styles.danger}`} disabled={busy || waiting} aria-label={t('Delete {name} permanently', { name: title(item) })} onClick={event => chooseAction(item, 'remove', event.currentTarget)}><Trash2 size={16} aria-hidden="true" />{t('Delete permanently')}</button>}</div>{!item.canRestore && item.canDelete && item.restoreBlockedReason && <p className={styles.reason}>{t(item.restoreBlockedReason)}</p>}{!item.canDelete && item.deleteBlockedReason && item.canRestore && <p className={styles.reason}>{t(item.deleteBlockedReason)}</p>}</td>
       </tr>)}</tbody></table>}

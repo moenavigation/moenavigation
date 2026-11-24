@@ -118,16 +118,16 @@ test('CMS saves, reopens and clears optional particulars while preserving hidden
   }
 });
 
-test('Website-sourced container capacities match each named vessel in both languages and missing capacities stay blank', async ({ page }) => {
+test('each vessel shows its reviewed capacity in the appropriate units in both languages', async ({ page }) => {
   test.setTimeout(120_000);
   const vessels = [
     { id: 'ranong-moe', en: 'RANONG MOE', th: 'ระนองโม', nominal: 96 },
-    { id: 'moe-line-2', en: 'MOE 2', th: 'โม2', nominal: 72 },
-    { id: 'moe-line-3', en: 'MOE 3', th: 'โม3', nominal: 72 },
-    { id: 'moe-line-4', en: 'MOE 4', th: 'โม4', nominal: undefined },
-    { id: 'moe-line-5', en: 'MOE 5', th: 'โม5', nominal: 120 },
-    { id: 'moe-line-6', en: 'MOE 6', th: 'โม6', nominal: 120 },
-    { id: 'moe-line-7', en: 'MOE 7', th: 'โม7', nominal: 120 },
+    { id: 'moe-line-2', en: 'MOE LINE 2', th: 'โมไลน์ 2', nominal: 72 },
+    { id: 'moe-line-3', en: 'MOE LINE 3', th: 'โมไลน์ 3', nominal: 72 },
+    { id: 'moe-line-4', en: 'MOE LINE 4', th: 'โมไลน์ 4', nominal: undefined },
+    { id: 'moe-line-5', en: 'MOE LINE 5', th: 'โมไลน์ 5', nominal: 120 },
+    { id: 'moe-line-6', en: 'MOE LINE 6', th: 'โมไลน์ 6', nominal: 120 },
+    { id: 'moe-line-7', en: 'MOE LINE 7', th: 'โมไลน์ 7', nominal: 120 },
     { id: 'dumai-moe', en: 'DUMAI MOE', th: 'Dumai Moe', nominal: undefined },
   ];
   for (const locale of ['en', 'th'] as const) {
@@ -137,24 +137,30 @@ test('Website-sourced container capacities match each named vessel in both langu
       await page.goto(`${prefix}/fleet/${vessel.id}`);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(vessel[locale]);
       const capacity = page.getByRole('region', { name: group.name, exact: true });
-      await expect(capacity).toBeVisible();
       const nominal = valueFor(capacity, group.labels[0]);
       const reefers = valueFor(capacity, group.labels[1]);
       if (vessel.nominal !== undefined) {
         await expect(nominal).toHaveText(`${vessel.nominal} TEU`);
-        await expect(reefers).toHaveText(locale === 'en' ? '3 units' : '3 จุด');
+        const plugs = vessel.id === 'moe-line-5' || vessel.id === 'moe-line-6' ? 4 : 3;
+        await expect(reefers).toHaveText(`${plugs} ${locale === 'en' ? 'units' : 'จุด'}`);
       } else {
-        for (const missing of [nominal, reefers]) {
-          await expect(missing).toContainText('—');
-          await expect(missing).toContainText(locale === 'en' ? 'Not provided' : 'ยังไม่มีข้อมูล');
-          await expect(missing).not.toContainText(/\d/);
+        await expect(capacity).toHaveCount(0);
+        if (vessel.id === 'dumai-moe') {
+          await expect(page.getByText('3,330 m³', { exact: true })).toBeVisible();
+          await expect(page.getByText('9190975', { exact: true })).toBeVisible();
+          await expect(valueFor(page.getByRole('region', { name: publicGroups[locale][2].name, exact: true }), 'GT')).toHaveText('2,487');
+        } else {
+          await expect(page.getByText(locale === 'en' ? '200 tonnes' : '200 ตัน', { exact: true })).toBeVisible();
+          await expect(page.getByText('4800-00377', { exact: true })).toBeVisible();
         }
       }
     }
   }
 });
 
-test('existing vessels without particulars show accessible blanks rather than invented zero values', async ({ page }) => {
+test('existing vessels without particulars show accessible blanks rather than invented zero values', async ({ page, db }) => {
+  await db.collection('moe_content').updateOne({ type: 'Vessel', id: 'dumai-moe' }, { $unset: { vesselSpecs: '' } });
+  await refreshPublicCache();
   for (const locale of ['en', 'th'] as const) {
     await page.goto(`${locale === 'th' ? '/th' : ''}/fleet/dumai-moe`);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(locale === 'en' ? 'DUMAI MOE' : 'Dumai Moe');
