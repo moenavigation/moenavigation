@@ -80,12 +80,13 @@ export default async function Page({ params }: { params: Promise<{ path?: string
   if (page === "home") redirect(href(locale));
   const item = await getRouteRecord(page, slug);
   if (!item) notFound();
+  const current = pieces.join("/");
   // Validate the URL before the fallback can send response headers. The rest
   // of the page can then stream without turning deleted content into soft 404s.
-  return <PublicSearchParamsProvider><Suspense key={`${locale}/${pieces.join('/')}`} fallback={<><SiteHeader locale={locale} /><main id="main" tabIndex={-1}><LoadingScreen locale={locale} /></main></>}><PublicPage locale={locale} page={page} slug={slug} pieces={pieces} /></Suspense></PublicSearchParamsProvider>;
+  return <PublicSearchParamsProvider><Suspense key={`${locale}/${current}`} fallback={<><SiteHeader locale={locale} current={current} /><main id="main" tabIndex={-1}><LoadingScreen locale={locale} /></main></>}><PublicPage locale={locale} page={page} slug={slug} current={current} /></Suspense></PublicSearchParamsProvider>;
 }
 
-async function PublicPage({ locale, page, slug, pieces }: { locale: Locale; page: string; slug?: string; pieces: string[] }) {
+async function PublicPage({ locale, page, slug, current }: { locale: Locale; page: string; slug?: string; current: string }) {
   const [published, settings] = await Promise.all([getPublicRecords(), getPublicSettings()]);
   const records = selectPublicPageRecords(published, page, slug);
   // The footer needs the whole fleet, even when this page includes only a few cards or none.
@@ -99,5 +100,5 @@ async function PublicPage({ locale, page, slug, pieces }: { locale: Locale; page
     ...(settings.phone ? { telephone: settings.phone } : {}), ...(settings.email ? { email: settings.email } : {}),
     ...(local(locale, settings.officeAddress, settings.officeAddressTh) ? { address: local(locale, settings.officeAddress, settings.officeAddressTh) } : {}),
   } : null;
-  return <PublicContentProvider records={records} settings={settings} fleetLinks={fleetLinks}>{organization && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization).replace(/</g, '\\u003c') }} />}<SiteShell locale={locale}>{page ? <ContentPage key={`${locale}/${pieces.join("/")}`} locale={locale} page={page} slug={slug} /> : <Home locale={locale} />}</SiteShell></PublicContentProvider>;
+  return <PublicContentProvider records={records} settings={settings} fleetLinks={fleetLinks}>{organization && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization).replace(/</g, '\\u003c') }} />}<SiteShell locale={locale} current={current}>{page ? <ContentPage key={`${locale}/${current}`} locale={locale} page={page} slug={slug} /> : <Home locale={locale} />}</SiteShell></PublicContentProvider>;
 }

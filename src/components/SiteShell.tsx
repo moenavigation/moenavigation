@@ -1,10 +1,9 @@
 "use client";
 import Link from "./NavigationLink";
-import { usePathname } from "next/navigation";
 import { usePublicSearchParams } from "@/lib/use-public-search-params";
 import { Menu } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type MouseEvent, type ReactNode } from "react";
-import { href, local, navigation, pathWithoutLocale, type Locale } from "@/lib/content";
+import { href, local, navigation, type Locale } from "@/lib/content";
 import { rememberPublicLocale, selectPublicLocale } from "@/lib/public-locale";
 import { usePublicContent } from "@/lib/use-public-content";
 import { contentText } from "@/lib/public-content";
@@ -38,13 +37,11 @@ function scrollCurrentPageToTop(event:MouseEvent<HTMLElement>) {
 }
 let lastClientPath: string | null = null;
 let historyNavigationPath: string | null = null;
-export function SiteHeader({locale}:{locale:Locale}) {
-  const path=usePathname();
+export function SiteHeader({locale,current}:{locale:Locale;current:string}) {
   const interactive=useSyncExternalStore(subscribeToHydration,interactiveSnapshot,prerenderedSnapshot);
   const [open,setOpen]=useState(false);
   const menuButtonRef=useRef<HTMLButtonElement>(null);
   const closeMenu=useCallback(()=>setOpen(false),[]);
-  const current=pathWithoutLocale(path);
   const search=usePublicSearchParams().toString();
   const query=search ? `?${search}` : "";
   const hash=useSyncExternalStore(subscribeHash,()=>window.location.hash,()=>"");
@@ -90,12 +87,12 @@ export function SiteHeader({locale}:{locale:Locale}) {
     </MobileNavDrawer>
   </>;
 }
-export default function SiteShell({locale,children}:{locale:Locale;children:ReactNode}) {
+export default function SiteShell({locale,current,children}:{locale:Locale;current:string;children:ReactNode}) {
   const { sections, settings, fleetLinks }=usePublicContent();
   const footer=sections.find(section=>section.id==="footer" && section.parentId==="shared");
   const footerName = local(locale, settings.companyName === "Moe Navigation Co.,Ltd." ? "Moe Navigation Co., Ltd." : settings.companyName, settings.companyNameTh);
   const introduction = contentText(footer, "title", locale);
-  const path=usePathname();
+  const path=href(locale,current);
   useEffect(()=>{
     // Browser Back/Forward owns restoration of the previous scroll position.
     // Keep the explicit top reset for ordinary navigation to a new page.
@@ -114,7 +111,7 @@ export default function SiteShell({locale,children}:{locale:Locale;children:Reac
     }
   },[path]);
   return <>
-    <SiteHeader locale={locale}/>
+    <SiteHeader locale={locale} current={current}/>
     <main id="main" tabIndex={-1}>{children}<div className="container"><AdditionalSections pageId="shared" locale={locale} exclude={["shared-callout","footer","footer-contact"]} /></div></main>
     <footer className={styles.footer} onClickCapture={scrollCurrentPageToTop}>
       <div className="container"><FooterStatistics record={footer} locale={locale} fleetCount={fleetLinks.length}/></div>

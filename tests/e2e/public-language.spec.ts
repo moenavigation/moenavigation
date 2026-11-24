@@ -27,6 +27,19 @@ async function expectLanguage(page: Page, locale: 'en' | 'th', path: string) {
   await expect(page.locator('html')).toHaveAttribute('lang', locale);
 }
 
+test('server-rendered language switches link directly to the translated vessel detail', async ({ request }) => {
+  const detail = '/fleet/ranong-moe';
+  for (const [path, counterpart, label] of [[detail, '/th' + detail, 'Switch to Thai'], ['/th' + detail, detail, 'เปลี่ยนเป็นภาษาอังกฤษ']]) {
+    const response = await request.get(path);
+    expect(response.status()).toBe(200);
+    const html = await response.text();
+    // Inspect every streamed header, including the fallback if present, before hydration.
+    const links = (html.match(/<a\b[^>]*>/g) ?? []).filter(tag => tag.includes(`aria-label="${label}"`));
+    expect(links.length).toBeGreaterThan(0);
+    for (const link of links) expect(link.match(/\shref="([^"]+)"/)?.[1]).toBe(counterpart);
+  }
+});
+
 test('English is the default and both languages publish matching canonical and alternate URLs', async ({ page, request }) => {
   // The requested default is English even for a browser that prefers Thai.
   await page.setExtraHTTPHeaders({ 'Accept-Language': 'th-TH,th;q=0.9,en;q=0.8' });

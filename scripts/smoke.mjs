@@ -67,6 +67,12 @@ while(queue.length) {
       assert.equal(linkPath(html,'alternate','en'),english,`${path} English alternate path`);
       assert.equal(linkPath(html,'alternate','th'),thai,`${path} Thai alternate path`);
       assert.equal(linkPath(html,'alternate','x-default'),english,`${path} default alternate path`);
+      const switchLabel = lang === 'th' ? 'เปลี่ยนเป็นภาษาอังกฤษ' : 'Switch to Thai';
+      const switches = (html.match(/<a\b[^>]*>/gi) || []).filter(tag => attr(tag,'aria-label').includes(switchLabel));
+      assert(switches.length, `${path} language switch present`);
+      for (const link of switches) {
+        assert.equal(attr(link,'href')[0], lang === 'th' ? english : thai, `${path} language switch destination`);
+      }
       const shareImages = (html.match(/<meta\b[^>]*>/gi) || []).filter(tag => /(?:property="og:image"|name="twitter:image")/i.test(tag));
       for (const tag of shareImages) {
         const url = new URL(attr(tag, 'content')[0]);
