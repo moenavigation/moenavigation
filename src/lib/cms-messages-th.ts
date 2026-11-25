@@ -36,7 +36,7 @@ export const cmsMessagesThai: Record<string, string> = {
   'Choose a prepared MP4 or WebM video up to 4 MB.': 'กรุณาเลือกวิดีโอ MP4 หรือ WebM ที่เตรียมไว้และมีขนาดไม่เกิน 4 MB',
   'The file must contain a valid MP4 or WebM video.': 'ไฟล์ต้องเป็นวิดีโอ MP4 หรือ WebM ที่ถูกต้อง',
   'Choose a prepared video with one silent video track.': 'กรุณาเลือกวิดีโอที่เตรียมไว้ซึ่งมีภาพเพียงหนึ่งแทร็กและไม่มีเสียง',
-  'Choose a prepared video up to 30 seconds and 1280 pixels on its longest side.': 'กรุณาเลือกวิดีโอที่เตรียมไว้ซึ่งยาวไม่เกิน 30 วินาที และมีด้านยาวไม่เกิน 1280 พิกเซล',
+  'Choose a prepared video up to 30 seconds and 1920 pixels on its longest side.': 'กรุณาเลือกวิดีโอที่เตรียมไว้ซึ่งยาวไม่เกิน 30 วินาที และมีด้านยาวไม่เกิน 1920 พิกเซล',
   'This file is still processing. Wait two minutes, then retry the same save.': 'ไฟล์นี้ยังประมวลผลอยู่ กรุณารอสองนาทีแล้วลองบันทึกอีกครั้ง',
   'The upload could not be confirmed. Your prepared file is kept. Wait two minutes, then retry the save.': 'ยังยืนยันผลการอัปโหลดไม่ได้ ระบบเก็บไฟล์ที่เตรียมไว้แล้ว กรุณารอสองนาทีแล้วลองบันทึกอีกครั้ง',
   'Provide both English and Thai labels for a visible statistic.': 'กรอกชื่อสถิติทั้งภาษาอังกฤษและภาษาไทยสำหรับสถิติที่แสดง',

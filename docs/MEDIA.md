@@ -9,6 +9,12 @@ conversion is unsupported, larger, or risks compatibility or quality.
 Preserve transparency, retaining PNG when needed. Finish browser processing
 before upload; upload only after Submit.
 
+Homepage video slides keep up to 1,920 pixels on the longest side without
+upscaling. The editor retains the original video track when it fits, removes
+audio, and compresses larger clips within 4 MiB and 30 seconds. When a longer
+clip has a tight bitrate budget or the device has a lower encoder limit, the
+editor targets 1,280 pixels.
+
 Authorize and validate uploads/saves server-side; keep secrets off the
 client. Preserve input and prepared images, and show clear progress/errors.
 Allow a small, configurable number of user-triggered retries per stage:

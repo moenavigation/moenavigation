@@ -7,7 +7,7 @@ import { Reorder, useDragControls, useReducedMotion } from 'motion/react';
 import { ArrowDown, ArrowUp, Check, FilePlus2, GripVertical, Images, Plus, RefreshCw, Save, Search, Trash2 } from 'lucide-react';
 import { CmsRequestError, cmsErrorText, cmsRequest, prepareCmsImage, resolveSubmission, type PreparedImage } from '@/lib/cms-client';
 import type { HomeSlide, ContentRecord, MediaItem } from '@/lib/cms-types';
-import { includedHomeSlides, getHomeSlides, getHomeSlideInterval, homeSlideVideoPoster } from '@/lib/home-slides';
+import { includedHomeSlides, getHomeSlides, getHomeSlideInterval, homeSlideVideoPoster, homeSlideVideoSources } from '@/lib/home-slides';
 import { useCmsLocale } from '@/lib/cms-locale';
 import { cmsInputPlaceholder } from '@/lib/cms-input-placeholders';
 import Dialog from './Dialog';
@@ -51,7 +51,7 @@ function SlideCard({ slide, index, total, busy, onChange, onMove, onRemove }: { 
       <div className={styles.cardActions}><button type="button" className={styles.iconButton} disabled={busy || index === 0} aria-label={t('Move slide {number} up', { number: index + 1 })} onClick={() => onMove(-1)}><ArrowUp size={18} aria-hidden="true" /></button><button type="button" className={styles.iconButton} disabled={busy || index === total - 1} aria-label={t('Move slide {number} down', { number: index + 1 })} onClick={() => onMove(1)}><ArrowDown size={18} aria-hidden="true" /></button><button type="button" className={styles.iconButton} disabled={busy || total === 1} aria-label={t('Remove slide {number}', { number: index + 1 })} onClick={onRemove}><Trash2 size={18} aria-hidden="true" /></button></div>
     </div>
     <div className={styles.thumbnail}>
-      {video ? <video src={slide.url} poster={poster} muted playsInline controls preload={poster ? "none" : "metadata"} aria-label={description} /> : <><img src={slide.url} alt={locale === 'th' ? slide.altTh : slide.alt} width={600} height={200} loading="lazy" /><span>{String(index + 1).padStart(2, '0')}</span></>}
+      {video ? <video src={homeSlideVideoSources(slide.url)?.desktop ?? slide.url} poster={poster} muted playsInline controls preload={poster ? "none" : "metadata"} aria-label={description} /> : <><img src={slide.url} alt={locale === 'th' ? slide.altTh : slide.alt} width={600} height={200} loading="lazy" /><span>{String(index + 1).padStart(2, '0')}</span></>}
     </div>
     {video && slide.preparedBytes !== undefined && slide.sourceBytes !== undefined && <p className={styles.fileSize}>{t('Original {source} · Upload {output}', { source: fileSize(slide.sourceBytes), output: fileSize(slide.preparedBytes) })}</p>}
     <details className={styles.descriptions}><summary>{t(video ? 'Video descriptions' : 'Image descriptions')}</summary><div>{fields.map(field => <label key={field}>{t(video ? (field === 'alt' ? 'Video description · English' : 'Video description · Thai') : (field === 'alt' ? 'Image description · English' : 'Image description · Thai'))}<input placeholder={cmsInputPlaceholder(field === 'alt' ? 'en' : 'th', field === 'alt' ? 'bannerDescriptionEn' : 'bannerDescriptionTh')} lang={field === 'alt' ? 'en' : 'th'} maxLength={250} value={slide[field]} disabled={busy} onChange={event => onChange(field, event.target.value)} /></label>)}</div></details>

@@ -1,6 +1,6 @@
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { test, expect, refreshPublicCache, E2E_IMAGE_BUFFER, E2E_BASE_URL } from './fixtures';
 import { defaultHomeSlides, fleetPhotoSlides, homeSlideVideoPoster } from '../../src/lib/home-slides';
 
@@ -8,6 +8,59 @@ test.use({ reducedMotion: 'no-preference' });
 
 function slider(page: Page, thai = false) {
   return page.getByRole('region', { name: thai ? 'ภาพบรรยากาศการเดินเรือ' : 'Maritime highlights', exact: true });
+}
+
+// The real media tests exercise decoding. These event tests run independently
+// of the codecs available to each browser, including Windows WebKit.
+async function simulateClipPlayback(page: Page, urls: string[], blocked = false) {
+  await page.addInitScript(({ urls, blocked }) => {
+    function matches(target: EventTarget | null) {
+      const video = target instanceof HTMLSourceElement ? target.parentElement : target;
+      return video instanceof HTMLVideoElement && (urls.includes(video.getAttribute('src') || '')
+        || Array.from(video.querySelectorAll('source')).some(source => urls.includes(source.getAttribute('src') || '')));
+    }
+    window.addEventListener('error', event => {
+      if (matches(event.target)) event.stopImmediatePropagation();
+    }, true);
+    const originalPlay = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function () {
+      if (!matches(this)) return originalPlay.call(this);
+      Object.defineProperty(this, 'error', { configurable: true, value: null });
+      this.dataset.playAttempts = String(Number(this.dataset.playAttempts || 0) + 1);
+      if (blocked) return Promise.reject(new DOMException('Autoplay blocked', 'NotAllowedError'));
+      this.dispatchEvent(new Event('playing'));
+      return Promise.resolve();
+    };
+  }, { urls, blocked });
+}
+
+async function expectClipToAdvance(banner: Locator, nextIndex: number) {
+  const activeVideo = banner.getByRole('group').locator('video');
+  await expect(activeVideo).toHaveAttribute('data-play-attempts', /^[1-9]\d*$/);
+  const play = banner.getByRole('button', { name: 'Play video', exact: true });
+  await expect(play).toHaveCount(0);
+  // Inspect appended nodes as well as the final state to catch a Play button
+  // that appears for a single render between the end event and the next slide.
+  const stopWatching = await banner.evaluateHandle(element => {
+    const selector = 'button[aria-label="Play video"]';
+    let appeared = false;
+    const observer = new MutationObserver(records => {
+      for (const { addedNodes } of records) {
+        for (const node of addedNodes) {
+          if (node instanceof Element && (node.matches(selector) || node.querySelector(selector))) appeared = true;
+        }
+      }
+    });
+    observer.observe(element, { childList: true, subtree: true });
+    return () => { observer.disconnect(); return appeared; };
+  });
+  try {
+    await activeVideo.dispatchEvent('ended');
+    await expect(banner).toHaveAttribute('data-slide-index', String(nextIndex), { timeout: 2500 });
+    expect(await stopWatching.evaluate(stop => stop()), 'the finished clip never offers replay during the transition').toBe(false);
+  } finally {
+    await stopWatching.dispose();
+  }
 }
 
 async function expectHeroLayout(page: Page, ratio: number, thai = false) {
@@ -247,7 +300,7 @@ test('video slides play silently to completion and offer Play for reduced motion
   const url = 'https://res.cloudinary.com/moe-e2e/video/upload/v1/harbor.mp4';
   const bytes = await readFile(path.resolve('tests/fixtures/banner-video.mp4'));
   await page.route('**/video/upload/so_0/**', route => route.fulfill({ contentType: 'image/png', body: E2E_IMAGE_BUFFER }));
-  await page.route(url, route => {
+  await page.route('**/video/upload/**/harbor.mp4', route => {
     const range = route.request().headers().range?.match(/^bytes=(\d+)-(\d*)$/);
     if (!range) return route.fulfill({ contentType: 'video/mp4', body: bytes });
     const start = Number(range[1]);
@@ -305,8 +358,10 @@ test('video slides play silently to completion and offer Play for reduced motion
   await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime > 0 && element.muted && !element.paused && !element.controls)).toBe(true);
   await expect(play).toHaveCount(0);
   await expect(pause).toHaveCount(0);
-  await carousel.getByRole('button', { name: 'แสดงสไลด์ 2', exact: true }).click();
-  await expect(video).toHaveCount(0);
+  await video.evaluate((element: HTMLVideoElement) => { element.currentTime = element.duration - 0.25; });
+  await expect(carousel).toHaveAttribute('data-slide-index', '1');
+  await expect(carousel).toHaveAttribute('data-autoplay', 'false');
+  await expect(play).toHaveCount(0);
   await carousel.getByRole('button', { name: 'แสดงสไลด์ 1', exact: true }).click();
   await page.getByRole('banner').hover();
   await page.emulateMedia({ reducedMotion: 'no-preference' });
@@ -315,26 +370,95 @@ test('video slides play silently to completion and offer Play for reduced motion
   await expect(carousel).toHaveAttribute('data-slide-index', '1');
 });
 
+test('a finished video advances while hovered and the last video wraps with keyboard focus', async ({ page, db }) => {
+  const [lead, photo, last] = defaultHomeSlides;
+  await db.collection<{ _id: string }>('moe_content').updateOne({ _id: 'Page:home' }, { $set: {
+    heroSlides: [lead, photo, last], heroSlideInterval: 15,
+  } });
+  await refreshPublicCache();
+  await simulateClipPlayback(page, [lead.url, last.url]);
+  await page.goto('/');
+  const carousel = slider(page);
+  await carousel.hover();
+  await expect(carousel).toHaveAttribute('data-autoplay', 'false');
+  await expectClipToAdvance(carousel, 1);
+  await expect(carousel.getByRole('img')).toHaveAttribute('alt', photo.alt);
+
+  await page.getByRole('banner').hover();
+  const secondDot = carousel.getByRole('button', { name: 'Show slide 2', exact: true });
+  await secondDot.press('ArrowRight');
+  await expect(secondDot).toBeFocused();
+  await expect(carousel).toHaveAttribute('data-slide-index', '2');
+  await expect(carousel).toHaveAttribute('data-autoplay', 'false');
+  await expectClipToAdvance(carousel, 0);
+  await expect(carousel.getByRole('group').locator('video')).toHaveAttribute('aria-label', lead.alt);
+  await expect(carousel.locator('button:focus')).toHaveCount(1);
+
+  // A drag started on the finished clip advances the carousel only once.
+  const frame = (await carousel.boundingBox())!;
+  const y = frame.y + frame.height / 3;
+  await page.mouse.move(frame.x + frame.width * 0.6, y);
+  await page.mouse.down();
+  await expectClipToAdvance(carousel, 1);
+  await page.mouse.move(frame.x + frame.width * 0.4, y, { steps: 4 });
+  await page.mouse.up();
+  await expect(carousel).toHaveAttribute('data-slide-index', '1');
+});
+
+test('manually finishing a video in reduced motion advances once and leaves the following still in place', async ({ page, db }) => {
+  const [clip, photo] = defaultHomeSlides;
+  await db.collection<{ _id: string }>('moe_content').updateOne({ _id: 'Page:home' }, { $set: {
+    heroSlides: [clip, photo], heroSlideInterval: 2,
+  } });
+  await refreshPublicCache();
+  await simulateClipPlayback(page, [clip.url]);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  const carousel = slider(page);
+  const play = carousel.getByRole('button', { name: 'Play video', exact: true });
+  await expect(play).toBeVisible();
+  await expect(carousel.locator('video')).not.toHaveAttribute('data-play-attempts', /.+/);
+  await play.press('Enter');
+  await expectClipToAdvance(carousel, 1);
+  await expect(carousel.getByRole('img')).toHaveAttribute('alt', photo.alt);
+  // Move keyboard focus outside the banner so only the motion preference holds the still.
+  const header = page.getByRole('banner');
+  await header.hover();
+  await header.getByRole('link').first().focus();
+  await expect(carousel).toBeInViewport({ ratio: 0.15 });
+  await expect(carousel).toHaveAttribute('data-autoplay', 'false');
+  await page.clock.install();
+  await page.clock.fastForward(6000);
+  await expect(carousel).toHaveAttribute('data-slide-index', '1');
+});
+
+test('a single video loops automatically and permits replay after a reduced-motion viewer starts it', async ({ page, db }) => {
+  const clip = defaultHomeSlides[0];
+  await db.collection<{ _id: string }>('moe_content').updateOne({ _id: 'Page:home' }, { $set: { heroSlides: [clip] } });
+  await refreshPublicCache();
+  await simulateClipPlayback(page, [clip.url]);
+  await page.goto('/');
+  const carousel = slider(page);
+  const video = carousel.locator('video');
+  await expect(video).toHaveJSProperty('loop', true);
+  await expect(video).toHaveAttribute('data-play-attempts', /^[1-9]\d*$/);
+  await expect(carousel.getByRole('button')).toHaveCount(0);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const play = carousel.getByRole('button', { name: 'Play video', exact: true });
+  await expect(play).toBeVisible();
+  await expect(video).toHaveJSProperty('loop', false);
+  await play.press('Enter');
+  await expect(play).toHaveCount(0);
+  await video.dispatchEvent('ended');
+  await expect(play).toBeVisible();
+  await expect(carousel).toHaveAttribute('data-slide-index', '0');
+});
+
 test('blocked video autoplay offers Play to retry without a Pause control', async ({ page, db }) => {
   const clip = defaultHomeSlides[0];
   await db.collection<{ _id: string }>('moe_content').updateOne({ _id: 'Page:home' }, { $set: { heroSlides: [clip] } });
   await refreshPublicCache();
-  await page.addInitScript(url => {
-    // Exercise a permission rejection in isolation: Windows WebKit can report
-    // a decoder error even before play(). The real-clip test covers that path.
-    window.addEventListener('error', event => {
-      if (event.target instanceof HTMLVideoElement && event.target.getAttribute('src') === url) event.stopImmediatePropagation();
-    }, true);
-    const originalPlay = HTMLMediaElement.prototype.play;
-    HTMLMediaElement.prototype.play = function () {
-      if (this.getAttribute('src') === url) {
-        Object.defineProperty(this, 'error', { configurable: true, value: null });
-        this.dataset.playAttempts = String(Number(this.dataset.playAttempts || 0) + 1);
-        return Promise.reject(new DOMException('Autoplay blocked', 'NotAllowedError'));
-      }
-      return originalPlay.call(this);
-    };
-  }, clip.url);
+  await simulateClipPlayback(page, [clip.url], true);
   await page.goto('/');
   const carousel = slider(page);
   const attempts = () => carousel.locator('video').getAttribute('data-play-attempts').then(Number);
@@ -391,7 +515,7 @@ test.describe('bundled owner banners', () => {
     // decoded video across reloads without issuing another HTTP request.
     const unavailable = defaultHomeSlides[2];
     let failedRequests = 0;
-    await page.route('**' + unavailable.url, route => {
+    await page.route('**/video-moe-line-4*.mp4', route => {
       failedRequests++;
       return route.fulfill({ status: 404, headers: { 'Cache-Control': 'no-store' } });
     });

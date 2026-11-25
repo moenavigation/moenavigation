@@ -79,7 +79,7 @@ test('a device video is compressed locally, saved as a video, and available in t
     });
     await route.continue();
   });
-  await file.setInputFiles(path.resolve('tests/fixtures/banner-video.mp4'));
+  await file.setInputFiles(path.resolve('tests/fixtures/oversized-slide.mp4'));
   const hasEncoder = await page.evaluate(() => typeof VideoEncoder !== 'undefined');
   if (!hasEncoder) {
     await expect(page.getByText('This browser could not compress this video. Try another browser or choose a different clip.', { exact: true })).toBeVisible();
@@ -98,7 +98,7 @@ test('a device video is compressed locally, saved as a video, and available in t
     const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
     return Array.from(hash, byte => byte.toString(16).padStart(2, '0')).join('');
   });
-  if (hasEncoder) await expect.poll(() => preview.evaluate((video: HTMLVideoElement) => video.videoWidth)).toBe(1280);
+  if (hasEncoder) await expect.poll(() => preview.evaluate((video: HTMLVideoElement) => video.videoWidth)).toBe(1920);
   expect(uploads).toBe(0);
   await cards.last().locator('summary').click();
   await cards.last().getByLabel('Video description · English').fill('A ship entering the harbor');
@@ -310,7 +310,10 @@ test('a removed included banner can be found and added again after saving', asyn
   const included = picker.getByRole('region', { name: 'Included banners', exact: true });
   await expect(included.getByRole('button')).toHaveCount(includedHomeSlides.length);
   await expect(included.getByRole('button', { name: fleetPhotoSlides[1].alt, exact: true })).toBeDisabled();
-  await picker.getByLabel('Search banners', { exact: true }).fill(fleetPhotoSlides[0].alt);
+  const search = picker.getByRole('searchbox', { name: 'Search banners', exact: true });
+  await search.click();
+  await search.pressSequentially('carrying containers along the coast');
+  await expect(search).toHaveValue('carrying containers along the coast');
   await expect(included.getByRole('button')).toHaveCount(1);
   await included.getByRole('button', { name: fleetPhotoSlides[0].alt, exact: true }).click();
   await expect(picker).not.toBeVisible();

@@ -1,6 +1,8 @@
 # Homepage banner media
 
-The November 2026 owner delivery supplies the opening carousel. It alternates a DUMAI MOE tanker clip, a dated MOE LINE 3 archive photograph, footage of the MOE LINE 4 crane barge, a DUMAI MOE anchorage photograph and an aerial view of a container terminal. Each silent video has a still poster from its first frame. The crops were checked at 3:1 and 16:9. Reduced-motion visitors can start the videos themselves.
+The default carousel alternates a DUMAI MOE tanker clip, a dated MOE LINE 3 archive photograph, footage of the MOE LINE 4 crane barge, a DUMAI MOE anchorage photograph and an aerial view of a container terminal. Each silent video has a still poster from its first frame. The crops were checked at 3:1 and 16:9. Reduced-motion visitors can start the videos themselves.
+
+On 25 November 2026 the published carousel used the owner's river approach, river bridge, MOE LINE 3 photograph, Ranong Port, DUMAI MOE and MOE LINE 4 selections, in that order. All five videos have 2560-pixel-wide desktop exports made from their original 4K footage. DUMAI MOE keeps its 2560 × 1152 crop and the other four are 2560 × 1440. At viewport widths up to 700 pixels, the three uploaded clips use 1280 × 720 renditions and the two bundled clips use their existing 1920-pixel versions. The CMS stores one selection per clip.
 
 | Edited video | Owner source | Source interval |
 | --- | --- | --- |
@@ -8,7 +10,7 @@ The November 2026 owner delivery supplies the opening carousel. It alternates a 
 | MOE LINE 4 | `06 Oct 2023/DJI_0292.MP4` | 00:03–00:13 |
 | Container terminal | `07 Oct 2023/DJI_0329.MP4` | 00:03–00:13 |
 
-The camera delivery included duplicate files, alternate JPEG edits, flight subtitles and proxy videos. The public exports omit GPS metadata, flight subtitles and the source audio. The March 2025 footage shows a residential flight. The missing `DJI_0324.JPG` was represented by a download-error notice. Source filenames and hashes for all 19 selected stills are in the [media manifest](../../scripts/data/media-manifest.json).
+The earlier camera delivery included duplicate files, alternate JPEG edits, flight subtitles and proxy videos. Its March 2025 residential flight was excluded. The public exports omit GPS metadata, flight subtitles and the source audio. The missing `DJI_0324.JPG` was represented by a download-error notice. Source filenames and hashes for all 19 selected stills are in the [media manifest](../../scripts/data/media-manifest.json).
 
 ## Earlier optional banners
 
@@ -50,7 +52,7 @@ The historical generation manifest records the original prompts, source paths, d
 
 ## Homepage and CMS integration
 
-The homepage now starts with a full-width 3:1 banner, with centered headline, description, and actions underneath. At widths up to 700px the banner becomes 16:9 by removing the left and right edges. Motion provides the crossfade and CMS card reordering. The slider shows centered slide indicators, with keyboard navigation, mouse dragging, touch swipes, and reduced-motion preferences. Drag left for the next image or right for the previous image. Hover and dragging pause rotation temporarily. Autoplay resumes with a fresh interval when the pointer leaves, including after selecting or dragging a slide; touch interactions resume after release. Keyboard navigation pauses rotation until focus leaves the slider. Short movements do not change slides, and vertical touch scrolling and pinch zoom remain available. Video banners play silently inline and advance after the clip ends. Visitors who prefer reduced motion see the poster and can choose Play. Play is also available if the browser blocks autoplay.
+The homepage now starts with a full-width 3:1 banner, with centered headline, description, and actions underneath. At widths up to 700px the banner becomes 16:9 by removing the left and right edges. Motion provides the crossfade and CMS card reordering. The slider shows centered slide indicators, with keyboard navigation, mouse dragging, touch swipes, and reduced-motion preferences. Drag left for the next image or right for the previous image. Hover and dragging pause the timer on still images. Autoplay resumes with a fresh interval when the pointer leaves, including after selecting or dragging a slide; touch interactions resume after release. Keyboard navigation also pauses that timer until focus leaves the slider. Short movements do not change slides, and vertical touch scrolling and pinch zoom remain available. Video banners play silently inline. When a clip finishes, it crossfades directly to the next slide, including from the last slide back to the first. Visitors who prefer reduced motion can choose Play on the poster. When that clip finishes, the next slide appears without animation. Play is also available if the browser blocks autoplay.
 
 Manage the slides at `/cms/slides` (CMS → Homepage slides). The page uses one main column with multiple slide cards per row when space allows. Drag cards within or between rows to reorder, add a device image or video, or choose saved media from the library, and save. Each card shows the full banner thumbnail; open the public homepage to check its mobile crop. The default interval is three seconds and can be adjusted from two to fifteen seconds. Included banners remain available in the image picker after removal. The manager preserves unsaved work during CMS navigation and same-account session recovery.
 

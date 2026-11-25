@@ -76,7 +76,7 @@ export async function validatePreparedMedia(data: Buffer, mime: string): Promise
     // Frame-rate conversion can round the final timestamp up by part of a frame.
     if (![width, height, duration].every(value => Number.isFinite(value) && value > 0)
       || Math.max(width, height) > MAX_SLIDE_VIDEO_SIDE || duration > MAX_SLIDE_VIDEO_SECONDS + 0.1) {
-      throw new HttpError(400, 'Choose a prepared video up to 30 seconds and 1280 pixels on its longest side.');
+      throw new HttpError(400, `Choose a prepared video up to ${MAX_SLIDE_VIDEO_SECONDS} seconds and ${MAX_SLIDE_VIDEO_SIDE} pixels on its longest side.`);
     }
     return 'video';
   } catch (error) {

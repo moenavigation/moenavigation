@@ -36,20 +36,36 @@ export async function prepareCmsVideo(file: File, { signal, onProgress }: Prepar
     if (!Number.isFinite(duration) || duration <= 0 || !sourceWidth || !sourceHeight) throw new VideoPreparationError(unreadable);
     if (duration > MAX_SLIDE_VIDEO_SECONDS + 0.000001) throw new VideoPreparationError('Choose a video no longer than 30 seconds.');
 
-    const scale = Math.min(1, MAX_SLIDE_VIDEO_SIDE / Math.max(sourceWidth, sourceHeight));
     const stats = await track.computePacketStats();
     const frameRate = Math.min(30, Math.max(1, stats.averagePacketRate || 30));
     // Reserve room for container overhead and the encoder's variable bitrate.
-    const uploadBitrate = Math.min(2_500_000, MAX_SLIDE_VIDEO_BYTES * 8 * 0.82 / duration);
+    const uploadBitrate = Math.min(5_000_000, MAX_SLIDE_VIDEO_BYTES * 8 * 0.82 / duration);
     const bitrate = Math.floor(Math.min(uploadBitrate, Math.max(100_000, stats.averageBitrate * 0.85)));
     const quality = new Quality({ bitrate });
     // A small, already-efficient video track can keep its exact picture quality.
     // It is still repackaged locally to remove audio and source metadata.
-    const canCopy = scale === 1 && file.size <= MAX_SLIDE_VIDEO_BYTES && stats.averagePacketRate <= 30
-      && stats.averageBitrate <= uploadBitrate * 0.65 && (sourceCodec === 'avc' || sourceCodec === 'vp9' || sourceCodec === 'vp8');
-    const width = canCopy ? sourceWidth : Math.max(2, Math.round(sourceWidth * scale / 2) * 2);
-    const height = canCopy ? sourceHeight : Math.max(2, Math.round(sourceHeight * scale / 2) * 2);
-    const codec = canCopy ? sourceCodec : await getFirstEncodableVideoCodec(['avc', 'vp9', 'vp8'], { width, height, frameRate, quality });
+    const longestSide = Math.max(sourceWidth, sourceHeight);
+    const videoBytes = stats.averageBitrate * duration / 8;
+    const canCopy = longestSide <= MAX_SLIDE_VIDEO_SIDE && stats.averagePacketRate <= 30.001
+      && videoBytes <= MAX_SLIDE_VIDEO_BYTES * 0.98 && (sourceCodec === 'avc' || sourceCodec === 'vp9' || sourceCodec === 'vp8');
+    const dimensions = (side: number) => {
+      const scale = Math.min(1, side / longestSide);
+      return {
+        width: Math.max(2, Math.round(sourceWidth * scale / 2) * 2),
+        height: Math.max(2, Math.round(sourceHeight * scale / 2) * 2),
+      };
+    };
+    // Long clips share the same upload allowance. At very low bitrates a
+    // 1080p encode can lose detail and exceed the byte budget on busy footage.
+    const encodeSide = uploadBitrate < 1_500_000 ? 1280 : MAX_SLIDE_VIDEO_SIDE;
+    let { width, height } = canCopy ? { width: sourceWidth, height: sourceHeight } : dimensions(encodeSide);
+    const encoderForSize = () => getFirstEncodableVideoCodec(['avc', 'vp9', 'vp8'], { width, height, frameRate, quality });
+    let codec = canCopy ? sourceCodec : await encoderForSize();
+    // An older device may support the previous 720p size but lack a 1080p encoder.
+    if (!codec && Math.max(width, height) > 1280) {
+      ({ width, height } = dimensions(1280));
+      codec = await encoderForSize();
+    }
     if (!codec) throw new VideoPreparationError(unsupported);
     const mp4 = codec === 'avc';
     const target = new BufferTarget();

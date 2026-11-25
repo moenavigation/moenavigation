@@ -30,6 +30,7 @@ export const defaultHomeSlides: readonly HomeSlide[] = [
 ];
 export const includedHomeSlides: readonly HomeSlide[] = [...defaultHomeSlides, ...fleetPhotoSlides];
 const videoPosters = new Map(ownerVideos.map(video => [video.url, video.poster]));
+const desktopVideos = new Map(ownerVideos.map(video => [video.url, video.desktopUrl]));
 const includedPhotoUrls = new Set([...fleetPhotoSlides, ...ownerPhotoSlides].map(slide => slide.url));
 const fleetPhotoUrls = new Set(fleetPhotoSlides.map(slide => slide.url));
 export function isBundledHomeSlide(url: string, kind?: HomeSlide['kind']) {
@@ -51,6 +52,14 @@ export function homeSlideVideoPoster(url: string): string | undefined {
   if (poster) return poster;
   if (!/^https:\/\/res\.cloudinary\.com\/[^/]+\/video\/upload\/.+\.(?:mp4|webm)$/i.test(url)) return undefined;
   return url.replace('/video/upload/', '/video/upload/so_0/').replace(/\.(mp4|webm)$/i, '.jpg');
+}
+
+export function homeSlideVideoSources(url: string) {
+  const desktop = desktopVideos.get(url);
+  if (desktop) return { mobile: url, desktop };
+  if (/^https:\/\/res\.cloudinary\.com\/[^/]+\/video\/upload\/v\d+\/.+\.mp4$/i.test(url)) {
+    return { mobile: url.replace('/video/upload/', '/video/upload/c_limit,w_1280/'), desktop: url };
+  }
 }
 
 export function getHomeSlides(record?: Pick<ContentRecord, 'heroSlides'>): HomeSlide[] {

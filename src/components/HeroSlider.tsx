@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion } from "motion/react";
 import { Play } from "lucide-react";
 import type { HomeSlide } from "@/lib/cms-types";
-import { homeSlideVideoPoster, isBundledHomeSlide, mobileHomeSlidePhoto } from "@/lib/home-slides";
+import { homeSlideVideoPoster, homeSlideVideoSources, isBundledHomeSlide, mobileHomeSlidePhoto } from "@/lib/home-slides";
 import { local, type Locale } from "@/lib/content";
 import styles from "./HeroSlider.module.css";
 
@@ -19,6 +19,18 @@ const reducedMotionSnapshot = () => window.matchMedia(reducedMotionQuery).matche
 // Keep the server and first client render paused until the preference is known.
 const serverReducedMotionSnapshot = () => undefined;
 
+function playClip(element: HTMLVideoElement) {
+  // Some browsers inspect sources even with preload="none". Retry selection
+  // when a viewer starts a clip that previously had no available source.
+  if (element.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) element.load();
+  return element.play();
+}
+
+function playbackFailure(element: HTMLVideoElement, error: DOMException) {
+  if (error.name === "NotAllowedError") return "blocked";
+  return element.error || element.networkState === HTMLMediaElement.NETWORK_NO_SOURCE || error.name === "NotSupportedError" ? "error" : "blocked";
+}
+
 export default function HeroSlider({ slides, intervalSeconds, locale }: {
   slides: HomeSlide[];
   intervalSeconds: number;
@@ -30,17 +42,19 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
   const [dragging, setDragging] = useState(false);
   const [visible, setVisible] = useState(true);
   const [inView, setInView] = useState(true);
-  const [videoMode, setVideoMode] = useState<"auto" | "play" | "ended" | "blocked" | "error">("auto");
+  const [videoMode, setVideoMode] = useState<"auto" | "play" | "blocked" | "error">("auto");
   const [outgoingVideo, setOutgoingVideo] = useState<string>();
   const reducedMotion = useSyncExternalStore<boolean | undefined>(subscribeReducedMotion, reducedMotionSnapshot, serverReducedMotionSnapshot);
   const root = useRef<HTMLDivElement>(null);
   const indicators = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
-  const gesture = useRef<{ pointerId: number; x: number; y: number } | null>(null);
+  const gesture = useRef<{ pointerId: number; slideIndex: number; x: number; y: number } | null>(null);
   const activeIndex = index % slides.length;
   const activeVideo = slides[activeIndex]?.kind === "video" ? slides[activeIndex].url : undefined;
+  const nextSlide = slides.length > 1 ? slides[(activeIndex + 1) % slides.length] : undefined;
+  const nextPoster = nextSlide?.kind === "video" ? homeSlideVideoPoster(nextSlide.url) : undefined;
   const playVideo = visible && inView && (videoMode === "play" || (videoMode === "auto" && reducedMotion === false));
-  const showPlayButton = activeVideo && (videoMode === "blocked" || videoMode === "ended" || (videoMode === "auto" && reducedMotion === true));
+  const showPlayButton = activeVideo && (videoMode === "blocked" || (videoMode === "auto" && reducedMotion === true));
   const canPlay = slides.length > 1 && reducedMotion === false;
   const rotating = canPlay && !keyboardPaused && !hovered && !dragging && visible && inView;
 
@@ -66,8 +80,8 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
     if (element.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) watchStall();
     element.addEventListener("waiting", watchStall);
     element.addEventListener("playing", clearStall);
-    element.play().catch(() => {
-      if (!cancelled) setVideoMode(element.error ? "error" : "blocked");
+    playClip(element).catch((error: DOMException) => {
+      if (!cancelled && video.current === element && error.name !== "AbortError") setVideoMode(playbackFailure(element, error));
     });
     return () => {
       cancelled = true;
@@ -79,12 +93,17 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
   }, [activeVideo, playVideo]);
 
   useEffect(() => {
-    if (!rotating || (activeVideo && !["ended", "blocked", "error"].includes(videoMode))) return;
+    // Have the next clip's first frame ready to crossfade without loading its video.
+    if (nextPoster && visible && inView) new window.Image().src = nextPoster;
+  }, [nextPoster, visible, inView]);
+
+  useEffect(() => {
+    if (!rotating || (activeVideo && videoMode !== "blocked" && videoMode !== "error")) return;
     const timer = window.setTimeout(() => {
       setOutgoingVideo(activeVideo);
       setIndex(current => (current + 1) % slides.length);
       setVideoMode("auto");
-    }, activeVideo && videoMode === "ended" ? 0 : intervalSeconds * 1000);
+    }, intervalSeconds * 1000);
     return () => window.clearTimeout(timer);
   }, [rotating, index, intervalSeconds, slides.length, activeVideo, videoMode]);
 
@@ -114,10 +133,15 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
       (indicator ?? root.current).focus({ preventScroll: true });
     }
     // Call play inside the click so browsers requiring a user gesture can start.
-    void element.play().catch((error: DOMException) => {
-      if (error.name !== "AbortError" && video.current === element) setVideoMode(element.error ? "error" : "blocked");
+    void playClip(element).catch((error: DOMException) => {
+      if (error.name !== "AbortError" && video.current === element) setVideoMode(playbackFailure(element, error));
     });
     setVideoMode("play");
+  }
+
+  function finishVideo() {
+    if (slides.length > 1) select(activeIndex + 1);
+    else setVideoMode("auto");
   }
 
   function cancelGesture(element: HTMLDivElement) {
@@ -156,7 +180,7 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
       if (event.button !== 0) return;
       setKeyboardPaused(false);
       if (slides.length < 2 || (event.target as Element).closest("button")) return;
-      gesture.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+      gesture.current = { pointerId: event.pointerId, slideIndex: activeIndex, x: event.clientX, y: event.clientY };
       setDragging(true);
       // Touch and pen pointers have implicit capture; mouse drags need it
       // explicitly so releasing outside the banner still completes the gesture.
@@ -178,13 +202,14 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
       if (!start || start.pointerId !== event.pointerId) return;
       cancelGesture(event.currentTarget);
       const dx = event.clientX - start.x, dy = event.clientY - start.y;
-      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.5) select(activeIndex + (dx < 0 ? 1 : -1));
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.5) select(start.slideIndex + (dx < 0 ? 1 : -1));
     }}
   >
     <div className={styles.images} aria-live={rotating ? "off" : "polite"} aria-atomic="false">
       {slides.map((slide, position) => {
         const mobilePhoto = mobileHomeSlidePhoto(slide.url);
         const isVideo = slide.kind === "video";
+        const sources = isVideo ? homeSlideVideoSources(slide.url) : undefined;
         const poster = isVideo ? homeSlideVideoPoster(slide.url) : undefined;
         const description = (locale === "th" ? slide.altTh : slide.alt) || slide.alt || slide.altTh;
         const showPoster = position === activeIndex && videoMode === "error" && poster;
@@ -205,11 +230,19 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
       >
         {showPoster ? <Image src={poster} alt={description} fill unoptimized draggable={false} />
           : isVideo ? ((position === activeIndex || slide.url === outgoingVideo) && <video
-          ref={position === activeIndex ? video : undefined} src={slide.url} poster={poster} muted playsInline
+          ref={position === activeIndex ? video : undefined} src={sources ? undefined : slide.url} poster={poster} muted playsInline
           preload="none" loop={slides.length === 1 && reducedMotion === false}
           aria-label={description || local(locale, "Maritime video", "วิดีโอการเดินเรือ")}
-          onEnded={position === activeIndex ? () => setVideoMode("ended") : undefined}
-          onError={position === activeIndex ? () => setVideoMode("error") : undefined} />)
+          onEnded={position === activeIndex ? finishVideo : undefined}
+          onError={position === activeIndex && playVideo ? event => {
+            if (event.target === event.currentTarget) setVideoMode("error");
+          } : undefined}>
+          {sources && <>
+            <source media="(max-width: 700px)" src={sources.mobile} type="video/mp4" />
+            <source src={sources.desktop} type="video/mp4"
+              onError={position === activeIndex && playVideo ? () => setVideoMode("error") : undefined} />
+          </>}
+        </video>)
           : <picture>
           {mobilePhoto && <source media="(max-width: 700px)" srcSet={mobilePhoto} />}
           <Image src={slide.url} alt={description}

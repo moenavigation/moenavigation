@@ -1,12 +1,14 @@
 [
   {
     "url": "/images/owner-media/video-dumai-moe.mp4",
+    "desktopUrl": "/images/owner-media/video-dumai-moe-2560.mp4",
     "poster": "/images/owner-media/poster-dumai-moe.webp",
     "alt": "Aerial view of the red-hulled tanker DUMAI MOE in coastal waters",
     "altTh": "ภาพมุมสูงของเรือบรรทุกน้ำมัน DUMAI MOE ตัวเรือสีแดงในน่านน้ำชายฝั่ง"
   },
   {
     "url": "/images/owner-media/video-moe-line-4.mp4",
+    "desktopUrl": "/images/owner-media/video-moe-line-4-2560.mp4",
     "poster": "/images/owner-media/poster-moe-line-4.webp",
     "alt": "The MOE LINE 4 crane barge alongside a cargo vessel at a river terminal",
     "altTh": "เรือเครนโมไลน์ 4 เทียบข้างเรือสินค้าที่ท่าเรือริมแม่น้ำ"

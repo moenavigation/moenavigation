@@ -7,7 +7,7 @@ const seen=new Set();
 const assets=new Set();
 const photoManifest = JSON.parse(readFileSync(new URL('./data/media-manifest.json', import.meta.url), 'utf8'));
 const ownerVideos = JSON.parse(readFileSync(new URL('../src/lib/owner-videos.json', import.meta.url), 'utf8'));
-const bundledVideos = new Set(ownerVideos.map(video => video.url));
+const bundledVideos = new Set(ownerVideos.flatMap(video => video.desktopUrl ? [video.url, video.desktopUrl] : [video.url]));
 const videoAssets = new Set(bundledVideos);
 const mobileOwnerPhotos = [
   '/images/owner-media/mobile-archive-moe-line-3-underway.webp',
@@ -104,7 +104,7 @@ while(queue.length) {
       .split(/,\s*(?=https?:\/\/|\/images\/|\/_next\/)/i)
       .map(candidate => candidate.trim().split(/\s+/)[0]));
     const mediaSources = [...['src','poster','content'].flatMap(name => attr(html,name)), ...sourceSets];
-    const videoSources = new Set((html.match(/<video\b[^>]*>/gi) || []).flatMap(tag => attr(tag, 'src')));
+    const videoSources = new Set((html.match(/<video\b[^>]*>[\s\S]*?<\/video>/gi) || []).flatMap(video => attr(video, 'src')));
     for(let src of mediaSources) {
       if (src.startsWith('/_next/image?')) src = new URL(src,base).searchParams.get('url') || '';
       if(src.startsWith('/images/') || src.startsWith(siteOrigin+'/images/')) {

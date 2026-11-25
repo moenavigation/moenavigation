@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import type { ClientSession, Db } from 'mongodb';
 import type { ContentRecord } from '../src/lib/cms-types';
-import { defaultHomeSlides, fleetPhotoSlides, getHomeSlides, getHomeSlideInterval, homeSlideVideoPoster, isBundledHomeSlide, mobileHomeSlidePhoto, ownerPhotoSlides, ownerVideoSlides } from '../src/lib/home-slides';
+import { defaultHomeSlides, fleetPhotoSlides, getHomeSlides, getHomeSlideInterval, homeSlideVideoPoster, homeSlideVideoSources, isBundledHomeSlide, mobileHomeSlidePhoto, ownerPhotoSlides, ownerVideoSlides } from '../src/lib/home-slides';
 import { saveHomeSlidesSchema, saveSchema } from '../src/lib/validation';
 import { mapRecordImages, recordImageUrls } from '../src/lib/cms-client';
 import { cleanContentRecord, saveContentInTransaction } from '../src/server/content';
@@ -93,6 +93,28 @@ test('each included owner clip is a silent H.264 MP4 with a real poster and exac
       const duration = await input.computeDuration();
       assert(duration > 0 && duration <= 30);
     } finally { input.dispose(); }
+  }
+});
+
+test('wider desktop footage keeps a smaller phone source and the original CMS selection', async () => {
+  const { BufferSource, Input, MP4 } = await import('mediabunny');
+  for (const [slide, desktopHeight] of [[ownerVideoSlides[0], 1152], [ownerVideoSlides[1], 1440]] as const) {
+    const sources = homeSlideVideoSources(slide.url);
+    assert(sources);
+    assert.equal(sources.mobile, slide.url);
+    const input = new Input({ formats: [MP4], source: new BufferSource(await readFile(`public${sources.desktop}`)) });
+    try {
+      const track = await input.getPrimaryVideoTrack();
+      assert(track);
+      assert.deepEqual(await Promise.all([track.getDisplayWidth(), track.getDisplayHeight(), track.getCodec()]), [2560, desktopHeight, 'avc']);
+      assert.equal((await input.getAudioTracks()).length, 0);
+    } finally { input.dispose(); }
+  }
+  const cloud = 'https://res.cloudinary.com/test/video/upload/';
+  const original = cloud + 'v123/moe-navigation/clip.mp4';
+  assert.deepEqual(homeSlideVideoSources(original), { mobile: cloud + 'c_limit,w_1280/v123/moe-navigation/clip.mp4', desktop: original });
+  for (const url of [cloud + 'c_crop/v123/clip.mp4', original.replace('.mp4', '.webm'), 'https://example.com/clip.mp4', ownerVideoSlides[2].url]) {
+    assert.equal(homeSlideVideoSources(url), undefined);
   }
 });
 
@@ -188,6 +210,7 @@ test('uncertain slider saves retry idempotently even after a later copy edit', a
 });
 
 test('slide uploads verify the actual container and silent video track before provider upload', async () => {
+  // The prepared MP4 is exactly at the 1920-pixel limit; the WebM is smaller.
   for (const format of ['mp4', 'webm']) {
     const clip = await readFile(new URL(`./fixtures/prepared-slide.${format}`, import.meta.url));
     assert.equal(await validatePreparedMedia(clip, `video/${format}`), 'video');
@@ -196,6 +219,8 @@ test('slide uploads verify the actual container and silent video track before pr
   }
   const original = await readFile(new URL('./fixtures/banner-video.mp4', import.meta.url));
   await assert.rejects(validatePreparedMedia(original, 'video/mp4'), /silent video track/);
+  const oversized = await readFile(new URL('./fixtures/oversized-slide.mp4', import.meta.url));
+  await assert.rejects(validatePreparedMedia(oversized, 'video/mp4'), /1920 pixels/);
   await assert.rejects(validatePreparedMedia(Buffer.from('invalid'), 'video/webm'), HttpError);
   await assert.rejects(validatePreparedMedia(Buffer.alloc(4 * 1024 * 1024 + 1), 'video/mp4'), /4 MB/);
 });

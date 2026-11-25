@@ -1,3 +1,3 @@
 export const MAX_SLIDE_VIDEO_BYTES = 4 * 1024 * 1024;
 export const MAX_SLIDE_VIDEO_SECONDS = 30;
-export const MAX_SLIDE_VIDEO_SIDE = 1280;
+export const MAX_SLIDE_VIDEO_SIDE = 1920;
