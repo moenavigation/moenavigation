@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion } from "motion/react";
-import { Pause, Play } from "lucide-react";
+import { Play } from "lucide-react";
 import type { HomeSlide } from "@/lib/cms-types";
 import { homeSlideVideoPoster, isBundledHomeSlide, mobileHomeSlidePhoto } from "@/lib/home-slides";
 import { local, type Locale } from "@/lib/content";
@@ -17,7 +17,7 @@ function subscribeReducedMotion(listener: () => void) {
 }
 const reducedMotionSnapshot = () => window.matchMedia(reducedMotionQuery).matches;
 // Keep the server and first client render paused until the preference is known.
-const serverReducedMotionSnapshot = () => true;
+const serverReducedMotionSnapshot = () => undefined;
 
 export default function HeroSlider({ slides, intervalSeconds, locale }: {
   slides: HomeSlide[];
@@ -30,18 +30,19 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
   const [dragging, setDragging] = useState(false);
   const [visible, setVisible] = useState(true);
   const [inView, setInView] = useState(true);
-  const [videoMode, setVideoMode] = useState<"auto" | "play" | "pause" | "ended" | "blocked" | "error">("auto");
+  const [videoMode, setVideoMode] = useState<"auto" | "play" | "ended" | "blocked" | "error">("auto");
   const [outgoingVideo, setOutgoingVideo] = useState<string>();
-  const reducedMotion = useSyncExternalStore(subscribeReducedMotion, reducedMotionSnapshot, serverReducedMotionSnapshot);
+  const reducedMotion = useSyncExternalStore<boolean | undefined>(subscribeReducedMotion, reducedMotionSnapshot, serverReducedMotionSnapshot);
   const root = useRef<HTMLDivElement>(null);
   const indicators = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
   const gesture = useRef<{ pointerId: number; x: number; y: number } | null>(null);
   const activeIndex = index % slides.length;
   const activeVideo = slides[activeIndex]?.kind === "video" ? slides[activeIndex].url : undefined;
-  const playVideo = visible && inView && (videoMode === "play" || (videoMode === "auto" && !reducedMotion));
+  const playVideo = visible && inView && (videoMode === "play" || (videoMode === "auto" && reducedMotion === false));
+  const showPlayButton = activeVideo && (videoMode === "blocked" || videoMode === "ended" || (videoMode === "auto" && reducedMotion === true));
   const canPlay = slides.length > 1 && reducedMotion === false;
-  const rotating = canPlay && !keyboardPaused && !hovered && !dragging && visible && inView && videoMode !== "pause";
+  const rotating = canPlay && !keyboardPaused && !hovered && !dragging && visible && inView;
 
   useEffect(() => {
     const visibility = () => setVisible(!document.hidden);
@@ -104,13 +105,13 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
     }
   }
 
-  function toggleVideo() {
+  function startVideo() {
     const element = video.current;
     if (!element) return;
-    if (playVideo) {
-      element.pause();
-      setVideoMode("pause");
-      return;
+    // The Play button disappears when playback starts. Keep keyboard focus in the carousel.
+    if (document.activeElement?.matches(":focus-visible") && root.current?.contains(document.activeElement)) {
+      const indicator = indicators.current?.querySelector<HTMLButtonElement>('[aria-current="true"]');
+      (indicator ?? root.current).focus({ preventScroll: true });
     }
     // Call play inside the click so browsers requiring a user gesture can start.
     void element.play().catch((error: DOMException) => {
@@ -130,6 +131,7 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
 
   return <div
     ref={root}
+    tabIndex={-1}
     className={styles.slider}
     role="region"
     aria-roledescription={local(locale, "carousel", "ภาพสไลด์")}
@@ -204,7 +206,7 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
         {showPoster ? <Image src={poster} alt={description} fill unoptimized draggable={false} />
           : isVideo ? ((position === activeIndex || slide.url === outgoingVideo) && <video
           ref={position === activeIndex ? video : undefined} src={slide.url} poster={poster} muted playsInline
-          preload="none" loop={slides.length === 1 && !reducedMotion}
+          preload="none" loop={slides.length === 1 && reducedMotion === false}
           aria-label={description || local(locale, "Maritime video", "วิดีโอการเดินเรือ")}
           onEnded={position === activeIndex ? () => setVideoMode("ended") : undefined}
           onError={position === activeIndex ? () => setVideoMode("error") : undefined} />)
@@ -216,11 +218,10 @@ export default function HeroSlider({ slides, intervalSeconds, locale }: {
       </motion.div>;
       })}
     </div>
-    {(slides.length > 1 || activeVideo) && <div className={styles.controls}>
-      {activeVideo && videoMode !== "error" && <button type="button" className={styles.videoControl}
-        aria-label={playVideo ? local(locale, "Pause video", "หยุดวิดีโอชั่วคราว") : local(locale, "Play video", "เล่นวิดีโอ")}
-        onClick={toggleVideo}>
-        {playVideo ? <Pause size={18} aria-hidden="true" /> : <Play size={18} aria-hidden="true" />}
+    {(slides.length > 1 || showPlayButton) && <div className={styles.controls}>
+      {showPlayButton && <button type="button" className={styles.videoControl}
+        aria-label={local(locale, "Play video", "เล่นวิดีโอ")} onClick={startVideo}>
+        <Play size={18} aria-hidden="true" />
       </button>}
       {slides.length > 1 && <div ref={indicators} className={styles.dots} aria-label={local(locale, "Choose a slide", "เลือกสไลด์")}>
         {slides.map((slide, position) => <button key={slide.url} type="button"

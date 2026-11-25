@@ -243,7 +243,7 @@ test('one saved slide renders without rotation or redundant controls', async ({ 
   await expect(carousel).toHaveAttribute('data-slide-index', '0');
 });
 
-test('video slides play to completion, pause on demand, and respect reduced motion on mobile', async ({ page, db, browserName }) => {
+test('video slides play silently to completion and offer Play for reduced motion on mobile', async ({ page, db, browserName }) => {
   const url = 'https://res.cloudinary.com/moe-e2e/video/upload/v1/harbor.mp4';
   const bytes = await readFile(path.resolve('tests/fixtures/banner-video.mp4'));
   await page.route('**/video/upload/so_0/**', route => route.fulfill({ contentType: 'image/png', body: E2E_IMAGE_BUFFER }));
@@ -265,12 +265,16 @@ test('video slides play to completion, pause on demand, and respect reduced moti
   await page.goto('/th');
   const carousel = slider(page, true);
   const video = carousel.locator('video');
+  const play = carousel.getByRole('button', { name: 'เล่นวิดีโอ', exact: true });
+  const pause = carousel.getByRole('button', { name: 'หยุดวิดีโอชั่วคราว', exact: true, includeHidden: true });
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', url.replace('/upload/', '/upload/so_0/').replace('.mp4', '.jpg'));
   await expect(video).toHaveAttribute('aria-label', 'วิดีโอท่าเรือ');
   await expect(video).toHaveAttribute('playsinline', '');
   await expect(video).toHaveAttribute('poster', /so_0\/v1\/harbor.jpg/);
   await expect(video).toHaveCSS('object-fit', 'cover');
   expect(await video.evaluate((element: HTMLVideoElement) => element.muted && element.paused)).toBe(true);
+  await expect(play).toBeVisible();
+  await expect(pause).toHaveCount(0);
   if (browserName === 'webkit' && process.platform === 'win32') {
     // Some Windows WebKit builds advertise MP4 support without a working decoder.
     // Check the fixture independently so a carousel regression still fails here.
@@ -297,17 +301,51 @@ test('video slides play to completion, pause on demand, and respect reduced moti
       return;
     }
   }
-  await carousel.getByRole('button', { name: 'เล่นวิดีโอ', exact: true }).click();
-  await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime)).toBeGreaterThan(0);
-  await carousel.getByRole('button', { name: 'หยุดวิดีโอชั่วคราว', exact: true }).click();
-  await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.paused)).toBe(true);
+  await play.click();
+  await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime > 0 && element.muted && !element.paused && !element.controls)).toBe(true);
+  await expect(play).toHaveCount(0);
+  await expect(pause).toHaveCount(0);
   await carousel.getByRole('button', { name: 'แสดงสไลด์ 2', exact: true }).click();
   await expect(video).toHaveCount(0);
   await carousel.getByRole('button', { name: 'แสดงสไลด์ 1', exact: true }).click();
   await page.getByRole('banner').hover();
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime)).toBeGreaterThan(2.1);
+  await expect(pause).toHaveCount(0);
   await expect(carousel).toHaveAttribute('data-slide-index', '1');
+});
+
+test('blocked video autoplay offers Play to retry without a Pause control', async ({ page, db }) => {
+  const clip = defaultHomeSlides[0];
+  await db.collection<{ _id: string }>('moe_content').updateOne({ _id: 'Page:home' }, { $set: { heroSlides: [clip] } });
+  await refreshPublicCache();
+  await page.addInitScript(url => {
+    // Exercise a permission rejection in isolation: Windows WebKit can report
+    // a decoder error even before play(). The real-clip test covers that path.
+    window.addEventListener('error', event => {
+      if (event.target instanceof HTMLVideoElement && event.target.getAttribute('src') === url) event.stopImmediatePropagation();
+    }, true);
+    const originalPlay = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function () {
+      if (this.getAttribute('src') === url) {
+        Object.defineProperty(this, 'error', { configurable: true, value: null });
+        this.dataset.playAttempts = String(Number(this.dataset.playAttempts || 0) + 1);
+        return Promise.reject(new DOMException('Autoplay blocked', 'NotAllowedError'));
+      }
+      return originalPlay.call(this);
+    };
+  }, clip.url);
+  await page.goto('/');
+  const carousel = slider(page);
+  const attempts = () => carousel.locator('video').getAttribute('data-play-attempts').then(Number);
+  await expect.poll(attempts).toBeGreaterThan(0);
+  const first = await attempts();
+  const play = carousel.getByRole('button', { name: 'Play video', exact: true });
+  await expect(play).toBeVisible();
+  await play.click();
+  await expect.poll(attempts).toBeGreaterThan(first);
+  await expect(play).toBeVisible();
+  await expect(carousel.getByRole('button', { name: 'Pause video', exact: true, includeHidden: true })).toHaveCount(0);
 });
 
 test.describe('bundled owner banners', () => {
@@ -343,6 +381,7 @@ test.describe('bundled owner banners', () => {
       await page.getByRole('banner').hover();
       await page.emulateMedia({ reducedMotion: 'no-preference' });
       await expect.poll(() => video.evaluate((el: HTMLVideoElement) => el.currentTime)).toBeGreaterThan(0);
+      await expect(carousel.getByRole('button', { name: /^(เล่นวิดีโอ|หยุดวิดีโอชั่วคราว)$/ })).toHaveCount(0);
       expect(await video.evaluate((el: HTMLVideoElement) => [el.videoWidth, el.videoHeight])).toEqual([1920, 864]);
       await video.evaluate((el: HTMLVideoElement) => { el.currentTime = el.duration - 0.5; });
       await expect(carousel).toHaveAttribute('data-slide-index', '1');
